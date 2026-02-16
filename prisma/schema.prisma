@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PlanBias {
+  BALANCED
+  RETENTION
+  SPEED
+}
+
+enum SrsMode {
+  NORMAL
+  CONSOLIDATION
+  CATCH_UP
+}
+
+enum SessionStatus {
+  OPEN
+  COMPLETED
+  ABANDONED
+}
+
+enum AttemptStage {
+  WARMUP
+  REVIEW
+  NEW
+  LINK
+}
+
+enum SrsGrade {
+  AGAIN
+  HARD
+  GOOD
+  EASY
+}
+
+model UserProfile {
+  id                    String   @id @default(cuid())
+  clerkUserId           String   @unique
+  timezone              String
+
+  onboardingCompletedAt DateTime?
+
+  dailyMinutes          Int
+  practiceDays          Int[]
+  reminderTimeLocal     String
+  planBias              PlanBias @default(BALANCED)
+
+  activeSurahNumber     Int
+  cursorAyahId          Int
+  mode                  SrsMode  @default(NORMAL)
+
+  darkMode              Boolean @default(false)
+  themePreset           String  @default("standard")
+  accentPreset          String  @default("teal")
+  reciterId             String  @default("default")
+
+  sessions              Session[]
+  attempts              AyahAttempt[]
+  reviews               AyahReview[]
+  weakTransitions       WeakTransition[]
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model Session {
+  id              String        @id @default(cuid())
+  userId          String
+  status          SessionStatus @default(OPEN)
+  startedAt       DateTime      @default(now())
+  endedAt         DateTime?
+  localDate       String
+
+  warmupAyahIds   Int[]
+  reviewAyahIds   Int[]
+  newStartAyahId  Int?
+  newEndAyahId    Int?
+
+  user            UserProfile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attempts        AyahAttempt[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId, startedAt])
+  @@index([userId, localDate])
+}
+
+model AyahAttempt {
+  id        String       @id @default(cuid())
+  userId    String
+  sessionId String
+  ayahId    Int
+  stage     AttemptStage
+  grade     SrsGrade
+  createdAt DateTime     @default(now())
+
+  user      UserProfile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session   Session      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, ayahId, createdAt])
+  @@index([sessionId, createdAt])
+}
+
+model AyahReview {
+  id           String    @id @default(cuid())
+  userId       String
+  ayahId       Int
+
+  station      Int       @default(1)
+  intervalDays Int       @default(1)
+  easeFactor   Float     @default(2.5)
+  repetitions  Int       @default(0)
+  lapses       Int       @default(0)
+
+  nextReviewAt DateTime
+  lastReviewAt DateTime?
+  lastGrade    SrsGrade?
+
+  user         UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ayahId])
+  @@index([userId, nextReviewAt])
+}
+
+model WeakTransition {
+  id            String   @id @default(cuid())
+  userId        String
+  fromAyahId    Int
+  toAyahId      Int
+
+  attemptCount  Int      @default(0)
+  failCount     Int      @default(0)
+  successCount  Int      @default(0)
+
+  lastOccurredAt DateTime
+  resolvedAt    DateTime?
+
+  user          UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, fromAyahId, toAyahId])
+}
