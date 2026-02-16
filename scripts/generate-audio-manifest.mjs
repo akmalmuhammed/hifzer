@@ -7,6 +7,8 @@ function parseArgs(argv) {
     reciters: ["default"],
     out: "tmp/audio-manifest.csv",
     basePath: null,
+    ayahWidth: 6,
+    defaultReciter: "alafasy",
   };
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -29,6 +31,22 @@ function parseArgs(argv) {
       i += 1;
       continue;
     }
+    if (token === "--ayah-width" && argv[i + 1]) {
+      const n = Number(argv[i + 1]);
+      if (Number.isFinite(n) && n > 0) {
+        args.ayahWidth = Math.floor(n);
+      }
+      i += 1;
+      continue;
+    }
+    if (token === "--default-reciter" && argv[i + 1]) {
+      const value = argv[i + 1].trim();
+      if (value) {
+        args.defaultReciter = value;
+      }
+      i += 1;
+      continue;
+    }
   }
 
   if (!args.reciters.length) {
@@ -45,8 +63,17 @@ function csvEscape(value) {
   return `"${text.replaceAll("\"", "\"\"")}"`;
 }
 
-function expectedKey(reciterId, ayahId) {
-  return `${reciterId}/${ayahId}.mp3`;
+function resolveReciterId(reciterId, defaultReciter) {
+  return reciterId === "default" ? defaultReciter : reciterId;
+}
+
+function formatAyahId(ayahId, width) {
+  return String(ayahId).padStart(width, "0");
+}
+
+function expectedKey(reciterId, ayahId, ayahWidth, defaultReciter) {
+  const publicReciter = resolveReciterId(reciterId, defaultReciter);
+  return `${publicReciter}/${formatAyahId(ayahId, ayahWidth)}.mp3`;
 }
 
 const args = parseArgs(process.argv.slice(2));
@@ -65,15 +92,16 @@ if (!Array.isArray(ayahs) || ayahs.length !== 6236) {
 }
 
 const rows = [];
-rows.push(["reciterId", "ayahId", "surahNumber", "ayahNumber", "r2Key", "publicUrlPath"].join(","));
+rows.push(["reciterId", "publicReciterId", "ayahId", "surahNumber", "ayahNumber", "r2Key", "publicUrlPath"].join(","));
 
 for (const reciterId of args.reciters) {
   for (const ayah of ayahs) {
-    const key = expectedKey(reciterId, ayah.id);
+    const key = expectedKey(reciterId, ayah.id, args.ayahWidth, args.defaultReciter);
     const publicPath = args.basePath ? `${args.basePath}/${key}` : key;
     rows.push(
       [
         reciterId,
+        resolveReciterId(reciterId, args.defaultReciter),
         ayah.id,
         ayah.surahNumber,
         ayah.ayahNumber,
@@ -92,5 +120,6 @@ fs.writeFileSync(outPath, `${rows.join("\n")}\n`, "utf8");
 
 console.log(`Wrote ${rows.length - 1} rows to ${outPath}`);
 console.log(`Reciters: ${args.reciters.join(", ")}`);
-console.log("Layout: {reciterId}/{ayahId}.mp3");
-
+console.log(`Default reciter alias: ${args.defaultReciter}`);
+console.log(`Ayah filename width: ${args.ayahWidth}`);
+console.log("Layout: {reciterId}/{zero-padded-ayahId}.mp3");

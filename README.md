@@ -75,10 +75,16 @@ node scripts/generate-surah-index.mjs
 Configure the base URL (optional for now):
 
 - `NEXT_PUBLIC_HIFZER_AUDIO_BASE_URL=https://<your-domain-or-r2-public-base>`
+- `NEXT_PUBLIC_HIFZER_DEFAULT_RECITER_ID=alafasy` (optional, defaults to `alafasy`)
+- `NEXT_PUBLIC_HIFZER_AUDIO_AYAH_ID_WIDTH=6` (optional, defaults to `6`)
 
-Convention (placeholder until final layout is provided):
+Current convention:
 
-`{base}/{reciterId}/{ayahId}.mp3`
+`{base}/{publicReciterId}/{zero-padded-ayahId}.mp3`
+
+Example:
+
+`https://.../alafasy/000001.mp3`
 
 When not configured, audio players render a disabled "Not configured" state (no crashes).
 

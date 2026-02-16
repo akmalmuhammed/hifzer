@@ -2,9 +2,9 @@
 
 This guide sets up Quran audio hosting for Hifzer with the current key format:
 
-`{reciterId}/{ayahId}.mp3`
+`{publicReciterId}/{zero-padded-ayahId}.mp3`
 
-Example: `default/1.mp3`
+Example: `alafasy/000001.mp3`
 
 The app resolves audio from:
 
@@ -58,13 +58,13 @@ Use this policy (adjust origins as needed):
 
 Hifzer expects:
 
-- `reciterId` folder (for now at least `default`)
-- filename = global ayah id + `.mp3`
+- `publicReciterId` folder (default maps to `alafasy`)
+- filename = global ayah id zero-padded to 6 digits + `.mp3`
 - total ayahs = 6,236
 
 Required minimum set for MVP:
 
-- `default/1.mp3` ... `default/6236.mp3`
+- `alafasy/000001.mp3` ... `alafasy/006236.mp3`
 
 ## 5. Generate a manifest before upload
 
@@ -93,7 +93,7 @@ You can upload with Cloudflare UI for small tests, but use CLI for full batches.
 3. Upload a folder:
 
 ```bash
-pnpm dlx wrangler r2 object put hifzer-audio-prod/default/1.mp3 --file .\audio\default\1.mp3
+pnpm dlx wrangler r2 object put hifzer-audio-prod/alafasy/000001.mp3 --file .\audio\alafasy\000001.mp3
 ```
 
 For bulk uploads, run a PowerShell loop over local files and map filename to key.
@@ -108,6 +108,8 @@ In your app env file (for example `.env.local`):
 
 ```env
 NEXT_PUBLIC_HIFZER_AUDIO_BASE_URL=https://audio.hifzer.app
+NEXT_PUBLIC_HIFZER_DEFAULT_RECITER_ID=alafasy
+NEXT_PUBLIC_HIFZER_AUDIO_AYAH_ID_WIDTH=6
 ```
 
 Restart dev server after updating env.
@@ -121,7 +123,7 @@ Restart dev server after updating env.
 Quick direct check:
 
 ```bash
-curl -I https://audio.hifzer.app/default/1.mp3
+curl -I https://audio.hifzer.app/alafasy/000001.mp3
 ```
 
 Expect `200 OK` and audio content type.
@@ -133,7 +135,7 @@ Expect `200 OK` and audio content type.
 2. Browser playback blocked:
    - Missing/incorrect CORS allowed origin.
 3. 404 for many ayahs:
-   - Key naming mismatch. Ensure global ayah ids (1..6236), not `surah-ayah` filenames.
+   - Key naming mismatch. Ensure global ayah ids (1..6236) are zero-padded (for example `000001.mp3`), not `surah-ayah` filenames.
 4. Wrong file extension:
    - App currently expects `.mp3`.
 
@@ -141,7 +143,7 @@ Expect `200 OK` and audio content type.
 
 When adding more reciters:
 
-1. Upload keys under new folders (for example `husary/1.mp3`).
+1. Upload keys under new folders (for example `husary/000001.mp3`).
 2. Generate manifest:
 
 ```bash

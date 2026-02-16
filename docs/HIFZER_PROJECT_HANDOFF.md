@@ -133,7 +133,7 @@ Reason: product requirement changed; legal pages aligned for Paddle verification
 ## 4.6 Audio decision
 
 - Cloudflare R2 target
-- URL convention currently: `{base}/{reciterId}/{ayahId}.mp3`
+- URL convention currently: `{base}/{publicReciterId}/{zero-padded-ayahId}.mp3`
 - graceful "not configured" UI if base URL missing
 
 Reason: unblock UI and session flow now while storage details mature.
@@ -329,7 +329,7 @@ pnpm audio:manifest -- --reciters default --out tmp/audio-manifest.csv
 
 Current assumed key pattern:
 
-- `default/1.mp3` ... `default/6236.mp3`
+- `alafasy/000001.mp3` ... `alafasy/006236.mp3`
 
 ## 13. Known Gaps and Next Priorities
 
