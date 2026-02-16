@@ -16,6 +16,19 @@ export function dbConfigured(): boolean {
   return Boolean(process.env.DATABASE_URL);
 }
 
+function resolvedSchema(databaseUrl: string): string | undefined {
+  const override = process.env.HIFZER_DB_SCHEMA?.trim();
+  if (override) {
+    return override;
+  }
+  try {
+    const value = new URL(databaseUrl).searchParams.get("schema")?.trim();
+    return value || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function db(): PrismaClient {
   if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL is not set.");
@@ -25,7 +38,11 @@ export function db(): PrismaClient {
     return globalThis.__hifzer_prisma;
   }
 
-  const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL });
+  const schema = resolvedSchema(process.env.DATABASE_URL);
+  const adapter = new PrismaNeon(
+    { connectionString: process.env.DATABASE_URL },
+    schema ? { schema } : undefined,
+  );
   const client = new PrismaClient({ adapter });
 
   if (process.env.NODE_ENV !== "production") {
