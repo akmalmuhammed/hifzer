@@ -1,4 +1,4 @@
-import { clampStation, intervalDaysForStation } from "@/hifzer/srs/intervals";
+import { MAX_STATION, clampStation, intervalDaysForStation } from "@/hifzer/srs/intervals";
 import type { AyahReviewState, SrsGrade } from "@/hifzer/srs/types";
 
 function clampEaseFactor(ef: number): number {
@@ -42,6 +42,21 @@ function updateEaseFactor(current: number, grade: SrsGrade): number {
   return clampEaseFactor(ef + 0.05);
 }
 
+function intervalDaysForReview(station: number, easeFactor: number, grade: SrsGrade): number {
+  if (grade === "AGAIN") {
+    return 1;
+  }
+
+  const baseInterval = intervalDaysForStation(station);
+  if (station >= MAX_STATION) {
+    return baseInterval;
+  }
+
+  // Keep the 7-station schedule as the baseline and use EF as a bounded nudge.
+  const multiplier = Math.max(0.8, Math.min(1.25, easeFactor / 2.5));
+  return Math.max(1, Math.round(baseInterval * multiplier));
+}
+
 export function defaultReviewState(ayahId: number, now: Date): AyahReviewState {
   const station = 1;
   const intervalDays = intervalDaysForStation(station);
@@ -62,7 +77,7 @@ export function applyGrade(state: AyahReviewState, grade: SrsGrade, now: Date): 
   const station = nextStation(state.station, grade);
   const easeFactor = updateEaseFactor(state.easeFactor, grade);
 
-  const intervalDays = intervalDaysForStation(station);
+  const intervalDays = intervalDaysForReview(station, easeFactor, grade);
   const nextReviewAt = addDays(now, intervalDays);
 
   return {
@@ -77,4 +92,3 @@ export function applyGrade(state: AyahReviewState, grade: SrsGrade, now: Date): 
     nextReviewAt,
   };
 }
-

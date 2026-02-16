@@ -1,3 +1,11 @@
+function pad2(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
+export function isoDateLocal(date: Date): string {
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+}
+
 export function isoDateUtc(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
@@ -24,4 +32,3 @@ export function addIsoDaysUtc(isoDate: string, deltaDays: number): string {
   const next = new Date(base + deltaDays * 24 * 60 * 60 * 1000);
   return isoDateUtc(next);
 }
-

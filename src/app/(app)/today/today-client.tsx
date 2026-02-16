@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import { buildTodayQueue, missedDaysSince, modeForMissedDays } from "@/hifzer/srs/queue";
-import { formatModeLabel, getActiveSurahNumber, getCursorAyahId, getLastCompletedLocalDate, getOpenSession, listDueReviews, todayIsoLocalDateUtc } from "@/hifzer/local/store";
+import { formatModeLabel, getActiveSurahNumber, getCursorAyahId, getLastCompletedLocalDate, getOpenSession, listDueReviews, todayIsoLocalDate } from "@/hifzer/local/store";
 import { getSurahInfo } from "@/hifzer/quran/lookup";
 
 export function TodayClient() {
   const [snapshot] = useState(() => {
     const now = new Date();
-    const today = todayIsoLocalDateUtc(now);
+    const today = todayIsoLocalDate(now);
     const activeSurahNumber = getActiveSurahNumber();
     const cursorAyahId = getCursorAyahId();
     const open = getOpenSession();

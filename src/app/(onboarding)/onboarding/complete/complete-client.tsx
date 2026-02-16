@@ -8,14 +8,6 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast";
 import { setOnboardingCompleted } from "@/hifzer/local/store";
 
-const ONBOARDED_COOKIE = "hifzer_onboarded_v1";
-
-function setOnboardedCookie() {
-  // Non-HttpOnly cookie set from the client as a temporary gate until Prisma-backed profiles exist.
-  const maxAgeSeconds = 60 * 60 * 24 * 365;
-  document.cookie = `${ONBOARDED_COOKIE}=1; Path=/; Max-Age=${maxAgeSeconds}; SameSite=Lax`;
-}
-
 export function OnboardingCompleteClient() {
   const router = useRouter();
   const { pushToast } = useToast();
@@ -47,7 +39,6 @@ export function OnboardingCompleteClient() {
             className="gap-2"
             onClick={async () => {
               setOnboardingCompleted();
-              setOnboardedCookie();
 
               try {
                 await fetch("/api/profile/onboarding-complete", { method: "POST" });

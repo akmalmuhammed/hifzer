@@ -16,7 +16,7 @@ import {
   listAllReviews,
   listAttempts,
   listDueReviews,
-  todayIsoLocalDateUtc,
+  todayIsoLocalDate,
 } from "@/hifzer/local/store";
 import { buildActivityDays } from "@/hifzer/derived/activity";
 import { addIsoDaysUtc } from "@/hifzer/derived/dates";
@@ -27,7 +27,7 @@ import { getSurahInfo } from "@/hifzer/quran/lookup";
 export function ProgressClient() {
   const [snapshot] = useState(() => {
     const now = new Date();
-    const today = todayIsoLocalDateUtc(now);
+    const today = todayIsoLocalDate(now);
     const attempts = listAttempts();
     const reviews = listAllReviews();
     const due = listDueReviews(now);

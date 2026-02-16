@@ -30,6 +30,23 @@ function defaultStartPoint() {
   return { activeSurahNumber: first.surahNumber, cursorAyahId: first.startAyahId };
 }
 
+function defaultCreateData(clerkUserId: string) {
+  const { activeSurahNumber, cursorAyahId } = defaultStartPoint();
+  return {
+    clerkUserId,
+    timezone: "UTC",
+    dailyMinutes: DEFAULT_DAILY_MINUTES,
+    practiceDays: DEFAULT_PRACTICE_DAYS,
+    reminderTimeLocal: DEFAULT_REMINDER_TIME,
+    activeSurahNumber,
+    cursorAyahId,
+    darkMode: false,
+    themePreset: DEFAULT_THEME,
+    accentPreset: DEFAULT_ACCENT,
+    reciterId: DEFAULT_RECITER,
+  };
+}
+
 function toSnapshot(row: UserProfile): ProfileSnapshot {
   return {
     clerkUserId: row.clerkUserId,
@@ -48,24 +65,11 @@ export async function getOrCreateUserProfile(clerkUserId: string): Promise<UserP
     return null;
   }
 
-  const { activeSurahNumber, cursorAyahId } = defaultStartPoint();
   const prisma = db();
 
   return prisma.userProfile.upsert({
     where: { clerkUserId },
-    create: {
-      clerkUserId,
-      timezone: "UTC",
-      dailyMinutes: DEFAULT_DAILY_MINUTES,
-      practiceDays: DEFAULT_PRACTICE_DAYS,
-      reminderTimeLocal: DEFAULT_REMINDER_TIME,
-      activeSurahNumber,
-      cursorAyahId,
-      darkMode: false,
-      themePreset: DEFAULT_THEME,
-      accentPreset: DEFAULT_ACCENT,
-      reciterId: DEFAULT_RECITER,
-    },
+    create: defaultCreateData(clerkUserId),
     update: {},
   });
 }
@@ -80,10 +84,14 @@ export async function saveStartPoint(clerkUserId: string, activeSurahNumber: num
     return null;
   }
   const prisma = db();
-  await getOrCreateUserProfile(clerkUserId);
-  const row = await prisma.userProfile.update({
+  const row = await prisma.userProfile.upsert({
     where: { clerkUserId },
-    data: { activeSurahNumber, cursorAyahId },
+    create: {
+      ...defaultCreateData(clerkUserId),
+      activeSurahNumber,
+      cursorAyahId,
+    },
+    update: { activeSurahNumber, cursorAyahId },
   });
   return toSnapshot(row);
 }
@@ -93,10 +101,14 @@ export async function markOnboardingComplete(clerkUserId: string) {
     return null;
   }
   const prisma = db();
-  await getOrCreateUserProfile(clerkUserId);
-  const row = await prisma.userProfile.update({
+  const completedAt = new Date();
+  const row = await prisma.userProfile.upsert({
     where: { clerkUserId },
-    data: { onboardingCompletedAt: new Date() },
+    create: {
+      ...defaultCreateData(clerkUserId),
+      onboardingCompletedAt: completedAt,
+    },
+    update: { onboardingCompletedAt: completedAt },
   });
   return toSnapshot(row);
 }
@@ -111,10 +123,15 @@ export async function saveDisplayPrefs(input: {
     return null;
   }
   const prisma = db();
-  await getOrCreateUserProfile(input.clerkUserId);
-  const row = await prisma.userProfile.update({
+  const row = await prisma.userProfile.upsert({
     where: { clerkUserId: input.clerkUserId },
-    data: {
+    create: {
+      ...defaultCreateData(input.clerkUserId),
+      darkMode: input.darkMode,
+      themePreset: input.themePreset,
+      accentPreset: input.accentPreset,
+    },
+    update: {
       darkMode: input.darkMode,
       themePreset: input.themePreset,
       accentPreset: input.accentPreset,
@@ -122,4 +139,3 @@ export async function saveDisplayPrefs(input: {
   });
   return toSnapshot(row);
 }
-

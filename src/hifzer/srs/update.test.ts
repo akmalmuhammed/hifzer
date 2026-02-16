@@ -40,5 +40,25 @@ describe("srs/update", () => {
     expect(next.station).toBe(7);
     expect(next.intervalDays).toBe(90);
   });
-});
 
+  it("uses ease factor to nudge interval length within station baseline", () => {
+    const now = new Date(2026, 0, 1, 10, 0, 0);
+    const lowEfState = {
+      ...defaultReviewState(200, now),
+      station: 5,
+      easeFactor: 1.3,
+    };
+    const highEfState = {
+      ...defaultReviewState(201, now),
+      station: 5,
+      easeFactor: 3.0,
+    };
+
+    const low = applyGrade(lowEfState, "GOOD", now);
+    const high = applyGrade(highEfState, "GOOD", now);
+
+    expect(low.station).toBe(6);
+    expect(high.station).toBe(6);
+    expect(low.intervalDays).toBeLessThan(high.intervalDays);
+  });
+});

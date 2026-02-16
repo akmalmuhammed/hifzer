@@ -89,6 +89,7 @@ model Session {
 
   @@index([userId, startedAt])
   @@index([userId, localDate])
+  @@unique([userId, startedAt])
 }
 
 model AyahAttempt {

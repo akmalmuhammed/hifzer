@@ -1,5 +1,6 @@
 import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
 import type { AyahReviewState, SrsMode, TodayQueue } from "@/hifzer/srs/types";
+import { isoDateLocal } from "@/hifzer/derived/dates";
 
 export type QueueProfile = {
   activeSurahNumber: number;
@@ -7,8 +8,8 @@ export type QueueProfile = {
   lastCompletedLocalDate: string | null; // YYYY-MM-DD (local user date)
 };
 
-function dateToIsoLocalDateUtc(now: Date): string {
-  return now.toISOString().slice(0, 10);
+function dateToIsoLocalDate(now: Date): string {
+  return isoDateLocal(now);
 }
 
 function isoLocalDateToUtcMidnightMs(isoLocalDate: string): number | null {
@@ -60,7 +61,7 @@ function sortDueReviews(dueReviews: AyahReviewState[]): AyahReviewState[] {
 }
 
 export function buildTodayQueue(profile: QueueProfile, dueReviews: AyahReviewState[], now: Date): TodayQueue {
-  const nowLocalDate = dateToIsoLocalDateUtc(now);
+  const nowLocalDate = dateToIsoLocalDate(now);
   const missedDays = missedDaysSince(profile.lastCompletedLocalDate, nowLocalDate);
   const mode = modeForMissedDays(missedDays);
 
@@ -92,4 +93,3 @@ export function buildTodayQueue(profile: QueueProfile, dueReviews: AyahReviewSta
 
   return { mode, warmupIds, reviewIds, newStartAyahId, newEndAyahId };
 }
-

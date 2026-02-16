@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
-import { getOpenSession, listArchivedSessions, setOpenSession, todayIsoLocalDateUtc } from "@/hifzer/local/store";
+import { getOpenSession, listArchivedSessions, setOpenSession, todayIsoLocalDate } from "@/hifzer/local/store";
 
 function newCount(session: { queue: { newStartAyahId: number | null; newEndAyahId: number | null } }): number {
   const { newStartAyahId, newEndAyahId } = session.queue;
@@ -21,7 +21,7 @@ function newCount(session: { queue: { newStartAyahId: number | null; newEndAyahI
 export function HistorySessionsClient() {
   const [snapshot, setSnapshot] = useState(() => {
     const now = new Date();
-    const today = todayIsoLocalDateUtc(now);
+    const today = todayIsoLocalDate(now);
     const open = getOpenSession();
     const archived = listArchivedSessions();
     return { now, today, open, archived };

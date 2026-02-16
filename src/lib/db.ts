@@ -45,9 +45,7 @@ export function db(): PrismaClient {
   );
   const client = new PrismaClient({ adapter });
 
-  if (process.env.NODE_ENV !== "production") {
-    globalThis.__hifzer_prisma = client;
-  }
+  globalThis.__hifzer_prisma = client;
 
   return client;
 }

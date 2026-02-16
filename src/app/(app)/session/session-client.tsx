@@ -32,7 +32,7 @@ import {
   setActiveSurahCursor,
   setLastCompletedLocalDate,
   setOpenSession,
-  todayIsoLocalDateUtc,
+  todayIsoLocalDate,
   upsertReviewAndApplyGrade,
   listAttempts,
   listDueReviews,
@@ -142,7 +142,7 @@ export function SessionClient() {
   const { pushToast } = useToast();
 
   const [bootNow] = useState(() => new Date());
-  const today = todayIsoLocalDateUtc(bootNow);
+  const today = todayIsoLocalDate(bootNow);
 
   const [showText, setShowText] = useState(true);
 
@@ -251,7 +251,7 @@ export function SessionClient() {
         };
         archiveSession(completed);
         setOpenSession(null);
-        setLastCompletedLocalDate(todayIsoLocalDateUtc(now));
+        setLastCompletedLocalDate(todayIsoLocalDate(now));
         setSession(completed);
 
         void syncCompletedSession(completed).catch(() => {

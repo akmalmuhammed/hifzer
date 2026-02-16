@@ -42,7 +42,7 @@ Clerk is scaffolded and enabled when `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is set.
 
 - `middleware.ts` protects app + onboarding routes when Clerk is configured.
 - App gating now also checks Prisma `UserProfile.onboardingCompletedAt` in `(app)` layout.
-- Cookie `hifzer_onboarded_v1` is still used as a fast redirect hint for onboarding routes.
+- Onboarding redirects are driven by DB-backed profile state, not middleware cookie checks.
 
 ## Billing (Paddle)
 

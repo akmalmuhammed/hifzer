@@ -1,5 +1,6 @@
 import type { AyahReviewState, SrsGrade, SrsMode, TodayQueue } from "@/hifzer/srs/types";
 import { defaultReviewState, applyGrade } from "@/hifzer/srs/update";
+import { isoDateLocal } from "@/hifzer/derived/dates";
 
 export const STORAGE_KEYS = {
   onboardingCompleted: "hifzer_onboarding_completed_v1",
@@ -44,6 +45,8 @@ export type StoredSession = {
   queue: TodayQueue;
   stepIndex: number;
 };
+
+const MAX_STORED_ATTEMPTS = 2000;
 
 function isBrowser(): boolean {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
@@ -198,7 +201,10 @@ export function appendAttempt(input: Omit<StoredAttempt, "id" | "createdAt"> & {
     createdAt,
   };
   items.push(item);
-  window.localStorage.setItem(STORAGE_KEYS.attempts, JSON.stringify(items));
+  const trimmed = items.length > MAX_STORED_ATTEMPTS
+    ? items.slice(items.length - MAX_STORED_ATTEMPTS)
+    : items;
+  window.localStorage.setItem(STORAGE_KEYS.attempts, JSON.stringify(trimmed));
 }
 
 export function listAttempts(): StoredAttempt[] {
@@ -246,8 +252,8 @@ export function newSessionId(now: Date): string {
   return `s_${now.getTime()}_${Math.random().toString(16).slice(2)}`;
 }
 
-export function todayIsoLocalDateUtc(now: Date): string {
-  return now.toISOString().slice(0, 10);
+export function todayIsoLocalDate(now: Date): string {
+  return isoDateLocal(now);
 }
 
 export function formatModeLabel(mode: SrsMode): string {
