@@ -158,12 +158,14 @@ export async function POST(req: Request) {
   }
 
   if (
+    event.eventType === EventName.SubscriptionActivated ||
     event.eventType === EventName.SubscriptionCreated ||
     event.eventType === EventName.SubscriptionUpdated ||
     event.eventType === EventName.SubscriptionCanceled ||
     event.eventType === EventName.SubscriptionPastDue ||
     event.eventType === EventName.SubscriptionPaused ||
-    event.eventType === EventName.SubscriptionResumed
+    event.eventType === EventName.SubscriptionResumed ||
+    event.eventType === EventName.SubscriptionTrialing
   ) {
     await handleSubscriptionEvent(event);
     return NextResponse.json({ ok: true });
