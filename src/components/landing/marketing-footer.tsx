@@ -52,7 +52,7 @@ export function MarketingFooter() {
             Legal
           </p>
           <Link href="/legal/terms" className="font-semibold text-[color:var(--kw-ink)] hover:underline">
-            Terms
+            Terms of Service
           </Link>
           <Link href="/legal/privacy" className="font-semibold text-[color:var(--kw-ink)] hover:underline">
             Privacy
