@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Moon } from "lucide-react";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -49,7 +49,7 @@ export function PricingTeaser() {
           </p>
           <h2 className="mt-3 text-balance font-[family-name:var(--font-kw-display)] text-3xl leading-tight tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
             Free for the core.
-            <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Paid for personalization.</span>
+            <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Pro for personalization.</span>
           </h2>
         </div>
         <Link href="/pricing" className="text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">
@@ -75,13 +75,47 @@ export function PricingTeaser() {
                   <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{p.name}</p>
                   <p className="mt-1 text-xs text-[color:var(--kw-muted)]">{p.note}</p>
                 </div>
-                {p.highlight ? <Pill tone="accent">Popular</Pill> : <Pill tone="neutral">Core</Pill>}
+                {p.highlight ? (
+                  <span className="kw-ramadan-badge inline-flex items-center gap-1.5 rounded-full border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.10)] px-2.5 py-1 text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
+                    <Moon size={12} />
+                    Ramadan Gift
+                  </span>
+                ) : (
+                  <Pill tone="neutral">Core</Pill>
+                )}
               </div>
 
-              <p className="mt-5 font-[family-name:var(--font-kw-display)] text-4xl tracking-tight text-[color:var(--kw-ink)]">
-                {p.price}
-                {p.name === "Pro" ? <span className="ml-2 text-sm font-semibold text-[color:var(--kw-muted)]">/ month</span> : null}
-              </p>
+              {p.name === "Pro" ? (
+                <div className="mt-5">
+                  <div className="relative inline-block">
+                    <span className="font-[family-name:var(--font-kw-display)] text-4xl tracking-tight text-[color:var(--kw-muted)]">
+                      $7
+                    </span>
+                    <span className="ml-2 text-sm font-semibold text-[color:var(--kw-muted)]">
+                      / month
+                    </span>
+                    {/* Animated strikethrough line */}
+                    <span
+                      className="kw-strike-line pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center"
+                      aria-hidden="true"
+                    >
+                      <span className="h-[2px] w-full rounded-full bg-[rgba(var(--kw-accent-rgb),0.7)]" />
+                    </span>
+                  </div>
+                  <div className="kw-price-reveal mt-2 flex items-baseline gap-2">
+                    <span className="font-[family-name:var(--font-kw-display)] text-4xl tracking-tight text-[rgba(var(--kw-accent-rgb),1)]">
+                      Free
+                    </span>
+                    <span className="text-xs font-semibold text-[color:var(--kw-muted)]">
+                      for a limited time
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <p className="mt-5 font-[family-name:var(--font-kw-display)] text-4xl tracking-tight text-[color:var(--kw-ink)]">
+                  {p.price}
+                </p>
+              )}
 
               <ul className="mt-5 space-y-2 text-sm text-[color:var(--kw-muted)]">
                 {p.bullets.map((b) => (
@@ -97,7 +131,7 @@ export function PricingTeaser() {
               <div className="mt-7">
                 <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
                   <Button variant={p.highlight ? "primary" : "secondary"} className="w-full">
-                    Get started
+                    {p.highlight ? "Claim your free access" : "Get started"}
                   </Button>
                 </PublicAuthLink>
               </div>
