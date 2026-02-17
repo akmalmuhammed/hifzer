@@ -7,62 +7,82 @@ import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
-import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
 
-const STORAGE_KEYS = {
-  activeSurahNumber: "hifzer_active_surah_number_v1",
-  cursorAyahId: "hifzer_cursor_ayah_id_v1",
-} as const;
-
-type WeekDayPlan = {
-  iso: string;
-  warmup: number;
-  review: number;
-  sabaqNew: number;
+type TodayPayload = {
+  localDate?: string;
+  state?: {
+    mode: "NORMAL" | "CONSOLIDATION" | "CATCH_UP";
+    queue: {
+      warmupAyahIds: number[];
+      weeklyGateAyahIds: number[];
+      sabqiReviewAyahIds: number[];
+      manzilReviewAyahIds: number[];
+      repairLinks: Array<{ fromAyahId: number; toAyahId: number }>;
+      newAyahIds: number[];
+    };
+  };
 };
 
-function buildPreviewWeek(start: Date): WeekDayPlan[] {
-  return Array.from({ length: 7 }, (_, i) => {
-    const day = new Date(start);
-    day.setDate(start.getDate() + i);
-    return {
-      iso: day.toISOString().slice(0, 10),
-      warmup: i === 0 ? 2 : 1,
-      review: 8 + i,
-      sabaqNew: 5,
-    };
-  });
-}
-
 export default function PlanPreviewPage() {
-  const [activeSurahNumber, setActiveSurahNumber] = useState<number | null>(null);
-  const [cursorAyahId, setCursorAyahId] = useState<number | null>(null);
-  const [week, setWeek] = useState<WeekDayPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [payload, setPayload] = useState<TodayPayload | null>(null);
 
   useEffect(() => {
-    const storedSurahNumber = window.localStorage.getItem(STORAGE_KEYS.activeSurahNumber);
-    const storedCursorAyahId = window.localStorage.getItem(STORAGE_KEYS.cursorAyahId);
-
-    const raf = window.requestAnimationFrame(() => {
-      setActiveSurahNumber(storedSurahNumber ? Number(storedSurahNumber) : null);
-      setCursorAyahId(storedCursorAyahId ? Number(storedCursorAyahId) : null);
-      setWeek(buildPreviewWeek(new Date()));
-    });
-
-    return () => window.cancelAnimationFrame(raf);
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/session/today", { cache: "no-store" });
+        const data = (await res.json()) as TodayPayload & { error?: string };
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to load preview.");
+        }
+        if (!cancelled) {
+          setPayload(data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to load preview.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const surah = useMemo(
-    () => (activeSurahNumber ? SURAH_INDEX.find((x) => x.surahNumber === activeSurahNumber) : null),
-    [activeSurahNumber],
-  );
+  const weekRows = useMemo(() => {
+    const localDate = payload?.localDate;
+    const state = payload?.state;
+    if (!state || !localDate) {
+      return [];
+    }
+    const start = new Date(`${localDate}T00:00:00Z`);
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(start);
+      d.setUTCDate(d.getUTCDate() + i);
+      const iso = d.toISOString().slice(0, 10);
+      const reviewBase = state.queue.weeklyGateAyahIds.length + state.queue.sabqiReviewAyahIds.length + state.queue.manzilReviewAyahIds.length;
+      return {
+        iso,
+        warmup: i === 0 ? state.queue.warmupAyahIds.length : Math.max(0, state.queue.newAyahIds.length ? 1 : 0),
+        review: i === 0 ? reviewBase : Math.max(0, reviewBase + (i % 2)),
+        newCount: i === 0 ? state.queue.newAyahIds.length : Math.max(0, state.queue.newAyahIds.length - (i > 2 ? 1 : 0)),
+        mode: state.mode,
+      };
+    });
+  }, [payload?.localDate, payload?.state]);
 
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow="Onboarding"
         title="Plan preview"
-        subtitle="A 7-day preview. This is a placeholder plan that will be replaced by the SRS engine."
+        subtitle="Server-generated preview based on your profile settings and current retention signals."
         right={
           <div className="flex items-center gap-2">
             <Link href="/onboarding/fluency-check">
@@ -82,16 +102,13 @@ export default function PlanPreviewPage() {
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <Pill tone="neutral">Starting point</Pill>
+            <Pill tone="neutral">Engine preview</Pill>
             <p className="mt-3 text-sm text-[color:var(--kw-muted)]">
-              {surah ? (
-                <>
-                  Surah {surah.surahNumber} - {surah.nameTransliteration} - cursor ayahId{" "}
-                  <span className="font-semibold text-[color:var(--kw-ink)]">{cursorAyahId ?? "--"}</span>
-                </>
-              ) : (
-                <>Not selected yet. Go back and choose a start point.</>
-              )}
+              {loading
+                ? "Loading queue simulation..."
+                : error
+                  ? `Unable to load preview: ${error}`
+                  : "Queue generated from server-side debt, gate, and mode logic."}
             </p>
           </div>
           <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
@@ -100,13 +117,13 @@ export default function PlanPreviewPage() {
         </div>
 
         <div className="mt-6 grid gap-3 md:grid-cols-2">
-          {week.map((d) => (
+          {weekRows.map((d) => (
             <div
               key={d.iso}
               className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3"
             >
               <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                {d.iso}
+                {d.iso} - {d.mode}
               </p>
               <div className="mt-3 grid gap-2 text-sm text-[color:var(--kw-muted)] sm:grid-cols-3">
                 <div>
@@ -123,9 +140,9 @@ export default function PlanPreviewPage() {
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                    Sabaq
+                    New
                   </p>
-                  <p className="mt-1 font-semibold text-[color:var(--kw-ink)]">{d.sabaqNew}</p>
+                  <p className="mt-1 font-semibold text-[color:var(--kw-ink)]">{d.newCount}</p>
                 </div>
               </div>
             </div>
@@ -133,7 +150,7 @@ export default function PlanPreviewPage() {
         </div>
 
         <p className="mt-6 text-xs text-[color:var(--kw-faint)]">
-          Next: permissions UI scaffold. Microphone and notifications will be integrated later.
+          This preview is generated by the server-first Hifz OS engine and updates as your profile and results evolve.
         </p>
       </Card>
     </div>

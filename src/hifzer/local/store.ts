@@ -12,6 +12,8 @@ export const STORAGE_KEYS = {
   openSession: "hifzer_open_session_v1",
   sessions: "hifzer_sessions_v1",
   lastCompletedLocalDate: "hifzer_last_completed_local_date_v1",
+  pendingSessionSync: "hifzer_pending_session_events_v2",
+  cutoverApplied: "hifzer_cutover_v3_applied",
 } as const;
 
 type StoredReview = Omit<AyahReviewState, "nextReviewAt" | "lastReviewAt"> & {
@@ -146,8 +148,18 @@ function toStoredReview(state: AyahReviewState): StoredReview {
 }
 
 function fromStoredReview(stored: StoredReview): AyahReviewState {
+  const withDefaults = stored as StoredReview & {
+    checkpointIndex?: number;
+    nextIntervalMinutes?: number;
+    lastDurationSec?: number;
+  };
   return {
-    ...stored,
+    ...withDefaults,
+    checkpointIndex: Number.isFinite(withDefaults.checkpointIndex) ? Number(withDefaults.checkpointIndex) : 0,
+    nextIntervalMinutes: Number.isFinite(withDefaults.nextIntervalMinutes)
+      ? Number(withDefaults.nextIntervalMinutes)
+      : 1440,
+    lastDurationSec: Number.isFinite(withDefaults.lastDurationSec) ? Number(withDefaults.lastDurationSec) : undefined,
     nextReviewAt: new Date(stored.nextReviewAt),
     lastReviewAt: stored.lastReviewAt ? new Date(stored.lastReviewAt) : undefined,
   };
@@ -264,4 +276,76 @@ export function formatModeLabel(mode: SrsMode): string {
     return "Consolidation";
   }
   return "Normal";
+}
+
+export type PendingSessionSyncPayload = {
+  sessionId: string;
+  startedAt: string;
+  endedAt: string;
+  localDate: string;
+  events: Array<{
+    stepIndex: number;
+    stage: "WARMUP" | "REVIEW" | "NEW" | "LINK" | "WEEKLY_TEST" | "LINK_REPAIR";
+    phase: "STANDARD" | "NEW_EXPOSE" | "NEW_GUIDED" | "NEW_BLIND" | "WEEKLY_TEST" | "LINK_REPAIR";
+    ayahId: number;
+    fromAyahId?: number;
+    toAyahId?: number;
+    grade?: "AGAIN" | "HARD" | "GOOD" | "EASY";
+    durationSec: number;
+    createdAt: string;
+  }>;
+};
+
+export function getPendingSessionSyncPayloads(): PendingSessionSyncPayload[] {
+  if (!isBrowser()) {
+    return [];
+  }
+  return safeJsonParse<PendingSessionSyncPayload[]>(
+    window.localStorage.getItem(STORAGE_KEYS.pendingSessionSync),
+  ) ?? [];
+}
+
+export function pushPendingSessionSyncPayload(payload: PendingSessionSyncPayload) {
+  if (!isBrowser()) {
+    return;
+  }
+  const current = getPendingSessionSyncPayloads();
+  current.push(payload);
+  window.localStorage.setItem(STORAGE_KEYS.pendingSessionSync, JSON.stringify(current.slice(-20)));
+}
+
+export function replacePendingSessionSyncPayloads(payloads: PendingSessionSyncPayload[]) {
+  if (!isBrowser()) {
+    return;
+  }
+  window.localStorage.setItem(STORAGE_KEYS.pendingSessionSync, JSON.stringify(payloads.slice(-20)));
+}
+
+export function applyFreshStartBridge() {
+  if (!isBrowser()) {
+    return;
+  }
+  if (window.localStorage.getItem(STORAGE_KEYS.cutoverApplied) === "1") {
+    return;
+  }
+  const keepOnboarding = window.localStorage.getItem(STORAGE_KEYS.onboardingCompleted);
+  const keepSurah = window.localStorage.getItem(STORAGE_KEYS.activeSurahNumber);
+  const keepCursor = window.localStorage.getItem(STORAGE_KEYS.cursorAyahId);
+
+  window.localStorage.removeItem(STORAGE_KEYS.srsReviews);
+  window.localStorage.removeItem(STORAGE_KEYS.attempts);
+  window.localStorage.removeItem(STORAGE_KEYS.openSession);
+  window.localStorage.removeItem(STORAGE_KEYS.sessions);
+  window.localStorage.removeItem(STORAGE_KEYS.lastCompletedLocalDate);
+
+  if (keepOnboarding) {
+    window.localStorage.setItem(STORAGE_KEYS.onboardingCompleted, keepOnboarding);
+  }
+  if (keepSurah) {
+    window.localStorage.setItem(STORAGE_KEYS.activeSurahNumber, keepSurah);
+  }
+  if (keepCursor) {
+    window.localStorage.setItem(STORAGE_KEYS.cursorAyahId, keepCursor);
+  }
+  window.localStorage.setItem(STORAGE_KEYS.cutoverApplied, "1");
 }

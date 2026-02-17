@@ -1,6 +1,12 @@
 import "server-only";
 
-import type { SubscriptionPlan, SubscriptionStatus, UserProfile } from "@prisma/client";
+import type {
+  PlanBias,
+  SrsMode,
+  SubscriptionPlan,
+  SubscriptionStatus,
+  UserProfile,
+} from "@prisma/client";
 import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
 import { db, dbConfigured } from "@/lib/db";
 
@@ -14,6 +20,21 @@ const DEFAULT_RECITER = "default";
 export type ProfileSnapshot = {
   clerkUserId: string;
   onboardingCompleted: boolean;
+  onboardingCompletedAt: string | null;
+  timezone: string;
+  dailyMinutes: number;
+  practiceDays: number[];
+  reminderTimeLocal: string;
+  planBias: PlanBias;
+  mode: SrsMode;
+  hasTeacher: boolean;
+  avgReviewSeconds: number;
+  avgNewSeconds: number;
+  avgLinkSeconds: number;
+  reviewFloorPct: number;
+  consolidationThresholdPct: number;
+  catchUpThresholdPct: number;
+  rebalanceUntil: string | null;
   activeSurahNumber: number;
   cursorAyahId: number;
   plan: SubscriptionPlan;
@@ -45,6 +66,13 @@ function defaultCreateData(clerkUserId: string) {
     reminderTimeLocal: DEFAULT_REMINDER_TIME,
     activeSurahNumber,
     cursorAyahId,
+    hasTeacher: false,
+    avgReviewSeconds: 45,
+    avgNewSeconds: 90,
+    avgLinkSeconds: 35,
+    reviewFloorPct: 70,
+    consolidationThresholdPct: 25,
+    catchUpThresholdPct: 45,
     plan: "FREE" as const,
     darkMode: false,
     themePreset: DEFAULT_THEME,
@@ -57,6 +85,21 @@ function toSnapshot(row: UserProfile): ProfileSnapshot {
   return {
     clerkUserId: row.clerkUserId,
     onboardingCompleted: Boolean(row.onboardingCompletedAt),
+    onboardingCompletedAt: row.onboardingCompletedAt ? row.onboardingCompletedAt.toISOString() : null,
+    timezone: row.timezone,
+    dailyMinutes: row.dailyMinutes,
+    practiceDays: row.practiceDays,
+    reminderTimeLocal: row.reminderTimeLocal,
+    planBias: row.planBias,
+    mode: row.mode,
+    hasTeacher: row.hasTeacher,
+    avgReviewSeconds: row.avgReviewSeconds,
+    avgNewSeconds: row.avgNewSeconds,
+    avgLinkSeconds: row.avgLinkSeconds,
+    reviewFloorPct: row.reviewFloorPct,
+    consolidationThresholdPct: row.consolidationThresholdPct,
+    catchUpThresholdPct: row.catchUpThresholdPct,
+    rebalanceUntil: row.rebalanceUntil ? row.rebalanceUntil.toISOString() : null,
     activeSurahNumber: row.activeSurahNumber,
     cursorAyahId: row.cursorAyahId,
     plan: row.plan,
@@ -103,6 +146,43 @@ export async function saveStartPoint(clerkUserId: string, activeSurahNumber: num
       cursorAyahId,
     },
     update: { activeSurahNumber, cursorAyahId },
+  });
+  return toSnapshot(row);
+}
+
+export async function saveAssessment(input: {
+  clerkUserId: string;
+  dailyMinutes: number;
+  practiceDaysPerWeek: number;
+  planBias: PlanBias;
+  hasTeacher: boolean;
+  timezone: string;
+}) {
+  if (!dbConfigured()) {
+    return null;
+  }
+  const practiceDays = Array.from({ length: 7 }, (_, i) => i).slice(
+    0,
+    Math.max(1, Math.min(7, Math.floor(input.practiceDaysPerWeek))),
+  );
+  const prisma = db();
+  const row = await prisma.userProfile.upsert({
+    where: { clerkUserId: input.clerkUserId },
+    create: {
+      ...defaultCreateData(input.clerkUserId),
+      dailyMinutes: Math.max(5, Math.min(240, Math.floor(input.dailyMinutes))),
+      practiceDays,
+      planBias: input.planBias,
+      hasTeacher: input.hasTeacher,
+      timezone: input.timezone || "UTC",
+    },
+    update: {
+      dailyMinutes: Math.max(5, Math.min(240, Math.floor(input.dailyMinutes))),
+      practiceDays,
+      planBias: input.planBias,
+      hasTeacher: input.hasTeacher,
+      timezone: input.timezone || "UTC",
+    },
   });
   return toSnapshot(row);
 }

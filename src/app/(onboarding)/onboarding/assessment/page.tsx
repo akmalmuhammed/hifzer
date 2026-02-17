@@ -19,7 +19,6 @@ type AssessmentDraft = {
   timezone: string;
 };
 
-const STORAGE_KEY = "hifzer_onboarding_assessment_v1";
 const TIMEZONE_PLACEHOLDER = "Detecting timezone...";
 
 export default function OnboardingAssessmentPage() {
@@ -44,10 +43,23 @@ export default function OnboardingAssessmentPage() {
     return () => window.cancelAnimationFrame(raf);
   }, []);
 
-  function saveAndNext() {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
-    pushToast({ title: "Saved", message: "Assessment answers stored locally (prototype).", tone: "success" });
-    router.push("/onboarding/start-point");
+  async function saveAndNext() {
+    try {
+      const res = await fetch("/api/profile/assessment", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(draft),
+      });
+      const payload = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        throw new Error(payload.error || "Failed to save assessment.");
+      }
+      pushToast({ title: "Saved", message: "Assessment persisted to your profile.", tone: "success" });
+      router.push("/onboarding/start-point");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to save assessment.";
+      pushToast({ title: "Save failed", message, tone: "warning" });
+    }
   }
 
   return (
@@ -63,8 +75,7 @@ export default function OnboardingAssessmentPage() {
           <div className="max-w-2xl">
             <Pill tone="neutral">Prototype</Pill>
             <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-              For now, these answers are stored in your browser. Once Clerk + Prisma are wired, we
-              will persist them to your profile.
+              These answers shape your scheduling policy and are saved to your profile immediately.
             </p>
           </div>
           <Link href="/onboarding/start-point" className="text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">

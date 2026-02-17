@@ -35,9 +35,11 @@ describe("srs/update", () => {
     const state = {
       ...defaultReviewState(999, now),
       station: 7,
+      checkpointIndex: 7,
     };
     const next = applyGrade(state, "EASY", now);
     expect(next.station).toBe(7);
+    expect(next.checkpointIndex).toBe(7);
     expect(next.intervalDays).toBe(90);
   });
 
@@ -46,11 +48,13 @@ describe("srs/update", () => {
     const lowEfState = {
       ...defaultReviewState(200, now),
       station: 5,
+      checkpointIndex: 4,
       easeFactor: 1.3,
     };
     const highEfState = {
       ...defaultReviewState(201, now),
       station: 5,
+      checkpointIndex: 4,
       easeFactor: 3.0,
     };
 

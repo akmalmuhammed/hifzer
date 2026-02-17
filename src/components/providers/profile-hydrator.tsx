@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useTheme, type AccentPreset, type ThemePreset } from "@/components/providers/theme-provider";
-import { setActiveSurahCursor, setOnboardingCompleted } from "@/hifzer/local/store";
+import { applyFreshStartBridge, setActiveSurahCursor, setOnboardingCompleted } from "@/hifzer/local/store";
 import type { ProfileSnapshot } from "@/hifzer/profile/server";
 
 const VALID_THEMES = new Set<ThemePreset>(["standard", "paper"]);
@@ -12,6 +12,8 @@ export function ProfileHydrator(props: { profile: ProfileSnapshot | null }) {
   const { setMode, setTheme, setAccent } = useTheme();
 
   useEffect(() => {
+    applyFreshStartBridge();
+
     const profile = props.profile;
     if (!profile) {
       return;

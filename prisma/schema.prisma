@@ -31,6 +31,26 @@ enum SrsMode {
   CATCH_UP
 }
 
+enum MemorizationBand {
+  ENCODING
+  SABQI
+  MANZIL
+  MASTERED
+}
+
+enum GateType {
+  WARMUP
+  WEEKLY
+  MONTHLY
+}
+
+enum GateOutcome {
+  PASS
+  FAIL
+  SKIPPED
+  REBALANCED
+}
+
 enum SessionStatus {
   OPEN
   COMPLETED
@@ -42,6 +62,17 @@ enum AttemptStage {
   REVIEW
   NEW
   LINK
+  WEEKLY_TEST
+  LINK_REPAIR
+}
+
+enum ReviewPhase {
+  STANDARD
+  NEW_EXPOSE
+  NEW_GUIDED
+  NEW_BLIND
+  WEEKLY_TEST
+  LINK_REPAIR
 }
 
 enum SrsGrade {
@@ -66,6 +97,16 @@ model UserProfile {
   activeSurahNumber     Int
   cursorAyahId          Int
   mode                  SrsMode  @default(NORMAL)
+  hasTeacher            Boolean @default(false)
+
+  avgReviewSeconds      Float @default(45)
+  avgNewSeconds         Float @default(90)
+  avgLinkSeconds        Float @default(35)
+
+  reviewFloorPct        Int @default(70)
+  consolidationThresholdPct Int @default(25)
+  catchUpThresholdPct   Int @default(45)
+  rebalanceUntil        DateTime?
 
   plan                  SubscriptionPlan   @default(FREE)
   paddleCustomerId      String?            @unique
@@ -82,6 +123,8 @@ model UserProfile {
   attempts              AyahAttempt[]
   reviews               AyahReview[]
   weakTransitions       WeakTransition[]
+  reviewEvents          ReviewEvent[]
+  gateRuns              QualityGateRun[]
 
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
@@ -94,6 +137,13 @@ model Session {
   startedAt       DateTime      @default(now())
   endedAt         DateTime?
   localDate       String
+  mode            SrsMode @default(NORMAL)
+  reviewDebtMinutesAtStart Int @default(0)
+  warmupPassed    Boolean?
+  warmupRetryUsed Boolean @default(false)
+  weeklyGateRequired Boolean @default(false)
+  weeklyGatePassed Boolean?
+  newUnlocked     Boolean @default(true)
 
   warmupAyahIds   Int[]
   reviewAyahIds   Int[]
@@ -102,6 +152,7 @@ model Session {
 
   user            UserProfile   @relation(fields: [userId], references: [id], onDelete: Cascade)
   attempts        AyahAttempt[]
+  reviewEvents    ReviewEvent[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -131,6 +182,10 @@ model AyahReview {
   id           String    @id @default(cuid())
   userId       String
   ayahId       Int
+  band         MemorizationBand @default(ENCODING)
+  checkpointIndex Int @default(0)
+  nextIntervalMinutes Int @default(1440)
+  lastDurationSec Int?
 
   station      Int       @default(1)
   intervalDays Int       @default(1)
@@ -146,6 +201,7 @@ model AyahReview {
 
   @@unique([userId, ayahId])
   @@index([userId, nextReviewAt])
+  @@index([userId, band, nextReviewAt])
 }
 
 model WeakTransition {
@@ -157,11 +213,55 @@ model WeakTransition {
   attemptCount  Int      @default(0)
   failCount     Int      @default(0)
   successCount  Int      @default(0)
+  successRateCached Float @default(0)
 
   lastOccurredAt DateTime
+  nextRepairAt   DateTime?
+  lastGrade      SrsGrade?
   resolvedAt    DateTime?
 
   user          UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, fromAyahId, toAyahId])
+  @@index([userId, nextRepairAt])
+}
+
+model ReviewEvent {
+  id          String      @id @default(cuid())
+  userId      String
+  sessionId   String
+  surahNumber Int
+  ayahId      Int
+  stage       AttemptStage
+  phase       ReviewPhase @default(STANDARD)
+  grade       SrsGrade?
+  durationSec Int         @default(0)
+  fromAyahId  Int?
+  toAyahId    Int?
+  createdAt   DateTime    @default(now())
+
+  user        UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session     Session     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, ayahId, createdAt])
+  @@index([sessionId, createdAt])
+}
+
+model QualityGateRun {
+  id          String      @id @default(cuid())
+  userId      String
+  gateType    GateType
+  windowStart DateTime
+  windowEnd   DateTime
+  sampleSize  Int         @default(0)
+  passRate    Float       @default(0)
+  outcome     GateOutcome
+  detailsJson Json?
+  createdAt   DateTime    @default(now())
+
+  user        UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, gateType, createdAt])
+  @@index([userId, windowEnd])
 }

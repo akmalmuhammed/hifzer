@@ -1,28 +1,45 @@
-import { PageHeader } from "@/components/app/page-header";
-import { Card } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty-state";
-import { SlidersHorizontal } from "lucide-react";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { PlanSettingsClient } from "@/app/(app)/settings/plan/plan-client";
+import { getProfileSnapshot } from "@/hifzer/profile/server";
+import { clerkEnabled } from "@/lib/clerk-config";
 
 export const metadata = {
   title: "Plan",
 };
 
-export default function PlanSettingsPage() {
+const FALLBACK_INITIAL = {
+  dailyMinutes: 40,
+  practiceDaysPerWeek: 7,
+  planBias: "BALANCED" as const,
+  hasTeacher: false,
+  timezone: "UTC",
+};
+
+export default async function PlanSettingsPage() {
+  if (!clerkEnabled()) {
+    return <PlanSettingsClient initial={FALLBACK_INITIAL} />;
+  }
+
+  const { userId } = await auth();
+  if (!userId) {
+    redirect("/login");
+  }
+
+  const profile = await getProfileSnapshot(userId);
+  if (!profile) {
+    return <PlanSettingsClient initial={FALLBACK_INITIAL} />;
+  }
+
   return (
-    <div className="space-y-6">
-      <PageHeader
-        eyebrow="Settings"
-        title="Plan"
-        subtitle="Time budget, practice days, and recalibration (scaffold)."
-      />
-      <Card>
-        <EmptyState
-          title="Plan settings not wired yet"
-          message="Next step: store onboarding answers in UserProfile and drive the SRS queue builder."
-          icon={<SlidersHorizontal size={18} />}
-        />
-      </Card>
-    </div>
+    <PlanSettingsClient
+      initial={{
+        dailyMinutes: profile.dailyMinutes,
+        practiceDaysPerWeek: Math.max(1, Math.min(7, profile.practiceDays.length || 7)),
+        planBias: profile.planBias,
+        hasTeacher: profile.hasTeacher,
+        timezone: profile.timezone,
+      }}
+    />
   );
 }
-

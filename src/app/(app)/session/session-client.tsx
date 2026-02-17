@@ -2,303 +2,346 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ArrowRight, CheckCircle2, CornerDownLeft, Link2, PlayCircle, RotateCcw } from "lucide-react";
 import clsx from "clsx";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import {
-  ArrowLeft,
-  ArrowRight,
-  CheckCircle2,
-  CornerDownLeft,
-  Link2,
-  PlayCircle,
-  RotateCcw,
-} from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
 import {
-  appendAttempt,
-  archiveSession,
-  formatModeLabel,
-  getActiveSurahNumber,
-  getCursorAyahId,
-  getLastCompletedLocalDate,
-  getOpenSession,
-  newSessionId,
-  setActiveSurahCursor,
-  setLastCompletedLocalDate,
-  setOpenSession,
-  todayIsoLocalDate,
-  upsertReviewAndApplyGrade,
-  listAttempts,
-  listDueReviews,
-  type AttemptStage,
-  type StoredSession,
+  getPendingSessionSyncPayloads,
+  pushPendingSessionSyncPayload,
+  replacePendingSessionSyncPayloads,
+  type PendingSessionSyncPayload,
 } from "@/hifzer/local/store";
-import { buildTodayQueue, modeForMissedDays, missedDaysSince } from "@/hifzer/srs/queue";
-import type { SrsGrade, TodayQueue } from "@/hifzer/srs/types";
-import { getAyahById, getSurahInfo, verseRefFromAyahId } from "@/hifzer/quran/lookup";
+import { getAyahById, verseRefFromAyahId } from "@/hifzer/quran/lookup";
 
-type SessionStep =
-  | { kind: "AYAH"; stage: Exclude<AttemptStage, "LINK">; ayahId: number }
-  | { kind: "LINK"; fromAyahId: number; toAyahId: number };
-
-function buildSteps(queue: TodayQueue): SessionStep[] {
-  const steps: SessionStep[] = [];
-  for (const ayahId of queue.warmupIds) {
-    steps.push({ kind: "AYAH", stage: "WARMUP", ayahId });
-  }
-  for (const ayahId of queue.reviewIds) {
-    steps.push({ kind: "AYAH", stage: "REVIEW", ayahId });
-  }
-  if (queue.newStartAyahId && queue.newEndAyahId) {
-    for (let ayahId = queue.newStartAyahId; ayahId <= queue.newEndAyahId; ayahId += 1) {
-      steps.push({ kind: "AYAH", stage: "NEW", ayahId });
-      if (ayahId > queue.newStartAyahId) {
-        steps.push({ kind: "LINK", fromAyahId: ayahId - 1, toAyahId: ayahId });
-      }
+type Step =
+  | {
+      kind: "AYAH";
+      stage: "WARMUP" | "REVIEW" | "NEW" | "WEEKLY_TEST" | "LINK_REPAIR";
+      phase: "STANDARD" | "NEW_EXPOSE" | "NEW_GUIDED" | "NEW_BLIND" | "WEEKLY_TEST" | "LINK_REPAIR";
+      ayahId: number;
     }
-  }
-  return steps;
+  | {
+      kind: "LINK";
+      stage: "LINK" | "LINK_REPAIR";
+      phase: "STANDARD" | "LINK_REPAIR";
+      fromAyahId: number;
+      toAyahId: number;
+    };
+
+type SessionStartPayload = {
+  sessionId: string;
+  startedAt: string;
+  localDate: string;
+  state: {
+    mode: "NORMAL" | "CONSOLIDATION" | "CATCH_UP";
+    warmupRequired: boolean;
+    weeklyGateRequired: boolean;
+    monthlyTestRequired: boolean;
+    newUnlocked: boolean;
+  };
+  steps: Step[];
+};
+
+type SessionEvent = PendingSessionSyncPayload["events"][number];
+
+function gradeScore(grade: "AGAIN" | "HARD" | "GOOD" | "EASY"): number {
+  if (grade === "AGAIN") return 0;
+  if (grade === "HARD") return 1;
+  if (grade === "GOOD") return 2;
+  return 3;
 }
 
-function stageLabel(stage: AttemptStage): string {
-  if (stage === "WARMUP") return "Warmup";
-  if (stage === "REVIEW") return "Review";
-  if (stage === "NEW") return "New";
-  return "Link";
+function gatePass(grades: Array<"AGAIN" | "HARD" | "GOOD" | "EASY">): boolean {
+  if (!grades.length) {
+    return true;
+  }
+  const againCount = grades.filter((g) => g === "AGAIN").length;
+  const avg = grades.reduce((sum, g) => sum + gradeScore(g), 0) / grades.length;
+  return avg >= 2 && againCount <= 1;
 }
 
-function gradeLabel(grade: SrsGrade): string {
-  if (grade === "AGAIN") return "Again";
-  if (grade === "HARD") return "Hard";
-  if (grade === "GOOD") return "Good";
-  return "Easy";
-}
-
-function gradeClasses(grade: SrsGrade): string {
-  if (grade === "AGAIN") {
-    return "border-[rgba(234,88,12,0.28)] bg-[rgba(234,88,12,0.10)] text-[color:var(--kw-ember-600)] hover:bg-[rgba(234,88,12,0.14)]";
+function isGraded(step: Step): boolean {
+  if (step.kind === "LINK") {
+    return true;
   }
-  if (grade === "HARD") {
-    return "border-[rgba(2,132,199,0.22)] bg-[rgba(2,132,199,0.10)] text-[color:var(--kw-sky-600)] hover:bg-[rgba(2,132,199,0.14)]";
-  }
-  if (grade === "EASY") {
-    return "border-[rgba(43,75,255,0.22)] bg-[rgba(43,75,255,0.10)] text-[rgba(31,54,217,1)] hover:bg-[rgba(43,75,255,0.14)]";
-  }
-  return "border-[rgba(10,138,119,0.24)] bg-[rgba(10,138,119,0.10)] text-[color:var(--kw-teal-800)] hover:bg-[rgba(10,138,119,0.14)]";
-}
-
-function isTypingTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) {
+  if (step.stage === "NEW" && (step.phase === "NEW_EXPOSE" || step.phase === "NEW_GUIDED")) {
     return false;
   }
-  const tag = target.tagName;
-  return tag === "INPUT" || tag === "TEXTAREA" || target.isContentEditable;
+  return true;
 }
 
-async function syncCompletedSession(session: StoredSession) {
-  if (!session.endedAt) {
-    return;
+function stepTitle(step: Step): string {
+  if (step.kind === "LINK") {
+    return step.stage === "LINK_REPAIR" ? "Link repair" : "Link";
   }
-
-  const attempts = listAttempts()
-    .filter((attempt) => attempt.sessionId === session.id)
-    .map((attempt) => ({
-      ayahId: attempt.ayahId,
-      stage: attempt.stage,
-      grade: attempt.grade,
-      createdAt: attempt.createdAt,
-    }));
-
-  if (!attempts.length) {
-    return;
+  if (step.stage === "NEW") {
+    if (step.phase === "NEW_EXPOSE") return "New (Expose)";
+    if (step.phase === "NEW_GUIDED") return "New (Guided)";
+    return "New (Blind)";
   }
+  if (step.stage === "WEEKLY_TEST") return "Weekly test";
+  if (step.stage === "WARMUP") return "Warm-up";
+  if (step.stage === "LINK_REPAIR") return "Repair";
+  return "Review";
+}
 
-  await fetch("/api/session/sync", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      localDate: session.localDate,
-      startedAt: session.startedAt,
-      endedAt: session.endedAt,
-      queue: {
-        warmupIds: session.queue.warmupIds,
-        reviewIds: session.queue.reviewIds,
-        newStartAyahId: session.queue.newStartAyahId,
-        newEndAyahId: session.queue.newEndAyahId,
-      },
-      attempts,
-    }),
-  });
+function toEvent(step: Step, input: {
+  stepIndex: number;
+  grade?: "AGAIN" | "HARD" | "GOOD" | "EASY";
+  durationSec: number;
+  createdAt: string;
+}): SessionEvent {
+  if (step.kind === "LINK") {
+    return {
+      stepIndex: input.stepIndex,
+      stage: step.stage,
+      phase: step.phase,
+      ayahId: step.toAyahId,
+      fromAyahId: step.fromAyahId,
+      toAyahId: step.toAyahId,
+      grade: input.grade,
+      durationSec: input.durationSec,
+      createdAt: input.createdAt,
+    };
+  }
+  return {
+    stepIndex: input.stepIndex,
+    stage: step.stage,
+    phase: step.phase,
+    ayahId: step.ayahId,
+    grade: input.grade,
+    durationSec: input.durationSec,
+    createdAt: input.createdAt,
+  };
 }
 
 export function SessionClient() {
-  const reducedMotion = useReducedMotion();
   const { pushToast } = useToast();
-
-  const [bootNow] = useState(() => new Date());
-  const today = todayIsoLocalDate(bootNow);
-
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [run, setRun] = useState<SessionStartPayload | null>(null);
+  const [stepIndex, setStepIndex] = useState(0);
+  const [stepStartedAt, setStepStartedAt] = useState(Date.now());
+  const [events, setEvents] = useState<SessionEvent[]>([]);
+  const [warmupRetryUsed, setWarmupRetryUsed] = useState(false);
+  const [reviewOnlyLock, setReviewOnlyLock] = useState(false);
   const [showText, setShowText] = useState(true);
 
-  const [session, setSession] = useState<StoredSession | null>(() => {
-    const existing = getOpenSession();
-    if (existing && existing.status === "OPEN" && existing.localDate === today) {
-      return existing;
+  const flushPendingSync = useCallback(async () => {
+    const pending = getPendingSessionSyncPayloads();
+    if (!pending.length) {
+      return;
     }
-
-    const activeSurahNumber = getActiveSurahNumber();
-    const cursorAyahId = getCursorAyahId();
-    if (!activeSurahNumber || !cursorAyahId) {
-      return null;
+    try {
+      const res = await fetch("/api/session/sync", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ sessions: pending }),
+      });
+      const payload = (await res.json()) as {
+        results?: Array<{ ok: boolean }>;
+      };
+      if (!res.ok || !payload.results) {
+        throw new Error("Sync failed.");
+      }
+      const kept = pending.filter((_, idx) => !payload.results?.[idx]?.ok);
+      replacePendingSessionSyncPayloads(kept);
+    } catch {
+      // keep pending payloads for next reconnect
     }
-
-    const lastCompletedLocalDate = getLastCompletedLocalDate();
-    const due = listDueReviews(bootNow);
-    const queue = buildTodayQueue(
-      { activeSurahNumber, cursorAyahId, lastCompletedLocalDate },
-      due,
-      bootNow,
-    );
-
-    const created: StoredSession = {
-      id: newSessionId(bootNow),
-      status: "OPEN",
-      localDate: today,
-      startedAt: bootNow.toISOString(),
-      activeSurahNumber,
-      cursorAyahIdAtStart: cursorAyahId,
-      queue,
-      stepIndex: 0,
-    };
-
-    setOpenSession(created);
-    return created;
-  });
-
-  const steps = useMemo(() => (session ? buildSteps(session.queue) : []), [session]);
-  const currentStep = session && session.status === "OPEN" ? (steps[session.stepIndex] ?? null) : null;
-
-  const modeBadge = useMemo(() => {
-    if (!session) {
-      return null;
-    }
-    const last = getLastCompletedLocalDate();
-    const missedDays = missedDaysSince(last, today);
-    const mode = modeForMissedDays(missedDays);
-    return { missedDays, mode };
-  }, [session, today]);
-
-  const onCommitSession = useCallback((next: StoredSession | null) => {
-    setSession(next);
-    setOpenSession(next);
   }, []);
 
-  const onAdvance = useCallback(
-    (grade: SrsGrade) => {
-      if (!session || session.status !== "OPEN" || !currentStep) {
-        return;
+  const loadRun = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await flushPendingSync();
+      const res = await fetch("/api/session/start", { method: "POST" });
+      const payload = (await res.json()) as SessionStartPayload & { error?: string };
+      if (!res.ok) {
+        throw new Error(payload.error || "Failed to start session.");
       }
-
-      const now = new Date();
-
-      if (currentStep.kind === "AYAH") {
-        appendAttempt({
-          sessionId: session.id,
-          ayahId: currentStep.ayahId,
-          stage: currentStep.stage,
-          grade,
-          createdAt: now,
-        });
-
-        const nextReview = upsertReviewAndApplyGrade(currentStep.ayahId, grade, now);
-        if (currentStep.stage === "NEW") {
-          setActiveSurahCursor(session.activeSurahNumber, currentStep.ayahId + 1);
-        }
-
-        pushToast({
-          title: `${gradeLabel(grade)} recorded`,
-          message: `Next review scheduled (${nextReview.intervalDays}d).`,
-          tone: grade === "AGAIN" ? "warning" : "success",
-        });
-      } else {
-        appendAttempt({
-          sessionId: session.id,
-          ayahId: currentStep.toAyahId,
-          stage: "LINK",
-          grade,
-          createdAt: now,
-        });
-        pushToast({
-          title: "Link logged",
-          message: `${gradeLabel(grade)} for ${currentStep.fromAyahId} -> ${currentStep.toAyahId}.`,
-          tone: grade === "AGAIN" ? "warning" : "neutral",
-        });
-      }
-
-      const nextIndex = session.stepIndex + 1;
-      if (nextIndex >= steps.length) {
-        const completed: StoredSession = {
-          ...session,
-          status: "COMPLETED",
-          endedAt: now.toISOString(),
-          stepIndex: steps.length,
-        };
-        archiveSession(completed);
-        setOpenSession(null);
-        setLastCompletedLocalDate(todayIsoLocalDate(now));
-        setSession(completed);
-
-        void syncCompletedSession(completed).catch(() => {
-          // Local progress already committed; backend sync will be retried in a later sync pass.
-        });
-        return;
-      }
-
-      onCommitSession({ ...session, stepIndex: nextIndex });
-      setShowText(true);
-    },
-    [currentStep, onCommitSession, pushToast, session, steps.length],
-  );
+      setRun(payload);
+      setStepIndex(0);
+      setEvents([]);
+      setStepStartedAt(Date.now());
+      setWarmupRetryUsed(false);
+      setReviewOnlyLock(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load session.");
+    } finally {
+      setLoading(false);
+    }
+  }, [flushPendingSync]);
 
   useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      if (!currentStep || isTypingTarget(e.target)) {
-        return;
+    void loadRun();
+  }, [loadRun]);
+
+  useEffect(() => {
+    const onOnline = () => {
+      void flushPendingSync();
+    };
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+  }, [flushPendingSync]);
+
+  const filteredSteps = useMemo(() => {
+    if (!run) {
+      return [];
+    }
+    if (!reviewOnlyLock) {
+      return run.steps;
+    }
+    return run.steps.filter((step) => step.stage !== "NEW" && step.stage !== "LINK");
+  }, [run, reviewOnlyLock]);
+
+  const currentStep = filteredSteps[stepIndex] ?? null;
+  const done = Boolean(run && stepIndex >= filteredSteps.length);
+
+  const warmupCount = useMemo(
+    () => filteredSteps.filter((step) => step.stage === "WARMUP").length,
+    [filteredSteps],
+  );
+
+  const weeklyGateCount = useMemo(
+    () => filteredSteps.filter((step) => step.stage === "WEEKLY_TEST").length,
+    [filteredSteps],
+  );
+
+  const completeRun = useCallback(async () => {
+    if (!run) {
+      return;
+    }
+    const endedAt = new Date().toISOString();
+    const payload: PendingSessionSyncPayload = {
+      sessionId: run.sessionId,
+      startedAt: run.startedAt,
+      endedAt,
+      localDate: run.localDate,
+      events,
+    };
+    try {
+      const res = await fetch("/api/session/complete", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const body = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        throw new Error(body.error || "Complete failed.");
       }
-      if (e.key === "1") {
-        e.preventDefault();
-        onAdvance("AGAIN");
-      } else if (e.key === "2") {
-        e.preventDefault();
-        onAdvance("HARD");
-      } else if (e.key === "3") {
-        e.preventDefault();
-        onAdvance("GOOD");
-      } else if (e.key === "4") {
-        e.preventDefault();
-        onAdvance("EASY");
-      } else if (e.key.toLowerCase() === "t") {
-        e.preventDefault();
-        setShowText((v) => !v);
+      pushToast({ tone: "success", title: "Session saved", message: "Progress synced." });
+    } catch {
+      pushPendingSessionSyncPayload(payload);
+      pushToast({
+        tone: "warning",
+        title: "Saved offline",
+        message: "Session buffered locally and will sync when online.",
+      });
+    }
+  }, [events, pushToast, run]);
+
+  const advance = useCallback(async (grade?: "AGAIN" | "HARD" | "GOOD" | "EASY") => {
+    if (!currentStep) {
+      return;
+    }
+    const now = Date.now();
+    const durationSec = Math.max(1, Math.floor((now - stepStartedAt) / 1000));
+    const event = toEvent(currentStep, {
+      stepIndex,
+      grade,
+      durationSec,
+      createdAt: new Date(now).toISOString(),
+    });
+    const nextEvents = [...events, event];
+    setEvents(nextEvents);
+
+    const nextStepIndex = stepIndex + 1;
+
+    if (run) {
+      const warmupBoundaryReached =
+        run.state.warmupRequired &&
+        warmupCount > 0 &&
+        stepIndex < warmupCount &&
+        nextStepIndex >= warmupCount;
+      if (warmupBoundaryReached) {
+        const latest = new Map<number, "AGAIN" | "HARD" | "GOOD" | "EASY">();
+        for (const ev of nextEvents) {
+          if (ev.stage === "WARMUP" && ev.grade) {
+            latest.set(ev.ayahId, ev.grade);
+          }
+        }
+        const pass = gatePass(Array.from(latest.values()));
+        if (!pass && !warmupRetryUsed) {
+          setWarmupRetryUsed(true);
+          setStepIndex(0);
+          setStepStartedAt(Date.now());
+          pushToast({
+            tone: "warning",
+            title: "Warm-up retry",
+            message: "Retry warm-up once before new memorization unlocks.",
+          });
+          return;
+        }
+        if (!pass && warmupRetryUsed) {
+          setReviewOnlyLock(true);
+          pushToast({
+            tone: "warning",
+            title: "Review-only day",
+            message: "Warm-up did not pass after retry. New is blocked today.",
+          });
+        }
+      }
+
+      const weeklyBoundary = warmupCount + weeklyGateCount;
+      const weeklyBoundaryReached =
+        run.state.weeklyGateRequired &&
+        weeklyGateCount > 0 &&
+        stepIndex < weeklyBoundary &&
+        nextStepIndex >= weeklyBoundary;
+      if (weeklyBoundaryReached) {
+        const latest = new Map<number, "AGAIN" | "HARD" | "GOOD" | "EASY">();
+        for (const ev of nextEvents) {
+          if (ev.stage === "WEEKLY_TEST" && ev.grade) {
+            latest.set(ev.ayahId, ev.grade);
+          }
+        }
+        const pass = gatePass(Array.from(latest.values()));
+        if (!pass) {
+          setReviewOnlyLock(true);
+          pushToast({
+            tone: "warning",
+            title: "Weekly gate failed",
+            message: "Switched to review-only to stabilize retention.",
+          });
+        }
       }
     }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [currentStep, onAdvance]);
 
-  const headerRight = (
+    setStepIndex(nextStepIndex);
+    setStepStartedAt(Date.now());
+  }, [currentStep, events, pushToast, run, stepIndex, stepStartedAt, warmupCount, warmupRetryUsed, weeklyGateCount]);
+
+  useEffect(() => {
+    if (!done) {
+      return;
+    }
+    void completeRun();
+  }, [completeRun, done]);
+
+  const rightActions = (
     <div className="flex items-center gap-2">
       <button
         type="button"
         onClick={() => setShowText((v) => !v)}
-        className="rounded-2xl border border-[color:var(--kw-border)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] transition hover:bg-white"
-        title="Toggle text visibility (T)"
+        className="rounded-2xl border border-[color:var(--kw-border)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-white"
       >
         {showText ? "Hide text" : "Show text"}
       </button>
@@ -310,27 +353,81 @@ export function SessionClient() {
     </div>
   );
 
-  if (!session) {
+  if (loading) {
     return (
       <div className="space-y-6">
-        <PageHeader
-          eyebrow="Practice"
-          title="Session"
-          subtitle="Choose a surah and a starting ayah, then start your first grade-driven session."
-          right={headerRight}
-        />
+        <PageHeader eyebrow="Practice" title="Session" subtitle="Loading session..." right={rightActions} />
+        <Card>
+          <p className="text-sm text-[color:var(--kw-muted)]">Preparing today&apos;s queue...</p>
+        </Card>
+      </div>
+    );
+  }
 
+  if (error || !run) {
+    return (
+      <div className="space-y-6">
+        <PageHeader eyebrow="Practice" title="Session" subtitle="Unable to load session." right={rightActions} />
         <Card>
           <EmptyState
-            title="No starting point selected"
-            message="Go to onboarding and set an active surah + cursor ayahId. Then come back to start a session."
+            title="Session unavailable"
+            message={error ?? "Could not start session."}
+            icon={<CornerDownLeft size={18} />}
+            action={
+              <Button className="gap-2" onClick={() => void loadRun()}>
+                Retry <RotateCcw size={16} />
+              </Button>
+            }
+          />
+        </Card>
+      </div>
+    );
+  }
+
+  if (done) {
+    return (
+      <div className="space-y-6">
+        <PageHeader eyebrow="Practice" title="Session complete" subtitle="Your events were recorded and retention state updated." right={rightActions} />
+        <Card>
+          <div className="flex items-start gap-3">
+            <span className="grid h-12 w-12 place-items-center rounded-[22px] border border-[rgba(22,163,74,0.26)] bg-[rgba(22,163,74,0.10)] text-[color:var(--kw-lime-600)] shadow-[var(--kw-shadow-soft)]">
+              <CheckCircle2 size={18} />
+            </span>
+            <div className="space-y-3">
+              <p className="text-sm leading-7 text-[color:var(--kw-muted)]">
+                Session completed. You can return to Today for the refreshed queue.
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <Link href="/today">
+                  <Button className="gap-2">
+                    Go to Today <ArrowRight size={16} />
+                  </Button>
+                </Link>
+                <Button variant="secondary" className="gap-2" onClick={() => void loadRun()}>
+                  Start another <PlayCircle size={16} />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!currentStep) {
+    return (
+      <div className="space-y-6">
+        <PageHeader eyebrow="Practice" title="Session" subtitle="No steps queued today." right={rightActions} />
+        <Card>
+          <EmptyState
+            title="No queue"
+            message="There are no scheduled steps at the moment."
             icon={<PlayCircle size={18} />}
             action={
-              <Link
-                href="/onboarding/start-point"
-                className="inline-flex items-center gap-2 rounded-2xl border border-[color:var(--kw-border)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-white"
-              >
-                Choose start point <ArrowRight size={16} />
+              <Link href="/today">
+                <Button className="gap-2">
+                  Back to Today <ArrowRight size={16} />
+                </Button>
               </Link>
             }
           />
@@ -339,53 +436,10 @@ export function SessionClient() {
     );
   }
 
-  if (session.status !== "OPEN") {
-    return (
-      <div className="space-y-6">
-        <PageHeader
-          eyebrow="Practice"
-          title="Session complete"
-          subtitle="Grades are saved instantly and synced to Prisma when backend auth is available."
-          right={headerRight}
-        />
-
-        <Card>
-          <div className="flex flex-wrap items-start justify-between gap-6">
-            <div className="max-w-2xl">
-              <p className="text-sm leading-7 text-[color:var(--kw-muted)]">
-                Nice work. Your attempts updated the SRS schedule per ayah. If you want, you can
-                start another session, but typically you&apos;d return tomorrow.
-              </p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                <Link href="/today">
-                  <Button className="gap-2">
-                    Go to Today <ArrowRight size={16} />
-                  </Button>
-                </Link>
-                <Button
-                  variant="secondary"
-                  className="gap-2"
-                  onClick={() => {
-                    setOpenSession(null);
-                    onCommitSession(null);
-                  }}
-                >
-                  Clear session <RotateCcw size={16} />
-                </Button>
-              </div>
-            </div>
-
-            <span className="grid h-12 w-12 place-items-center rounded-[22px] border border-[rgba(22,163,74,0.26)] bg-[rgba(22,163,74,0.10)] text-[color:var(--kw-lime-600)] shadow-[var(--kw-shadow-soft)]">
-              <CheckCircle2 size={18} />
-            </span>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
-  const progressText = `${Math.min(session.stepIndex + 1, steps.length)} / ${steps.length}`;
-  const modeText = modeBadge ? `${formatModeLabel(modeBadge.mode)}${modeBadge.missedDays ? ` (${modeBadge.missedDays} missed)` : ""}` : null;
+  const progressText = `${stepIndex + 1} / ${filteredSteps.length}`;
+  const ayahId = currentStep.kind === "AYAH" ? currentStep.ayahId : currentStep.toAyahId;
+  const ayah = getAyahById(ayahId);
+  const ref = verseRefFromAyahId(ayahId);
 
   return (
     <div className="space-y-6">
@@ -394,286 +448,91 @@ export function SessionClient() {
           <span className="inline-flex items-center gap-2">
             <span>Practice</span>
             <span className="text-[color:var(--kw-faint)]">/</span>
-            <span className="text-[color:var(--kw-muted)]">{modeText ?? "Session"}</span>
+            <span className="text-[color:var(--kw-muted)]">{run.state.mode}</span>
           </span>
         }
-        title="Session"
-        subtitle="Listen, recall, and grade each ayah. Keyboard: 1 Again, 2 Hard, 3 Good, 4 Easy, T toggle text."
+        title={stepTitle(currentStep)}
+        subtitle="Grade recall steps with 1/2/3/4. New phases include Expose -> Guided -> Blind before linking."
         right={
           <div className="flex items-center gap-2">
             <Pill tone="neutral">{progressText}</Pill>
-            {headerRight}
+            {rightActions}
           </div>
         }
       />
 
-      {currentStep ? (
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={`${session.id}:${session.stepIndex}`}
-            initial={reducedMotion ? false : { opacity: 0, y: 12 }}
-            animate={reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
-            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
-            transition={{ duration: 0.22, ease: "easeOut" }}
-          >
-            <Card>
-              {currentStep.kind === "AYAH" ? (
-                <AyahStep
-                  ayahId={currentStep.ayahId}
-                  stage={currentStep.stage}
-                  showText={showText}
-                  onToggleText={() => setShowText((v) => !v)}
-                  onGrade={onAdvance}
-                />
-              ) : (
-                <LinkStep
-                  fromAyahId={currentStep.fromAyahId}
-                  toAyahId={currentStep.toAyahId}
-                  showText={showText}
-                  onToggleText={() => setShowText((v) => !v)}
-                  onGrade={onAdvance}
-                />
-              )}
-            </Card>
-          </motion.div>
-        </AnimatePresence>
-      ) : (
-        <Card>
-          <EmptyState
-            title="Nothing queued"
-            message="No due reviews and no new range. If you finished a surah, choose your next one from Today."
-            icon={<CornerDownLeft size={18} />}
-            action={
-              <div className="flex flex-wrap justify-center gap-2">
-                <Link href="/today">
-                  <Button variant="secondary" className="gap-2">
-                    Go to Today <ArrowLeft size={16} />
-                  </Button>
-                </Link>
-                <Button
-                  variant="ghost"
-                  className="gap-2"
-                  onClick={() => {
-                    const endedAt = new Date().toISOString();
-                    archiveSession({ ...session, status: "ABANDONED", endedAt });
-                    setOpenSession(null);
-                    setSession(null);
-                  }}
+      <Card>
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <Pill tone="neutral">Stage: {currentStep.stage}</Pill>
+            <Pill tone="neutral">Phase: {currentStep.phase}</Pill>
+            {reviewOnlyLock ? <Pill tone="warn">Review-only</Pill> : null}
+            {run.state.monthlyTestRequired ? <Pill tone="warn">Monthly test required</Pill> : null}
+          </div>
+
+          {currentStep.kind === "LINK" ? (
+            <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+                Link transition
+              </p>
+              <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+                Recite the seam: {currentStep.fromAyahId}
+                {" -> "}
+                {currentStep.toAyahId}
+              </p>
+              <div className="mt-4 inline-flex items-center gap-2 rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]">
+                <Link2 size={16} />
+                Ayah {currentStep.fromAyahId} + Ayah {currentStep.toAyahId}
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-[1.25fr_0.75fr]">
+              <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+                  {ref ? `Surah ${ref.surahNumber}:${ref.ayahNumber}` : `Ayah ${currentStep.ayahId}`}
+                </p>
+                <div
+                  dir="rtl"
+                  className={clsx(
+                    "mt-3 text-right text-2xl leading-[2.1] text-[color:var(--kw-ink)]",
+                    !showText && "select-none blur-[10px] opacity-70",
+                  )}
                 >
-                  Clear session <RotateCcw size={16} />
-                </Button>
+                  {ayah?.textUthmani ?? "Ayah text unavailable"}
+                </div>
               </div>
-            }
-          />
-        </Card>
-      )}
-    </div>
-  );
-}
-
-function AyahStep(props: {
-  ayahId: number;
-  stage: Exclude<AttemptStage, "LINK">;
-  showText: boolean;
-  onToggleText: () => void;
-  onGrade: (grade: SrsGrade) => void;
-}) {
-  const ayah = getAyahById(props.ayahId);
-  const ref = verseRefFromAyahId(props.ayahId);
-  const surah = ref ? getSurahInfo(ref.surahNumber) : null;
-
-  if (!ayah || !ref || !surah) {
-    return (
-      <EmptyState
-        title="Ayah not found"
-        message={`Invalid ayahId ${props.ayahId}.`}
-        icon={<CornerDownLeft size={18} />}
-      />
-    );
-  }
-
-  return (
-    <div>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-            {stageLabel(props.stage)} - Surah {ref.surahNumber}:{ref.ayahNumber} - ayahId {props.ayahId}
-          </p>
-          <p className="mt-2 text-lg font-semibold text-[color:var(--kw-ink)]">
-            <span dir="rtl">{surah.nameArabic}</span>
-            <span className="ml-2 text-sm font-semibold text-[color:var(--kw-muted)]">
-              {surah.nameTransliteration}
-            </span>
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={props.onToggleText}
-          className="inline-flex items-center gap-2 rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-xs font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-white"
-        >
-          {props.showText ? "Text on" : "Text off"}
-          <span className="text-[color:var(--kw-faint)]">(T)</span>
-        </button>
-      </div>
-
-      <div className="mt-5 grid gap-4 md:grid-cols-[1.25fr_0.75fr]">
-        <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4">
-          <div
-            dir="rtl"
-            className={clsx(
-              "text-right text-2xl leading-[2.15] text-[color:var(--kw-ink)]",
-              !props.showText && "select-none blur-[10px] opacity-70",
-            )}
-          >
-            {ayah.textUthmani}
-          </div>
-          {!props.showText ? (
-            <p className="mt-3 text-xs text-[color:var(--kw-faint)]">
-              Tip: hide text for recall, then reveal before grading.
-            </p>
-          ) : null}
-        </div>
-
-        <div className="grid content-start gap-3">
-          <AyahAudioPlayer ayahId={props.ayahId} />
-          <GradeRow onGrade={props.onGrade} />
-          <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/60 px-4 py-3 text-xs text-[color:var(--kw-muted)]">
-            <p className="font-semibold text-[color:var(--kw-ink)]">What gets saved</p>
-            <p className="mt-2 leading-6">
-              Your grade updates the per-ayah SRS state (station, next review date) and logs an
-              attempt record.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function LinkStep(props: {
-  fromAyahId: number;
-  toAyahId: number;
-  showText: boolean;
-  onToggleText: () => void;
-  onGrade: (grade: SrsGrade) => void;
-}) {
-  const fromAyah = getAyahById(props.fromAyahId);
-  const toAyah = getAyahById(props.toAyahId);
-  const ref = verseRefFromAyahId(props.toAyahId);
-  const surah = ref ? getSurahInfo(ref.surahNumber) : null;
-
-  if (!fromAyah || !toAyah || !ref || !surah) {
-    return (
-      <EmptyState
-        title="Link not found"
-        message={`Invalid link ${props.fromAyahId} -> ${props.toAyahId}.`}
-        icon={<CornerDownLeft size={18} />}
-      />
-    );
-  }
-
-  return (
-    <div>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-            Link - {props.fromAyahId} to {props.toAyahId} - Surah {ref.surahNumber}:{ref.ayahNumber}
-          </p>
-          <p className="mt-2 text-lg font-semibold text-[color:var(--kw-ink)]">
-            Strengthen the transition
-            <span className="ml-2 text-sm font-semibold text-[color:var(--kw-muted)]">
-              {surah.nameTransliteration}
-            </span>
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={props.onToggleText}
-          className="inline-flex items-center gap-2 rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-xs font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-white"
-        >
-          {props.showText ? "Text on" : "Text off"}
-          <span className="text-[color:var(--kw-faint)]">(T)</span>
-        </button>
-      </div>
-
-      <div className="mt-5 grid gap-4 md:grid-cols-[1.25fr_0.75fr]">
-        <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-            <Link2 size={14} />
-            Previous + Current
-          </div>
-
-          <div className="mt-4 grid gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                Previous
-              </p>
-              <div
-                dir="rtl"
-                className={clsx(
-                  "mt-2 text-right text-xl leading-[2.1] text-[color:var(--kw-ink)]",
-                  !props.showText && "select-none blur-[10px] opacity-70",
-                )}
-              >
-                {fromAyah.textUthmani}
+              <div className="grid content-start gap-3">
+                <AyahAudioPlayer ayahId={currentStep.ayahId} />
               </div>
             </div>
-            <div className="kw-hairline border-t pt-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                Current
-              </p>
-              <div
-                dir="rtl"
-                className={clsx(
-                  "mt-2 text-right text-xl leading-[2.1] text-[color:var(--kw-ink)]",
-                  !props.showText && "select-none blur-[10px] opacity-70",
-                )}
-              >
-                {toAyah.textUthmani}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid content-start gap-3">
-          <AyahAudioPlayer ayahId={props.toAyahId} />
-          <GradeRow onGrade={props.onGrade} />
-          <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/60 px-4 py-3 text-xs text-[color:var(--kw-muted)]">
-            <p className="font-semibold text-[color:var(--kw-ink)]">What this affects</p>
-            <p className="mt-2 leading-6">
-              This logs a LINK attempt. Next: update WeakTransition edges to schedule link-repair
-              sessions.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function GradeRow(props: { onGrade: (grade: SrsGrade) => void }) {
-  const grades: SrsGrade[] = ["AGAIN", "HARD", "GOOD", "EASY"];
-  return (
-    <div className="grid grid-cols-2 gap-2">
-      {grades.map((g) => (
-        <button
-          key={g}
-          type="button"
-          onClick={() => props.onGrade(g)}
-          className={clsx(
-            "inline-flex items-center justify-between rounded-[18px] border px-3 py-3 text-sm font-semibold shadow-[var(--kw-shadow-soft)] transition active:translate-y-[1px]",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--kw-bg)]",
-            gradeClasses(g),
           )}
-        >
-          <span className="truncate">{gradeLabel(g)}</span>
-          <span className="ml-2 text-xs font-semibold opacity-70">
-            {g === "AGAIN" ? "1" : g === "HARD" ? "2" : g === "GOOD" ? "3" : "4"}
-          </span>
-        </button>
-      ))}
+
+          <div className="flex flex-wrap items-center gap-2">
+            {isGraded(currentStep) ? (
+              <>
+                {(["AGAIN", "HARD", "GOOD", "EASY"] as const).map((grade, idx) => (
+                  <button
+                    key={grade}
+                    type="button"
+                    onClick={() => void advance(grade)}
+                    className={clsx(
+                      "inline-flex items-center gap-2 rounded-[18px] border px-3 py-2 text-sm font-semibold shadow-[var(--kw-shadow-soft)] transition hover:bg-white",
+                      "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]",
+                    )}
+                  >
+                    {grade}
+                    <span className="text-xs text-[color:var(--kw-faint)]">{idx + 1}</span>
+                  </button>
+                ))}
+              </>
+            ) : (
+              <Button onClick={() => void advance("GOOD")} className="gap-2">
+                Done <ArrowRight size={16} />
+              </Button>
+            )}
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }
