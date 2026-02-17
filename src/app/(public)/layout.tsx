@@ -1,14 +1,27 @@
+import { auth } from "@clerk/nextjs/server";
 import { MarketingFooter } from "@/components/landing/marketing-footer";
 import { MarketingNav } from "@/components/landing/marketing-nav";
+import { PublicAuthProvider } from "@/components/landing/public-auth-context";
+import { clerkEnabled } from "@/lib/clerk-config";
 
-export default function MarketingLayout({ children }: { children: React.ReactNode }) {
+export default async function MarketingLayout({ children }: { children: React.ReactNode }) {
+  const authEnabled = clerkEnabled();
+  let initialSignedIn = false;
+
+  if (authEnabled) {
+    const { userId } = await auth();
+    initialSignedIn = Boolean(userId);
+  }
+
   return (
-    <div className="min-h-dvh">
-      <MarketingNav />
-      <main id="main-content" className="mx-auto w-full max-w-[1200px] px-4">
-        {children}
-      </main>
-      <MarketingFooter />
-    </div>
+    <PublicAuthProvider authEnabled={authEnabled} initialSignedIn={initialSignedIn}>
+      <div className="min-h-dvh">
+        <MarketingNav authEnabled={authEnabled} />
+        <main id="main-content" className="mx-auto w-full max-w-[1200px] px-4">
+          {children}
+        </main>
+        <MarketingFooter />
+      </div>
+    </PublicAuthProvider>
   );
 }

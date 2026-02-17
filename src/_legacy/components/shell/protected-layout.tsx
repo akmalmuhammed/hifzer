@@ -15,8 +15,8 @@ export function ProtectedLayout({ children }: { children: React.ReactNode }) {
     if (status === "signed_in") {
       return;
     }
-    const next = encodeURIComponent(pathname || "/app");
-    router.replace(`/sign-in?next=${next}`);
+    const next = encodeURIComponent(pathname || "/legacy/app");
+    router.replace(`/legacy/sign-in?next=${next}`);
   }, [pathname, router, status]);
 
   if (status !== "signed_in") {

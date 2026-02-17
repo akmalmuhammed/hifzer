@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import clsx from "clsx";
 import { ArrowRight, CalendarCheck2, Headphones, ShieldCheck, Sparkles } from "lucide-react";
+import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { WindLines } from "@/components/brand/wind-lines";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardKpi, CardSoft, CardTitle } from "@/components/ui/card";
@@ -65,16 +65,16 @@ export function Hero() {
           </motion.p>
 
           <motion.div variants={fadeUp} className="mt-7 flex flex-wrap items-center gap-3">
-            <Link href="/welcome">
+            <PublicAuthLink signedInHref="/today" signedOutHref="/login">
               <Button size="lg">
                 Get started <ArrowRight size={18} />
               </Button>
-            </Link>
-            <Link href="/quran">
+            </PublicAuthLink>
+            <PublicAuthLink signedInHref="/quran" signedOutHref="/login">
               <Button variant="secondary" size="lg">
                 Browse Qur&apos;an
               </Button>
-            </Link>
+            </PublicAuthLink>
           </motion.div>
 
           <motion.div variants={fadeUp} className="mt-9 grid gap-3 sm:grid-cols-3">

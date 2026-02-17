@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { Check, HeartHandshake, Lock } from "lucide-react";
+import { PricingAuthCta } from "@/components/landing/pricing-auth-cta";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -61,16 +62,7 @@ export default function PricingPage() {
         </div>
 
         <div className="flex w-full items-center gap-2 sm:w-auto">
-          <Link href="/welcome" className="w-full sm:w-auto">
-            <Button size="lg" className="w-full sm:w-auto">
-              Get started
-            </Button>
-          </Link>
-          <Link href="/login" className="w-full sm:w-auto">
-            <Button size="lg" variant="secondary" className="w-full sm:w-auto">
-              Sign in
-            </Button>
-          </Link>
+          <PricingAuthCta />
         </div>
       </div>
 

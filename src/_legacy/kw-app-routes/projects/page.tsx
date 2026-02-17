@@ -97,7 +97,7 @@ export default function ProjectsPage() {
 
             return (
               <motion.div key={p.id} {...reveal(0.03 + idx * 0.03)}>
-                <Link href={`/app/projects/${p.id}`} className="block transition hover:translate-y-[-1px]">
+                <Link href={`/legacy/app/projects/${p.id}`} className="block transition hover:translate-y-[-1px]">
                   <Card className="h-full overflow-hidden">
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
@@ -204,7 +204,7 @@ export default function ProjectsPage() {
               Projects are demo-only. Later you can connect milestones to real issues or tickets.
             </p>
           </div>
-          <Link href="/app/settings">
+          <Link href="/legacy/app/settings">
             <Button variant="secondary" className="gap-2">
               Preferences <ArrowRight size={16} />
             </Button>

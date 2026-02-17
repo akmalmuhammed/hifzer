@@ -52,7 +52,7 @@ export default function ProjectDetailPage(props: { params: { projectId: string }
           title="Project not found"
           subtitle="This demo project ID does not exist."
           right={
-            <Link href="/app/projects">
+            <Link href="/legacy/app/projects">
               <Button variant="secondary" className="gap-2">
                 Back to projects <ArrowLeft size={16} />
               </Button>
@@ -81,7 +81,7 @@ export default function ProjectDetailPage(props: { params: { projectId: string }
       <PageHeader
         eyebrow={
           <span className="inline-flex items-center gap-2">
-            <Link href="/app/projects" className="inline-flex items-center gap-2 text-[color:var(--kw-muted)] hover:text-[color:var(--kw-ink)]">
+            <Link href="/legacy/app/projects" className="inline-flex items-center gap-2 text-[color:var(--kw-muted)] hover:text-[color:var(--kw-ink)]">
               <ArrowLeft size={16} />
               Projects
             </Link>
@@ -180,7 +180,7 @@ export default function ProjectDetailPage(props: { params: { projectId: string }
                       return (
                         <Link
                           key={`${project.id}_${d.projectId}`}
-                          href={dep ? `/app/projects/${dep.id}` : "/app/projects"}
+                          href={dep ? `/legacy/app/projects/${dep.id}` : "/legacy/app/projects"}
                           className="block rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/75 px-3 py-2 transition hover:bg-white"
                         >
                           <p className="truncate text-sm font-semibold text-[color:var(--kw-ink)]">
@@ -243,7 +243,7 @@ export default function ProjectDetailPage(props: { params: { projectId: string }
                   ))}
                 </div>
                 <div className="mt-4">
-                  <Link href="/app/insights">
+                  <Link href="/legacy/app/insights">
                     <Button variant="secondary" size="sm" className="w-full gap-2">
                       Open Insights <ArrowRight size={16} />
                     </Button>

@@ -36,9 +36,36 @@ App routes:
 - `/progress/*`
 - `/settings/*`
 
+Legacy namespace (preserved):
+
+- `/legacy/app`
+- `/legacy/app/goals`
+- `/legacy/app/goals/[okrId]`
+- `/legacy/app/projects`
+- `/legacy/app/projects/[projectId]`
+- `/legacy/app/insights`
+- `/legacy/app/team`
+- `/legacy/app/settings`
+- `/legacy/sign-in`
+
+Compatibility redirects:
+
+- `/app` -> `/legacy/app`
+- `/app/*` -> `/legacy/app/*`
+- `/sign-in` -> `/legacy/sign-in`
+
 ## Auth (Clerk)
 
-Clerk is scaffolded and enabled when `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is set.
+Clerk is scaffolded and enabled when both `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` are set.
+
+Recommended redirect contract:
+
+- `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/login`
+- `NEXT_PUBLIC_CLERK_SIGN_UP_URL=/signup`
+- `NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=/today`
+- `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/today`
+- `NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/today`
+- `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/today`
 
 - `middleware.ts` protects app + onboarding routes when Clerk is configured.
 - App gating now also checks Prisma `UserProfile.onboardingCompletedAt` in `(app)` layout.
@@ -132,9 +159,13 @@ Tests:
 ```bash
 pnpm test
 pnpm test:e2e
+pnpm test:e2e:routing
+pnpm audit:clicks
 ```
 
 E2E auth behavior:
 
-- Playwright runs with `HIFZER_TEST_AUTH_BYPASS=1` so public navigation tests can run without Clerk login UI.
-- This bypass is only for test web-server runs and is not enabled by default in normal dev/prod.
+- Playwright global setup uses `@clerk/testing/playwright` (`clerkSetup`) for deterministic bot-protection bypass.
+- Signed-in routing specs require `E2E_CLERK_TEST_EMAIL` plus Clerk keys.
+- In CI, Clerk testing env vars are required.
+- `pnpm audit:clicks` writes JSON + Markdown artifacts to `test-results/click-audit`.

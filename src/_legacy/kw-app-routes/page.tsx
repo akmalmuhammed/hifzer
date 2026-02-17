@@ -87,12 +87,12 @@ export default function DashboardPage() {
         subtitle="A living overview of what moved, what is at risk, and what to do next."
         right={
           <div className="flex items-center gap-2">
-            <Link href="/app/goals">
+            <Link href="/legacy/app/goals">
               <Button variant="secondary" className="gap-2">
                 Check-ins <ClipboardCheck size={16} />
               </Button>
             </Link>
-            <Link href="/app/insights">
+            <Link href="/legacy/app/insights">
               <Button className="gap-2">
                 View signals <ArrowRight size={16} />
               </Button>
@@ -319,7 +319,7 @@ export default function DashboardPage() {
                   What needs attention this week.
                 </p>
               </div>
-              <Link href="/app/insights" className="shrink-0">
+              <Link href="/legacy/app/insights" className="shrink-0">
                 <Button variant="secondary" size="sm" className="gap-2">
                   All signals <ArrowRight size={16} />
                 </Button>
@@ -374,7 +374,7 @@ export default function DashboardPage() {
                       return (
                         <Link
                           key={o.id}
-                          href={`/app/goals/${o.id}`}
+                          href={`/legacy/app/goals/${o.id}`}
                           className="block rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3 transition hover:bg-white"
                         >
                           <div className="flex items-start justify-between gap-3">
@@ -460,7 +460,7 @@ export default function DashboardPage() {
                   ))}
                 </div>
                 <div className="mt-4">
-                  <Link href="/app/team">
+                  <Link href="/legacy/app/team">
                     <Button variant="secondary" size="sm" className="w-full gap-2">
                       Team details <ArrowRight size={16} />
                     </Button>
@@ -479,7 +479,7 @@ export default function DashboardPage() {
                     {active.length} active or planning.
                   </p>
                 </div>
-                <Link href="/app/projects">
+                <Link href="/legacy/app/projects">
                   <Button variant="secondary" size="sm" className="gap-2">
                     Open <ArrowRight size={16} />
                   </Button>
@@ -493,7 +493,7 @@ export default function DashboardPage() {
                   return (
                     <Link
                       key={p.id}
-                      href={`/app/projects/${p.id}`}
+                      href={`/legacy/app/projects/${p.id}`}
                       className="block rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/75 px-3 py-3 transition hover:bg-white"
                     >
                       <div className="flex items-start justify-between gap-3">

@@ -106,7 +106,7 @@ export default function InsightsPage() {
         title="Insights"
         subtitle="Trends, risks, blockers, and recommendations. Signal without the noise."
         right={
-          <Link href="/app">
+          <Link href="/legacy/app">
             <Button variant="secondary" className="gap-2">
               Dashboard <ArrowRight size={16} />
             </Button>
@@ -234,14 +234,14 @@ export default function InsightsPage() {
                       {(relOkr || relProj) ? (
                         <div className="mt-3 flex flex-wrap items-center gap-2">
                           {relOkr ? (
-                            <Link href={`/app/goals/${relOkr.id}`}>
+                            <Link href={`/legacy/app/goals/${relOkr.id}`}>
                               <Button variant="secondary" size="sm" className="gap-2">
                                 OKR <ArrowRight size={16} />
                               </Button>
                             </Link>
                           ) : null}
                           {relProj ? (
-                            <Link href={`/app/projects/${relProj.id}`}>
+                            <Link href={`/legacy/app/projects/${relProj.id}`}>
                               <Button variant="secondary" size="sm" className="gap-2">
                                 Project <ArrowRight size={16} />
                               </Button>
@@ -268,7 +268,7 @@ export default function InsightsPage() {
                 </p>
               </div>
             </div>
-            <Link href="/app/settings">
+            <Link href="/legacy/app/settings">
               <Button variant="secondary" className="gap-2">
                 Settings <ArrowRight size={16} />
               </Button>

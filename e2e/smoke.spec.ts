@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { hasClerkAuthE2EConfig, seedLocalStartPoint, signInAsClerkTestUser } from "./helpers/clerk-auth";
 
 test("landing renders and links to pricing", async ({ page }) => {
   await page.goto("/");
@@ -40,6 +41,9 @@ test("pricing includes required policy links", async ({ page }) => {
 });
 
 test("quran browser renders surah index and surah 1", async ({ page }) => {
+  test.skip(!hasClerkAuthE2EConfig(), "Requires Clerk auth E2E env vars");
+  await signInAsClerkTestUser(page);
+
   await page.goto("/quran");
   await expect(page.getByRole("heading", { name: /Browse the Qur'an/i })).toBeVisible();
 
@@ -54,6 +58,9 @@ test("quran browser renders surah index and surah 1", async ({ page }) => {
 });
 
 test("quran browser renders juz detail", async ({ page }) => {
+  test.skip(!hasClerkAuthE2EConfig(), "Requires Clerk auth E2E env vars");
+  await signInAsClerkTestUser(page);
+
   await page.goto("/quran");
   await page.getByRole("link", { name: /Juz 1/i }).first().click();
   await page.waitForURL("**/quran/juz/1");
@@ -63,10 +70,11 @@ test("quran browser renders juz detail", async ({ page }) => {
 });
 
 test("session advances and updates local cursor", async ({ page }) => {
-  await page.addInitScript(() => {
-    window.localStorage.setItem("hifzer_onboarding_completed_v1", "1");
-    window.localStorage.setItem("hifzer_active_surah_number_v1", "1");
-    window.localStorage.setItem("hifzer_cursor_ayah_id_v1", "1");
+  test.skip(!hasClerkAuthE2EConfig(), "Requires Clerk auth E2E env vars");
+  await signInAsClerkTestUser(page);
+  await seedLocalStartPoint(page);
+
+  await page.evaluate(() => {
     window.localStorage.removeItem("hifzer_open_session_v1");
     window.localStorage.removeItem("hifzer_attempts_v1");
     window.localStorage.removeItem("hifzer_srs_reviews_v1");

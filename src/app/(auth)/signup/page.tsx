@@ -1,17 +1,26 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { SignUp } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pill } from "@/components/ui/pill";
+import { clerkAuthRoutes } from "@/lib/auth-redirects";
 import { clerkEnabled } from "@/lib/clerk-config";
 
 export const metadata = {
   title: "Signup",
 };
 
-export default function SignupPage() {
+export default async function SignupPage() {
   const configured = clerkEnabled();
+  if (configured) {
+    const { userId } = await auth();
+    if (userId) {
+      redirect("/today");
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -43,7 +52,10 @@ export default function SignupPage() {
           </>
         ) : (
           <div className="grid place-items-center py-6">
-            <SignUp />
+            <SignUp
+              forceRedirectUrl={clerkAuthRoutes.signUpForceRedirectUrl}
+              fallbackRedirectUrl={clerkAuthRoutes.signUpFallbackRedirectUrl}
+            />
           </div>
         )}
       </Card>

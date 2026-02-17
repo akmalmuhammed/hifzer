@@ -40,7 +40,7 @@ export default function SettingsPage() {
         title="Settings"
         subtitle="Demo-only preferences, stored locally. Reset anytime."
         right={
-          <Link href="/app">
+          <Link href="/legacy/app">
             <Button variant="secondary" className="gap-2">
               Dashboard <ArrowRight size={16} />
             </Button>
@@ -109,7 +109,7 @@ export default function SettingsPage() {
                 <LogOut size={16} /> Sign out
               </Button>
 
-              <Link href="/sign-in">
+              <Link href="/legacy/sign-in">
                 <Button className="gap-2">
                   Switch identity <ArrowRight size={16} />
                 </Button>

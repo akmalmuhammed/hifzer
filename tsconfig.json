@@ -38,7 +38,7 @@
   ],
   "exclude": [
     "node_modules",
-    "src/_legacy/**",
+    "src/_legacy/**/*.test.ts",
     ".next/dev/types/validator.ts"
   ]
 }

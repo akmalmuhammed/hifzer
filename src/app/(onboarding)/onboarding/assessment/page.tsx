@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
@@ -20,19 +20,29 @@ type AssessmentDraft = {
 };
 
 const STORAGE_KEY = "hifzer_onboarding_assessment_v1";
+const TIMEZONE_PLACEHOLDER = "Detecting timezone...";
 
 export default function OnboardingAssessmentPage() {
   const router = useRouter();
   const { pushToast } = useToast();
 
-  const tz = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone ?? "UTC", []);
   const [draft, setDraft] = useState<AssessmentDraft>({
     dailyMinutes: 20,
     practiceDaysPerWeek: 6,
     planBias: "BALANCED",
     hasTeacher: false,
-    timezone: tz,
+    timezone: TIMEZONE_PLACEHOLDER,
   });
+
+  useEffect(() => {
+    const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? "UTC";
+    const raf = window.requestAnimationFrame(() => {
+      setDraft((current) =>
+        current.timezone === browserTimezone ? current : { ...current, timezone: browserTimezone },
+      );
+    });
+    return () => window.cancelAnimationFrame(raf);
+  }, []);
 
   function saveAndNext() {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
@@ -164,4 +174,3 @@ export default function OnboardingAssessmentPage() {
     </div>
   );
 }
-

@@ -134,7 +134,7 @@ export function CommandPalette() {
         id: "nav_dashboard",
         group: "Navigate",
         label: "Dashboard",
-        hint: "/app",
+        hint: "/legacy/app",
         icon: <LayoutDashboard size={16} />,
         right: (
           <span className="flex items-center gap-1 text-xs text-[color:var(--kw-faint)]">
@@ -142,52 +142,52 @@ export function CommandPalette() {
             K
           </span>
         ),
-        action: () => router.push("/app"),
+        action: () => router.push("/legacy/app"),
         keywords: "home overview",
       },
       {
         id: "nav_goals",
         group: "Navigate",
         label: "Goals (OKRs)",
-        hint: "/app/goals",
+        hint: "/legacy/app/goals",
         icon: <Target size={16} />,
-        action: () => router.push("/app/goals"),
+        action: () => router.push("/legacy/app/goals"),
         keywords: "okr objectives key results",
       },
       {
         id: "nav_projects",
         group: "Navigate",
         label: "Projects",
-        hint: "/app/projects",
+        hint: "/legacy/app/projects",
         icon: <FolderKanban size={16} />,
-        action: () => router.push("/app/projects"),
+        action: () => router.push("/legacy/app/projects"),
         keywords: "milestones timeline roadmap",
       },
       {
         id: "nav_insights",
         group: "Navigate",
         label: "Insights",
-        hint: "/app/insights",
+        hint: "/legacy/app/insights",
         icon: <Zap size={16} />,
-        action: () => router.push("/app/insights"),
+        action: () => router.push("/legacy/app/insights"),
         keywords: "risks blockers wins trends",
       },
       {
         id: "nav_team",
         group: "Navigate",
         label: "Team",
-        hint: "/app/team",
+        hint: "/legacy/app/team",
         icon: <Users size={16} />,
-        action: () => router.push("/app/team"),
+        action: () => router.push("/legacy/app/team"),
         keywords: "members workload rituals",
       },
       {
         id: "nav_settings",
         group: "Navigate",
         label: "Settings",
-        hint: "/app/settings",
+        hint: "/legacy/app/settings",
         icon: <Settings size={16} />,
-        action: () => router.push("/app/settings"),
+        action: () => router.push("/legacy/app/settings"),
         keywords: "preferences profile",
       },
     ];
@@ -197,7 +197,7 @@ export function CommandPalette() {
         ...nav.map((c) => ({
           ...c,
           action: () => {
-            router.push(`/sign-in?next=${encodeURIComponent(c.hint ?? "/app")}`);
+            router.push(`/legacy/sign-in?next=${encodeURIComponent(c.hint ?? "/legacy/app")}`);
             closePalette();
           },
         })),
@@ -239,7 +239,7 @@ export function CommandPalette() {
         icon: <Target size={16} />,
       keywords: `${o.tags.join(" ")} ${o.timeframe}`,
       action: () => {
-        router.push(`/app/goals/${o.id}`);
+        router.push(`/legacy/app/goals/${o.id}`);
         closePalette();
       },
       right: <ArrowRight size={16} className="text-[color:var(--kw-faint)]" />,
@@ -256,7 +256,7 @@ export function CommandPalette() {
         icon: <FolderKanban size={16} />,
       keywords: `${p.tags.join(" ")} ${p.status} ${p.health}`,
       action: () => {
-        router.push(`/app/projects/${p.id}`);
+        router.push(`/legacy/app/projects/${p.id}`);
         closePalette();
       },
       right: <ArrowRight size={16} className="text-[color:var(--kw-faint)]" />,
@@ -411,7 +411,7 @@ export function CommandPalette() {
 
         <div className="flex items-center justify-between gap-3 border-t border-[color:var(--kw-border-2)] px-4 py-3 text-xs text-[color:var(--kw-muted)]">
             <span className="truncate">
-            {pathname?.startsWith("/app") ? `Team: ${activeTeam.name}` : "Kitewave"}
+            {pathname?.startsWith("/legacy/app") ? `Team: ${activeTeam.name}` : "Kitewave"}
           </span>
           <span className="hidden items-center gap-2 sm:flex">
             <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-1">↑</span>

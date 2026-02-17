@@ -22,12 +22,12 @@ import { useDemoAuth } from "@/demo/demo-auth";
 import { useToast } from "@/components/ui/toast";
 
 const NAV = [
-  { href: "/app", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/app/goals", label: "Goals", icon: Target },
-  { href: "/app/projects", label: "Projects", icon: FolderKanban },
-  { href: "/app/insights", label: "Insights", icon: Zap },
-  { href: "/app/team", label: "Team", icon: Users },
-  { href: "/app/settings", label: "Settings", icon: Settings },
+  { href: "/legacy/app", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/legacy/app/goals", label: "Goals", icon: Target },
+  { href: "/legacy/app/projects", label: "Projects", icon: FolderKanban },
+  { href: "/legacy/app/insights", label: "Insights", icon: Zap },
+  { href: "/legacy/app/team", label: "Team", icon: Users },
+  { href: "/legacy/app/settings", label: "Settings", icon: Settings },
 ] as const;
 
 export function AppShell({ children }: { children: React.ReactNode }) {

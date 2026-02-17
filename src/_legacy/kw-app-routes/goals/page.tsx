@@ -58,7 +58,7 @@ export default function GoalsPage() {
         title="Goals"
         subtitle="OKRs with narrative. Check-ins are first-class, so progress always has a why."
         right={
-          <Link href="/app">
+          <Link href="/legacy/app">
             <Button variant="secondary" className="gap-2">
               Back to dashboard <ArrowRight size={16} />
             </Button>
@@ -84,7 +84,7 @@ export default function GoalsPage() {
             return (
               <motion.div key={okr.id} {...reveal(0.03 + idx * 0.03)}>
                 <Link
-                  href={`/app/goals/${okr.id}`}
+                  href={`/legacy/app/goals/${okr.id}`}
                   className="block transition hover:translate-y-[-1px]"
                 >
                   <Card className="h-full overflow-hidden">

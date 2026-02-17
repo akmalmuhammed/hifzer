@@ -1,7 +1,5 @@
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { WelcomeAuthCta } from "@/components/landing/welcome-auth-cta";
 import { Pill } from "@/components/ui/pill";
 
 export const metadata = {
@@ -22,16 +20,7 @@ export default function WelcomePage() {
       </p>
 
       <div className="mt-8 flex flex-wrap items-center gap-3">
-        <Link href="/signup">
-          <Button size="lg">
-            Create account <ArrowRight size={18} />
-          </Button>
-        </Link>
-        <Link href="/login">
-          <Button size="lg" variant="secondary">
-            Sign in
-          </Button>
-        </Link>
+        <WelcomeAuthCta />
       </div>
 
       <div className="mt-10 grid gap-4 md:grid-cols-3">
@@ -60,4 +49,3 @@ export default function WelcomePage() {
     </div>
   );
 }
-

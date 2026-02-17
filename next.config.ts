@@ -2,6 +2,25 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   typedRoutes: false,
+  async redirects() {
+    return [
+      {
+        source: "/app/:path*",
+        destination: "/legacy/app/:path*",
+        permanent: false,
+      },
+      {
+        source: "/app",
+        destination: "/legacy/app",
+        permanent: false,
+      },
+      {
+        source: "/sign-in",
+        destination: "/legacy/sign-in",
+        permanent: false,
+      },
+    ];
+  },
   allowedDevOrigins: [
     "http://localhost",
     "http://127.0.0.1",

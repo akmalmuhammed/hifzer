@@ -59,7 +59,7 @@ export default function OkrDetailPage(props: { params: { okrId: string } }) {
           title="Goal not found"
           subtitle="This demo OKR ID does not exist."
           right={
-            <Link href="/app/goals">
+            <Link href="/legacy/app/goals">
               <Button variant="secondary" className="gap-2">
                 Back to goals <ArrowLeft size={16} />
               </Button>
@@ -85,7 +85,7 @@ export default function OkrDetailPage(props: { params: { okrId: string } }) {
       <PageHeader
         eyebrow={
           <span className="inline-flex items-center gap-2">
-            <Link href="/app/goals" className="inline-flex items-center gap-2 text-[color:var(--kw-muted)] hover:text-[color:var(--kw-ink)]">
+            <Link href="/legacy/app/goals" className="inline-flex items-center gap-2 text-[color:var(--kw-muted)] hover:text-[color:var(--kw-ink)]">
               <ArrowLeft size={16} />
               Goals
             </Link>
@@ -327,7 +327,7 @@ export default function OkrDetailPage(props: { params: { okrId: string } }) {
             ) : null}
 
             <div className="mt-6">
-              <Link href="/app/projects" className="block">
+              <Link href="/legacy/app/projects" className="block">
                 <Button variant="secondary" className="w-full gap-2">
                   See projects that move this goal <ArrowRight size={16} />
                 </Button>

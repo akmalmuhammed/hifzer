@@ -2,6 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./e2e",
+  globalSetup: "./e2e/global.setup.ts",
   timeout: 30_000,
   expect: { timeout: 7_000 },
   fullyParallel: true,
@@ -14,9 +15,6 @@ export default defineConfig({
   webServer: {
     command: "pnpm dev --port 3002",
     url: "http://localhost:3002",
-    env: {
-      HIFZER_TEST_AUTH_BYPASS: "1",
-    },
     reuseExistingServer: false,
     timeout: 120_000,
   },

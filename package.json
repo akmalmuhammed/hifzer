@@ -10,6 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:e2e:routing": "playwright test e2e/routing.public.spec.ts e2e/routing.auth.spec.ts e2e/routing.onboarding.spec.ts e2e/routing.legacy.spec.ts",
+    "audit:clicks": "node scripts/click-routing-audit.mjs",
     "audio:manifest": "node scripts/generate-audio-manifest.mjs",
     "db:generate": "prisma generate --config=./prisma.config.ts",
     "db:migrate": "prisma migrate dev --config=./prisma.config.ts",
@@ -31,6 +33,7 @@
     "ws": "^8.19.0"
   },
   "devDependencies": {
+    "@clerk/testing": "^1.13.36",
     "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",

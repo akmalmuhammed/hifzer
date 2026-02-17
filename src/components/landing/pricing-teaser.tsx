@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Check, HeartHandshake } from "lucide-react";
+import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
@@ -82,11 +83,11 @@ export function PricingTeaser() {
               </ul>
 
               <div className="mt-7">
-                <Link href="/welcome">
+                <PublicAuthLink signedInHref="/today" signedOutHref="/login">
                   <Button variant={p.highlight ? "primary" : "secondary"} className="w-full">
                     Get started
                   </Button>
-                </Link>
+                </PublicAuthLink>
               </div>
             </Card>
           </motion.div>
@@ -124,4 +125,3 @@ export function PricingTeaser() {
     </section>
   );
 }
-

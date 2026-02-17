@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CalendarDays } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
@@ -14,42 +14,48 @@ const STORAGE_KEYS = {
   cursorAyahId: "hifzer_cursor_ayah_id_v1",
 } as const;
 
+type WeekDayPlan = {
+  iso: string;
+  warmup: number;
+  review: number;
+  sabaqNew: number;
+};
+
+function buildPreviewWeek(start: Date): WeekDayPlan[] {
+  return Array.from({ length: 7 }, (_, i) => {
+    const day = new Date(start);
+    day.setDate(start.getDate() + i);
+    return {
+      iso: day.toISOString().slice(0, 10),
+      warmup: i === 0 ? 2 : 1,
+      review: 8 + i,
+      sabaqNew: 5,
+    };
+  });
+}
+
 export default function PlanPreviewPage() {
-  const [activeSurahNumber] = useState<number | null>(() => {
-    if (typeof window === "undefined") {
-      return null;
-    }
-    const s = window.localStorage.getItem(STORAGE_KEYS.activeSurahNumber);
-    return s ? Number(s) : null;
-  });
-  const [cursorAyahId] = useState<number | null>(() => {
-    if (typeof window === "undefined") {
-      return null;
-    }
-    const a = window.localStorage.getItem(STORAGE_KEYS.cursorAyahId);
-    return a ? Number(a) : null;
-  });
+  const [activeSurahNumber, setActiveSurahNumber] = useState<number | null>(null);
+  const [cursorAyahId, setCursorAyahId] = useState<number | null>(null);
+  const [week, setWeek] = useState<WeekDayPlan[]>([]);
+
+  useEffect(() => {
+    const storedSurahNumber = window.localStorage.getItem(STORAGE_KEYS.activeSurahNumber);
+    const storedCursorAyahId = window.localStorage.getItem(STORAGE_KEYS.cursorAyahId);
+
+    const raf = window.requestAnimationFrame(() => {
+      setActiveSurahNumber(storedSurahNumber ? Number(storedSurahNumber) : null);
+      setCursorAyahId(storedCursorAyahId ? Number(storedCursorAyahId) : null);
+      setWeek(buildPreviewWeek(new Date()));
+    });
+
+    return () => window.cancelAnimationFrame(raf);
+  }, []);
 
   const surah = useMemo(
     () => (activeSurahNumber ? SURAH_INDEX.find((x) => x.surahNumber === activeSurahNumber) : null),
     [activeSurahNumber],
   );
-
-  const week = useMemo(() => {
-    const today = new Date();
-    const days = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(today);
-      d.setDate(today.getDate() + i);
-      const iso = d.toISOString().slice(0, 10);
-      return {
-        iso,
-        warmup: i === 0 ? 2 : 1,
-        review: 8 + i,
-        sabaqNew: 5,
-      };
-    });
-    return days;
-  }, []);
 
   return (
     <div className="space-y-6">

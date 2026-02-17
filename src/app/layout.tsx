@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, IBM_Plex_Mono, Spline_Sans } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { AppProviders } from "@/components/providers/app-providers";
+import { clerkAuthRoutes } from "@/lib/auth-redirects";
 import { clerkEnabled } from "@/lib/clerk-config";
 import "./globals.css";
 
@@ -75,7 +76,14 @@ export default function RootLayout({
           Skip to main content
         </a>
         {authEnabled ? (
-          <ClerkProvider>
+          <ClerkProvider
+            signInUrl={clerkAuthRoutes.signInUrl}
+            signUpUrl={clerkAuthRoutes.signUpUrl}
+            signInForceRedirectUrl={clerkAuthRoutes.signInForceRedirectUrl}
+            signInFallbackRedirectUrl={clerkAuthRoutes.signInFallbackRedirectUrl}
+            signUpForceRedirectUrl={clerkAuthRoutes.signUpForceRedirectUrl}
+            signUpFallbackRedirectUrl={clerkAuthRoutes.signUpFallbackRedirectUrl}
+          >
             <AppProviders>{children}</AppProviders>
           </ClerkProvider>
         ) : (

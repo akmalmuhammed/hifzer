@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
@@ -35,11 +36,11 @@ export function FinalCta() {
             </div>
 
             <div className="flex w-full flex-col gap-2 sm:w-auto">
-              <Link href="/welcome">
+              <PublicAuthLink signedInHref="/today" signedOutHref="/login">
                 <Button size="lg" className="w-full sm:w-auto">
                   Get started <ArrowRight size={18} />
                 </Button>
-              </Link>
+              </PublicAuthLink>
               <Link href="/pricing">
                 <Button size="lg" variant="secondary" className="w-full sm:w-auto">
                   See pricing

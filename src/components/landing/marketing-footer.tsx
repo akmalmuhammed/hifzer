@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { HifzerMark } from "@/components/brand/hifzer-mark";
+import { PublicAuthLink } from "@/components/landing/public-auth-link";
 
 export function MarketingFooter() {
   return (
@@ -27,15 +28,23 @@ export function MarketingFooter() {
           <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
             Product
           </p>
-          <Link href="/welcome" className="font-semibold text-[color:var(--kw-ink)] hover:underline">
+          <PublicAuthLink
+            signedInHref="/today"
+            signedOutHref="/login"
+            className="font-semibold text-[color:var(--kw-ink)] hover:underline"
+          >
             Welcome
-          </Link>
+          </PublicAuthLink>
           <Link href="/pricing" className="font-semibold text-[color:var(--kw-ink)] hover:underline">
             Pricing
           </Link>
-          <Link href="/today" className="font-semibold text-[color:var(--kw-ink)] hover:underline">
+          <PublicAuthLink
+            signedInHref="/today"
+            signedOutHref="/login"
+            className="font-semibold text-[color:var(--kw-ink)] hover:underline"
+          >
             App
-          </Link>
+          </PublicAuthLink>
         </div>
 
         <div className="grid gap-2 text-sm">
