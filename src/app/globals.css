@@ -13,9 +13,16 @@
   --kw-card: rgba(255, 255, 255, 0.72);
   --kw-card-strong: rgba(255, 255, 255, 0.9);
   --kw-card-solid: #ffffff;
+  --kw-surface-soft: rgba(255, 255, 255, 0.56);
+  --kw-surface: rgba(255, 255, 255, 0.72);
+  --kw-surface-strong: rgba(255, 255, 255, 0.88);
 
   --kw-shadow: 0 18px 44px rgba(11, 18, 32, 0.12);
   --kw-shadow-soft: 0 10px 26px rgba(11, 18, 32, 0.1);
+  --kw-hover-soft: rgba(11, 18, 32, 0.05);
+  --kw-hover-strong: rgba(11, 18, 32, 0.08);
+  --kw-track: rgba(11, 18, 32, 0.08);
+  --kw-skeleton: rgba(11, 18, 32, 0.08);
 
   --kw-accent-rgb: 31, 54, 217;
   --kw-accent: #1f36d9;
@@ -39,6 +46,35 @@
   --kw-chart-4: var(--kw-sky-600);
   --kw-chart-5: var(--kw-rose-600);
   --kw-chart-6: var(--kw-lime-600);
+
+  --kw-pill-neutral-border: var(--kw-border-2);
+  --kw-pill-neutral-bg: var(--kw-surface-soft);
+  --kw-pill-neutral-fg: var(--kw-ink-2);
+  --kw-pill-brand-border: rgba(10, 138, 119, 0.25);
+  --kw-pill-brand-bg: rgba(10, 138, 119, 0.12);
+  --kw-pill-brand-fg: var(--kw-teal-800);
+  --kw-pill-accent-border: rgba(43, 75, 255, 0.25);
+  --kw-pill-accent-bg: rgba(43, 75, 255, 0.12);
+  --kw-pill-accent-fg: var(--kw-cobalt-700);
+  --kw-pill-warn-border: rgba(234, 88, 12, 0.28);
+  --kw-pill-warn-bg: rgba(234, 88, 12, 0.12);
+  --kw-pill-warn-fg: var(--kw-ember-600);
+  --kw-pill-success-border: rgba(22, 163, 74, 0.28);
+  --kw-pill-success-bg: rgba(22, 163, 74, 0.12);
+  --kw-pill-success-fg: var(--kw-lime-600);
+  --kw-pill-danger-border: rgba(225, 29, 72, 0.26);
+  --kw-pill-danger-bg: rgba(225, 29, 72, 0.12);
+  --kw-pill-danger-fg: var(--kw-rose-600);
+
+  --kw-toast-neutral-border: rgba(148, 163, 184, 0.3);
+  --kw-toast-neutral-bg: var(--kw-surface-strong);
+  --kw-toast-neutral-fg: var(--kw-ink);
+  --kw-toast-success-border: rgba(16, 185, 129, 0.34);
+  --kw-toast-success-bg: rgba(16, 185, 129, 0.14);
+  --kw-toast-success-fg: #065f46;
+  --kw-toast-warning-border: rgba(245, 158, 11, 0.34);
+  --kw-toast-warning-bg: rgba(245, 158, 11, 0.16);
+  --kw-toast-warning-fg: #78350f;
 
   --kw-radius-xl: 22px;
   --kw-radius-lg: 18px;
@@ -85,9 +121,57 @@ html[data-mode="dark"] {
   --kw-card: rgba(17, 24, 39, 0.55);
   --kw-card-strong: rgba(17, 24, 39, 0.72);
   --kw-card-solid: rgba(17, 24, 39, 0.92);
+  --kw-surface-soft: rgba(15, 23, 42, 0.56);
+  --kw-surface: rgba(15, 23, 42, 0.68);
+  --kw-surface-strong: rgba(30, 41, 59, 0.78);
 
   --kw-shadow: 0 18px 44px rgba(0, 0, 0, 0.5);
   --kw-shadow-soft: 0 10px 26px rgba(0, 0, 0, 0.42);
+  --kw-hover-soft: rgba(148, 163, 184, 0.12);
+  --kw-hover-strong: rgba(148, 163, 184, 0.2);
+  --kw-track: rgba(148, 163, 184, 0.2);
+  --kw-skeleton: rgba(148, 163, 184, 0.18);
+
+  --kw-teal-900: #99f6e4;
+  --kw-teal-800: #5eead4;
+  --kw-teal-700: #2dd4bf;
+  --kw-teal-600: #14b8a6;
+  --kw-cobalt-700: #c7d2fe;
+  --kw-cobalt-600: #a5b4fc;
+  --kw-ember-600: #fdba74;
+  --kw-ember-500: #fb923c;
+  --kw-lime-600: #86efac;
+  --kw-sky-600: #7dd3fc;
+  --kw-rose-600: #fda4af;
+
+  --kw-pill-neutral-border: rgba(148, 163, 184, 0.24);
+  --kw-pill-neutral-bg: rgba(30, 41, 59, 0.68);
+  --kw-pill-neutral-fg: rgba(241, 245, 249, 0.92);
+  --kw-pill-brand-border: rgba(20, 184, 166, 0.36);
+  --kw-pill-brand-bg: rgba(20, 184, 166, 0.2);
+  --kw-pill-brand-fg: #99f6e4;
+  --kw-pill-accent-border: rgba(129, 140, 248, 0.38);
+  --kw-pill-accent-bg: rgba(129, 140, 248, 0.2);
+  --kw-pill-accent-fg: #c7d2fe;
+  --kw-pill-warn-border: rgba(251, 146, 60, 0.38);
+  --kw-pill-warn-bg: rgba(251, 146, 60, 0.2);
+  --kw-pill-warn-fg: #fdba74;
+  --kw-pill-success-border: rgba(74, 222, 128, 0.38);
+  --kw-pill-success-bg: rgba(74, 222, 128, 0.2);
+  --kw-pill-success-fg: #bbf7d0;
+  --kw-pill-danger-border: rgba(251, 113, 133, 0.38);
+  --kw-pill-danger-bg: rgba(251, 113, 133, 0.2);
+  --kw-pill-danger-fg: #fecdd3;
+
+  --kw-toast-neutral-border: rgba(148, 163, 184, 0.32);
+  --kw-toast-neutral-bg: rgba(15, 23, 42, 0.88);
+  --kw-toast-neutral-fg: rgba(248, 250, 252, 0.94);
+  --kw-toast-success-border: rgba(74, 222, 128, 0.36);
+  --kw-toast-success-bg: rgba(20, 83, 45, 0.65);
+  --kw-toast-success-fg: #dcfce7;
+  --kw-toast-warning-border: rgba(251, 191, 36, 0.36);
+  --kw-toast-warning-bg: rgba(120, 53, 15, 0.64);
+  --kw-toast-warning-fg: #fef3c7;
 
   --kw-noise-opacity: 0.06;
 }
@@ -231,6 +315,55 @@ html[data-mode="dark"] .kw-canvas::before {
 
 html[data-mode="dark"] .kw-canvas::after {
   mix-blend-mode: overlay;
+}
+
+/*
+  Dark-mode compatibility bridge:
+  many surfaces still use light utility classes (bg-white/*, hover:bg-white, bg-black/*).
+  These selectors remap them to tokenized dark surfaces without requiring per-file rewrites.
+*/
+html[data-mode="dark"] [class~="bg-white/40"],
+html[data-mode="dark"] [class~="bg-white/50"],
+html[data-mode="dark"] [class~="bg-white/55"] {
+  background-color: var(--kw-surface-soft) !important;
+}
+
+html[data-mode="dark"] [class~="bg-white/60"],
+html[data-mode="dark"] [class~="bg-white/65"],
+html[data-mode="dark"] [class~="bg-white/70"] {
+  background-color: var(--kw-surface) !important;
+}
+
+html[data-mode="dark"] [class~="bg-white/75"],
+html[data-mode="dark"] [class~="bg-white/78"],
+html[data-mode="dark"] [class~="bg-white/80"],
+html[data-mode="dark"] [class~="bg-white/85"],
+html[data-mode="dark"] [class~="bg-white/90"],
+html[data-mode="dark"] [class~="bg-white"] {
+  background-color: var(--kw-surface-strong) !important;
+}
+
+html[data-mode="dark"] [class~="bg-black/[0.04]"],
+html[data-mode="dark"] [class~="bg-black/[0.05]"],
+html[data-mode="dark"] [class~="bg-black/[0.06]"] {
+  background-color: var(--kw-track) !important;
+}
+
+html[data-mode="dark"] [class~="hover:bg-white"]:hover,
+html[data-mode="dark"] [class~="hover:bg-white/60"]:hover,
+html[data-mode="dark"] [class~="hover:bg-white/75"]:hover,
+html[data-mode="dark"] [class~="hover:bg-white/80"]:hover {
+  background-color: var(--kw-hover-strong) !important;
+}
+
+html[data-mode="dark"] [class~="hover:bg-black/[0.04]"]:hover,
+html[data-mode="dark"] [class~="hover:bg-black/[0.05]"]:hover,
+html[data-mode="dark"] [class~="hover:bg-black/5"]:hover {
+  background-color: var(--kw-hover-soft) !important;
+}
+
+html[data-mode="dark"] [class~="focus:bg-white"]:focus {
+  background-color: var(--kw-surface-strong) !important;
 }
 
 @keyframes kw-float {

@@ -24,10 +24,10 @@ export function MarketingNav(props: { authEnabled: boolean }) {
 
   return (
     <header className="sticky top-0 z-40">
-      <div className="border-b border-[color:var(--kw-border-2)] bg-white/55 backdrop-blur">
+      <div className="border-b border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] backdrop-blur">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3 px-4 py-3">
           <TrackedLink href="/" className="flex items-center gap-3" telemetryName="marketing.logo">
-            <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-white/50 text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] backdrop-blur-md">
+            <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[color:var(--kw-surface-soft)] text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] backdrop-blur-md">
               <HifzerMark />
             </span>
             <span className="leading-tight">
@@ -60,7 +60,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                 <TrackedLink href="/today" telemetryName="marketing.open-app">
                   <Button size="md">Open app</Button>
                 </TrackedLink>
-                <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 shadow-[var(--kw-shadow-soft)]">
+                <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] shadow-[var(--kw-shadow-soft)]">
                   <UserButton afterSignOutUrl="/welcome" />
                 </div>
               </>
@@ -69,7 +69,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                 <PublicAuthLink
                   signedInHref="/today"
                   signedOutHref="/login"
-                  className="rounded-2xl px-3 py-2 text-sm font-semibold text-[color:var(--kw-muted)] transition hover:bg-black/[0.04] hover:text-[color:var(--kw-ink)]"
+                  className="rounded-2xl px-3 py-2 text-sm font-semibold text-[color:var(--kw-muted)] transition hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)]"
                 >
                   Sign in
                 </PublicAuthLink>
@@ -79,13 +79,13 @@ export function MarketingNav(props: { authEnabled: boolean }) {
               </>
             )}
 
-              <ThemeToggle className="ml-1" />
-            </div>
+            <ThemeToggle className="ml-1" />
+          </div>
 
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)] backdrop-blur transition hover:bg-white md:hidden"
+            className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)] backdrop-blur transition hover:bg-[color:var(--kw-hover-strong)] md:hidden"
             aria-label="Toggle menu"
           >
             {open ? <X size={18} /> : <Menu size={18} />}
@@ -99,7 +99,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
           open ? "block" : "hidden",
         )}
       >
-        <div className="border-b border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3 backdrop-blur">
+        <div className="border-b border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-4 py-3 backdrop-blur">
           <div className="mx-auto max-w-[1200px] space-y-2">
             {LINKS.map((l) => (
               <TrackedLink
@@ -107,7 +107,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                 href={l.href}
                 telemetryName={`marketing.mobile-nav.${l.label.toLowerCase()}`}
                 onClick={() => setOpen(false)}
-                className="block rounded-2xl px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] hover:bg-black/[0.04]"
+                className="block rounded-2xl px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-soft)]"
               >
                 {l.label}
               </TrackedLink>
@@ -119,11 +119,11 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                     href="/today"
                     telemetryName="marketing.mobile-open-app"
                     onClick={() => setOpen(false)}
-                    className="flex-1 rounded-2xl border border-[color:var(--kw-border)] bg-white/70 px-3 py-2 text-center text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]"
+                    className="flex-1 rounded-2xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 py-2 text-center text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]"
                   >
                     Open app
                   </TrackedLink>
-                  <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 shadow-[var(--kw-shadow-soft)]">
+                  <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] shadow-[var(--kw-shadow-soft)]">
                     <UserButton afterSignOutUrl="/welcome" />
                   </div>
                 </>
@@ -133,7 +133,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                     signedInHref="/today"
                     signedOutHref="/login"
                     onClick={() => setOpen(false)}
-                    className="flex-1 rounded-2xl border border-[color:var(--kw-border)] bg-white/70 px-3 py-2 text-center text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]"
+                    className="flex-1 rounded-2xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 py-2 text-center text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]"
                   >
                     Sign in
                   </PublicAuthLink>
@@ -142,13 +142,13 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                   </PublicAuthLink>
                 </>
               )}
-              </div>
-              <div className="mt-3 flex justify-center">
-                <ThemeToggle />
-              </div>
+            </div>
+            <div className="mt-3 flex justify-center">
+              <ThemeToggle />
             </div>
           </div>
         </div>
+      </div>
     </header>
   );
 }

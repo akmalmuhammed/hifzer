@@ -4,11 +4,11 @@ import { TrackedLink } from "@/components/telemetry/tracked-link";
 
 export function MarketingFooter() {
   return (
-    <footer className="border-t border-[color:var(--kw-border-2)] bg-white/40 backdrop-blur">
+    <footer className="border-t border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] backdrop-blur">
       <div className="mx-auto grid max-w-[1200px] gap-10 px-4 py-12 md:grid-cols-[1.2fr_1fr_1fr]">
         <div>
           <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-white/50 text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] backdrop-blur-md">
+            <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[color:var(--kw-surface-soft)] text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] backdrop-blur-md">
               <HifzerMark />
             </span>
             <div>

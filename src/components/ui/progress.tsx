@@ -10,7 +10,7 @@ function toneColor(tone: Tone): string {
     return "var(--kw-chart-3)";
   }
   if (tone === "neutral") {
-    return "rgba(11,18,32,0.35)";
+    return "var(--kw-muted)";
   }
   return "var(--kw-chart-1)";
 }
@@ -29,7 +29,7 @@ export function ProgressBar(props: {
   return (
     <div
       className={clsx(
-        "w-full overflow-hidden rounded-full border border-[color:var(--kw-border-2)] bg-black/[0.05]",
+        "w-full overflow-hidden rounded-full border border-[color:var(--kw-border-2)] bg-[color:var(--kw-track)]",
         props.className,
       )}
       style={{ height: h }}
@@ -46,4 +46,3 @@ export function ProgressBar(props: {
     </div>
   );
 }
-

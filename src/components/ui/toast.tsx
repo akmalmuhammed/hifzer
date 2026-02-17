@@ -68,12 +68,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
 function toneClasses(tone: ToastTone): string {
   if (tone === "success") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-950";
+    return "border-[color:var(--kw-toast-success-border)] bg-[color:var(--kw-toast-success-bg)] text-[color:var(--kw-toast-success-fg)]";
   }
   if (tone === "warning") {
-    return "border-amber-200 bg-amber-50 text-amber-950";
+    return "border-[color:var(--kw-toast-warning-border)] bg-[color:var(--kw-toast-warning-bg)] text-[color:var(--kw-toast-warning-fg)]";
   }
-  return "border-slate-200 bg-white/80 text-slate-950";
+  return "border-[color:var(--kw-toast-neutral-border)] bg-[color:var(--kw-toast-neutral-bg)] text-[color:var(--kw-toast-neutral-fg)]";
 }
 
 function ToastViewport(props: { items: ToastItem[]; onDismiss: (id: string) => void }) {

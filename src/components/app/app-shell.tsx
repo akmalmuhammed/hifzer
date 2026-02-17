@@ -61,7 +61,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
         <aside className="hidden w-[240px] shrink-0 md:block">
           <div className="sticky top-6 space-y-4">
             <TrackedLink href="/today" className="flex items-center gap-3" telemetryName="shell.logo">
-              <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-white/50 text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] backdrop-blur-md">
+              <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[color:var(--kw-surface-soft)] text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] backdrop-blur-md">
                 <HifzerMark />
               </span>
               <div className="leading-tight">
@@ -83,12 +83,12 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
                       "flex items-center gap-3 rounded-[18px] border px-3 py-2 text-sm font-semibold shadow-[var(--kw-shadow-soft)] transition",
                       active
                         ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] text-[color:var(--kw-ink)]"
-                        : "border-[color:var(--kw-border-2)] bg-white/55 text-[color:var(--kw-muted)] hover:bg-white/75 hover:text-[color:var(--kw-ink)]",
+                        : "border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] text-[color:var(--kw-muted)] hover:bg-[color:var(--kw-surface-strong)] hover:text-[color:var(--kw-ink)]",
                     )}
                   >
                     <span
                       className={clsx(
-                        "grid h-9 w-9 place-items-center rounded-2xl border bg-white/70 text-[color:var(--kw-ink-2)]",
+                        "grid h-9 w-9 place-items-center rounded-2xl border bg-[color:var(--kw-surface)] text-[color:var(--kw-ink-2)]",
                         active ? "border-[rgba(var(--kw-accent-rgb),0.26)]" : "border-[color:var(--kw-border-2)]",
                       )}
                     >
@@ -100,7 +100,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
               })}
             </nav>
 
-            <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/55 px-4 py-3 text-xs text-[color:var(--kw-muted)]">
+            <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-4 py-3 text-xs text-[color:var(--kw-muted)]">
               <div className="mb-2 flex items-center justify-between">
                 <p className="font-semibold text-[color:var(--kw-ink)]">Keyboard</p>
                 <div className="-mr-1 -mt-1 scale-90">
@@ -121,7 +121,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
         </main>
       </div>
 
-      <nav className="fixed bottom-3 left-1/2 z-40 w-[min(560px,calc(100vw-1.5rem))] -translate-x-1/2 rounded-[26px] border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-2 shadow-[var(--kw-shadow)] backdrop-blur md:hidden">
+      <nav className="fixed bottom-3 left-1/2 z-40 w-[min(560px,calc(100vw-1.5rem))] -translate-x-1/2 rounded-[26px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-2 py-2 shadow-[var(--kw-shadow)] backdrop-blur md:hidden">
         <div className="grid grid-cols-5 gap-1">
           {MOBILE_NAV.map((item) => {
             const active = isActive(pathname, item.href);
@@ -135,7 +135,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
                   "flex flex-col items-center justify-center gap-1 rounded-[18px] px-2 py-2 text-[11px] font-semibold transition",
                   active
                     ? "bg-[rgba(var(--kw-accent-rgb),0.12)] text-[color:var(--kw-ink)]"
-                    : "text-[color:var(--kw-muted)] hover:bg-black/[0.04] hover:text-[color:var(--kw-ink)]",
+                    : "text-[color:var(--kw-muted)] hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)]",
                 )}
               >
                 <Icon size={18} />

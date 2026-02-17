@@ -15,15 +15,15 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 function variantClasses(variant: ButtonVariant): string {
   if (variant === "secondary") {
-    return "border border-[color:var(--kw-border)] bg-white/70 text-[color:var(--kw-ink)] hover:bg-white";
+    return "border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-surface-strong)]";
   }
   if (variant === "ghost") {
-    return "border border-transparent bg-transparent text-[color:var(--kw-ink)] hover:bg-black/[0.05]";
+    return "border border-transparent bg-transparent text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-soft)]";
   }
   if (variant === "danger") {
     return "border border-transparent bg-rose-600 text-white hover:bg-rose-700";
   }
-  return "border border-transparent bg-[color:var(--kw-teal-700)] text-white hover:bg-[color:var(--kw-teal-800)]";
+  return "border border-transparent bg-[rgba(var(--kw-accent-rgb),1)] text-white hover:bg-[rgba(var(--kw-accent-rgb),0.86)]";
 }
 
 function sizeClasses(size: ButtonSize): string {

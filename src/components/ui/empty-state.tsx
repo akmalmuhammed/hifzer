@@ -11,12 +11,12 @@ export function EmptyState(props: {
   return (
     <div
       className={clsx(
-        "rounded-[24px] border border-[color:var(--kw-border-2)] bg-white/55 px-5 py-6 text-center shadow-[var(--kw-shadow-soft)] backdrop-blur",
+        "rounded-[24px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-5 py-6 text-center shadow-[var(--kw-shadow-soft)] backdrop-blur",
         props.className,
       )}
     >
       {props.icon ? (
-        <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
+        <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
           {props.icon}
         </div>
       ) : null}
@@ -28,4 +28,3 @@ export function EmptyState(props: {
     </div>
   );
 }
-
