@@ -55,6 +55,15 @@ type SessionStartPayload = {
 };
 
 type SessionEvent = PendingSessionSyncPayload["events"][number];
+const GRADE_ACTIONS: Array<{
+  grade: "AGAIN" | "HARD" | "GOOD" | "EASY";
+  hint: string;
+}> = [
+  { grade: "AGAIN", hint: "Could not recall" },
+  { grade: "HARD", hint: "Needed prompts" },
+  { grade: "GOOD", hint: "Mostly correct" },
+  { grade: "EASY", hint: "Clean recall" },
+];
 
 function gradeScore(grade: "AGAIN" | "HARD" | "GOOD" | "EASY"): number {
   if (grade === "AGAIN") return 0;
@@ -150,6 +159,7 @@ export function SessionClient() {
   const [warmupRetryUsed, setWarmupRetryUsed] = useState(false);
   const [reviewOnlyLock, setReviewOnlyLock] = useState(false);
   const [showText, setShowText] = useState(true);
+  const [showTranslation, setShowTranslation] = useState(true);
 
   const flushPendingSync = useCallback(async () => {
     const pending = getPendingSessionSyncPayloads();
@@ -367,6 +377,13 @@ export function SessionClient() {
       >
         {showText ? "Hide text" : "Show text"}
       </button>
+      <button
+        type="button"
+        onClick={() => setShowTranslation((v) => !v)}
+        className="rounded-2xl border border-[color:var(--kw-border)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-white"
+      >
+        {showTranslation ? "Hide translation" : "Show translation"}
+      </button>
       <Link href="/today">
         <Button variant="secondary" className="gap-2">
           Back to Today <ArrowRight size={16} />
@@ -483,7 +500,7 @@ export function SessionClient() {
         subtitle={
           quickReviewMode
             ? "Quick review-only run for due items."
-            : "Grade recall steps with 1/2/3/4. New phases include Expose -> Guided -> Blind before linking."
+            : "Tap a grade button (1/2/3/4) to save this step and continue. New phases include Expose -> Guided -> Blind before linking."
         }
         right={
           <div className="flex items-center gap-2">
@@ -522,7 +539,7 @@ export function SessionClient() {
               </div>
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-[1.25fr_0.75fr]">
+            <div className="space-y-3">
               <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
                   {ref ? `Surah ${ref.surahNumber}:${ref.ayahNumber}` : `Ayah ${currentStep.ayahId}`}
@@ -536,34 +553,50 @@ export function SessionClient() {
                   <div dir="rtl" className="text-right text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
                     {ayah?.textUthmani ?? "Ayah text unavailable"}
                   </div>
-                  <p dir="ltr" className="text-left text-sm leading-7 text-[color:var(--kw-muted)]">
-                    {translation ?? "Translation unavailable"}
-                  </p>
+                  {showTranslation ? (
+                    <p dir="ltr" className="text-left text-sm leading-7 text-[color:var(--kw-muted)]">
+                      {translation ?? "Translation unavailable"}
+                    </p>
+                  ) : (
+                    <p dir="ltr" className="text-left text-sm leading-7 text-[color:var(--kw-faint)]">
+                      Translation hidden.
+                    </p>
+                  )}
                 </div>
               </div>
-              <div className="grid content-start gap-3">
+              <div className="max-w-xl">
                 <AyahAudioPlayer ayahId={currentStep.ayahId} />
               </div>
             </div>
           )}
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="space-y-2">
             {isGraded(currentStep) ? (
               <>
-                {(["AGAIN", "HARD", "GOOD", "EASY"] as const).map((grade, idx) => (
-                  <button
-                    key={grade}
-                    type="button"
-                    onClick={() => void advance(grade)}
-                    className={clsx(
-                      "inline-flex items-center gap-2 rounded-[18px] border px-3 py-2 text-sm font-semibold shadow-[var(--kw-shadow-soft)] transition hover:bg-white",
-                      "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]",
-                    )}
-                  >
-                    {grade}
-                    <span className="text-xs text-[color:var(--kw-faint)]">{idx + 1}</span>
-                  </button>
-                ))}
+                <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+                  Choose a grade to continue (no extra next button).
+                </p>
+                <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                  {GRADE_ACTIONS.map(({ grade, hint }, idx) => (
+                    <button
+                      key={grade}
+                      type="button"
+                      onClick={() => void advance(grade)}
+                      className={clsx(
+                        "flex items-center justify-between gap-3 rounded-[18px] border px-3 py-2 text-left shadow-[var(--kw-shadow-soft)] transition hover:bg-white",
+                        "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]",
+                      )}
+                    >
+                      <span>
+                        <span className="block text-sm font-semibold">{grade}</span>
+                        <span className="block text-xs text-[color:var(--kw-muted)]">{hint}</span>
+                      </span>
+                      <span className="rounded-full border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-2 py-1 text-xs font-semibold text-[color:var(--kw-faint)]">
+                        {idx + 1}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </>
             ) : (
               <Button onClick={() => void advance("GOOD")} className="gap-2">

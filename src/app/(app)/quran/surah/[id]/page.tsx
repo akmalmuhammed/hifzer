@@ -31,7 +31,7 @@ export default async function SurahPage(props: { params: Promise<{ id: string }>
           The surah number must be between 1 and 114.
         </p>
         <div className="mt-6">
-          <Link href="/quran" className="text-sm font-semibold text-[rgba(31,54,217,1)] hover:underline">
+          <Link href="/quran" className="text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">
             Back to index
           </Link>
         </div>

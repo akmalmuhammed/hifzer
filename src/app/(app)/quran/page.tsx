@@ -19,7 +19,7 @@ export default async function QuranIndexPage() {
         <div>
           <h1 className="text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
             Browse the Qur&apos;an.
-            <span className="block text-[rgba(31,54,217,1)]">Arabic + English (Saheeh International).</span>
+            <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Arabic + English (Saheeh International).</span>
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
             Surah index and ayah text are backed by a local seed (no external API).
@@ -43,7 +43,7 @@ export default async function QuranIndexPage() {
                       {j.ayahCount} ayahs - IDs {j.startAyahId}-{j.endAyahId}
                     </p>
                   </div>
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl border border-[rgba(43,75,255,0.22)] bg-[rgba(43,75,255,0.10)] text-[rgba(31,54,217,1)] shadow-[var(--kw-shadow-soft)] transition group-hover:bg-[rgba(43,75,255,0.14)]">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.10)] text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] transition group-hover:bg-[rgba(var(--kw-accent-rgb),0.14)]">
                     {j.juzNumber}
                   </span>
                 </div>
@@ -75,7 +75,7 @@ export default async function QuranIndexPage() {
                     {s.nameTransliteration} - {s.nameEnglish}
                   </p>
                 </div>
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-[rgba(43,75,255,0.22)] bg-[rgba(43,75,255,0.10)] text-[rgba(31,54,217,1)] shadow-[var(--kw-shadow-soft)] transition group-hover:bg-[rgba(43,75,255,0.14)]">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.10)] text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] transition group-hover:bg-[rgba(var(--kw-accent-rgb),0.14)]">
                   {s.surahNumber}
                 </span>
               </div>
