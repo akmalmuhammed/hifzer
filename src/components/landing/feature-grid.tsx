@@ -45,7 +45,7 @@ const FEATURES = [
   {
     title: "Local Qur'an seed",
     copy:
-      "Arabic text (Tanzil Uthmani) and surah metadata are bundled locally. No runtime API dependency just to render text.",
+      "Arabic text (Tanzil Uthmani), English translation (Saheeh International), and surah metadata are bundled locally. No runtime API dependency just to render text.",
     icon: <BookOpenText size={18} />,
     pill: { label: "Qur'an", tone: "brand" as const },
   },
@@ -146,4 +146,3 @@ export function FeatureGrid() {
     </section>
   );
 }
-

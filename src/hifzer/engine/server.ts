@@ -24,6 +24,7 @@ import { updateLearnedAverages } from "@/hifzer/engine/debt";
 import type { SessionEventInput, SessionStep, TodayEngineResult } from "@/hifzer/engine/types";
 import { applyGrade, defaultReviewState } from "@/hifzer/srs/update";
 import { verseRefFromAyahId } from "@/hifzer/quran/lookup.server";
+import { listSahihTranslationsForAyahIds } from "@/hifzer/quran/translation.server";
 
 function shiftIsoDate(iso: string, days: number): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
@@ -268,12 +269,25 @@ async function ensureOpenSession(profile: UserProfile, state: TodayEngineResult)
 export async function startTodaySession(clerkUserId: string) {
   const { profile, state, steps } = await loadTodayState(clerkUserId);
   const session = await ensureOpenSession(profile, state);
+  const ayahIdSet = new Set<number>();
+  for (const step of steps) {
+    if (step.kind === "AYAH") {
+      ayahIdSet.add(step.ayahId);
+    }
+  }
+  const stepAyahIds = Array.from(ayahIdSet);
+  const translationsByAyahId = listSahihTranslationsForAyahIds(stepAyahIds);
+
   return {
     sessionId: session.id,
     startedAt: session.startedAt.toISOString(),
     localDate: state.localDate,
     state,
     steps,
+    translations: {
+      provider: "tanzil.en.sahih" as const,
+      byAyahId: translationsByAyahId,
+    },
   };
 }
 
@@ -634,4 +648,3 @@ export async function runMonthlyAuditForUser(clerkUserId: string) {
 
   return { forceMonthlyTest };
 }
-

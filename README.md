@@ -114,11 +114,18 @@ Local seed files live in:
 - `src/hifzer/quran/data/ayahs.full.json` (6,236 ayahs; global `id` 1..6236)
 - `src/hifzer/quran/data/quran-data.js` (Tanzil metadata source)
 - `src/hifzer/quran/data/surah-index.ts` (generated)
+- `src/hifzer/quran/data/translations/en.sahih.by-ayah-id.json` (Saheeh International English translation, indexed by global ayah id)
 
 Generate surah index:
 
 ```bash
 node scripts/generate-surah-index.mjs
+```
+
+Generate English translation seed:
+
+```bash
+pnpm quran:translation:sahih
 ```
 
 ## Audio (Cloudflare R2 Ready)

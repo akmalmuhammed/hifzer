@@ -2,6 +2,7 @@
 
 - Canonical Arabic text: Tanzil Uthmani export (local file, no runtime fetch).
 - Metadata (page/juz/hizb): provide local JSON mapping keyed by `surahNumber + ayahNumber`.
+- English translation: Saheeh International (`en.sahih`) from Tanzil.
 
 ## Required local files
 
@@ -34,3 +35,19 @@ Then seed Postgres:
 ```bash
 AYAHS_SEED_PATH=./prisma/seeds/ayahs.full.json pnpm seed
 ```
+
+## Build English translation bundle (Saheeh International)
+
+Default source URL:
+
+- `https://tanzil.net/trans/en.sahih`
+
+Generate local translation file:
+
+```bash
+pnpm quran:translation:sahih
+```
+
+Output:
+
+- `src/hifzer/quran/data/translations/en.sahih.by-ayah-id.json`

@@ -12,6 +12,7 @@
     "test:e2e": "playwright test",
     "test:e2e:routing": "playwright test e2e/routing.public.spec.ts e2e/routing.auth.spec.ts e2e/routing.onboarding.spec.ts e2e/routing.legacy.spec.ts",
     "audit:clicks": "node scripts/click-routing-audit.mjs",
+    "quran:translation:sahih": "node scripts/generate-sahih-translation.mjs",
     "audio:manifest": "node scripts/generate-audio-manifest.mjs",
     "db:generate": "prisma generate --config=./prisma.config.ts",
     "db:migrate": "prisma migrate dev --config=./prisma.config.ts",

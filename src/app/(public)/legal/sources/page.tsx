@@ -1,6 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
-import { HIFZER_SEED_SOURCE_LINES, TANZIL_QURAN_DATA_JS_HEADER_LINES } from "@/hifzer/quran/attribution";
+import {
+  HIFZER_SEED_SOURCE_LINES,
+  TANZIL_QURAN_DATA_JS_HEADER_LINES,
+  TANZIL_SAHIH_TRANSLATION_ATTRIBUTION_LINES,
+  TANZIL_SAHIH_TRANSLATION_HEADER_LINES,
+} from "@/hifzer/quran/attribution";
 
 export const metadata = {
   title: "Sources",
@@ -16,11 +21,12 @@ export default function LegalSourcesPage() {
       </h1>
       <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
         Hifzer ships locally bundled Qur&apos;an Arabic text (Tanzil Uthmani export) and Tanzil
-        metadata (surah index mappings). This page lists the required attribution lines and the
-        dataset notes used to build the seed.
+        metadata (surah index mappings), plus English translation (Saheeh International via
+        Tanzil). This page lists the required attribution lines and the dataset notes used to build
+        the seed.
       </p>
 
-      <div className="mt-10 grid gap-4 md:grid-cols-2">
+      <div className="mt-10 grid gap-4 md:grid-cols-3">
         <Card>
           <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Seed build notes</p>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
@@ -40,8 +46,19 @@ export default function LegalSourcesPage() {
             {TANZIL_QURAN_DATA_JS_HEADER_LINES.join("\n")}
           </pre>
         </Card>
+
+        <Card>
+          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">English translation source</p>
+          <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+            Sahih translation metadata and attribution for the bundled <code>en.sahih</code> text.
+          </p>
+          <pre className="mt-4 whitespace-pre-wrap rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-3 text-xs leading-6 text-[color:var(--kw-ink-2)]">
+            {[...TANZIL_SAHIH_TRANSLATION_HEADER_LINES, "", ...TANZIL_SAHIH_TRANSLATION_ATTRIBUTION_LINES].join(
+              "\n",
+            )}
+          </pre>
+        </Card>
       </div>
     </div>
   );
 }
-

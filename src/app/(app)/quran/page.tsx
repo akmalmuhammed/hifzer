@@ -19,10 +19,10 @@ export default async function QuranIndexPage() {
         <div>
           <h1 className="text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
             Browse the Qur&apos;an.
-            <span className="block text-[rgba(31,54,217,1)]">Arabic (Tanzil Uthmani).</span>
+            <span className="block text-[rgba(31,54,217,1)]">Arabic + English (Saheeh International).</span>
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
-            Surah index backed by a local seed (no external API).
+            Surah index and ayah text are backed by a local seed (no external API).
           </p>
         </div>
         <span className="grid h-12 w-12 place-items-center rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">

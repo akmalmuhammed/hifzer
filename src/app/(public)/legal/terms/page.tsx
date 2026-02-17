@@ -69,7 +69,8 @@ export default function LegalTermsPage() {
         <Card>
           <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">5. Content and attribution</h2>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-            Qur&apos;an text and metadata sources are attributed on{" "}
+            Qur&apos;an Arabic text (Tanzil Uthmani), metadata, and English translation (Saheeh
+            International via Tanzil) are attributed on{" "}
             <Link href="/legal/sources" className="font-semibold text-[rgba(31,54,217,1)] hover:underline">
               Sources
             </Link>

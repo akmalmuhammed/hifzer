@@ -46,6 +46,10 @@ type SessionStartPayload = {
     newUnlocked: boolean;
   };
   steps: Step[];
+  translations: {
+    provider: "tanzil.en.sahih";
+    byAyahId: Record<string, string>;
+  };
 };
 
 type SessionEvent = PendingSessionSyncPayload["events"][number];
@@ -440,6 +444,7 @@ export function SessionClient() {
   const ayahId = currentStep.kind === "AYAH" ? currentStep.ayahId : currentStep.toAyahId;
   const ayah = getAyahById(ayahId);
   const ref = verseRefFromAyahId(ayahId);
+  const translation = run.translations.byAyahId[String(ayahId)] ?? null;
 
   return (
     <div className="space-y-6">
@@ -492,13 +497,17 @@ export function SessionClient() {
                   {ref ? `Surah ${ref.surahNumber}:${ref.ayahNumber}` : `Ayah ${currentStep.ayahId}`}
                 </p>
                 <div
-                  dir="rtl"
                   className={clsx(
-                    "mt-3 text-right text-2xl leading-[2.1] text-[color:var(--kw-ink)]",
+                    "mt-3 space-y-4",
                     !showText && "select-none blur-[10px] opacity-70",
                   )}
                 >
-                  {ayah?.textUthmani ?? "Ayah text unavailable"}
+                  <div dir="rtl" className="text-right text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
+                    {ayah?.textUthmani ?? "Ayah text unavailable"}
+                  </div>
+                  <p dir="ltr" className="text-left text-sm leading-7 text-[color:var(--kw-muted)]">
+                    {translation ?? "Translation unavailable"}
+                  </p>
                 </div>
               </div>
               <div className="grid content-start gap-3">
