@@ -58,12 +58,12 @@ export function AppShell(props: { children: React.ReactNode }) {
         <aside className="hidden w-[240px] shrink-0 md:block">
           <div className="sticky top-6 space-y-4">
             <TrackedLink href="/today" className="flex items-center gap-3" telemetryName="shell.logo">
-              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[color:var(--kw-ink)] text-white shadow-[var(--kw-shadow-soft)]">
+              <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-white/50 text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] backdrop-blur-md">
                 <HifzerMark />
               </span>
               <div className="leading-tight">
                 <p className="text-sm font-semibold tracking-tight text-[color:var(--kw-ink)]">Hifzer</p>
-                <p className="text-xs text-[color:var(--kw-muted)]">Practice and retain</p>
+                <p className="text-xs text-[color:var(--kw-muted)]">Hifz operating system</p>
               </div>
             </TrackedLink>
 

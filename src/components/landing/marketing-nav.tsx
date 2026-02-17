@@ -26,7 +26,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
       <div className="border-b border-[color:var(--kw-border-2)] bg-white/55 backdrop-blur">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3 px-4 py-3">
           <TrackedLink href="/" className="flex items-center gap-3" telemetryName="marketing.logo">
-            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[color:var(--kw-ink)] text-white shadow-[var(--kw-shadow-soft)]">
+            <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-white/50 text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] backdrop-blur-md">
               <HifzerMark />
             </span>
             <span className="leading-tight">
@@ -34,7 +34,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                 Hifzer
               </span>
               <span className="block text-xs text-[color:var(--kw-muted)]">
-                A calm hifz system
+                Hifz operating system
               </span>
             </span>
           </TrackedLink>

@@ -66,7 +66,7 @@ export function FeatureGrid() {
       <div className="grid gap-10 md:grid-cols-[1fr_1fr] md:items-end">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-            Designed for calm clarity
+            Designed for retention
           </p>
           <h2 className="mt-3 text-balance font-[family-name:var(--font-kw-display)] text-3xl leading-tight tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
             Practice is a system.

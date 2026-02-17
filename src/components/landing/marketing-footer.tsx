@@ -8,13 +8,13 @@ export function MarketingFooter() {
       <div className="mx-auto grid max-w-[1200px] gap-10 px-4 py-12 md:grid-cols-[1.2fr_1fr_1fr]">
         <div>
           <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[color:var(--kw-ink)] text-white shadow-[var(--kw-shadow-soft)]">
+            <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-white/50 text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] backdrop-blur-md">
               <HifzerMark />
             </span>
             <div>
               <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Hifzer</p>
               <p className="text-xs text-[color:var(--kw-muted)]">
-                A calm hifz system.
+                Hifz operating system.
               </p>
             </div>
           </div>

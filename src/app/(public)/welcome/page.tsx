@@ -11,7 +11,7 @@ export default function WelcomePage() {
     <div className="pb-12 pt-10 md:pb-16 md:pt-14">
       <Pill tone="brand">Welcome</Pill>
       <h1 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
-        A calmer way to keep your hifz.
+        A smarter way to keep your hifz.
         <span className="block text-[rgba(31,54,217,1)]">Daily plan. Clear feedback.</span>
       </h1>
       <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">

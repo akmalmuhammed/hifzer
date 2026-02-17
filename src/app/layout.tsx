@@ -1,19 +1,15 @@
 import type { Metadata } from "next";
-import { Fraunces, IBM_Plex_Mono, Spline_Sans } from "next/font/google";
+import { Inter, IBM_Plex_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { AppProviders } from "@/components/providers/app-providers";
 import { clerkAuthRoutes } from "@/lib/auth-redirects";
 import { clerkEnabled } from "@/lib/clerk-config";
 import "./globals.css";
 
-const display = Fraunces({
-  variable: "--font-kw-display",
-  subsets: ["latin"],
-});
-
-const sans = Spline_Sans({
+const inter = Inter({
   variable: "--font-kw-sans",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 const mono = IBM_Plex_Mono({
@@ -31,7 +27,7 @@ export const metadata: Metadata = {
     template: "%s | Hifzer",
   },
   description:
-    "Hifzer is a calm system for consistent hifz: plan, practice, and retain with clarity.",
+    "Hifzer is the operating system for Qur'an memorization: quality gates, spaced repetition, and a daily plan that enforces retention.",
   applicationName: "Hifzer",
   alternates: {
     canonical: "/",
@@ -39,14 +35,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     title: "Hifzer",
-    description: "A calm system for consistent hifz: plan, practice, and retain with clarity.",
+    description: "The operating system for Qur'an memorization: quality gates, spaced repetition, and daily enforcement.",
     url: "/",
     siteName: "Hifzer",
   },
   twitter: {
     card: "summary_large_image",
     title: "Hifzer",
-    description: "A calm system for consistent hifz: plan, practice, and retain with clarity.",
+    description: "The operating system for Qur'an memorization: quality gates, spaced repetition, and daily enforcement.",
   },
   robots: {
     index: true,
@@ -66,7 +62,7 @@ export default function RootLayout({
       data-mode="light"
       data-theme="standard"
       data-accent="teal"
-      className={`${display.variable} ${sans.variable} ${mono.variable}`}
+      className={`${inter.variable} ${mono.variable}`}
     >
       <body className="kw-canvas min-h-dvh bg-[color:var(--kw-bg)] text-[color:var(--kw-ink)] antialiased">
         <a
