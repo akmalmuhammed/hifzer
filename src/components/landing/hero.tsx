@@ -104,9 +104,9 @@ export function Hero() {
         </motion.div>
 
         <motion.div
-          initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: reduceMotion ? 0 : 0.5, ease: KW_EASE_OUT }}
+          initial={reduceMotion ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 20, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: reduceMotion ? 0 : 0.6, ease: KW_EASE_OUT }}
           className="relative"
         >
           <div className="absolute -inset-6 -z-10 rounded-[32px] bg-[radial-gradient(closest-side,rgba(var(--kw-accent-rgb),0.18),transparent_68%)] blur-2xl" />
@@ -114,85 +114,107 @@ export function Hero() {
             <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-[rgba(10,138,119,0.16)] blur-3xl kw-float" />
             <div className="pointer-events-none absolute -bottom-12 -left-10 h-56 w-56 rounded-full bg-[rgba(234,88,12,0.12)] blur-3xl kw-float" />
 
-            <CardHeader>
-              <div>
-                <CardTitle>Today&apos;s plan</CardTitle>
-                <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
-                  Balanced practice · 18 minutes
-                </p>
-              </div>
-              <span className="rounded-full border border-[rgba(10,138,119,0.26)] bg-[rgba(10,138,119,0.10)] px-2.5 py-1 text-xs font-semibold text-[color:var(--kw-teal-800)]">
-                Ready
-              </span>
-            </CardHeader>
-
-            <div className="mt-4 grid gap-3">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                    Retention
-                  </p>
-                  <CardKpi>
-                    <p className="font-[family-name:var(--font-kw-display)] text-3xl tracking-tight text-[color:var(--kw-ink)]">
-                      82%
+            <motion.div
+              initial={reduceMotion ? "show" : "hidden"}
+              animate="show"
+              variants={{ show: { transition: { staggerChildren: reduceMotion ? 0 : 0.12, delayChildren: reduceMotion ? 0 : 0.3 } } }}
+            >
+              <motion.div variants={fadeUp}>
+                <CardHeader>
+                  <div>
+                    <CardTitle>Today&apos;s plan</CardTitle>
+                    <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
+                      Balanced practice · 18 minutes
                     </p>
-                    <DonutProgress value={0.82} size={44} />
-                  </CardKpi>
-                </div>
-                <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                    Streak
-                  </p>
-                  <CardKpi>
-                    <p className="font-[family-name:var(--font-kw-display)] text-3xl tracking-tight text-[color:var(--kw-ink)]">
-                      9
-                    </p>
-                    <div className="w-28">
-                      <HeatStrip
-                        days={streakDays}
-                        tone="brand"
-                        ariaLabel="Practice streak"
-                      />
-                    </div>
-                  </CardKpi>
-                </div>
-              </div>
+                  </div>
+                  <span className="rounded-full border border-[rgba(10,138,119,0.26)] bg-[rgba(10,138,119,0.10)] px-2.5 py-1 text-xs font-semibold text-[color:var(--kw-teal-800)]">
+                    Ready
+                  </span>
+                </CardHeader>
+              </motion.div>
 
-              <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                  Flow
-                </p>
-                <ul className="mt-2 space-y-2 text-sm">
-                  {[
-                    { t: "Sabaq", c: "brand", title: "New", meta: "5 ayahs · linking on" },
-                    { t: "Sabqi", c: "accent", title: "Recent review", meta: "12 due today" },
-                    { t: "Manzil", c: "warn", title: "Long review", meta: "8 due this week" },
-                  ].map((s) => (
-                    <li
-                      key={s.title}
-                      className="flex items-start justify-between gap-3 rounded-2xl border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-2"
-                    >
-                      <div>
-                        <p className="font-semibold text-[color:var(--kw-ink)]">{s.title}</p>
-                        <p className="mt-0.5 text-xs text-[color:var(--kw-muted)]">{s.meta}</p>
+              <div className="mt-4 grid gap-3">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <motion.div
+                    variants={fadeUp}
+                    className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 p-3"
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+                      Retention
+                    </p>
+                    <CardKpi>
+                      <p className="font-[family-name:var(--font-kw-display)] text-3xl tracking-tight text-[color:var(--kw-ink)]">
+                        82%
+                      </p>
+                      <DonutProgress value={0.82} size={44} />
+                    </CardKpi>
+                  </motion.div>
+                  <motion.div
+                    variants={fadeUp}
+                    className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 p-3"
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+                      Streak
+                    </p>
+                    <CardKpi>
+                      <p className="font-[family-name:var(--font-kw-display)] text-3xl tracking-tight text-[color:var(--kw-ink)]">
+                        9
+                      </p>
+                      <div className="w-28">
+                        <HeatStrip
+                          days={streakDays}
+                          tone="brand"
+                          ariaLabel="Practice streak"
+                        />
                       </div>
-                      <span
-                        className={clsx(
-                          "shrink-0 rounded-full border px-2 py-1 text-xs font-semibold",
-                          s.c === "brand"
-                            ? "border-[rgba(10,138,119,0.26)] bg-[rgba(10,138,119,0.12)] text-[color:var(--kw-teal-800)]"
-                            : s.c === "accent"
-                              ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-                              : "border-[rgba(234,88,12,0.26)] bg-[rgba(234,88,12,0.12)] text-[color:var(--kw-ember-600)]",
-                        )}
+                    </CardKpi>
+                  </motion.div>
+                </div>
+
+                <motion.div
+                  variants={fadeUp}
+                  className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 p-3"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+                    Flow
+                  </p>
+                  <ul className="mt-2 space-y-2 text-sm">
+                    {[
+                      { t: "Sabaq", c: "brand", title: "New", meta: "5 ayahs · linking on" },
+                      { t: "Sabqi", c: "accent", title: "Recent review", meta: "12 due today" },
+                      { t: "Manzil", c: "warn", title: "Long review", meta: "8 due this week" },
+                    ].map((s, i) => (
+                      <motion.li
+                        key={s.title}
+                        variants={{
+                          hidden: { opacity: 0, x: -8 },
+                          show: { opacity: 1, x: 0 },
+                        }}
+                        transition={{ duration: reduceMotion ? 0 : 0.35, delay: reduceMotion ? 0 : 0.7 + i * 0.1 }}
+                        className="flex items-start justify-between gap-3 rounded-2xl border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-2"
                       >
-                        {s.t}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                        <div>
+                          <p className="font-semibold text-[color:var(--kw-ink)]">{s.title}</p>
+                          <p className="mt-0.5 text-xs text-[color:var(--kw-muted)]">{s.meta}</p>
+                        </div>
+                        <span
+                          className={clsx(
+                            "shrink-0 rounded-full border px-2 py-1 text-xs font-semibold",
+                            s.c === "brand"
+                              ? "border-[rgba(10,138,119,0.26)] bg-[rgba(10,138,119,0.12)] text-[color:var(--kw-teal-800)]"
+                              : s.c === "accent"
+                                ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+                                : "border-[rgba(234,88,12,0.26)] bg-[rgba(234,88,12,0.12)] text-[color:var(--kw-ember-600)]",
+                          )}
+                        >
+                          {s.t}
+                        </span>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
           </Card>
         </motion.div>
       </div>
