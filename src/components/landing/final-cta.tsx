@@ -26,19 +26,19 @@ export function FinalCta() {
             <div className="max-w-2xl">
               <Pill tone="brand">Start today</Pill>
               <h3 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-3xl leading-tight tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
-                A plan you can keep.
-                <span className="block text-[rgba(var(--kw-accent-rgb),1)]">A review queue you can trust.</span>
+                Stop re-memorizing what you already learned.
+                <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Let the system enforce retention.</span>
               </h3>
               <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-                Choose your starting point. Practice with audio and a simple grade per ayah. Let the
-                schedule handle the rest.
+                Choose your starting point. The quality gates, debt engine, and daily plan handle
+                the rest — so nothing slips through.
               </p>
             </div>
 
             <div className="flex w-full flex-col gap-2 sm:w-auto">
-              <PublicAuthLink signedInHref="/today" signedOutHref="/login">
+              <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
                 <Button size="lg" className="w-full sm:w-auto">
-                  Get started <ArrowRight size={18} />
+                  Get started free <ArrowRight size={18} />
                 </Button>
               </PublicAuthLink>
               <Link href="/pricing">
@@ -51,9 +51,9 @@ export function FinalCta() {
 
           <div className="mt-8 grid gap-2 md:grid-cols-3">
             {[
-              { k: "Simple grading", v: "Again / Hard / Good / Easy" },
-              { k: "Recovery protocol", v: "Adjusts after missed days" },
-              { k: "Audio everywhere", v: "Repeat + speed controls" },
+              { k: "Quality gates", v: "Yesterday's Sabaq must pass" },
+              { k: "Review debt engine", v: "Minutes-based, not item count" },
+              { k: "Mode switching", v: "Normal → Consolidation → Catch-up" },
             ].map((row) => (
               <div
                 key={row.k}

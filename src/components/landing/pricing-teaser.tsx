@@ -12,16 +12,28 @@ const PLANS = [
   {
     name: "Free",
     price: "$0",
-    note: "Start the habit",
+    note: "The full Hifz OS",
     highlight: false,
-    bullets: ["Daily plan + session flow", "Per-ayah grades", "Standard theme + dark mode"],
+    bullets: [
+      "Daily Sabaq plan + SRS engine",
+      "Warm-up gate (blocks false progress)",
+      "Sabqi + Manzil review tiers",
+      "Transition tracking + link repair",
+      "Per-ayah grading + audio player",
+    ],
   },
   {
     name: "Paid",
     price: "$7",
-    note: "Personalize and go deeper",
+    note: "Deeper insights + personalization",
     highlight: true,
-    bullets: ["Theme presets", "Accent presets", "Extra reciters (coming soon)"],
+    bullets: [
+      "Weekly consolidation test",
+      "Monthly health audit + rebalance",
+      "Theme presets + accent options",
+      "Extra reciters (coming soon)",
+      "AI recitation scoring (coming soon)",
+    ],
   },
 ] as const;
 
@@ -83,7 +95,7 @@ export function PricingTeaser() {
               </ul>
 
               <div className="mt-7">
-                <PublicAuthLink signedInHref="/today" signedOutHref="/login">
+                <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
                   <Button variant={p.highlight ? "primary" : "secondary"} className="w-full">
                     Get started
                   </Button>

@@ -43,16 +43,16 @@ export function Hero() {
             className="inline-flex items-center gap-2 rounded-full border border-[rgba(var(--kw-accent-rgb),0.18)] bg-white/60 px-3 py-1 text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] backdrop-blur"
           >
             <Sparkles size={14} />
-            A calm system for consistent hifz
+            The operating system for Qur&apos;an memorization
           </motion.p>
 
           <motion.h1
             variants={fadeUp}
             className="mt-5 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl"
           >
-            Keep what you memorize.
+            Hifz that doesn&apos;t decay.
             <span className="block text-[rgba(var(--kw-accent-rgb),1)]">
-              Without feeling rushed.
+              An enforcement system for retention.
             </span>
           </motion.h1>
 
@@ -60,28 +60,30 @@ export function Hero() {
             variants={fadeUp}
             className="mt-5 max-w-xl text-pretty text-base leading-7 text-[color:var(--kw-muted)]"
           >
-            Hifzer helps you practice with intention: a daily plan that balances new ayahs and
-            review, and a simple per-ayah grade that becomes durable scheduling data.
+            Most memorized ayahs are lost within weeks — not because you don&apos;t care, but because
+            you don&apos;t have a review system. Hifzer enforces the rules that make memorization stick: quality
+            gates that block false progress, a debt engine that protects retention, and a daily plan
+            that balances Sabaq, Sabqi, and Manzil.
           </motion.p>
 
           <motion.div variants={fadeUp} className="mt-7 flex flex-wrap items-center gap-3">
-            <PublicAuthLink signedInHref="/today" signedOutHref="/login">
+            <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
               <Button size="lg">
-                Get started <ArrowRight size={18} />
+                Get started free <ArrowRight size={18} />
               </Button>
             </PublicAuthLink>
             <PublicAuthLink signedInHref="/quran" signedOutHref="/quran-preview">
               <Button variant="secondary" size="lg">
-                Browse Qur&apos;an
+                See how it works
               </Button>
             </PublicAuthLink>
           </motion.div>
 
           <motion.div variants={fadeUp} className="mt-9 grid gap-3 sm:grid-cols-3">
             {[
-              { icon: <CalendarCheck2 size={16} />, label: "Daily plan", value: "Sabaq + review" },
-              { icon: <ShieldCheck size={16} />, label: "SRS-ready", value: "Per-ayah grades" },
-              { icon: <Headphones size={16} />, label: "Audio-first", value: "Repeat + speed" },
+              { icon: <ShieldCheck size={16} />, label: "Quality gates", value: "Block false progress" },
+              { icon: <CalendarCheck2 size={16} />, label: "Review debt engine", value: "Minutes-based control" },
+              { icon: <Headphones size={16} />, label: "Audio-first sessions", value: "Recall + grade + repeat" },
             ].map((stat) => (
               <CardSoft key={stat.label} className="px-4 py-4">
                 <div className="flex items-start justify-between gap-3">
@@ -117,7 +119,7 @@ export function Hero() {
               <div>
                 <CardTitle>Today&apos;s plan</CardTitle>
                 <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
-                  Balanced practice - 18 minutes
+                  Balanced practice · 18 minutes
                 </p>
               </div>
               <span className="rounded-full border border-[rgba(10,138,119,0.26)] bg-[rgba(10,138,119,0.10)] px-2.5 py-1 text-xs font-semibold text-[color:var(--kw-teal-800)]">
@@ -163,7 +165,7 @@ export function Hero() {
                 </p>
                 <ul className="mt-2 space-y-2 text-sm">
                   {[
-                    { t: "Sabaq", c: "brand", title: "New", meta: "5 ayahs - linking on" },
+                    { t: "Sabaq", c: "brand", title: "New", meta: "5 ayahs · linking on" },
                     { t: "Sabqi", c: "accent", title: "Recent review", meta: "12 due today" },
                     { t: "Manzil", c: "warn", title: "Long review", meta: "8 due this week" },
                   ].map((s) => (

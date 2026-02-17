@@ -15,7 +15,7 @@ type PublicAuthLinkProps = Omit<ComponentProps<typeof Link>, "href" | "prefetch"
 
 export function PublicAuthLink({
   signedInHref,
-  signedOutHref = "/login",
+  signedOutHref = "/signup",
   signedInPrefetch,
   signedOutPrefetch = false,
   ...props
