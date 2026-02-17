@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
+import { capturePosthogEvent } from "@/lib/posthog/client";
 
 type TodayPayload = {
   localDate: string;
@@ -67,7 +68,7 @@ function modeExplain(state: TodayPayload["state"]): { title: string; body: strin
     return {
       tone: "warn",
       title: `You are in Consolidation because ${reason}.`,
-      body: "New stays limited while review density is increased. Clear today’s review queue to return to Normal.",
+      body: "New stays limited while review density is increased. Clear today's review queue to return to Normal.",
     };
   }
 
@@ -82,6 +83,12 @@ export function TodayClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<TodayPayload | null>(null);
+  const [modeShiftNotice, setModeShiftNotice] = useState<{
+    from: TodayPayload["state"]["mode"];
+    to: TodayPayload["state"]["mode"];
+    title: string;
+    body: string;
+  } | null>(null);
 
   async function load() {
     setLoading(true);
@@ -103,6 +110,30 @@ export function TodayClient() {
   useEffect(() => {
     void load();
   }, []);
+
+  useEffect(() => {
+    if (!data || typeof window === "undefined") {
+      return;
+    }
+    const key = "hifzer_last_mode_seen_v1";
+    const previous = window.localStorage.getItem(key) as TodayPayload["state"]["mode"] | null;
+    if (previous && previous !== data.state.mode) {
+      const explanation = modeExplain(data.state);
+      setModeShiftNotice({
+        from: previous,
+        to: data.state.mode,
+        title: `Mode updated: ${previous} -> ${data.state.mode}`,
+        body: explanation.body,
+      });
+      capturePosthogEvent("today.mode_shift_notice", {
+        from: previous,
+        to: data.state.mode,
+        debtRatio: data.state.debtRatio,
+        retention3dAvg: data.state.retention3dAvg,
+      });
+    }
+    window.localStorage.setItem(key, data.state.mode);
+  }, [data]);
 
   const reviewCount = useMemo(() => {
     if (!data) {
@@ -156,6 +187,23 @@ export function TodayClient() {
       {data?.monthlyAdjustmentMessage ? (
         <Card className="border-[rgba(31,54,217,0.2)] bg-[rgba(31,54,217,0.08)]">
           <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{data.monthlyAdjustmentMessage}</p>
+          <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
+            This runs in the background and does not require a separate test step unless severe risk is detected.
+          </p>
+        </Card>
+      ) : null}
+
+      {modeShiftNotice ? (
+        <Card className="border-[rgba(31,54,217,0.2)] bg-[rgba(31,54,217,0.08)]">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{modeShiftNotice.title}</p>
+              <p className="mt-1 text-sm text-[color:var(--kw-muted)]">{modeShiftNotice.body}</p>
+            </div>
+            <Button size="sm" variant="secondary" onClick={() => setModeShiftNotice(null)}>
+              Got it
+            </Button>
+          </div>
         </Card>
       ) : null}
 
@@ -185,7 +233,7 @@ export function TodayClient() {
               <Pill tone="neutral">Review floor: {data.state.reviewFloorPct}%</Pill>
               {data.state.warmupRequired ? <Pill tone="warn">Warm-up gate</Pill> : null}
               {data.state.weeklyGateRequired ? <Pill tone="warn">Weekly gate</Pill> : null}
-              {data.state.monthlyTestRequired ? <Pill tone="warn">Monthly test required</Pill> : null}
+              {data.state.monthlyTestRequired ? <Pill tone="warn">Monthly retention guard</Pill> : null}
               <Pill tone={data.state.newUnlocked ? "accent" : "neutral"}>
                 {data.state.newUnlocked ? "Mode allows new" : "Mode blocks new"}
               </Pill>
@@ -277,7 +325,7 @@ export function TodayClient() {
               </p>
               <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
                 Due now: <span className="font-semibold text-[color:var(--kw-ink)]">{data.state.dueNowCount}</span>
-                {" · "}
+                {" - "}
                 Due in next 6h: <span className="font-semibold text-[color:var(--kw-ink)]">{data.state.dueSoonCount}</span>
               </p>
               <p className="mt-1 text-xs text-[color:var(--kw-faint)]">

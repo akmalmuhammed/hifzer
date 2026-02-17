@@ -399,3 +399,176 @@ html[data-mode="dark"] [class~="focus:bg-white"]:focus {
 .kw-hairline {
   border-color: var(--kw-border-2);
 }
+
+/* ── Starfield: twinkling stars ───────────────────────────── */
+
+.kw-stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  color: rgba(180, 160, 120, 0.06);
+}
+
+.kw-stars-sm {
+  width: 1px;
+  height: 1px;
+  animation: kw-star-drift 180s linear infinite;
+}
+
+.kw-stars-md {
+  width: 1.5px;
+  height: 1.5px;
+  animation: kw-star-drift 120s linear infinite;
+}
+
+.kw-stars-lg {
+  width: 2px;
+  height: 2px;
+  animation: kw-star-drift 80s linear infinite, kw-twinkle 4s ease-in-out infinite alternate;
+}
+
+@keyframes kw-star-drift {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-1600px);
+  }
+}
+
+@keyframes kw-twinkle {
+  0% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+html[data-mode="dark"] .kw-stars-sm {
+  color: rgba(200, 220, 255, 0.5);
+}
+
+html[data-mode="dark"] .kw-stars-md {
+  color: rgba(210, 225, 255, 0.65);
+}
+
+html[data-mode="dark"] .kw-stars-lg {
+  color: rgba(230, 240, 255, 0.85);
+}
+
+/* ── Shooting stars ───────────────────────────────────────── */
+
+.kw-shooting-star {
+  position: absolute;
+  width: 80px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(200, 170, 100, 0.04) 30%,
+    rgba(200, 170, 100, 0.08) 100%
+  );
+  border-radius: 999px;
+  transform: rotate(-35deg);
+  opacity: 0;
+  animation: kw-shoot 18s ease-in infinite;
+}
+
+html[data-mode="dark"] .kw-shooting-star {
+  width: 100px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(180, 210, 255, 0.3) 20%,
+    rgba(220, 240, 255, 0.8) 100%
+  );
+  box-shadow: 0 0 6px 1px rgba(180, 210, 255, 0.3);
+}
+
+@keyframes kw-shoot {
+  0% {
+    opacity: 0;
+    transform: rotate(-35deg) translate(0, 0);
+  }
+  2% {
+    opacity: 1;
+  }
+  5% {
+    opacity: 0;
+    transform: rotate(-35deg) translate(300px, 200px);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(-35deg) translate(300px, 200px);
+  }
+}
+
+/* ── Starfield nebula layer (dark mode only) ──────────────── */
+
+html[data-mode="dark"] .kw-starfield {
+  background:
+    radial-gradient(
+      800px 500px at 15% 30%,
+      rgba(120, 80, 200, 0.10),
+      transparent 60%
+    ),
+    radial-gradient(
+      700px 450px at 75% 15%,
+      rgba(30, 58, 138, 0.08),
+      transparent 55%
+    ),
+    radial-gradient(
+      600px 400px at 50% 80%,
+      rgba(13, 148, 136, 0.06),
+      transparent 60%
+    );
+}
+
+/* ── Wind line glow animation ─────────────────────────────── */
+
+.kw-wind-animated .kw-wind-paths {
+  filter: url(#kw_wind_glow);
+}
+
+html[data-mode="dark"] .kw-wind-animated .kw-wind-paths {
+  filter: url(#kw_wind_glow_dark);
+}
+
+@keyframes kw-wind-flow {
+  from {
+    stroke-dashoffset: 2400;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes kw-wind-pulse {
+  0%, 100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .kw-stars-sm,
+  .kw-stars-md,
+  .kw-stars-lg {
+    animation: none !important;
+  }
+
+  .kw-shooting-star {
+    animation: none !important;
+    display: none;
+  }
+
+  .kw-wind-animated path {
+    animation: none !important;
+  }
+}

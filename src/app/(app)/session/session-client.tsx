@@ -12,6 +12,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
+import { capturePosthogEvent } from "@/lib/posthog/client";
 import {
   getPendingSessionSyncPayloads,
   pushPendingSessionSyncPayload,
@@ -64,6 +65,15 @@ const GRADE_ACTIONS: Array<{
   { grade: "GOOD", hint: "Mostly correct" },
   { grade: "EASY", hint: "Clean recall" },
 ];
+const REVEAL_SECONDS = 8;
+const SESSION_COACH_KEYS = {
+  tiers: "hifzer_tip_session_tiers_v1",
+  warmup: "hifzer_tip_session_warmup_v1",
+  grades: "hifzer_tip_session_grades_v1",
+  weeklyGate: "hifzer_tip_weekly_gate_v1",
+} as const;
+
+type CoachKey = keyof typeof SESSION_COACH_KEYS;
 
 function gradeScore(grade: "AGAIN" | "HARD" | "GOOD" | "EASY"): number {
   if (grade === "AGAIN") return 0;
@@ -93,19 +103,69 @@ function isGraded(step: Step): boolean {
 
 function stepTitle(step: Step): string {
   if (step.kind === "LINK") {
-    return step.stage === "LINK_REPAIR" ? "Link repair" : "Link transition";
+    return step.stage === "LINK_REPAIR" ? "Link Repair" : "Link Practice";
   }
   if (step.stage === "NEW") {
-    if (step.phase === "NEW_EXPOSE") return "New (Expose)";
-    if (step.phase === "NEW_GUIDED") return "New (Guided)";
-    return "New (Blind)";
+    if (step.phase === "NEW_EXPOSE") return "New Memorization (Expose)";
+    if (step.phase === "NEW_GUIDED") return "New Memorization (Guided)";
+    return "New Memorization (Blind Recall)";
   }
-  if (step.stage === "REVIEW" && step.reviewTier === "SABQI") return "Sabqi review";
-  if (step.stage === "REVIEW" && step.reviewTier === "MANZIL") return "Manzil review";
-  if (step.stage === "WEEKLY_TEST") return "Weekly test";
-  if (step.stage === "WARMUP") return "Warm-up (Sabaq check)";
-  if (step.stage === "LINK_REPAIR") return "Link repair";
+  if (step.stage === "REVIEW" && step.reviewTier === "SABQI") return "Sabqi Review (Recent)";
+  if (step.stage === "REVIEW" && step.reviewTier === "MANZIL") return "Manzil Review (Old)";
+  if (step.stage === "WEEKLY_TEST") return "Weekly Consolidation Gate";
+  if (step.stage === "WARMUP") return "Warm-up (Yesterday's Sabaq)";
+  if (step.stage === "LINK_REPAIR") return "Link Repair";
   return "Review";
+}
+
+function stepSummary(step: Step): string {
+  if (step.kind === "LINK") {
+    return step.stage === "LINK_REPAIR"
+      ? "Repair weak ayah-to-ayah transitions."
+      : "Practice moving smoothly from one ayah to the next.";
+  }
+  if (step.stage === "WARMUP") {
+    return "Recite yesterday's new ayahs from memory. Passing this gate unlocks new memorization.";
+  }
+  if (step.stage === "WEEKLY_TEST") {
+    return "Mandatory weekly check to protect retention. Passing keeps your plan stable.";
+  }
+  if (step.stage === "REVIEW" && step.reviewTier === "SABQI") {
+    return "Recent ayahs that are still fragile. Recall from memory first.";
+  }
+  if (step.stage === "REVIEW" && step.reviewTier === "MANZIL") {
+    return "Older ayahs on long-term rotation. Keep them active.";
+  }
+  if (step.stage === "NEW") {
+    if (step.phase === "NEW_EXPOSE") {
+      return "Listen and read carefully before recall.";
+    }
+    if (step.phase === "NEW_GUIDED") {
+      return "Recall with support before blind recall.";
+    }
+    return "Blind recall decides whether this ayah can advance.";
+  }
+  return "Recite and grade honestly.";
+}
+
+function shouldDefaultHideText(step: Step): boolean {
+  if (step.kind === "LINK") {
+    return true;
+  }
+  if (step.stage === "WARMUP" || step.stage === "REVIEW" || step.stage === "WEEKLY_TEST" || step.stage === "LINK_REPAIR") {
+    return true;
+  }
+  if (step.stage === "NEW" && step.phase === "NEW_BLIND") {
+    return true;
+  }
+  return false;
+}
+
+function gradeHint(grade: "AGAIN" | "HARD" | "GOOD" | "EASY"): string {
+  if (grade === "AGAIN") return "Could not recall";
+  if (grade === "HARD") return "Needed prompts";
+  if (grade === "GOOD") return "Mostly correct";
+  return "Clean recall";
 }
 
 function verseRefLabel(ayahId: number): string {
@@ -120,6 +180,8 @@ function toEvent(step: Step, input: {
   stepIndex: number;
   grade?: "AGAIN" | "HARD" | "GOOD" | "EASY";
   durationSec: number;
+  textVisible: boolean;
+  assisted: boolean;
   createdAt: string;
 }): SessionEvent {
   if (step.kind === "LINK") {
@@ -132,6 +194,8 @@ function toEvent(step: Step, input: {
       toAyahId: step.toAyahId,
       grade: input.grade,
       durationSec: input.durationSec,
+      textVisible: input.textVisible,
+      assisted: input.assisted,
       createdAt: input.createdAt,
     };
   }
@@ -142,6 +206,8 @@ function toEvent(step: Step, input: {
     ayahId: step.ayahId,
     grade: input.grade,
     durationSec: input.durationSec,
+    textVisible: input.textVisible,
+    assisted: input.assisted,
     createdAt: input.createdAt,
   };
 }
@@ -160,6 +226,25 @@ export function SessionClient() {
   const [reviewOnlyLock, setReviewOnlyLock] = useState(false);
   const [showText, setShowText] = useState(true);
   const [showTranslation, setShowTranslation] = useState(true);
+  const [textVisibleDuringStep, setTextVisibleDuringStep] = useState(true);
+  const [assistedThisStep, setAssistedThisStep] = useState(false);
+  const [revealUntilMs, setRevealUntilMs] = useState<number | null>(null);
+  const [coachSeen, setCoachSeen] = useState<Record<CoachKey, boolean>>(() => {
+    if (typeof window === "undefined") {
+      return {
+        tiers: false,
+        warmup: false,
+        grades: false,
+        weeklyGate: false,
+      };
+    }
+    return {
+      tiers: window.localStorage.getItem(SESSION_COACH_KEYS.tiers) === "1",
+      warmup: window.localStorage.getItem(SESSION_COACH_KEYS.warmup) === "1",
+      grades: window.localStorage.getItem(SESSION_COACH_KEYS.grades) === "1",
+      weeklyGate: window.localStorage.getItem(SESSION_COACH_KEYS.weeklyGate) === "1",
+    };
+  });
 
   const flushPendingSync = useCallback(async () => {
     const pending = getPendingSessionSyncPayloads();
@@ -236,6 +321,8 @@ export function SessionClient() {
 
   const currentStep = filteredSteps[stepIndex] ?? null;
   const done = Boolean(run && filteredSteps.length > 0 && stepIndex >= filteredSteps.length);
+  const currentStepRequiresHiddenText = currentStep ? shouldDefaultHideText(currentStep) : false;
+  const canRevealCurrentStep = Boolean(currentStep && currentStep.kind === "AYAH" && currentStepRequiresHiddenText);
 
   const warmupCount = useMemo(
     () => filteredSteps.filter((step) => step.stage === "WARMUP").length,
@@ -246,6 +333,31 @@ export function SessionClient() {
     () => filteredSteps.filter((step) => step.stage === "WEEKLY_TEST").length,
     [filteredSteps],
   );
+
+  useEffect(() => {
+    if (!currentStep) {
+      return;
+    }
+    const defaultVisible = !shouldDefaultHideText(currentStep);
+    setShowText(defaultVisible);
+    setTextVisibleDuringStep(defaultVisible);
+    setAssistedThisStep(false);
+    setRevealUntilMs(null);
+  }, [currentStep, stepIndex]);
+
+  useEffect(() => {
+    if (!currentStep || revealUntilMs == null) {
+      return;
+    }
+    const delay = Math.max(0, revealUntilMs - Date.now());
+    const timer = window.setTimeout(() => {
+      setRevealUntilMs(null);
+      if (shouldDefaultHideText(currentStep)) {
+        setShowText(false);
+      }
+    }, delay);
+    return () => window.clearTimeout(timer);
+  }, [currentStep, revealUntilMs]);
 
   const completeRun = useCallback(async () => {
     if (!run) {
@@ -280,18 +392,67 @@ export function SessionClient() {
     }
   }, [events, pushToast, run]);
 
+  const markCoachSeen = useCallback((key: CoachKey) => {
+    setCoachSeen((prev) => ({ ...prev, [key]: true }));
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(SESSION_COACH_KEYS[key], "1");
+    }
+  }, []);
+
+  const revealTemporarily = useCallback(() => {
+    if (!canRevealCurrentStep) {
+      return;
+    }
+    const nextRevealUntil = Date.now() + (REVEAL_SECONDS * 1000);
+    setShowText(true);
+    setTextVisibleDuringStep(true);
+    setAssistedThisStep(true);
+    setRevealUntilMs(nextRevealUntil);
+    pushToast({
+      tone: "warning",
+      title: "Assist reveal active",
+      message: `Text is visible for ${REVEAL_SECONDS}s. This attempt cannot be graded above HARD.`,
+    });
+  }, [canRevealCurrentStep, pushToast]);
+
   const advance = useCallback(async (grade?: "AGAIN" | "HARD" | "GOOD" | "EASY") => {
     if (!currentStep) {
       return;
     }
+    let effectiveGrade = grade;
+    if (assistedThisStep && grade && (grade === "GOOD" || grade === "EASY")) {
+      effectiveGrade = "HARD";
+      pushToast({
+        tone: "warning",
+        title: "Assist applied",
+        message: "Revealed attempts are capped at HARD to protect recall integrity.",
+      });
+    }
+
     const now = Date.now();
     const durationSec = Math.max(1, Math.floor((now - stepStartedAt) / 1000));
     const event = toEvent(currentStep, {
       stepIndex,
-      grade,
+      grade: effectiveGrade,
       durationSec,
+      textVisible: textVisibleDuringStep,
+      assisted: assistedThisStep,
       createdAt: new Date(now).toISOString(),
     });
+    capturePosthogEvent("session_attempt_recorded", {
+      sessionId: run?.sessionId ?? null,
+      stepIndex,
+      stage: event.stage,
+      phase: event.phase,
+      ayahId: event.ayahId,
+      grade: event.grade ?? null,
+      gradeHint: event.grade ? gradeHint(event.grade) : null,
+      durationSec: event.durationSec,
+      textVisible: event.textVisible,
+      assisted: event.assisted,
+      quickReviewMode,
+    });
+
     const nextEvents = [...events, event];
     setEvents(nextEvents);
 
@@ -359,7 +520,20 @@ export function SessionClient() {
 
     setStepIndex(nextStepIndex);
     setStepStartedAt(Date.now());
-  }, [currentStep, events, pushToast, run, stepIndex, stepStartedAt, warmupCount, warmupRetryUsed, weeklyGateCount]);
+  }, [
+    assistedThisStep,
+    currentStep,
+    events,
+    pushToast,
+    quickReviewMode,
+    run,
+    stepIndex,
+    stepStartedAt,
+    textVisibleDuringStep,
+    warmupCount,
+    warmupRetryUsed,
+    weeklyGateCount,
+  ]);
 
   useEffect(() => {
     if (!done) {
@@ -370,20 +544,44 @@ export function SessionClient() {
 
   const rightActions = (
     <div className="flex items-center gap-2">
-      <button
-        type="button"
-        onClick={() => setShowText((v) => !v)}
-        className="rounded-2xl border border-[color:var(--kw-border)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-white"
-      >
-        {showText ? "Hide text" : "Show text"}
-      </button>
-      <button
-        type="button"
-        onClick={() => setShowTranslation((v) => !v)}
-        className="rounded-2xl border border-[color:var(--kw-border)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-white"
-      >
-        {showTranslation ? "Hide translation" : "Show translation"}
-      </button>
+      {canRevealCurrentStep ? (
+        <button
+          type="button"
+          onClick={revealTemporarily}
+          className="rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-[rgba(var(--kw-accent-rgb),0.14)]"
+        >
+          {showText && revealUntilMs ? "Reveal active" : "Reveal (I'm stuck)"}
+        </button>
+      ) : currentStep?.kind === "AYAH" ? (
+        <button
+          type="button"
+          onClick={() => {
+            setShowText((v) => {
+              const next = !v;
+              if (next) {
+                setTextVisibleDuringStep(true);
+              }
+              return next;
+            });
+          }}
+          className="rounded-2xl border border-[color:var(--kw-border)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-white"
+        >
+          {showText ? "Hide text" : "Show text"}
+        </button>
+      ) : null}
+      {currentStep?.kind === "AYAH" ? (
+        <button
+          type="button"
+          onClick={() => setShowTranslation((v) => !v)}
+          disabled={!showText}
+          className={clsx(
+            "rounded-2xl border border-[color:var(--kw-border)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-white",
+            !showText && "cursor-not-allowed opacity-60",
+          )}
+        >
+          {showTranslation ? "Hide translation" : "Show translation"}
+        </button>
+      ) : null}
       <Link href="/today">
         <Button variant="secondary" className="gap-2">
           Back to Today <ArrowRight size={16} />
@@ -485,6 +683,28 @@ export function SessionClient() {
   const ayah = getAyahById(ayahId);
   const ref = verseRefFromAyahId(ayahId);
   const translation = run.translations.byAyahId[String(ayahId)] ?? null;
+  const weeklyGateBoundary = warmupCount + weeklyGateCount;
+  const weeklyGateWindowActive = run.state.weeklyGateRequired && weeklyGateCount > 0 && stepIndex < weeklyGateBoundary;
+  const shouldShowWeeklyGateIntro = weeklyGateWindowActive && !coachSeen.weeklyGate;
+  const coachTip = !coachSeen.tiers
+    ? {
+      key: "tiers" as CoachKey,
+      title: "Sabaq, Sabqi, Manzil",
+      message: "Sabaq is yesterday's new material, Sabqi is recent review, and Manzil is long-term rotation.",
+    }
+    : run.state.warmupRequired && !coachSeen.warmup
+      ? {
+        key: "warmup" as CoachKey,
+        title: "Why warm-up can block new",
+        message: "Warm-up checks yesterday's Sabaq. If it does not pass, new memorization is paused to protect retention.",
+      }
+      : isGraded(currentStep) && !coachSeen.grades
+        ? {
+          key: "grades" as CoachKey,
+          title: "How grades work",
+          message: "Tap Again, Hard, Good, or Easy. Your choice saves the step and moves you forward immediately.",
+        }
+        : null;
 
   return (
     <div className="space-y-6">
@@ -500,7 +720,7 @@ export function SessionClient() {
         subtitle={
           quickReviewMode
             ? "Quick review-only run for due items."
-            : "Tap a grade button (1/2/3/4) to save this step and continue. New phases include Expose -> Guided -> Blind before linking."
+            : stepSummary(currentStep)
         }
         right={
           <div className="flex items-center gap-2">
@@ -511,22 +731,62 @@ export function SessionClient() {
         }
       />
 
+      {shouldShowWeeklyGateIntro ? (
+        <Card className="border-[rgba(234,88,12,0.28)] bg-[rgba(234,88,12,0.10)]">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Weekly consolidation gate (mandatory)</p>
+              <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">
+                This gate is required before new memorization continues. It protects retention and prevents hidden decay.
+              </p>
+            </div>
+            <Button size="sm" variant="secondary" onClick={() => markCoachSeen("weeklyGate")}>
+              I understand
+            </Button>
+          </div>
+        </Card>
+      ) : null}
+
+      {coachTip ? (
+        <Card className="border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)]">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{coachTip.title}</p>
+              <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">{coachTip.message}</p>
+            </div>
+            <Button size="sm" variant="secondary" onClick={() => markCoachSeen(coachTip.key)}>
+              Got it
+            </Button>
+          </div>
+        </Card>
+      ) : null}
+
       <Card>
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-2">
-            <Pill tone="neutral">Stage: {currentStep.stage}</Pill>
-            <Pill tone="neutral">Phase: {currentStep.phase}</Pill>
+            <Pill tone="neutral">{stepTitle(currentStep)}</Pill>
+            {currentStep.kind === "AYAH" && currentStep.stage === "NEW" ? (
+              <Pill tone="neutral">
+                {currentStep.phase === "NEW_EXPOSE"
+                  ? "Expose"
+                  : currentStep.phase === "NEW_GUIDED"
+                    ? "Guided recall"
+                    : "Blind recall"}
+              </Pill>
+            ) : null}
             {currentStep.kind === "AYAH" && currentStep.stage === "REVIEW" && currentStep.reviewTier ? (
-              <Pill tone="accent">{currentStep.reviewTier === "SABQI" ? "Sabqi" : "Manzil"}</Pill>
+              <Pill tone="accent">{currentStep.reviewTier === "SABQI" ? "Recent review tier" : "Long-term review tier"}</Pill>
             ) : null}
             {reviewOnlyLock ? <Pill tone="warn">Review-only</Pill> : null}
-            {run.state.monthlyTestRequired ? <Pill tone="warn">Monthly test required</Pill> : null}
+            {run.state.monthlyTestRequired ? <Pill tone="warn">Monthly retention check</Pill> : null}
+            {currentStepRequiresHiddenText ? <Pill tone="warn">Blind recall mode</Pill> : null}
+            {assistedThisStep ? <Pill tone="warn">Assisted reveal used</Pill> : null}
           </div>
 
           {currentStep.kind === "LINK" ? (
             <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                Link transition
+                Link practice
               </p>
               <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
                 Recite the seam: {verseRefLabel(currentStep.fromAyahId)}
@@ -544,25 +804,37 @@ export function SessionClient() {
                 <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
                   {ref ? `Surah ${ref.surahNumber}:${ref.ayahNumber}` : `Ayah ${currentStep.ayahId}`}
                 </p>
-                <div
-                  className={clsx(
-                    "mt-3 space-y-4",
-                    !showText && "select-none blur-[10px] opacity-70",
-                  )}
-                >
-                  <div dir="rtl" className="text-right text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
-                    {ayah?.textUthmani ?? "Ayah text unavailable"}
+                {showText ? (
+                  <div className="mt-3 space-y-4">
+                    <div dir="rtl" className="text-right text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
+                      {ayah?.textUthmani ?? "Ayah text unavailable"}
+                    </div>
+                    {showTranslation ? (
+                      <p dir="ltr" className="text-left text-sm leading-7 text-[color:var(--kw-muted)]">
+                        {translation ?? "Translation unavailable"}
+                      </p>
+                    ) : (
+                      <p dir="ltr" className="text-left text-sm leading-7 text-[color:var(--kw-faint)]">
+                        Translation hidden.
+                      </p>
+                    )}
                   </div>
-                  {showTranslation ? (
-                    <p dir="ltr" className="text-left text-sm leading-7 text-[color:var(--kw-muted)]">
-                      {translation ?? "Translation unavailable"}
+                ) : (
+                  <div className="mt-3 rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-3 py-3">
+                    <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Text hidden for recall integrity.</p>
+                    <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
+                      Recite from memory first.
+                      {currentStepRequiresHiddenText
+                        ? " Use Reveal only if stuck."
+                        : " You can show text from the top controls."}
                     </p>
-                  ) : (
-                    <p dir="ltr" className="text-left text-sm leading-7 text-[color:var(--kw-faint)]">
-                      Translation hidden.
-                    </p>
-                  )}
-                </div>
+                  </div>
+                )}
+                {showText && revealUntilMs ? (
+                  <p className="mt-2 text-xs font-semibold text-[color:var(--kw-faint)]">
+                    Assisted reveal active.
+                  </p>
+                ) : null}
               </div>
               <div className="max-w-xl">
                 <AyahAudioPlayer ayahId={currentStep.ayahId} />

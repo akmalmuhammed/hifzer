@@ -12,6 +12,19 @@ type Payload = {
   events?: unknown;
 };
 
+function toBool(input: unknown): boolean {
+  if (typeof input === "boolean") {
+    return input;
+  }
+  if (typeof input === "string") {
+    return input === "true" || input === "1";
+  }
+  if (typeof input === "number") {
+    return input === 1;
+  }
+  return false;
+}
+
 function normalizeEvents(input: unknown): SessionEventInput[] {
   if (!Array.isArray(input)) {
     return [];
@@ -41,6 +54,8 @@ function normalizeEvents(input: unknown): SessionEventInput[] {
       toAyahId: Number(raw.toAyahId),
       grade: gradeRaw as SessionEventInput["grade"],
       durationSec: Number.isFinite(durationSec) ? durationSec : 0,
+      textVisible: toBool(raw.textVisible),
+      assisted: toBool(raw.assisted),
       createdAt,
     });
   }

@@ -292,6 +292,8 @@ export type PendingSessionSyncPayload = {
     toAyahId?: number;
     grade?: "AGAIN" | "HARD" | "GOOD" | "EASY";
     durationSec: number;
+    textVisible?: boolean;
+    assisted?: boolean;
     createdAt: string;
   }>;
 };

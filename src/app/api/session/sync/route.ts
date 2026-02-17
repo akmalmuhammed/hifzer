@@ -30,35 +30,64 @@ type SessionSyncInput = {
   events: SessionEventInput[];
 };
 
-function normalizeLegacyEvents(input: unknown): SessionEventInput[] {
+function toBool(input: unknown): boolean {
+  if (typeof input === "boolean") {
+    return input;
+  }
+  if (typeof input === "string") {
+    return input === "true" || input === "1";
+  }
+  if (typeof input === "number") {
+    return input === 1;
+  }
+  return false;
+}
+
+function derivePhase(stage: SessionEventInput["stage"], phaseRaw: unknown): SessionEventInput["phase"] {
+  const phase = String(phaseRaw ?? "").trim();
+  if (phase) {
+    return phase as SessionEventInput["phase"];
+  }
+  if (stage === "NEW") {
+    return "NEW_BLIND";
+  }
+  if (stage === "WEEKLY_TEST") {
+    return "WEEKLY_TEST";
+  }
+  if (stage === "LINK_REPAIR") {
+    return "LINK_REPAIR";
+  }
+  return "STANDARD";
+}
+
+function normalizeEventRows(input: unknown): SessionEventInput[] {
   if (!Array.isArray(input)) {
     return [];
   }
   const out: SessionEventInput[] = [];
   input.forEach((row, idx) => {
-    const item = row as LegacyAttempt;
+    const item = row as LegacyAttempt & Record<string, unknown>;
     const ayahId = Number(item.ayahId);
+    const stepIndexRaw = Number(item.stepIndex);
+    const stepIndex = Number.isFinite(stepIndexRaw) ? stepIndexRaw : idx;
     const stage = String(item.stage ?? "").trim() as SessionEventInput["stage"];
-    const grade = String(item.grade ?? "").trim() as SessionEventInput["grade"];
+    const gradeRaw = item.grade == null ? null : String(item.grade).trim();
     const createdAt = String(item.createdAt ?? "");
+    const durationSec = Number(item.durationSec);
     if (!Number.isFinite(ayahId) || !createdAt) {
       return;
     }
-    let phase: SessionEventInput["phase"] = "STANDARD";
-    if (stage === "NEW") {
-      phase = "NEW_BLIND";
-    } else if (stage === "WEEKLY_TEST") {
-      phase = "WEEKLY_TEST";
-    } else if (stage === "LINK_REPAIR") {
-      phase = "LINK_REPAIR";
-    }
     out.push({
-      stepIndex: idx,
+      stepIndex,
       ayahId,
       stage,
-      phase,
-      grade,
-      durationSec: 0,
+      phase: derivePhase(stage, item.phase),
+      fromAyahId: Number(item.fromAyahId),
+      toAyahId: Number(item.toAyahId),
+      grade: gradeRaw as SessionEventInput["grade"],
+      durationSec: Number.isFinite(durationSec) ? durationSec : 0,
+      textVisible: toBool(item.textVisible),
+      assisted: toBool(item.assisted),
       createdAt,
     });
   });
@@ -79,7 +108,7 @@ function normalizeSessionList(input: unknown): SessionSyncInput[] {
     const startedAt = String(raw.startedAt ?? "");
     const endedAt = String(raw.endedAt ?? "");
     const localDate = raw.localDate == null ? undefined : String(raw.localDate);
-    const events = normalizeLegacyEvents(raw.events);
+    const events = normalizeEventRows(raw.events);
     if (!sessionId || !startedAt || !endedAt || !events.length) {
       continue;
     }
@@ -108,7 +137,7 @@ export async function POST(req: Request) {
     const startedAt = String(payload.startedAt ?? "");
     const endedAt = String(payload.endedAt ?? "");
     const localDate = payload.localDate == null ? undefined : String(payload.localDate);
-    const events = normalizeLegacyEvents(payload.attempts);
+    const events = normalizeEventRows(payload.attempts);
     if (!startedAt || !endedAt || !events.length) {
       return NextResponse.json({ error: "No sync sessions found in payload." }, { status: 400 });
     }

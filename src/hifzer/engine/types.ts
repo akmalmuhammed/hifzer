@@ -57,5 +57,7 @@ export type SessionEventInput = {
   toAyahId?: number;
   grade?: SrsGrade;
   durationSec: number;
+  textVisible?: boolean;
+  assisted?: boolean;
   createdAt: string;
 };
