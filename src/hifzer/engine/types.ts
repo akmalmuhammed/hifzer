@@ -25,7 +25,11 @@ export type TodayEngineResult = {
   monthlyTestRequired: boolean;
   warmupRequired: boolean;
   warmupRetryAllowed: boolean;
+  // Mode-level unlock. Gate pass/fail is evaluated during session completion.
   newUnlocked: boolean;
+  dueNowCount: number;
+  dueSoonCount: number;
+  nextDueAt: string | null;
   queue: TodayQueuePlan;
   meta: {
     missedDays: number;
@@ -35,7 +39,13 @@ export type TodayEngineResult = {
 };
 
 export type SessionStep =
-  | { kind: "AYAH"; stage: "WARMUP" | "REVIEW" | "NEW" | "WEEKLY_TEST" | "LINK_REPAIR"; ayahId: number; phase: "STANDARD" | "NEW_EXPOSE" | "NEW_GUIDED" | "NEW_BLIND" | "WEEKLY_TEST" | "LINK_REPAIR" }
+  | {
+    kind: "AYAH";
+    stage: "WARMUP" | "REVIEW" | "NEW" | "WEEKLY_TEST" | "LINK_REPAIR";
+    ayahId: number;
+    phase: "STANDARD" | "NEW_EXPOSE" | "NEW_GUIDED" | "NEW_BLIND" | "WEEKLY_TEST" | "LINK_REPAIR";
+    reviewTier?: "SABQI" | "MANZIL";
+  }
   | { kind: "LINK"; stage: "LINK" | "LINK_REPAIR"; fromAyahId: number; toAyahId: number; phase: "STANDARD" | "LINK_REPAIR" };
 
 export type SessionEventInput = {
@@ -49,4 +59,3 @@ export type SessionEventInput = {
   durationSec: number;
   createdAt: string;
 };
-

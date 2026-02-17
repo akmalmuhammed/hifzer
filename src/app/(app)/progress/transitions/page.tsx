@@ -12,6 +12,12 @@ type TransitionRow = {
   id: string;
   fromAyahId: number;
   toAyahId: number;
+  fromRef: { surahNumber: number; ayahNumber: number } | null;
+  toRef: { surahNumber: number; ayahNumber: number } | null;
+  fromSurahName: string | null;
+  toSurahName: string | null;
+  fromSnippet: string | null;
+  toSnippet: string | null;
   attemptCount: number;
   successCount: number;
   failCount: number;
@@ -20,6 +26,20 @@ type TransitionRow = {
   weak: boolean;
   lastOccurredAt: string;
 };
+
+function refLabel(ref: TransitionRow["fromRef"] | TransitionRow["toRef"], fallbackAyahId: number): string {
+  if (!ref) {
+    return `#${fallbackAyahId}`;
+  }
+  return `${ref.surahNumber}:${ref.ayahNumber}`;
+}
+
+function trimSnippet(text: string | null): string | null {
+  if (!text) {
+    return null;
+  }
+  return text.length > 44 ? `${text.slice(0, 44)}...` : text;
+}
 
 export default function TransitionsPage() {
   const [loading, setLoading] = useState(true);
@@ -88,13 +108,25 @@ export default function TransitionsPage() {
                       {row.weak ? "Weak" : "Stable"}
                     </Pill>
                     <Pill tone="neutral">
-                      {row.fromAyahId}
+                      {refLabel(row.fromRef, row.fromAyahId)}
                       {" -> "}
-                      {row.toAyahId}
+                      {refLabel(row.toRef, row.toAyahId)}
                     </Pill>
                     <Pill tone="neutral">Attempts: {row.attemptCount}</Pill>
                     <Pill tone="neutral">Success: {Math.round(row.successRate * 100)}%</Pill>
                   </div>
+                  <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+                    {row.fromSurahName ?? "Unknown surah"} {refLabel(row.fromRef, row.fromAyahId)}
+                    {" -> "}
+                    {row.toSurahName ?? "Unknown surah"} {refLabel(row.toRef, row.toAyahId)}
+                  </p>
+                  {row.fromSnippet || row.toSnippet ? (
+                    <p dir="rtl" className="mt-1 text-xs text-[color:var(--kw-faint)]">
+                      {trimSnippet(row.fromSnippet) ?? "..."}
+                      {"  ->  "}
+                      {trimSnippet(row.toSnippet) ?? "..."}
+                    </p>
+                  ) : null}
                   <p className="mt-3 text-sm text-[color:var(--kw-muted)]">
                     Failures: {row.failCount} | Last seen: {new Date(row.lastOccurredAt).toLocaleString()}
                   </p>

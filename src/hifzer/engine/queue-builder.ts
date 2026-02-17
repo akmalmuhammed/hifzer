@@ -170,7 +170,9 @@ export function buildTodayEngineQueue(input: {
     }
   }
 
-  const newUnlocked = mode !== "CATCH_UP" && warmupAyahIds.length === 0 && weeklyGateAyahIds.length === 0;
+  // Gate requirements are evaluated inside the session (warm-up / weekly pass).
+  // `newUnlocked` only represents mode-level eligibility.
+  const newUnlocked = mode !== "CATCH_UP";
 
   return {
     localDate,
@@ -184,6 +186,9 @@ export function buildTodayEngineQueue(input: {
     warmupRequired: warmupAyahIds.length > 0,
     warmupRetryAllowed: warmupAyahIds.length > 0,
     newUnlocked,
+    dueNowCount: input.dueReviews.length,
+    dueSoonCount: 0,
+    nextDueAt: null,
     queue: {
       warmupAyahIds,
       weeklyGateAyahIds,
@@ -199,4 +204,3 @@ export function buildTodayEngineQueue(input: {
     },
   };
 }
-

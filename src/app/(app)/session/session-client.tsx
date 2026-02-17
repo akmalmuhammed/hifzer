@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ArrowRight, CheckCircle2, CornerDownLeft, Link2, PlayCircle, RotateCcw } from "lucide-react";
 import clsx from "clsx";
 import { PageHeader } from "@/components/app/page-header";
@@ -25,6 +26,7 @@ type Step =
       stage: "WARMUP" | "REVIEW" | "NEW" | "WEEKLY_TEST" | "LINK_REPAIR";
       phase: "STANDARD" | "NEW_EXPOSE" | "NEW_GUIDED" | "NEW_BLIND" | "WEEKLY_TEST" | "LINK_REPAIR";
       ayahId: number;
+      reviewTier?: "SABQI" | "MANZIL";
     }
   | {
       kind: "LINK";
@@ -82,17 +84,27 @@ function isGraded(step: Step): boolean {
 
 function stepTitle(step: Step): string {
   if (step.kind === "LINK") {
-    return step.stage === "LINK_REPAIR" ? "Link repair" : "Link";
+    return step.stage === "LINK_REPAIR" ? "Link repair" : "Link transition";
   }
   if (step.stage === "NEW") {
     if (step.phase === "NEW_EXPOSE") return "New (Expose)";
     if (step.phase === "NEW_GUIDED") return "New (Guided)";
     return "New (Blind)";
   }
+  if (step.stage === "REVIEW" && step.reviewTier === "SABQI") return "Sabqi review";
+  if (step.stage === "REVIEW" && step.reviewTier === "MANZIL") return "Manzil review";
   if (step.stage === "WEEKLY_TEST") return "Weekly test";
-  if (step.stage === "WARMUP") return "Warm-up";
-  if (step.stage === "LINK_REPAIR") return "Repair";
+  if (step.stage === "WARMUP") return "Warm-up (Sabaq check)";
+  if (step.stage === "LINK_REPAIR") return "Link repair";
   return "Review";
+}
+
+function verseRefLabel(ayahId: number): string {
+  const ref = verseRefFromAyahId(ayahId);
+  if (!ref) {
+    return `#${ayahId}`;
+  }
+  return `${ref.surahNumber}:${ref.ayahNumber}`;
 }
 
 function toEvent(step: Step, input: {
@@ -126,6 +138,8 @@ function toEvent(step: Step, input: {
 }
 
 export function SessionClient() {
+  const searchParams = useSearchParams();
+  const quickReviewMode = searchParams.get("focus") === "review";
   const { pushToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -200,14 +214,18 @@ export function SessionClient() {
     if (!run) {
       return [];
     }
-    if (!reviewOnlyLock) {
-      return run.steps;
+    let nextSteps = run.steps;
+    if (quickReviewMode) {
+      nextSteps = nextSteps.filter((step) => step.stage === "REVIEW" || step.stage === "LINK_REPAIR");
     }
-    return run.steps.filter((step) => step.stage !== "NEW" && step.stage !== "LINK");
-  }, [run, reviewOnlyLock]);
+    if (reviewOnlyLock) {
+      nextSteps = nextSteps.filter((step) => step.stage !== "NEW" && step.stage !== "LINK");
+    }
+    return nextSteps;
+  }, [quickReviewMode, run, reviewOnlyLock]);
 
   const currentStep = filteredSteps[stepIndex] ?? null;
-  const done = Boolean(run && stepIndex >= filteredSteps.length);
+  const done = Boolean(run && filteredSteps.length > 0 && stepIndex >= filteredSteps.length);
 
   const warmupCount = useMemo(
     () => filteredSteps.filter((step) => step.stage === "WARMUP").length,
@@ -421,11 +439,16 @@ export function SessionClient() {
   if (!currentStep) {
     return (
       <div className="space-y-6">
-        <PageHeader eyebrow="Practice" title="Session" subtitle="No steps queued today." right={rightActions} />
+        <PageHeader
+          eyebrow="Practice"
+          title="Session"
+          subtitle={quickReviewMode ? "No review items are due right now." : "No steps queued today."}
+          right={rightActions}
+        />
         <Card>
           <EmptyState
             title="No queue"
-            message="There are no scheduled steps at the moment."
+            message={quickReviewMode ? "Your due-review queue is currently empty." : "There are no scheduled steps at the moment."}
             icon={<PlayCircle size={18} />}
             action={
               <Link href="/today">
@@ -457,10 +480,15 @@ export function SessionClient() {
           </span>
         }
         title={stepTitle(currentStep)}
-        subtitle="Grade recall steps with 1/2/3/4. New phases include Expose -> Guided -> Blind before linking."
+        subtitle={
+          quickReviewMode
+            ? "Quick review-only run for due items."
+            : "Grade recall steps with 1/2/3/4. New phases include Expose -> Guided -> Blind before linking."
+        }
         right={
           <div className="flex items-center gap-2">
             <Pill tone="neutral">{progressText}</Pill>
+            {quickReviewMode ? <Pill tone="accent">Review-only</Pill> : null}
             {rightActions}
           </div>
         }
@@ -471,6 +499,9 @@ export function SessionClient() {
           <div className="flex flex-wrap items-center gap-2">
             <Pill tone="neutral">Stage: {currentStep.stage}</Pill>
             <Pill tone="neutral">Phase: {currentStep.phase}</Pill>
+            {currentStep.kind === "AYAH" && currentStep.stage === "REVIEW" && currentStep.reviewTier ? (
+              <Pill tone="accent">{currentStep.reviewTier === "SABQI" ? "Sabqi" : "Manzil"}</Pill>
+            ) : null}
             {reviewOnlyLock ? <Pill tone="warn">Review-only</Pill> : null}
             {run.state.monthlyTestRequired ? <Pill tone="warn">Monthly test required</Pill> : null}
           </div>
@@ -481,13 +512,13 @@ export function SessionClient() {
                 Link transition
               </p>
               <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
-                Recite the seam: {currentStep.fromAyahId}
+                Recite the seam: {verseRefLabel(currentStep.fromAyahId)}
                 {" -> "}
-                {currentStep.toAyahId}
+                {verseRefLabel(currentStep.toAyahId)}
               </p>
               <div className="mt-4 inline-flex items-center gap-2 rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]">
                 <Link2 size={16} />
-                Ayah {currentStep.fromAyahId} + Ayah {currentStep.toAyahId}
+                Ayah {verseRefLabel(currentStep.fromAyahId)} + Ayah {verseRefLabel(currentStep.toAyahId)}
               </div>
             </div>
           ) : (

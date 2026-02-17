@@ -20,10 +20,14 @@ type TodayPayload = {
     reviewDebtMinutes: number;
     debtRatio: number;
     reviewFloorPct: number;
+    retention3dAvg: number;
     weeklyGateRequired: boolean;
     monthlyTestRequired: boolean;
     warmupRequired: boolean;
     newUnlocked: boolean;
+    dueNowCount: number;
+    dueSoonCount: number;
+    nextDueAt: string | null;
     queue: {
       warmupAyahIds: number[];
       weeklyGateAyahIds: number[];
@@ -32,9 +36,47 @@ type TodayPayload = {
       repairLinks: Array<{ fromAyahId: number; toAyahId: number }>;
       newAyahIds: number[];
     };
+    meta: {
+      missedDays: number;
+      weekOne: boolean;
+      reviewPoolSize: number;
+    };
   };
   monthlyAdjustmentMessage?: string | null;
 };
+
+function modeExplain(state: TodayPayload["state"]): { title: string; body: string; tone: "neutral" | "warn" | "accent" } {
+  const debtPct = Math.round(state.debtRatio);
+  if (state.mode === "CATCH_UP") {
+    const reason = state.meta.missedDays >= 3
+      ? `you missed ${state.meta.missedDays} days`
+      : `review debt is ${debtPct}% of your daily budget`;
+    return {
+      tone: "warn",
+      title: `You are in Catch-up because ${reason}.`,
+      body: "New is paused. Complete Sabqi + Manzil until debt falls below 45%, then Normal mode unlocks new again.",
+    };
+  }
+
+  if (state.mode === "CONSOLIDATION") {
+    const reason = state.retention3dAvg < 1.8
+      ? `retention dropped (${state.retention3dAvg.toFixed(2)} / 3)`
+      : state.meta.missedDays === 2
+        ? "you missed 2 days"
+        : `review debt reached ${debtPct}%`;
+    return {
+      tone: "warn",
+      title: `You are in Consolidation because ${reason}.`,
+      body: "New stays limited while review density is increased. Clear today’s review queue to return to Normal.",
+    };
+  }
+
+  return {
+    tone: "accent",
+    title: "You are in Normal mode.",
+    body: "Warm-up and weekly gates still apply, but new memorization is available once required gates are passed.",
+  };
+}
 
 export function TodayClient() {
   const [loading, setLoading] = useState(true);
@@ -73,6 +115,15 @@ export function TodayClient() {
     );
   }, [data]);
 
+  const modeExplanation = data ? modeExplain(data.state) : null;
+  const hasReviewPressure = Boolean(data && (data.state.dueNowCount > 0 || data.state.dueSoonCount > 0));
+  const canStartNewNow = Boolean(
+    data &&
+      data.state.newUnlocked &&
+      !data.state.warmupRequired &&
+      !data.state.weeklyGateRequired,
+  );
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -86,6 +137,13 @@ export function TodayClient() {
                 Start session <PlayCircle size={16} />
               </Button>
             </Link>
+            {hasReviewPressure ? (
+              <Link href="/session?focus=review">
+                <Button variant="secondary" className="gap-2">
+                  Quick review <ArrowRight size={16} />
+                </Button>
+              </Link>
+            ) : null}
             <Link href="/quran">
               <Button variant="secondary" className="gap-2">
                 Browse Qur&apos;an <BookOpenText size={16} />
@@ -129,7 +187,10 @@ export function TodayClient() {
               {data.state.weeklyGateRequired ? <Pill tone="warn">Weekly gate</Pill> : null}
               {data.state.monthlyTestRequired ? <Pill tone="warn">Monthly test required</Pill> : null}
               <Pill tone={data.state.newUnlocked ? "accent" : "neutral"}>
-                {data.state.newUnlocked ? "New unlocked" : "New locked"}
+                {data.state.newUnlocked ? "Mode allows new" : "Mode blocks new"}
+              </Pill>
+              <Pill tone={canStartNewNow ? "success" : "neutral"}>
+                {canStartNewNow ? "Can start new now" : "Gate pass required"}
               </Pill>
             </div>
           ) : null}
@@ -176,13 +237,61 @@ export function TodayClient() {
                 Begin session <ArrowRight size={16} />
               </Button>
             </Link>
+            <Link href="/session?focus=review">
+              <Button variant="secondary" className="gap-2">
+                Review-only <PlayCircle size={16} />
+              </Button>
+            </Link>
             <Button variant="secondary" className="gap-2" onClick={() => void load()}>
               Reload <RefreshCcw size={16} />
             </Button>
           </div>
         </Card>
       </div>
+
+      {!loading && !error && data ? (
+        <Card>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+                Mode explainer
+              </p>
+              <p className="mt-2 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                {modeExplanation?.title}
+              </p>
+              <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+                {modeExplanation?.body}
+              </p>
+            </div>
+            <Pill tone={modeExplanation?.tone ?? "neutral"}>{data.state.mode}</Pill>
+          </div>
+        </Card>
+      ) : null}
+
+      {!loading && !error && data ? (
+        <Card>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+                Due now / soon
+              </p>
+              <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+                Due now: <span className="font-semibold text-[color:var(--kw-ink)]">{data.state.dueNowCount}</span>
+                {" · "}
+                Due in next 6h: <span className="font-semibold text-[color:var(--kw-ink)]">{data.state.dueSoonCount}</span>
+              </p>
+              <p className="mt-1 text-xs text-[color:var(--kw-faint)]">
+                Next due: {data.state.nextDueAt ? new Date(data.state.nextDueAt).toLocaleString() : "No upcoming review"}
+              </p>
+            </div>
+            <Link href="/session?focus=review">
+              <Button variant="secondary" className="gap-2">
+                Start quick review <PlayCircle size={16} />
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      ) : null}
     </div>
   );
 }
-

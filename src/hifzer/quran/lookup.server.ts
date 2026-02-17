@@ -86,6 +86,15 @@ export function listSurahs(): SurahInfo[] {
   return Array.from(surahInfoByNumber.values()).sort((a, b) => a.surahNumber - b.surahNumber);
 }
 
+export function getAyahById(ayahId: AyahId): Ayah | null {
+  const id = Number(ayahId);
+  if (!Number.isFinite(id)) {
+    return null;
+  }
+  const { ayahById } = getQuranLookup();
+  return ayahById.get(id) ?? null;
+}
+
 export function getSurahInfo(surahNumber: number): SurahInfo | null {
   if (!Number.isFinite(surahNumber)) {
     return null;

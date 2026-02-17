@@ -82,10 +82,10 @@ function buildSteps(queue: TodayEngineResult["queue"]): SessionStep[] {
     steps.push({ kind: "AYAH", stage: "WEEKLY_TEST", phase: "WEEKLY_TEST", ayahId });
   }
   for (const ayahId of queue.sabqiReviewAyahIds) {
-    steps.push({ kind: "AYAH", stage: "REVIEW", phase: "STANDARD", ayahId });
+    steps.push({ kind: "AYAH", stage: "REVIEW", phase: "STANDARD", ayahId, reviewTier: "SABQI" });
   }
   for (const ayahId of queue.manzilReviewAyahIds) {
-    steps.push({ kind: "AYAH", stage: "REVIEW", phase: "STANDARD", ayahId });
+    steps.push({ kind: "AYAH", stage: "REVIEW", phase: "STANDARD", ayahId, reviewTier: "MANZIL" });
   }
   for (const link of queue.repairLinks) {
     steps.push({
@@ -199,6 +199,14 @@ export async function loadTodayState(clerkUserId: string): Promise<{
     weeklyGateDue(profile.id, now),
   ]);
   const dueReviews = allReviews.filter((r) => r.nextReviewAt.getTime() <= now.getTime());
+  const dueSoonHorizon = now.getTime() + (6 * 60 * 60 * 1000);
+  const dueSoonCount = allReviews.filter((r) => {
+    const ts = r.nextReviewAt.getTime();
+    return ts > now.getTime() && ts <= dueSoonHorizon;
+  }).length;
+  const nextDueAtDate = allReviews
+    .map((r) => r.nextReviewAt)
+    .sort((a, b) => a.getTime() - b.getTime())[0] ?? null;
   const yesterdayNew = await yesterdayNewAyahIds(profile.id, localDate);
 
   let state = buildTodayEngineQueue({
@@ -219,6 +227,9 @@ export async function loadTodayState(clerkUserId: string): Promise<{
       debtRatio: state.debtRatio,
       retention3dAvg: state.retention3dAvg,
     }),
+    dueNowCount: dueReviews.length,
+    dueSoonCount,
+    nextDueAt: nextDueAtDate ? nextDueAtDate.toISOString() : null,
   };
 
   return { profile, state, steps: buildSteps(state.queue) };
