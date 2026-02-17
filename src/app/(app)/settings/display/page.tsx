@@ -49,7 +49,7 @@ function SelectPill(props: {
           ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]"
           : props.selected
             ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-            : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)] hover:bg-white",
+            : "border-[color:var(--kw-border-2)] bg-[color:var(--kw-card)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-card-strong)]",
       ].join(" ")}
     >
       {props.selected ? <Check size={14} /> : null}

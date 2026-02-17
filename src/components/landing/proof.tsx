@@ -7,25 +7,25 @@ import { Sparkline } from "@/components/charts/sparkline";
 
 const SECTIONS = [
   {
-    title: "Durable signal, from day one",
+    title: "Know exactly where you stand",
     copy:
-      "Instead of a vague confidence slider, every ayah gets a grade: Again, Hard, Good, Easy. That becomes scheduling data now, and it stays compatible when AI scoring arrives later.",
+      "After each ayah, you grade yourself: Again, Hard, Good, Easy. The system uses that to decide what you review next and when — no guesswork.",
     icon: <Gauge size={18} />,
     trend: [0.42, 0.5, 0.56, 0.6, 0.66, 0.7, 0.74],
-    meta: "Grades drive next review time",
+    meta: "Grades drive your review schedule",
   },
   {
-    title: "Linking flow (lite)",
+    title: "Smooth transitions from day one",
     copy:
-      "New memorization is not just repeating a line. Hifzer adds a simple linking step: previous + current, so transitions strengthen early.",
+      "Memorizing isn't just learning individual ayahs — it's connecting them. Every session includes a link step so you can recite seamlessly, not just piece by piece.",
     icon: <Link2 size={18} />,
     trend: [0.18, 0.22, 0.28, 0.33, 0.4, 0.48, 0.55],
-    meta: "Transitions improve with repetition",
+    meta: "Connections strengthen with practice",
   },
   {
-    title: "Recovery protocol",
+    title: "Miss a day? The plan adjusts",
     copy:
-      "Missed days happen. The plan adapts: review-first after 1 miss, review-only after 2, structured catch-up after 3+ until stable.",
+      "Life happens. After 1 missed day, reviews come first. After 2, new material pauses. After 3+, a structured catch-up kicks in until you're back on track.",
     icon: <RotateCcw size={18} />,
     trend: [0.9, 0.78, 0.66, 0.7, 0.76, 0.82, 0.88],
     meta: "Consistency over perfection",

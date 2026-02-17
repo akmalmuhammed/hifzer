@@ -17,42 +17,42 @@ const FEATURES = [
   {
     title: "Plan that adapts",
     copy:
-      "A simple daily plan that balances new memorization and review. When you miss days, it automatically shifts to protect retention.",
+      "A daily plan that balances new memorization and review automatically. Miss a day? It shifts to protect what you've already memorized first.",
     icon: <CalendarDays size={18} />,
     pill: { label: "Plan", tone: "brand" as const },
   },
   {
-    title: "Per-ayah grades",
+    title: "Per-ayah grading",
     copy:
-      "Again, Hard, Good, Easy at the ayah level. Useful today, and compatible with future AI scoring without a data reset.",
+      "Grade every ayah individually — Again, Hard, Good, Easy. The system learns which ayahs need more repetition and which are solid.",
     icon: <Timer size={18} />,
     pill: { label: "SRS", tone: "accent" as const },
   },
   {
-    title: "Linking flow (lite)",
+    title: "Transition training",
     copy:
-      "For new ayahs, practice includes a link step: previous + current. It helps transitions become stable early, not months later.",
+      "Most forgetting happens between ayahs, not within them. Every session includes a link step so transitions become second nature early.",
     icon: <Link2 size={18} />,
     pill: { label: "Flow", tone: "warn" as const },
   },
   {
     title: "Progress you can navigate",
     copy:
-      "Dashboards that answer: what is due, what is weak, what is improving, and where your plan is headed next.",
+      "See what is due, what is weak, what is improving, and where your plan is headed — all in one view, updated daily.",
     icon: <Map size={18} />,
     pill: { label: "Progress", tone: "neutral" as const },
   },
   {
-    title: "Local Qur'an seed",
+    title: "Full Qur'an built in",
     copy:
-      "Arabic text (Tanzil Uthmani), English translation (Saheeh International), and surah metadata are bundled locally. No runtime API dependency just to render text.",
+      "Arabic text, English translation, and surah metadata are included from day one. No extra apps or downloads needed to start memorizing.",
     icon: <BookOpenText size={18} />,
     pill: { label: "Qur'an", tone: "brand" as const },
   },
   {
-    title: "Audio everywhere",
+    title: "Audio on every ayah",
     copy:
-      "Every ayah includes a player with repeat and speed controls. Cloudflare R2 ready, with a safe fallback when not configured.",
+      "Listen, repeat, and adjust speed — every ayah has a built-in player. Hear the correct recitation before and during your practice.",
     icon: <AudioLines size={18} />,
     pill: { label: "Audio", tone: "accent" as const },
   },
@@ -85,10 +85,10 @@ export function FeatureGrid() {
                 Principle
               </p>
               <p className="mt-2 text-lg font-semibold text-[color:var(--kw-ink)]">
-                Signal over ceremony.
+                Every screen earns its place.
               </p>
               <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">
-                If an interaction does not change what you review next, it does not earn pixels.
+                No clutter, no vanity stats. If something doesn&apos;t help you review or memorize better, it&apos;s not in the app.
               </p>
             </div>
             <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]">

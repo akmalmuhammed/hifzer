@@ -9,6 +9,7 @@ import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const LINKS = [
   { href: "/pricing", label: "Pricing" },
@@ -77,7 +78,9 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                 </PublicAuthLink>
               </>
             )}
-          </div>
+
+              <ThemeToggle className="ml-1" />
+            </div>
 
           <button
             type="button"
@@ -139,10 +142,13 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                   </PublicAuthLink>
                 </>
               )}
+              </div>
+              <div className="mt-3 flex justify-center">
+                <ThemeToggle />
+              </div>
             </div>
           </div>
         </div>
-      </div>
     </header>
   );
 }

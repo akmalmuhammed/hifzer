@@ -30,7 +30,7 @@ export default async function AppGroupLayout({ children }: { children: React.Rea
   }
 
   return (
-    <AppShell>
+    <AppShell streakEnabled={Boolean(profile?.onboardingCompleted)}>
       <PaddleProvider
         customerEmail={customerEmail}
         paddleCustomerId={profile?.paddleCustomerId ?? null}

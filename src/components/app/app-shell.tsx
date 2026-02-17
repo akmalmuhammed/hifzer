@@ -11,7 +11,9 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { HifzerMark } from "@/components/brand/hifzer-mark";
+import { StreakCornerBadge } from "@/components/app/streak-corner-badge";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const NAV = [
   { href: "/today", label: "Today", icon: CalendarDays },
@@ -49,11 +51,12 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href;
 }
 
-export function AppShell(props: { children: React.ReactNode }) {
+export function AppShell(props: { children: React.ReactNode; streakEnabled?: boolean }) {
   const pathname = usePathname();
 
   return (
     <div className="min-h-dvh">
+      <StreakCornerBadge enabled={Boolean(props.streakEnabled)} />
       <div className="mx-auto w-full max-w-[1200px] px-4 py-6 md:flex md:gap-6">
         <aside className="hidden w-[240px] shrink-0 md:block">
           <div className="sticky top-6 space-y-4">
@@ -98,8 +101,13 @@ export function AppShell(props: { children: React.ReactNode }) {
             </nav>
 
             <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/55 px-4 py-3 text-xs text-[color:var(--kw-muted)]">
-              <p className="font-semibold text-[color:var(--kw-ink)]">Keyboard</p>
-              <p className="mt-2 leading-6">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="font-semibold text-[color:var(--kw-ink)]">Keyboard</p>
+                <div className="-mr-1 -mt-1 scale-90">
+                  <ThemeToggle />
+                </div>
+              </div>
+              <p className="leading-6">
                 In session: <span className="font-semibold">1</span> Again, <span className="font-semibold">2</span>{" "}
                 Hard, <span className="font-semibold">3</span> Good, <span className="font-semibold">4</span>{" "}
                 Easy, <span className="font-semibold">T</span> toggle text.
