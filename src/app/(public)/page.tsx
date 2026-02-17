@@ -7,8 +7,6 @@ import { PricingTeaser } from "@/components/landing/pricing-teaser";
 import { Proof } from "@/components/landing/proof";
 import { QualityGates } from "@/components/landing/quality-gates";
 import { SessionWalkthrough } from "@/components/landing/session-walkthrough";
-import { SocialProof } from "@/components/landing/social-proof";
-
 export default function LandingPage() {
   return (
     <div className="pb-8">
@@ -18,7 +16,6 @@ export default function LandingPage() {
       <Proof />
       <FeatureGrid />
       <ComparisonMatrix />
-      <SocialProof />
       <PricingTeaser />
       <FaqSection />
       <FinalCta />

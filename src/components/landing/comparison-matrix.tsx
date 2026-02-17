@@ -14,7 +14,6 @@ const ROWS = [
   { feature: "Adapts to missed days", teacher: false, generic: false, hifzer: true },
   { feature: "Mode switching (auto)", teacher: false, generic: false, hifzer: true },
   { feature: "Works with a teacher", teacher: true, generic: false, hifzer: true },
-  { feature: "AI-ready grading data", teacher: false, generic: false, hifzer: true },
 ] as const;
 
 function CellIcon({ value }: { value: boolean | "partial" }) {

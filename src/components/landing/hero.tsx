@@ -60,10 +60,9 @@ export function Hero() {
             variants={fadeUp}
             className="mt-5 max-w-xl text-pretty text-base leading-7 text-[color:var(--kw-muted)]"
           >
-            Most memorized ayahs are lost within weeks — not because you don&apos;t care, but because
-            you don&apos;t have a review system. Hifzer enforces the rules that make memorization stick: quality
-            gates that block false progress, a debt engine that protects retention, and a daily plan
-            that balances Sabaq, Sabqi, and Manzil.
+            Most of what you memorize fades before it sticks. Hifzer is a daily enforcement system
+            that blocks false progress, protects what you&apos;ve already learned, and adapts when
+            life gets in the way.
           </motion.p>
 
           <motion.div variants={fadeUp} className="mt-7 flex flex-wrap items-center gap-3">

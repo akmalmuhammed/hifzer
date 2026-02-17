@@ -1,12 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Pill } from "@/components/ui/pill";
 
 export function FinalCta() {
   const reduceMotion = useReducedMotion();
@@ -17,56 +14,36 @@ export function FinalCta() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.25 }}
         transition={{ duration: reduceMotion ? 0 : 0.5 }}
+        className="relative overflow-hidden rounded-[28px] border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[radial-gradient(ellipse_at_top,rgba(var(--kw-accent-rgb),0.10)_0%,transparent_60%)] px-6 py-16 text-center md:px-12 md:py-20"
       >
-        <Card className="relative overflow-hidden">
-          <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[radial-gradient(closest-side,rgba(10,138,119,0.18),transparent_68%)] blur-2xl" />
-          <div className="pointer-events-none absolute -bottom-28 -left-24 h-72 w-72 rounded-full bg-[radial-gradient(closest-side,rgba(var(--kw-accent-rgb),0.16),transparent_68%)] blur-2xl" />
+        <div className="pointer-events-none absolute -right-32 -top-32 h-80 w-80 rounded-full bg-[radial-gradient(closest-side,rgba(10,138,119,0.16),transparent_68%)] blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-[radial-gradient(closest-side,rgba(var(--kw-accent-rgb),0.12),transparent_68%)] blur-3xl" />
 
-          <div className="flex flex-wrap items-start justify-between gap-6">
-            <div className="max-w-2xl">
-              <Pill tone="brand">Start today</Pill>
-              <h3 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-3xl leading-tight tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
-                Stop re-memorizing what you already learned.
-                <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Let the system enforce retention.</span>
-              </h3>
-              <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-                Choose your starting point. The quality gates, debt engine, and daily plan handle
-                the rest — so nothing slips through.
-              </p>
-            </div>
+        <div className="relative mx-auto max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(var(--kw-accent-rgb),1)]">
+            Your Hifz deserves a system
+          </p>
+          <h3 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-4xl leading-[1.05] tracking-tight text-[color:var(--kw-ink)] sm:text-5xl">
+            Everything you&apos;ve memorized
+            <span className="block text-[rgba(var(--kw-accent-rgb),1)]">can still be lost.</span>
+          </h3>
+          <p className="mx-auto mt-5 max-w-md text-base leading-7 text-[color:var(--kw-muted)]">
+            Without daily review, retention silently erodes. Hifzer enforces the schedule that keeps
+            it solid — automatically, every day.
+          </p>
 
-            <div className="flex w-full flex-col gap-2 sm:w-auto">
-              <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
-                <Button size="lg" className="w-full sm:w-auto">
-                  Get started free <ArrowRight size={18} />
-                </Button>
-              </PublicAuthLink>
-              <Link href="/pricing">
-                <Button size="lg" variant="secondary" className="w-full sm:w-auto">
-                  See pricing
-                </Button>
-              </Link>
-            </div>
+          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
+              <Button size="lg">
+                Start protecting your Hifz <ArrowRight size={18} />
+              </Button>
+            </PublicAuthLink>
           </div>
 
-          <div className="mt-8 grid gap-2 md:grid-cols-3">
-            {[
-              { k: "Quality gates", v: "Yesterday's Sabaq must pass" },
-              { k: "Review debt engine", v: "Minutes-based, not item count" },
-              { k: "Mode switching", v: "Normal → Consolidation → Catch-up" },
-            ].map((row) => (
-              <div
-                key={row.k}
-                className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-3"
-              >
-                <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                  {row.k}
-                </p>
-                <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">{row.v}</p>
-              </div>
-            ))}
-          </div>
-        </Card>
+          <p className="mt-5 text-xs text-[color:var(--kw-faint)]">
+            Free forever for core features. No card required.
+          </p>
+        </div>
       </motion.div>
     </section>
   );
