@@ -12,6 +12,19 @@ enum PlanBias {
   SPEED
 }
 
+enum SubscriptionPlan {
+  FREE
+  PAID
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  PAUSED
+  CANCELED
+}
+
 enum SrsMode {
   NORMAL
   CONSOLIDATION
@@ -53,6 +66,12 @@ model UserProfile {
   activeSurahNumber     Int
   cursorAyahId          Int
   mode                  SrsMode  @default(NORMAL)
+
+  plan                  SubscriptionPlan   @default(FREE)
+  paddleCustomerId      String?            @unique
+  paddleSubscriptionId  String?            @unique
+  subscriptionStatus    SubscriptionStatus?
+  currentPeriodEnd      DateTime?
 
   darkMode              Boolean @default(false)
   themePreset           String  @default("standard")

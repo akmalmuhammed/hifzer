@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { UserProfile } from "@prisma/client";
+import type { SubscriptionPlan, SubscriptionStatus, UserProfile } from "@prisma/client";
 import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
 import { db, dbConfigured } from "@/lib/db";
 
@@ -16,6 +16,11 @@ export type ProfileSnapshot = {
   onboardingCompleted: boolean;
   activeSurahNumber: number;
   cursorAyahId: number;
+  plan: SubscriptionPlan;
+  paddleCustomerId: string | null;
+  paddleSubscriptionId: string | null;
+  subscriptionStatus: SubscriptionStatus | null;
+  currentPeriodEnd: string | null;
   darkMode: boolean;
   themePreset: string;
   accentPreset: string;
@@ -40,6 +45,7 @@ function defaultCreateData(clerkUserId: string) {
     reminderTimeLocal: DEFAULT_REMINDER_TIME,
     activeSurahNumber,
     cursorAyahId,
+    plan: "FREE" as const,
     darkMode: false,
     themePreset: DEFAULT_THEME,
     accentPreset: DEFAULT_ACCENT,
@@ -53,6 +59,11 @@ function toSnapshot(row: UserProfile): ProfileSnapshot {
     onboardingCompleted: Boolean(row.onboardingCompletedAt),
     activeSurahNumber: row.activeSurahNumber,
     cursorAyahId: row.cursorAyahId,
+    plan: row.plan,
+    paddleCustomerId: row.paddleCustomerId,
+    paddleSubscriptionId: row.paddleSubscriptionId,
+    subscriptionStatus: row.subscriptionStatus,
+    currentPeriodEnd: row.currentPeriodEnd ? row.currentPeriodEnd.toISOString() : null,
     darkMode: row.darkMode,
     themePreset: row.themePreset,
     accentPreset: row.accentPreset,
