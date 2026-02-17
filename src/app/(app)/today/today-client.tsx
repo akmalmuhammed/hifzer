@@ -12,7 +12,7 @@ import { formatModeLabel, getActiveSurahNumber, getCursorAyahId, getLastComplete
 import { getSurahInfo } from "@/hifzer/quran/lookup";
 
 export function TodayClient() {
-  const [snapshot] = useState(() => {
+  const [snapshot, setSnapshot] = useState(() => {
     const now = new Date();
     const today = todayIsoLocalDate(now);
     const activeSurahNumber = getActiveSurahNumber();
@@ -237,11 +237,30 @@ export function TodayClient() {
               If you changed your start point in another tab, reload this page to refresh the local snapshot.
             </p>
           </div>
-          <Link href="/today" className="inline-flex">
-            <Button variant="secondary" className="gap-2">
-              Reload <RefreshCcw size={16} />
-            </Button>
-          </Link>
+          <Button
+            variant="secondary"
+            className="gap-2"
+            onClick={() => {
+              const now = new Date();
+              const today = todayIsoLocalDate(now);
+              const activeSurahNumber = getActiveSurahNumber();
+              const cursorAyahId = getCursorAyahId();
+              const open = getOpenSession();
+              const due = listDueReviews(now);
+              const last = getLastCompletedLocalDate();
+              setSnapshot({
+                now,
+                today,
+                activeSurahNumber,
+                cursorAyahId,
+                open,
+                due,
+                lastCompletedLocalDate: last,
+              });
+            }}
+          >
+            Reload <RefreshCcw size={16} />
+          </Button>
         </div>
       </Card>
     </div>

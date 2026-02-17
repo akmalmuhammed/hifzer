@@ -100,7 +100,7 @@ export default function OnboardingStartPointPage() {
         title="Start point"
         subtitle="Choose any surah, then choose the ayah you want to start from."
         right={
-          <Link href="/quran" className="text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">
+          <Link href="/quran-preview" className="text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">
             Browse Qur&apos;an
           </Link>
         }

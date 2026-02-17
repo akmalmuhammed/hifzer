@@ -64,11 +64,18 @@ export default function PlanPreviewPage() {
         title="Plan preview"
         subtitle="A 7-day preview. This is a placeholder plan that will be replaced by the SRS engine."
         right={
-          <Link href="/onboarding/permissions">
-            <Button variant="secondary" className="gap-2">
-              Continue <ArrowRight size={16} />
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/onboarding/fluency-check">
+              <Button variant="ghost" className="gap-2">
+                Fluency check <ArrowRight size={16} />
+              </Button>
+            </Link>
+            <Link href="/onboarding/permissions">
+              <Button variant="secondary" className="gap-2">
+                Continue <ArrowRight size={16} />
+              </Button>
+            </Link>
+          </div>
         }
       />
 

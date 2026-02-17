@@ -40,7 +40,7 @@ export function MarketingFooter() {
           </Link>
           <PublicAuthLink
             signedInHref="/today"
-            signedOutHref="/login"
+            signedOutHref="/welcome"
             className="font-semibold text-[color:var(--kw-ink)] hover:underline"
           >
             App

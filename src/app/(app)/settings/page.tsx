@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell, Palette, SlidersHorizontal, UserRound } from "lucide-react";
+import { Bell, Eye, GraduationCap, Palette, SlidersHorizontal, Target, UserRound, Volume2 } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
@@ -37,6 +37,41 @@ const ITEMS = [
     icon: <Bell size={18} />,
     tone: "warn" as const,
   },
+  {
+    href: "/settings/privacy",
+    title: "Privacy",
+    desc: "Retention controls, export, and delete policies.",
+    icon: <Eye size={18} />,
+    tone: "neutral" as const,
+  },
+  {
+    href: "/settings/reciter",
+    title: "Reciter",
+    desc: "Audio voice profile and playback defaults.",
+    icon: <Volume2 size={18} />,
+    tone: "accent" as const,
+  },
+  {
+    href: "/settings/scoring",
+    title: "Scoring",
+    desc: "Grade labels and scoring behavior for session reviews.",
+    icon: <Target size={18} />,
+    tone: "brand" as const,
+  },
+  {
+    href: "/settings/teacher",
+    title: "Teacher",
+    desc: "Teacher collaboration placeholders and review controls.",
+    icon: <GraduationCap size={18} />,
+    tone: "neutral" as const,
+  },
+  {
+    href: "/settings/thresholds",
+    title: "Thresholds",
+    desc: "SRS thresholds and queue tuning placeholders.",
+    icon: <SlidersHorizontal size={18} />,
+    tone: "warn" as const,
+  },
 ] as const;
 
 export default function SettingsPage() {
@@ -68,4 +103,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-

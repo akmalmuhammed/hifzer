@@ -70,7 +70,7 @@ export function Hero() {
                 Get started <ArrowRight size={18} />
               </Button>
             </PublicAuthLink>
-            <PublicAuthLink signedInHref="/quran" signedOutHref="/login">
+            <PublicAuthLink signedInHref="/quran" signedOutHref="/quran-preview">
               <Button variant="secondary" size="lg">
                 Browse Qur&apos;an
               </Button>
