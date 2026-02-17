@@ -70,7 +70,7 @@ export default async function JuzPage(props: { params: Promise<{ id: string }> }
                 <span className="text-xs text-[color:var(--kw-faint)]">#{a.id}</span>
               </div>
               <div className="w-full sm:w-auto">
-                <AyahAudioPlayer ayahId={a.id} />
+                <AyahAudioPlayer ayahId={a.id} streakTrackSource="quran_browse" />
               </div>
             </div>
 

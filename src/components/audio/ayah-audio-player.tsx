@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import { Pause, Play, Repeat2, Zap } from "lucide-react";
 import { audioUrl } from "@/hifzer/audio/config";
@@ -22,6 +22,7 @@ export function AyahAudioPlayer(props: {
   ayahId: number;
   reciterId?: string;
   className?: string;
+  streakTrackSource?: "quran_browse";
 }) {
   const src = useMemo(
     () => audioUrl(props.reciterId ?? "default", props.ayahId),
@@ -30,6 +31,7 @@ export function AyahAudioPlayer(props: {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const repeatLeftRef = useRef(0);
+  const streakMarkedRef = useRef(false);
 
   const [playing, setPlaying] = useState(false);
   const [repeatCount, setRepeatCount] = useState(1);
@@ -39,6 +41,27 @@ export function AyahAudioPlayer(props: {
 
   const speed = SPEEDS[speedIndex] ?? 1;
   const progress01 = duration > 0 ? Math.max(0, Math.min(1, currentTime / duration)) : 0;
+
+  const markStreakRecitation = useCallback(async () => {
+    if (props.streakTrackSource !== "quran_browse" || streakMarkedRef.current) {
+      return;
+    }
+    try {
+      const res = await fetch("/api/streak/recite", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          ayahId: props.ayahId,
+          source: "quran_browse",
+        }),
+      });
+      if (res.ok) {
+        streakMarkedRef.current = true;
+      }
+    } catch {
+      // Fail open: playback still works even if streak logging fails.
+    }
+  }, [props.ayahId, props.streakTrackSource]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -112,6 +135,7 @@ export function AyahAudioPlayer(props: {
       audio.playbackRate = speed;
       try {
         await audio.play();
+        void markStreakRecitation();
       } catch {
         setPlaying(false);
       }

@@ -13,6 +13,7 @@ import { Pill } from "@/components/ui/pill";
 type StreakPayload = {
   onboardingEligible: boolean;
   rule: {
+    minQualifiedAyahsPerDay: number;
     minQualifiedSecondsPerDay: number;
     minQualifiedMinutesPerDay: number;
     gracePolicy: "always_allow_1_day_gap";
@@ -21,6 +22,7 @@ type StreakPayload = {
     currentStreakDays: number;
     bestStreakDays: number;
     graceInUseToday: boolean;
+    todayQualifiedAyahs: number;
     todayQualifiedSeconds: number;
     todayQualifiedMinutes: number;
     lastQualifiedDate: string | null;
@@ -28,6 +30,7 @@ type StreakPayload = {
   calendar84d: Array<{
     date: string;
     qualified: boolean;
+    qualifiedAyahCount: number;
     qualifiedSeconds: number;
     qualifiedMinutes: number;
     eligible: boolean;
@@ -65,7 +68,7 @@ export function StreakClient() {
       <PageHeader
         eyebrow="Streak"
         title="Streak"
-        subtitle="Consecutive day momentum based on recall-qualified minutes."
+        subtitle="Consecutive day momentum based on reciting at least one ayah/day."
         right={
           <div className="flex items-center gap-2">
             <Link href="/session">
@@ -141,7 +144,7 @@ export function StreakClient() {
                 Today qualified
               </p>
               <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                {data.streak.todayQualifiedMinutes}m
+                {data.streak.todayQualifiedAyahs} ayah{data.streak.todayQualifiedAyahs === 1 ? "" : "s"}
               </p>
             </Card>
           </div>
@@ -149,12 +152,12 @@ export function StreakClient() {
           <Card>
             <div className="flex flex-wrap items-center gap-2">
               <Pill tone="neutral">Rules</Pill>
-              <Pill tone="accent">Min {data.rule.minQualifiedMinutesPerDay} recall min/day</Pill>
+              <Pill tone="accent">Min {data.rule.minQualifiedAyahsPerDay} recited ayah/day</Pill>
               <Pill tone="warn">1-day gaps allowed</Pill>
             </div>
             <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-              A day counts when recall-qualified events total at least {data.rule.minQualifiedMinutesPerDay} minutes.
-              Your streak continues across single missed days, but breaks after two missed days.
+              A day counts when you recite at least one ayah from Session or Qur&apos;an browse. Your streak continues
+              across single missed days, but breaks after two missed days.
             </p>
             <div className="mt-3">
               {data.streak.graceInUseToday ? (
@@ -178,14 +181,14 @@ export function StreakClient() {
               <HeatStrip
                 days={data.calendar84d.map((day) => ({
                   date: day.date,
-                  value: day.qualifiedMinutes,
+                  value: day.qualifiedAyahCount,
                 }))}
                 tone="brand"
                 ariaLabel="Streak heatmap"
               />
             </div>
             <p className="mt-3 text-xs text-[color:var(--kw-faint)]">
-              Darker cells indicate more qualified recall minutes.
+              Darker cells indicate more qualified recited ayahs.
             </p>
           </Card>
         </>
