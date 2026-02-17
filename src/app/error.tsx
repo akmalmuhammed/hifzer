@@ -8,17 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { capturePosthogEvent } from "@/lib/posthog/client";
 
-export default function AppError(props: { error: Error & { digest?: string }; reset: () => void }) {
+export default function RootSegmentError(props: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
     console.error(props.error);
     Sentry.captureException(props.error, {
-      tags: { area: "app-error-boundary" },
+      tags: { area: "root-error-boundary" },
       extra: { digest: props.error?.digest ?? null },
     });
     capturePosthogEvent("ui_error", {
-      area: "app_error_boundary",
+      area: "root_error_boundary",
       path: typeof window === "undefined" ? undefined : `${window.location.pathname}${window.location.search}`,
-      message: props.error?.message || "App error boundary triggered.",
+      message: props.error?.message || "Root error boundary triggered.",
       digest: props.error?.digest ?? null,
     });
   }, [props.error]);
@@ -53,12 +53,6 @@ export default function AppError(props: { error: Error & { digest?: string }; re
             </Button>
           </Link>
         </div>
-
-        {props.error?.message ? (
-          <pre className="mt-6 overflow-auto rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 p-3 text-xs text-[color:var(--kw-muted)]">
-            {props.error.message}
-          </pre>
-        ) : null}
       </Card>
     </div>
   );

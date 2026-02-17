@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { loadTodayState } from "@/hifzer/engine/server";
 
@@ -28,7 +29,10 @@ export async function GET() {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to build today state.";
+    Sentry.captureException(error, {
+      tags: { route: "/api/session/today", method: "GET" },
+      user: { id: userId },
+    });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-

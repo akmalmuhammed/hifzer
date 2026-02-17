@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import {
@@ -12,6 +11,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { HifzerMark } from "@/components/brand/hifzer-mark";
+import { TrackedLink } from "@/components/telemetry/tracked-link";
 
 const NAV = [
   { href: "/today", label: "Today", icon: CalendarDays },
@@ -57,7 +57,7 @@ export function AppShell(props: { children: React.ReactNode }) {
       <div className="mx-auto w-full max-w-[1200px] px-4 py-6 md:flex md:gap-6">
         <aside className="hidden w-[240px] shrink-0 md:block">
           <div className="sticky top-6 space-y-4">
-            <Link href="/today" className="flex items-center gap-3">
+            <TrackedLink href="/today" className="flex items-center gap-3" telemetryName="shell.logo">
               <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[color:var(--kw-ink)] text-white shadow-[var(--kw-shadow-soft)]">
                 <HifzerMark />
               </span>
@@ -65,16 +65,17 @@ export function AppShell(props: { children: React.ReactNode }) {
                 <p className="text-sm font-semibold tracking-tight text-[color:var(--kw-ink)]">Hifzer</p>
                 <p className="text-xs text-[color:var(--kw-muted)]">Practice and retain</p>
               </div>
-            </Link>
+            </TrackedLink>
 
             <nav className="space-y-1">
               {NAV.map((item) => {
                 const active = isActive(pathname, item.href);
                 const Icon = item.icon;
                 return (
-                  <Link
+                  <TrackedLink
                     key={item.href}
                     href={item.href}
+                    telemetryName={`shell.nav.${item.label.toLowerCase()}`}
                     className={clsx(
                       "flex items-center gap-3 rounded-[18px] border px-3 py-2 text-sm font-semibold shadow-[var(--kw-shadow-soft)] transition",
                       active
@@ -91,7 +92,7 @@ export function AppShell(props: { children: React.ReactNode }) {
                       <Icon size={18} />
                     </span>
                     <span className="truncate">{item.label}</span>
-                  </Link>
+                  </TrackedLink>
                 );
               })}
             </nav>
@@ -118,9 +119,10 @@ export function AppShell(props: { children: React.ReactNode }) {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;
             return (
-              <Link
+              <TrackedLink
                 key={item.href}
                 href={item.href}
+                telemetryName={`shell.mobile-nav.${item.label.toLowerCase()}`}
                 className={clsx(
                   "flex flex-col items-center justify-center gap-1 rounded-[18px] px-2 py-2 text-[11px] font-semibold transition",
                   active
@@ -130,7 +132,7 @@ export function AppShell(props: { children: React.ReactNode }) {
               >
                 <Icon size={18} />
                 <span className="truncate">{item.label}</span>
-              </Link>
+              </TrackedLink>
             );
           })}
         </div>

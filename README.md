@@ -71,6 +71,30 @@ Recommended redirect contract:
 - App gating now also checks Prisma `UserProfile.onboardingCompletedAt` in `(app)` layout.
 - Onboarding redirects are driven by DB-backed profile state, not middleware cookie checks.
 
+## Monitoring (No DB Writes)
+
+The app now uses managed monitoring providers for click/error visibility instead of writing telemetry to Prisma.
+
+Sentry (errors, API exceptions, traces):
+
+- `NEXT_PUBLIC_SENTRY_DSN`
+- `SENTRY_DSN` (optional server-specific override)
+- `SENTRY_ORG` (for source map upload in CI, optional locally)
+- `SENTRY_PROJECT` (for source map upload in CI, optional locally)
+- `SENTRY_TRACES_SAMPLE_RATE` (optional, default `0.1`)
+- `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` (optional, default `0.1`)
+- `NEXT_PUBLIC_SENTRY_REPLAY_SESSION_SAMPLE_RATE` (optional, default `0`)
+- `NEXT_PUBLIC_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE` (optional, default `1.0`)
+
+PostHog (clicks, route changes, session replay):
+
+- `NEXT_PUBLIC_POSTHOG_KEY`
+- `NEXT_PUBLIC_POSTHOG_HOST` (optional, default `https://us.i.posthog.com`)
+
+AI editor guidance:
+
+- `sentry_rules.md` is included at repo root for code-assistant/editor rules ingestion.
+
 ## Billing (Paddle)
 
 Pricing is currently wired for Paddle-style configuration checks (UI gating).

@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import clsx from "clsx";
 import { Menu, X } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 import { HifzerMark } from "@/components/brand/hifzer-mark";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
+import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { Button } from "@/components/ui/button";
 
@@ -25,7 +25,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
     <header className="sticky top-0 z-40">
       <div className="border-b border-[color:var(--kw-border-2)] bg-white/55 backdrop-blur">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3 px-4 py-3">
-          <Link href="/" className="flex items-center gap-3">
+          <TrackedLink href="/" className="flex items-center gap-3" telemetryName="marketing.logo">
             <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[color:var(--kw-ink)] text-white shadow-[var(--kw-shadow-soft)]">
               <HifzerMark />
             </span>
@@ -37,17 +37,18 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                 A calm hifz system
               </span>
             </span>
-          </Link>
+          </TrackedLink>
 
           <nav className="hidden items-center gap-5 md:flex">
             {LINKS.map((l) => (
-              <Link
+              <TrackedLink
                 key={l.href}
                 href={l.href}
+                telemetryName={`marketing.nav.${l.label.toLowerCase()}`}
                 className="text-sm font-semibold text-[color:var(--kw-muted)] transition hover:text-[color:var(--kw-ink)]"
               >
                 {l.label}
-              </Link>
+              </TrackedLink>
             ))}
           </nav>
 
@@ -55,9 +56,9 @@ export function MarketingNav(props: { authEnabled: boolean }) {
             {showSignedIn ? (
               <>
                 <p className="px-2 text-xs font-semibold text-[color:var(--kw-muted)]">Welcome back</p>
-                <Link href="/today">
+                <TrackedLink href="/today" telemetryName="marketing.open-app">
                   <Button size="md">Open app</Button>
-                </Link>
+                </TrackedLink>
                 <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 shadow-[var(--kw-shadow-soft)]">
                   <UserButton afterSignOutUrl="/welcome" />
                 </div>
@@ -98,25 +99,27 @@ export function MarketingNav(props: { authEnabled: boolean }) {
         <div className="border-b border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3 backdrop-blur">
           <div className="mx-auto max-w-[1200px] space-y-2">
             {LINKS.map((l) => (
-              <Link
+              <TrackedLink
                 key={l.href}
                 href={l.href}
+                telemetryName={`marketing.mobile-nav.${l.label.toLowerCase()}`}
                 onClick={() => setOpen(false)}
                 className="block rounded-2xl px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] hover:bg-black/[0.04]"
               >
                 {l.label}
-              </Link>
+              </TrackedLink>
             ))}
             <div className="flex gap-2 pt-1">
               {showSignedIn ? (
                 <>
-                  <Link
+                  <TrackedLink
                     href="/today"
+                    telemetryName="marketing.mobile-open-app"
                     onClick={() => setOpen(false)}
                     className="flex-1 rounded-2xl border border-[color:var(--kw-border)] bg-white/70 px-3 py-2 text-center text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]"
                   >
                     Open app
-                  </Link>
+                  </TrackedLink>
                   <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 shadow-[var(--kw-shadow-soft)]">
                     <UserButton afterSignOutUrl="/welcome" />
                   </div>

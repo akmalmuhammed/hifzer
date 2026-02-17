@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { startTodaySession } from "@/hifzer/engine/server";
 
@@ -15,7 +16,10 @@ export async function POST() {
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to start session.";
+    Sentry.captureException(error, {
+      tags: { route: "/api/session/start", method: "POST" },
+      user: { id: userId },
+    });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-

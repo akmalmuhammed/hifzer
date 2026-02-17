@@ -1,0 +1,2 @@
+# Keep Prisma migration SQL byte-stable to avoid checksum drift in _prisma_migrations.
+prisma/migrations/**/migration.sql -text

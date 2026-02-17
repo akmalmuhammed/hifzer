@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { HifzerMark } from "@/components/brand/hifzer-mark";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
+import { TrackedLink } from "@/components/telemetry/tracked-link";
 
 export function MarketingFooter() {
   return (
@@ -35,9 +35,9 @@ export function MarketingFooter() {
           >
             Welcome
           </PublicAuthLink>
-          <Link href="/pricing" className="font-semibold text-[color:var(--kw-ink)] hover:underline">
+          <TrackedLink href="/pricing" telemetryName="footer.pricing" className="font-semibold text-[color:var(--kw-ink)] hover:underline">
             Pricing
-          </Link>
+          </TrackedLink>
           <PublicAuthLink
             signedInHref="/today"
             signedOutHref="/welcome"
@@ -51,18 +51,18 @@ export function MarketingFooter() {
           <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
             Legal
           </p>
-          <Link href="/legal/terms" className="font-semibold text-[color:var(--kw-ink)] hover:underline">
+          <TrackedLink href="/legal/terms" telemetryName="footer.terms" className="font-semibold text-[color:var(--kw-ink)] hover:underline">
             Terms of Service
-          </Link>
-          <Link href="/legal/privacy" className="font-semibold text-[color:var(--kw-ink)] hover:underline">
+          </TrackedLink>
+          <TrackedLink href="/legal/privacy" telemetryName="footer.privacy" className="font-semibold text-[color:var(--kw-ink)] hover:underline">
             Privacy
-          </Link>
-          <Link href="/legal/refund-policy" className="font-semibold text-[color:var(--kw-ink)] hover:underline">
+          </TrackedLink>
+          <TrackedLink href="/legal/refund-policy" telemetryName="footer.refund-policy" className="font-semibold text-[color:var(--kw-ink)] hover:underline">
             Refund policy
-          </Link>
-          <Link href="/legal/sources" className="font-semibold text-[color:var(--kw-ink)] hover:underline">
+          </TrackedLink>
+          <TrackedLink href="/legal/sources" telemetryName="footer.sources" className="font-semibold text-[color:var(--kw-ink)] hover:underline">
             Sources
-          </Link>
+          </TrackedLink>
           <p className="text-xs text-[color:var(--kw-faint)]">
             Copyright {new Date().getFullYear()} Hifzer
           </p>

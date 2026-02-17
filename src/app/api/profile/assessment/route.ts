@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import * as Sentry from "@sentry/nextjs";
 import type { PlanBias } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { saveAssessment } from "@/hifzer/profile/server";
@@ -42,14 +43,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid planBias." }, { status: 400 });
   }
 
-  const profile = await saveAssessment({
-    clerkUserId: userId,
-    dailyMinutes,
-    practiceDaysPerWeek,
-    planBias,
-    hasTeacher,
-    timezone,
-  });
-  return NextResponse.json({ ok: true, profile });
+  try {
+    const profile = await saveAssessment({
+      clerkUserId: userId,
+      dailyMinutes,
+      practiceDaysPerWeek,
+      planBias,
+      hasTeacher,
+      timezone,
+    });
+    return NextResponse.json({ ok: true, profile });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to save assessment.";
+    Sentry.captureException(error, {
+      tags: { route: "/api/profile/assessment", method: "POST" },
+      user: { id: userId },
+    });
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
-

@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import type { SessionEventInput } from "@/hifzer/engine/types";
 import { completeSession } from "@/hifzer/engine/server";
@@ -82,7 +83,11 @@ export async function POST(req: Request) {
     return NextResponse.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to complete session.";
+    Sentry.captureException(error, {
+      tags: { route: "/api/session/complete", method: "POST" },
+      user: { id: userId },
+      extra: { eventCount: events.length },
+    });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-

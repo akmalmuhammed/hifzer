@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import type { SessionEventInput } from "@/hifzer/engine/types";
 import { completeSession } from "@/hifzer/engine/server";
@@ -129,10 +130,19 @@ export async function POST(req: Request) {
       });
       results.push({ sessionId: item.sessionId, ok: true, skipped: result.skipped });
     } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown sync error.";
+      Sentry.captureException(error, {
+        tags: { route: "/api/session/sync", method: "POST" },
+        user: { id: userId },
+        extra: {
+          sessionId: item.sessionId,
+          eventCount: item.events.length,
+        },
+      });
       results.push({
         sessionId: item.sessionId,
         ok: false,
-        error: error instanceof Error ? error.message : "Unknown sync error.",
+        error: message,
       });
     }
   }
@@ -145,4 +155,3 @@ export async function POST(req: Request) {
     results,
   });
 }
-
