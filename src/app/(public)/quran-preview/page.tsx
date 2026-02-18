@@ -25,16 +25,16 @@ export default function QuranPreviewPage() {
       </p>
 
       <div className="mt-7 flex flex-wrap items-center gap-3">
-        <Link href="/login">
-          <Button className="gap-2">
+        <Button asChild className="gap-2">
+          <Link href="/login">
             Sign in for full Qur&apos;an view <ArrowRight size={16} />
-          </Button>
-        </Link>
-        <Link href="/welcome">
-          <Button variant="secondary" className="gap-2">
+          </Link>
+        </Button>
+        <Button asChild variant="secondary" className="gap-2">
+          <Link href="/welcome">
             Back to welcome <ArrowRight size={16} />
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
 
       <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -62,4 +62,3 @@ export default function QuranPreviewPage() {
     </div>
   );
 }
-

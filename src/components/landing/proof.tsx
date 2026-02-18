@@ -1,34 +1,34 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { Gauge, Link2, RotateCcw, ShieldCheck } from "lucide-react";
+import { CalendarCheck2, RotateCcw, ShieldCheck } from "lucide-react";
 import { CardSoft } from "@/components/ui/card";
 import { Sparkline } from "@/components/charts/sparkline";
 
-const SECTIONS = [
+const OUTCOMES = [
   {
-    title: "Know exactly where you stand",
+    title: "Retention protected",
     copy:
-      "After each ayah, you grade yourself: Again, Hard, Good, Easy. The system uses that to decide what you review next and when - no guesswork.",
-    icon: <Gauge size={18} />,
-    trend: [0.42, 0.5, 0.56, 0.6, 0.66, 0.7, 0.74],
-    meta: "Grades drive your review schedule",
+      "The app blocks false forward progress when recall is weak, so your memorization does not collapse behind you.",
+    icon: <ShieldCheck size={18} />,
+    trend: [0.4, 0.48, 0.56, 0.62, 0.7, 0.76, 0.82],
+    meta: "New unlocks only after quality checks",
   },
   {
-    title: "Smooth transitions from day one",
+    title: "Daily plan generated",
     copy:
-      "Memorizing is not only learning individual ayahs - it is connecting them. Every session includes a link step so you can recite seamlessly, not piece by piece.",
-    icon: <Link2 size={18} />,
-    trend: [0.18, 0.22, 0.28, 0.33, 0.4, 0.48, 0.55],
-    meta: "Connections strengthen with practice",
+      "Open the app and the queue is already arranged for today: what to review now and what can wait.",
+    icon: <CalendarCheck2 size={18} />,
+    trend: [0.3, 0.35, 0.44, 0.52, 0.6, 0.68, 0.74],
+    meta: "No guesswork on what to practice",
   },
   {
-    title: "Miss a day? The plan adjusts",
+    title: "Missed days handled",
     copy:
-      "Life happens. After 1 missed day, reviews come first. After 2, new material pauses. After 3+, a structured catch-up kicks in until you are stable again.",
+      "If you miss days, the system shifts to recovery mode and gets you stable again without losing direction.",
     icon: <RotateCcw size={18} />,
-    trend: [0.9, 0.78, 0.66, 0.7, 0.76, 0.82, 0.88],
-    meta: "Consistency over perfection",
+    trend: [0.88, 0.74, 0.62, 0.69, 0.77, 0.83, 0.9],
+    meta: "Recovery plan is built in",
   },
 ] as const;
 
@@ -40,20 +40,20 @@ export function Proof() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-            Method
+            Proof
           </p>
           <h2 className="mt-3 max-w-2xl text-balance font-[family-name:var(--font-kw-display)] text-3xl leading-tight tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
-            A practice system that respects your time.
+            Outcomes you feel in week one.
           </h2>
         </div>
         <p className="max-w-xl text-sm leading-6 text-[color:var(--kw-muted)]">
-          The goal is not intensity. It is continuity: new memorization that sticks, and review that
-          stays small because it stays regular.
+          This is not about doing more. It is about practicing the right things each day so retention
+          stays intact.
         </p>
       </div>
 
       <div className="mt-8 grid gap-4 md:grid-cols-3">
-        {SECTIONS.map((s, idx) => (
+        {OUTCOMES.map((s, idx) => (
           <motion.div
             key={s.title}
             initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
@@ -80,24 +80,13 @@ export function Proof() {
                     {s.meta}
                   </p>
                   <div className="w-24">
-                    <Sparkline values={s.trend} tone={idx === 0 ? "accent" : idx === 1 ? "brand" : "warn"} />
+                    <Sparkline values={s.trend} tone={idx === 1 ? "accent" : idx === 0 ? "brand" : "warn"} />
                   </div>
                 </div>
               </div>
             </CardSoft>
           </motion.div>
         ))}
-      </div>
-
-      <div className="mt-6 rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4 text-sm text-[color:var(--kw-muted)]">
-        <div className="flex items-center gap-2 text-[color:var(--kw-ink)]">
-          <ShieldCheck size={16} />
-          <p className="font-semibold">Transparent product confidence</p>
-        </div>
-        <p className="mt-2 leading-7">
-          We ship in public with a roadmap, changelog, and legal policies always available. If reliability changes,
-          you can verify it directly in-product.
-        </p>
       </div>
     </section>
   );

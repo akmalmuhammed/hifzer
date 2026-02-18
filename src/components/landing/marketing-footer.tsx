@@ -28,22 +28,25 @@ export function MarketingFooter() {
           <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
             Product
           </p>
-          <PublicAuthLink
-            signedInHref="/today"
-            signedOutHref="/login"
+          <TrackedLink
+            href="/welcome"
+            telemetryName="footer.how-it-works"
             className="font-semibold text-[color:var(--kw-ink)] hover:underline"
           >
-            Welcome
-          </PublicAuthLink>
+            How it works
+          </TrackedLink>
+          <TrackedLink href="/compare" telemetryName="footer.compare" className="font-semibold text-[color:var(--kw-ink)] hover:underline">
+            Compare
+          </TrackedLink>
           <TrackedLink href="/pricing" telemetryName="footer.pricing" className="font-semibold text-[color:var(--kw-ink)] hover:underline">
             Pricing
           </TrackedLink>
           <PublicAuthLink
             signedInHref="/today"
-            signedOutHref="/welcome"
+            signedOutHref="/signup"
             className="font-semibold text-[color:var(--kw-ink)] hover:underline"
           >
-            App
+            Start free
           </PublicAuthLink>
         </div>
 

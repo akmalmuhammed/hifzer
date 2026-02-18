@@ -11,6 +11,11 @@ import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
+const LINKS = [
+  { href: "/welcome", label: "How it works" },
+  { href: "/compare", label: "Compare" },
+  { href: "/pricing", label: "Pricing" },
+] as const;
 
 export function MarketingNav(props: { authEnabled: boolean }) {
   const [open, setOpen] = useState(false);
@@ -35,6 +40,18 @@ export function MarketingNav(props: { authEnabled: boolean }) {
             </span>
           </TrackedLink>
 
+          <nav className="hidden items-center gap-5 md:flex">
+            {LINKS.map((l) => (
+              <TrackedLink
+                key={l.href}
+                href={l.href}
+                telemetryName={`marketing.nav.${l.label.toLowerCase().replace(/\s+/g, "-")}`}
+                className="text-sm font-semibold text-[color:var(--kw-muted)] transition hover:text-[color:var(--kw-ink)]"
+              >
+                {l.label}
+              </TrackedLink>
+            ))}
+          </nav>
 
           <div className="hidden items-center gap-2 md:flex">
             {showSignedIn ? (
@@ -88,6 +105,17 @@ export function MarketingNav(props: { authEnabled: boolean }) {
       >
         <div className="border-b border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-4 py-3 backdrop-blur">
           <div className="mx-auto max-w-[1200px] space-y-2">
+            {LINKS.map((l) => (
+              <TrackedLink
+                key={l.href}
+                href={l.href}
+                telemetryName={`marketing.mobile-nav.${l.label.toLowerCase().replace(/\s+/g, "-")}`}
+                onClick={() => setOpen(false)}
+                className="block rounded-2xl px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-soft)]"
+              >
+                {l.label}
+              </TrackedLink>
+            ))}
             <div className="flex gap-2 pt-1">
               {showSignedIn ? (
                 <>

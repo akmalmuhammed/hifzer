@@ -17,6 +17,12 @@ const fadeUp = {
   show: { opacity: 1, y: 0 },
 };
 
+const HERO_TABS = [
+  "Daily guided session (new + review)",
+  "Smart review schedule (so nothing decays)",
+  "Gentle gates that stop false progress",
+] as const;
+
 export function Hero() {
   const reduceMotion = useReducedMotion();
   const [donutReady, setDonutReady] = useState(false);
@@ -51,16 +57,16 @@ export function Hero() {
             className="inline-flex items-center gap-2 rounded-full border border-[rgba(var(--kw-accent-rgb),0.18)] bg-white/60 px-3 py-1 text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] backdrop-blur"
           >
             <Sparkles size={14} />
-            For students and busy learners preserving Qur&apos;an memorization
+            For students and busy professionals preserving Qur&apos;an memorization
           </motion.p>
 
           <motion.h1
             variants={fadeUp}
             className="mt-5 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl"
           >
-            Start your first 10-minute Hifz session today.
+            Memorize Qur&apos;an and keep it.
             <span className="block text-[rgba(var(--kw-accent-rgb),1)]">
-              Keep yesterday&apos;s ayahs strong.
+              A science-backed daily system that prevents forgetting.
             </span>
           </motion.h1>
 
@@ -68,21 +74,24 @@ export function Hero() {
             variants={fadeUp}
             className="mt-5 max-w-xl text-pretty text-base leading-7 text-[color:var(--kw-muted)]"
           >
-            In your first session, you run a warm-up check, practice a guided 3x3 loop on new ayahs,
-            and grade recall with clear Again/Hard/Good/Easy feedback. The plan adapts daily so your
-            retention stays stable.
+            You can finish your first guided session in about 10 minutes: a quick warm-up, due review,
+            and optional new ayahs. The plan adapts daily so retention stays stable.
           </motion.p>
 
-          <motion.div variants={fadeUp} className="mt-5 grid gap-2 text-xs text-[color:var(--kw-faint)] sm:grid-cols-3">
-            <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-1.5 text-center font-semibold">
-              First session: ~10 min
-            </span>
-            <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-1.5 text-center font-semibold">
-              New focus: 5 ayahs + linking
-            </span>
-            <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-1.5 text-center font-semibold">
-              Daily target: 1 session
-            </span>
+          <motion.div variants={fadeUp} className="mt-5 grid gap-2 sm:grid-cols-3">
+            {HERO_TABS.map((tab, idx) => (
+              <span
+                key={tab}
+                className={clsx(
+                  "rounded-2xl border px-3 py-2 text-center text-xs font-semibold",
+                  idx === 0
+                    ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.1)] text-[rgba(var(--kw-accent-rgb),1)]"
+                    : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)]",
+                )}
+              >
+                {tab}
+              </span>
+            ))}
           </motion.div>
 
           <motion.div variants={fadeUp} className="mt-7 flex flex-wrap items-center gap-3">
@@ -92,15 +101,17 @@ export function Hero() {
               </PublicAuthLink>
             </Button>
             <PublicAuthLink
-              signedInHref="/quran"
-              signedOutHref="/quran-preview"
+              signedInHref="/pricing"
+              signedOutHref="/pricing"
               className="text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline"
             >
-              Preview Qur&apos;an browsing
+              See pricing
             </PublicAuthLink>
           </motion.div>
 
           <motion.div variants={fadeUp} className="mt-4 flex flex-wrap items-center gap-2 text-xs text-[color:var(--kw-faint)]">
+            <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1">First session: about 10 minutes</span>
+            <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1">No card required</span>
             <Link href="/legal/terms" className="font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">
               Terms + privacy
             </Link>
@@ -168,9 +179,10 @@ export function Hero() {
                 </p>
                 <ul className="mt-2 space-y-2 text-sm">
                   {[
-                    { t: "Sabaq", c: "brand", title: "New", meta: "5 ayahs - linking on" },
-                    { t: "Sabqi", c: "accent", title: "Recent review", meta: "12 due today" },
-                    { t: "Manzil", c: "warn", title: "Long review", meta: "8 due this week" },
+                    { t: "New", c: "brand", title: "New memorization", meta: "Small guided ayah set" },
+                    { t: "Recent", c: "accent", title: "Recent review", meta: "Due first in every session" },
+                    { t: "Long-term", c: "warn", title: "Long-term review", meta: "Rotating retention queue" },
+                    { t: "Repair", c: "neutral", title: "Weak links", meta: "Fix transition trouble spots" },
                   ].map((s, i) => (
                     <motion.li
                       key={s.title}
@@ -190,7 +202,9 @@ export function Hero() {
                             ? "border-[rgba(10,138,119,0.26)] bg-[rgba(10,138,119,0.12)] text-[color:var(--kw-teal-800)]"
                             : s.c === "accent"
                               ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-                              : "border-[rgba(234,88,12,0.26)] bg-[rgba(234,88,12,0.12)] text-[color:var(--kw-ember-600)]",
+                              : s.c === "warn"
+                                ? "border-[rgba(234,88,12,0.26)] bg-[rgba(234,88,12,0.12)] text-[color:var(--kw-ember-600)]"
+                                : "border-[color:var(--kw-border-2)] bg-white/75 text-[color:var(--kw-ink-2)]",
                         )}
                       >
                         {s.t}

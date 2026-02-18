@@ -20,10 +20,10 @@ const PLANS = [
     highlight: false,
     ramadan: false,
     bullets: [
-      "Daily plan and session flow",
-      "Per-ayah grading (Again/Hard/Good/Easy)",
-      "Standard theme + dark mode toggle",
-      "Default reciter audio (when configured)",
+      "Guided daily session with clear next steps",
+      "Adaptive review scheduling to protect retention",
+      "Arabic + English Qur'an browsing with progress tracking",
+      "Per-ayah grading with built-in audio playback",
     ],
   },
   {
@@ -34,10 +34,10 @@ const PLANS = [
     highlight: true,
     ramadan: true,
     bullets: [
-      "Theme presets (Paper + future seasonal)",
-      "Accent presets (more combinations)",
-      "Extra reciters (selection and preview)",
-      "Advanced progress views (coming soon)",
+      "Personalized insights on weak ayahs and transitions",
+      "Smarter pacing tuned to your recent recall quality",
+      "Accountability tools for consistent weekly momentum",
+      "Theme and reciter extras as bundled additions",
     ],
   },
 ] as const;
@@ -172,7 +172,7 @@ export default function PricingPage() {
                       )}
                     </PublicAuthLink>
                   </Button>
-                  <p className="mt-2 text-xs text-[color:var(--kw-faint)]">{action.note}</p>
+                  <p className="mt-2 text-xs text-[color:var(--kw-faint)]">What happens next: {action.note}</p>
                 </div>
               </Card>
             </motion.div>

@@ -12,28 +12,34 @@ const PLANS = [
   {
     name: "Free",
     price: "$0",
-    note: "The full Hifz OS",
+    note: "Everything you need to start",
     highlight: false,
     bullets: [
-      "Daily Sabaq plan + SRS engine",
-      "Warm-up gate (blocks false progress)",
-      "Sabqi + Manzil review tiers",
-      "Transition tracking + link repair",
-      "Per-ayah grading + audio player",
+      "Guided daily session with new + review",
+      "Adaptive schedule that protects retention",
+      "Qur'an browsing and progress tracking",
     ],
+    cta: "Start free",
+    ctaHrefSignedIn: "/today",
+    ctaHrefSignedOut: "/signup",
+    next: "Next: create your account and run your first session.",
+    footnote: null,
   },
   {
     name: "Pro",
     price: "$7",
-    note: "Deeper insights + personalization",
+    note: "For stronger consistency and coaching",
     highlight: true,
     bullets: [
-      "Weekly consolidation test",
-      "Monthly health audit + rebalance",
-      "Theme presets + accent options",
-      "Extra reciters (coming soon)",
-      "AI recitation scoring (coming soon)",
+      "Personalized insights for weaker ayahs and links",
+      "Smarter pacing from your recent grade trends",
+      "Accountability tools for long-term consistency",
     ],
+    cta: "Claim free Pro access",
+    ctaHrefSignedIn: "/today",
+    ctaHrefSignedOut: "/signup",
+    next: "Next: sign up and unlock Pro features during the Ramadan period.",
+    footnote: "Theme and reciter extras are included as they roll out.",
   },
 ] as const;
 
@@ -48,8 +54,8 @@ export function PricingTeaser() {
             Pricing
           </p>
           <h2 className="mt-3 text-balance font-[family-name:var(--font-kw-display)] text-3xl leading-tight tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
-            Free for the core.
-            <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Pro for personalization.</span>
+            Simple plans.
+            <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Start free and upgrade later.</span>
           </h2>
         </div>
         <Link href="/pricing" className="text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">
@@ -85,9 +91,9 @@ export function PricingTeaser() {
                 )}
               </div>
 
-              {p.name === "Pro" ? (
-                <div className="mt-5">
-                  <div className="relative inline-block">
+                {p.name === "Pro" ? (
+                  <div className="mt-5">
+                    <div className="relative inline-block">
                     <span className="font-[family-name:var(--font-kw-display)] text-4xl tracking-tight text-[color:var(--kw-muted)]">
                       $7
                     </span>
@@ -110,12 +116,12 @@ export function PricingTeaser() {
                       for a limited time
                     </span>
                   </div>
-                </div>
-              ) : (
-                <p className="mt-5 font-[family-name:var(--font-kw-display)] text-4xl tracking-tight text-[color:var(--kw-ink)]">
-                  {p.price}
-                </p>
-              )}
+                  </div>
+                ) : (
+                  <p className="mt-5 font-[family-name:var(--font-kw-display)] text-4xl tracking-tight text-[color:var(--kw-ink)]">
+                    {p.price}
+                  </p>
+                )}
 
               <ul className="mt-5 space-y-2 text-sm text-[color:var(--kw-muted)]">
                 {p.bullets.map((b) => (
@@ -130,10 +136,14 @@ export function PricingTeaser() {
 
               <div className="mt-7">
                 <Button asChild variant={p.highlight ? "primary" : "secondary"} className="w-full">
-                  <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
-                    {p.highlight ? "Claim your free access" : "Get started"}
+                  <PublicAuthLink signedInHref={p.ctaHrefSignedIn} signedOutHref={p.ctaHrefSignedOut}>
+                    {p.cta}
                   </PublicAuthLink>
                 </Button>
+                <p className="mt-2 text-xs text-[color:var(--kw-faint)]">{p.next}</p>
+                {p.footnote ? (
+                  <p className="mt-1 text-xs text-[color:var(--kw-faint)]">{p.footnote}</p>
+                ) : null}
               </div>
             </Card>
           </motion.div>

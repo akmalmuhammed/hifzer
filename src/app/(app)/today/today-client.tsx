@@ -6,7 +6,10 @@ import { ArrowRight, BookOpenText, ChevronDown, PlayCircle, RefreshCcw } from "l
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Pill } from "@/components/ui/pill";
+import { useToast } from "@/components/ui/toast";
+import { setActiveSurahCursor, setOpenSession } from "@/hifzer/local/store";
 import { capturePosthogEvent } from "@/lib/posthog/client";
 
 type TodayPayload = {
@@ -135,6 +138,11 @@ export function TodayClient() {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<TodayPayload | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [switchOpen, setSwitchOpen] = useState(false);
+  const [switchingSurah, setSwitchingSurah] = useState(false);
+  const [targetSurahNumber, setTargetSurahNumber] = useState(1);
+  const [targetAyahNumber, setTargetAyahNumber] = useState(1);
+  const { pushToast } = useToast();
   const [modeShiftNotice, setModeShiftNotice] = useState<{
     from: TodayPayload["state"]["mode"];
     to: TodayPayload["state"]["mode"];
@@ -186,6 +194,91 @@ export function TodayClient() {
     }
     window.localStorage.setItem(key, data.state.mode);
   }, [data]);
+
+  const activeSurahNumber = data?.profile.activeSurahNumber ?? null;
+
+  useEffect(() => {
+    if (activeSurahNumber == null) {
+      return;
+    }
+    setTargetSurahNumber(activeSurahNumber);
+    setTargetAyahNumber(1);
+  }, [activeSurahNumber]);
+
+  async function switchSessionSurah() {
+    const surah = Math.floor(targetSurahNumber);
+    const ayah = Math.floor(targetAyahNumber);
+    if (!Number.isFinite(surah) || surah < 1 || surah > 114) {
+      pushToast({
+        title: "Invalid surah",
+        message: "Choose a surah number from 1 to 114.",
+        tone: "warning",
+      });
+      return;
+    }
+    if (!Number.isFinite(ayah) || ayah < 1) {
+      pushToast({
+        title: "Invalid ayah",
+        message: "Ayah number must be 1 or higher.",
+        tone: "warning",
+      });
+      return;
+    }
+
+    setSwitchingSurah(true);
+    try {
+      const res = await fetch("/api/profile/start-point", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          surahNumber: surah,
+          ayahNumber: ayah,
+          source: "session_switch",
+          resetOpenSession: true,
+        }),
+      });
+      const payload = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        profile?: { activeSurahNumber?: number; cursorAyahId?: number };
+        abandonedOpenSessions?: number;
+      };
+      if (!res.ok) {
+        throw new Error(payload.error || "Failed to switch session surah.");
+      }
+
+      const nextSurah = Number(payload.profile?.activeSurahNumber);
+      const nextCursor = Number(payload.profile?.cursorAyahId);
+      if (Number.isFinite(nextSurah) && Number.isFinite(nextCursor)) {
+        setActiveSurahCursor(nextSurah, nextCursor);
+      }
+      setOpenSession(null);
+      setSwitchOpen(false);
+      await load();
+
+      const abandonedCount = Number(payload.abandonedOpenSessions ?? 0);
+      pushToast({
+        title: "Session surah updated",
+        message: abandonedCount > 0
+          ? `Switched to Surah ${surah}:${ayah}. ${abandonedCount} open session${abandonedCount === 1 ? "" : "s"} paused.`
+          : `Switched to Surah ${surah}:${ayah}. Your next session queue is rebuilt.`,
+        tone: "success",
+      });
+      capturePosthogEvent("today.session_surah_switched", {
+        targetSurahNumber: surah,
+        targetAyahNumber: ayah,
+        abandonedOpenSessions: abandonedCount,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to switch session surah.";
+      pushToast({
+        title: "Switch failed",
+        message,
+        tone: "warning",
+      });
+    } finally {
+      setSwitchingSurah(false);
+    }
+  }
 
   const reviewCount = useMemo(() => {
     if (!data) {
@@ -341,7 +434,47 @@ export function TodayClient() {
                 <Button variant="ghost" className="gap-2" onClick={() => void load()}>
                   Reload <RefreshCcw size={16} />
                 </Button>
+                <Button variant="secondary" className="gap-2" onClick={() => setSwitchOpen((v) => !v)}>
+                  {switchOpen ? "Close surah switcher" : "Switch session surah"}
+                </Button>
               </div>
+
+              {switchOpen ? (
+                <div className="mt-5 rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 p-4">
+                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Pause current lane and switch surah</p>
+                  <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
+                    This pauses any open session and rebuilds your next session queue from the surah + ayah you set here.
+                  </p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                    <label className="text-xs text-[color:var(--kw-muted)]">
+                      Surah number
+                      <Input
+                        type="number"
+                        min={1}
+                        max={114}
+                        value={targetSurahNumber}
+                        onChange={(event) => setTargetSurahNumber(Number(event.target.value))}
+                        className="mt-1"
+                      />
+                    </label>
+                    <label className="text-xs text-[color:var(--kw-muted)]">
+                      Ayah number
+                      <Input
+                        type="number"
+                        min={1}
+                        value={targetAyahNumber}
+                        onChange={(event) => setTargetAyahNumber(Number(event.target.value))}
+                        className="mt-1"
+                      />
+                    </label>
+                    <div className="flex items-end">
+                      <Button className="w-full" onClick={() => void switchSessionSurah()} disabled={switchingSurah}>
+                        {switchingSurah ? "Switching..." : "Apply for next sessions"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </Card>
 
