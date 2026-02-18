@@ -200,7 +200,7 @@ export function AyahAudioPlayer(props: {
           <button
             type="button"
             disabled={disabled}
-            onClick={() => setRepeatCount((v) => (v >= 5 ? 1 : v + 1))}
+            onClick={() => setRepeatCount((v) => (v >= 10 ? 1 : v + 1))}
             className={clsx(
               "inline-flex items-center gap-2 rounded-2xl border px-2.5 py-2 text-xs font-semibold shadow-[var(--kw-shadow-soft)] transition",
               disabled
@@ -235,3 +235,4 @@ export function AyahAudioPlayer(props: {
     </div>
   );
 }
+
