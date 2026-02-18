@@ -1,0 +1,133 @@
+.commandDeck {
+  position: relative;
+  overflow: hidden;
+  border-radius: calc(var(--kw-radius-xl) + 2px);
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.2);
+  background:
+    radial-gradient(1200px 340px at -8% -35%, rgba(var(--kw-accent-rgb), 0.2), transparent 60%),
+    radial-gradient(900px 260px at 110% -50%, rgba(10, 138, 119, 0.18), transparent 56%),
+    linear-gradient(135deg, var(--kw-card-strong), var(--kw-surface-strong));
+  box-shadow: var(--kw-shadow);
+}
+
+.commandDeck::before {
+  content: "";
+  position: absolute;
+  inset: -30% auto auto -15%;
+  height: 180%;
+  width: 55%;
+  background: linear-gradient(115deg, rgba(var(--kw-accent-rgb), 0.18), transparent 65%);
+  filter: blur(22px);
+  pointer-events: none;
+}
+
+.commandDeck::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(to right, rgba(11, 18, 32, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(11, 18, 32, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.25;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.72), transparent 92%);
+  pointer-events: none;
+}
+
+.pulseOrb {
+  position: absolute;
+  right: -58px;
+  top: -48px;
+  width: 240px;
+  height: 240px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 40% 40%, rgba(var(--kw-accent-rgb), 0.32), rgba(var(--kw-accent-rgb), 0.06) 58%, transparent 68%);
+  filter: blur(6px);
+  animation: orbitPulse 8s ease-in-out infinite;
+}
+
+.driftOrb {
+  position: absolute;
+  left: -44px;
+  bottom: -72px;
+  width: 220px;
+  height: 220px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 35%, rgba(10, 138, 119, 0.25), rgba(10, 138, 119, 0.05) 55%, transparent 72%);
+  filter: blur(8px);
+  animation: orbitPulse 10s ease-in-out infinite reverse;
+}
+
+.kpiTile {
+  border-radius: 18px;
+  border: 1px solid var(--kw-border-2);
+  background: var(--kw-card);
+  backdrop-filter: blur(10px);
+}
+
+.metricCard {
+  position: relative;
+  overflow: hidden;
+}
+
+.metricCard::before {
+  content: "";
+  position: absolute;
+  inset: auto -28% -76% auto;
+  width: 180px;
+  height: 180px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(var(--kw-accent-rgb), 0.2), transparent 70%);
+  pointer-events: none;
+}
+
+.sectionGlow {
+  position: relative;
+}
+
+.sectionGlow::after {
+  content: "";
+  position: absolute;
+  inset: auto -20% -140px;
+  height: 180px;
+  background: radial-gradient(closest-side, rgba(var(--kw-accent-rgb), 0.12), transparent 72%);
+  pointer-events: none;
+}
+
+.sessionRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) repeat(3, minmax(0, 0.8fr));
+  gap: 12px;
+  align-items: center;
+  border: 1px solid var(--kw-border-2);
+  border-radius: 14px;
+  background: var(--kw-surface-soft);
+  padding: 10px 12px;
+}
+
+.sessionRow + .sessionRow {
+  margin-top: 10px;
+}
+
+@keyframes orbitPulse {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -8px, 0) scale(1.06);
+  }
+}
+
+@media (max-width: 767px) {
+  .sessionRow {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+    row-gap: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulseOrb,
+  .driftOrb {
+    animation: none;
+  }
+}

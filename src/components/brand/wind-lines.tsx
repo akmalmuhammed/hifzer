@@ -25,26 +25,30 @@ export function WindLines({
     >
       <defs>
         <linearGradient id="kw_wind" x1="0" y1="0" x2="1200" y2="600" gradientUnits="userSpaceOnUse">
-          <stop stopColor="rgba(10,138,119,0.40)" />
-          <stop offset="0.52" stopColor="rgba(43,75,255,0.26)" />
-          <stop offset="1" stopColor="rgba(234,88,12,0.20)" />
+          <stop stopColor="rgba(10,138,119,0.72)" />
+          <stop offset="0.52" stopColor="rgba(43,75,255,0.52)" />
+          <stop offset="1" stopColor="rgba(234,88,12,0.42)" />
         </linearGradient>
 
-        {/* Glow filter: light mode — subtle warm glow */}
-        <filter id="kw_wind_glow" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
+        {/* Glow filter: light mode — layered soft glow */}
+        <filter id="kw_wind_glow" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="wideBlur" />
+          <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="tightBlur" />
           <feMerge>
-            <feMergeNode in="blur" />
+            <feMergeNode in="wideBlur" />
+            <feMergeNode in="tightBlur" />
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
 
-        {/* Glow filter: dark mode — intense double-layer neon */}
-        <filter id="kw_wind_glow_dark" x="-25%" y="-25%" width="150%" height="150%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="outerBlur" />
-          <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="innerBlur" />
+        {/* Glow filter: dark mode — vivid neon triple-layer */}
+        <filter id="kw_wind_glow_dark" x="-35%" y="-35%" width="170%" height="170%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="outerBlur" />
+          <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="midBlur" />
+          <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="innerBlur" />
           <feMerge>
             <feMergeNode in="outerBlur" />
+            <feMergeNode in="midBlur" />
             <feMergeNode in="innerBlur" />
             <feMergeNode in="SourceGraphic" />
           </feMerge>
@@ -57,9 +61,9 @@ export function WindLines({
             key={d}
             d={d}
             stroke="url(#kw_wind)"
-            strokeWidth={idx === 0 ? 2.4 : 2}
+            strokeWidth={idx === 0 ? 3 : 2.2}
             strokeLinecap="round"
-            opacity={idx === 0 ? 0.85 : 0.55}
+            opacity={idx === 0 ? 1 : 0.72}
             strokeDasharray={animated ? "1200" : undefined}
             style={
               animated

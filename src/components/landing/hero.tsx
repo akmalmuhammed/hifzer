@@ -36,8 +36,8 @@ export function Hero() {
 
   return (
     <section className="relative overflow-hidden pb-10 pt-10 md:pb-16 md:pt-14">
-      <div className="pointer-events-none absolute inset-x-0 -top-10 h-[360px] overflow-visible opacity-70">
-        <WindLines className="opacity-60" animated />
+      <div className="pointer-events-none absolute inset-x-0 -top-10 h-[360px] overflow-visible opacity-95">
+        <WindLines className="opacity-90" animated />
       </div>
 
       <div className="grid items-center gap-10 md:grid-cols-[1.2fr_0.8fr]">

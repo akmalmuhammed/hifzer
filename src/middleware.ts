@@ -4,6 +4,7 @@ import { clerkEnabled } from "@/lib/clerk-config";
 
 const isProtectedRoute = createRouteMatcher([
   "/onboarding(.*)",
+  "/dashboard(.*)",
   "/today(.*)",
   "/session(.*)",
   "/practice(.*)",

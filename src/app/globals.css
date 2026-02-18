@@ -548,10 +548,10 @@ html[data-mode="dark"] .kw-wind-animated .kw-wind-paths {
 
 @keyframes kw-wind-pulse {
   0%, 100% {
-    opacity: 0.55;
+    opacity: 0.70;
   }
   50% {
-    opacity: 0.85;
+    opacity: 1;
   }
 }
 

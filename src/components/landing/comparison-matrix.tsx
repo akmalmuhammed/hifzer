@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Check, Minus, Tilde } from "lucide-react";
+import { ArrowRight, Check, Minus } from "lucide-react";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -28,8 +28,8 @@ function CellIcon({ value }: { value: boolean | "partial" }) {
     );
   if (value === "partial")
     return (
-      <span className="grid h-6 w-6 place-items-center rounded-full border border-[rgba(234,179,8,0.26)] bg-[rgba(234,179,8,0.10)] text-[color:var(--kw-ember-600)]">
-        <Tilde size={14} />
+      <span className="grid h-6 w-6 place-items-center rounded-full border border-[rgba(234,179,8,0.26)] bg-[rgba(234,179,8,0.10)] text-sm font-bold text-[color:var(--kw-ember-600)]">
+        ~
       </span>
     );
   return (
