@@ -16,6 +16,12 @@ type QuranLookup = {
 
 let cached: QuranLookup | null = null;
 
+export type AyahFilters = {
+  surahNumber?: number;
+  juzNumber?: number;
+  ayahId?: number;
+};
+
 function keyForSurahAyah(surahNumber: number, ayahNumber: number): string {
   return `${surahNumber}:${ayahNumber}`;
 }
@@ -81,6 +87,11 @@ export function getQuranLookup(): QuranLookup {
   return cached;
 }
 
+export function listAllAyahs(): Ayah[] {
+  const { ayahs } = getQuranLookup();
+  return ayahs;
+}
+
 export function listSurahs(): SurahInfo[] {
   const { surahInfoByNumber } = getQuranLookup();
   return Array.from(surahInfoByNumber.values()).sort((a, b) => a.surahNumber - b.surahNumber);
@@ -124,6 +135,38 @@ export function getJuzInfo(juzNumber: number): JuzInfo | null {
 export function listAyahsForJuz(juzNumber: number): Ayah[] {
   const { ayahsByJuz } = getQuranLookup();
   return ayahsByJuz.get(juzNumber) ?? [];
+}
+
+export function filterAyahs(filters: AyahFilters): Ayah[] {
+  const { surahNumber, juzNumber, ayahId } = filters;
+  return listAllAyahs().filter((ayah) => {
+    if (surahNumber != null && ayah.surahNumber !== surahNumber) {
+      return false;
+    }
+    if (juzNumber != null && ayah.juzNumber !== juzNumber) {
+      return false;
+    }
+    if (ayahId != null && ayah.id !== ayahId) {
+      return false;
+    }
+    return true;
+  });
+}
+
+export function resolveCompactCursorAyah(
+  ayahs: Ayah[],
+  cursorAyahId?: number,
+): { current: Ayah | null; index: number; prevAyahId: number | null; nextAyahId: number | null } {
+  if (!ayahs.length) {
+    return { current: null, index: -1, prevAyahId: null, nextAyahId: null };
+  }
+
+  const rawIndex = cursorAyahId == null ? -1 : ayahs.findIndex((ayah) => ayah.id === cursorAyahId);
+  const index = rawIndex >= 0 ? rawIndex : 0;
+  const current = ayahs[index] ?? null;
+  const prevAyahId = index > 0 ? (ayahs[index - 1]?.id ?? null) : null;
+  const nextAyahId = index < ayahs.length - 1 ? (ayahs[index + 1]?.id ?? null) : null;
+  return { current, index, prevAyahId, nextAyahId };
 }
 
 export function ayahIdFromVerseRef(ref: VerseRef): AyahId | null {

@@ -31,6 +31,26 @@ export default async function QuranIndexPage() {
       </div>
 
       <div className="mt-10">
+        <Card className="group transition hover:bg-white/60">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Reader</p>
+              <p className="mt-2 text-lg font-semibold text-[color:var(--kw-ink)]">Open filtered Qur&apos;an reader</p>
+              <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
+                Toggle between list and compact views, and filter by surah, juz, and global ayah id.
+              </p>
+            </div>
+            <Link
+              href="/quran/read"
+              className="rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.10)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] transition group-hover:bg-[rgba(var(--kw-accent-rgb),0.14)]"
+            >
+              Open Reader
+            </Link>
+          </div>
+        </Card>
+      </div>
+
+      <div className="mt-10">
         <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Juz</p>
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {juzs.map((j) => (

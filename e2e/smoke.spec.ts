@@ -69,6 +69,42 @@ test("quran browser renders juz detail", async ({ page }) => {
   await expect(page.getByText(/Global IDs/i)).toBeVisible();
 });
 
+test("quran reader supports view toggle, filters, and compact navigation", async ({ page }) => {
+  test.skip(!hasClerkAuthE2EConfig(), "Requires Clerk auth E2E env vars");
+  await signInAsClerkTestUser(page);
+
+  await page.goto("/quran/read");
+  await expect(page.getByRole("heading", { name: /Read with filters \+ view modes/i })).toBeVisible();
+  await expect(page.getByText(/Filter by surah, juz, and global ayah id/i)).toBeVisible();
+
+  await page.getByRole("link", { name: /Compact view/i }).click();
+  await page.waitForURL("**/quran/read?view=compact");
+  await expect(page.getByText(/1 \/ 6236/i)).toBeVisible();
+
+  await page.getByRole("link", { name: "Next" }).click();
+  await expect(page.getByText(/2 \/ 6236/i)).toBeVisible();
+
+  await page.getByLabel("Surah").selectOption("1");
+  await page.getByLabel("Juz").selectOption("1");
+  await page.getByLabel("Ayah (global id)").fill("");
+  await page.getByRole("button", { name: /Apply filters/i }).click();
+
+  await expect(page.getByText(/7 ayahs matched/i)).toBeVisible();
+  await expect(page.getByText(/Surah 1/)).toBeVisible();
+  await expect(page.getByText(/Juz 1/)).toBeVisible();
+
+  await page.getByRole("link", { name: /List view/i }).click();
+  await expect(page.getByText(/1:1/).first()).toBeVisible();
+  await expect(page.getByText(/1:7/).first()).toBeVisible();
+
+  await page.getByLabel("Surah").selectOption("114");
+  await page.getByLabel("Juz").selectOption("1");
+  await page.getByRole("button", { name: /Apply filters/i }).click();
+
+  await expect(page.getByText(/No ayahs matched this filter combination/i)).toBeVisible();
+  await expect(page.getByRole("link", { name: /Clear all filters/i })).toBeVisible();
+});
+
 test("session advances and updates local cursor", async ({ page }) => {
   test.skip(!hasClerkAuthE2EConfig(), "Requires Clerk auth E2E env vars");
   await signInAsClerkTestUser(page);
