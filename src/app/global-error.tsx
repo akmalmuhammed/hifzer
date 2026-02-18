@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import * as Sentry from "@sentry/nextjs";
-import { capturePosthogEvent } from "@/lib/posthog/client";
 
 export default function GlobalError(props: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
@@ -10,12 +9,6 @@ export default function GlobalError(props: { error: Error & { digest?: string };
     Sentry.captureException(props.error, {
       tags: { area: "global-error-boundary" },
       extra: { digest: props.error?.digest ?? null },
-    });
-    capturePosthogEvent("ui_error", {
-      area: "global_error_boundary",
-      path: typeof window === "undefined" ? undefined : `${window.location.pathname}${window.location.search}`,
-      message: props.error?.message || "Global error boundary triggered.",
-      digest: props.error?.digest ?? null,
     });
   }, [props.error]);
 

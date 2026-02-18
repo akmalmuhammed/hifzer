@@ -77,7 +77,7 @@ Recommended redirect contract:
 
 ## Monitoring (No DB Writes)
 
-The app now uses managed monitoring providers for click/error visibility instead of writing telemetry to Prisma.
+The app now uses managed monitoring providers for error visibility instead of writing telemetry to Prisma.
 
 Sentry (errors, API exceptions, traces):
 
@@ -89,11 +89,6 @@ Sentry (errors, API exceptions, traces):
 - `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` (optional, default `0.1`)
 - `NEXT_PUBLIC_SENTRY_REPLAY_SESSION_SAMPLE_RATE` (optional, default `0`)
 - `NEXT_PUBLIC_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE` (optional, default `1.0`)
-
-PostHog (clicks, route changes, session replay):
-
-- `NEXT_PUBLIC_POSTHOG_KEY`
-- `NEXT_PUBLIC_POSTHOG_HOST` (optional, default `https://us.i.posthog.com`)
 
 ## Email (Resend)
 

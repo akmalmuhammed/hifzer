@@ -14,7 +14,6 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
-import { capturePosthogEvent } from "@/lib/posthog/client";
 import {
   getPendingSessionSyncPayloads,
   pushPendingSessionSyncPayload,
@@ -24,7 +23,6 @@ import {
   type PendingSessionSyncPayload,
 } from "@/hifzer/local/store";
 import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
-import { getAyahById, verseRefFromAyahId } from "@/hifzer/quran/lookup";
 
 type Step =
   | {
@@ -58,6 +56,7 @@ type SessionStartPayload = {
     provider: "tanzil.en.sahih";
     byAyahId: Record<string, string>;
   };
+  ayahTextByAyahId: Record<string, string>;
 };
 
 type SessionEvent = PendingSessionSyncPayload["events"][number];
@@ -175,11 +174,21 @@ function shouldDefaultHideText(step: Step): boolean {
   return false;
 }
 
-function gradeHint(grade: "AGAIN" | "HARD" | "GOOD" | "EASY"): string {
-  if (grade === "AGAIN") return "Could not recall";
-  if (grade === "HARD") return "Needed prompts";
-  if (grade === "GOOD") return "Mostly correct";
-  return "Clean recall";
+function verseRefFromAyahId(ayahId: number): { surahNumber: number; ayahNumber: number } | null {
+  const id = Math.floor(ayahId);
+  if (!Number.isFinite(id) || id < 1) {
+    return null;
+  }
+  for (const surah of SURAH_INDEX) {
+    if (id < surah.startAyahId || id > surah.endAyahId) {
+      continue;
+    }
+    return {
+      surahNumber: surah.surahNumber,
+      ayahNumber: (id - surah.startAyahId) + 1,
+    };
+  }
+  return null;
 }
 
 function verseRefLabel(ayahId: number): string {
@@ -519,11 +528,6 @@ export function SessionClient() {
             ? `Moved to Surah ${surah}. Resuming from ayah ${ayah}.`
             : `Moved to Surah ${surah}. Starting from ayah 1.`,
       });
-      capturePosthogEvent("session.surah_switched", {
-        targetSurahNumber: surah,
-        targetAyahNumber: ayah,
-        abandonedOpenSessions: abandonedCount,
-      });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to switch surah.";
       pushToast({
@@ -559,19 +563,6 @@ export function SessionClient() {
       textVisible: textVisibleDuringStep,
       assisted: assistedThisStep,
       createdAt: new Date(now).toISOString(),
-    });
-    capturePosthogEvent("session_attempt_recorded", {
-      sessionId: run?.sessionId ?? null,
-      stepIndex,
-      stage: event.stage,
-      phase: event.phase,
-      ayahId: event.ayahId,
-      grade: event.grade ?? null,
-      gradeHint: event.grade ? gradeHint(event.grade) : null,
-      durationSec: event.durationSec,
-      textVisible: event.textVisible,
-      assisted: event.assisted,
-      quickReviewMode,
     });
 
     const nextEvents = [...events, event];
@@ -922,9 +913,9 @@ export function SessionClient() {
 
   const progressText = `${stepIndex + 1} / ${filteredSteps.length}`;
   const ayahId = currentStep.kind === "AYAH" ? currentStep.ayahId : currentStep.toAyahId;
-  const ayah = getAyahById(ayahId);
   const ref = verseRefFromAyahId(ayahId);
   const translation = run.translations.byAyahId[String(ayahId)] ?? null;
+  const ayahText = run.ayahTextByAyahId[String(ayahId)] ?? null;
   const weeklyGateBoundary = warmupCount + weeklyGateCount;
   const weeklyGateWindowActive = run.state.weeklyGateRequired && weeklyGateCount > 0 && stepIndex < weeklyGateBoundary;
   const shouldShowWeeklyGateIntro = weeklyGateWindowActive && !coachSeen.weeklyGate;
@@ -1079,7 +1070,7 @@ export function SessionClient() {
                 {showText ? (
                   <div className="mt-3 space-y-4">
                     <div dir="rtl" className="text-right font-[family-name:var(--font-kw-quran)] text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
-                      {ayah?.textUthmani ?? "Ayah text unavailable"}
+                      {ayahText ?? "Ayah text unavailable"}
                     </div>
                     {showTranslation ? (
                       <p dir="ltr" className="text-left text-sm leading-7 text-[color:var(--kw-muted)]">

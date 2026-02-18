@@ -239,35 +239,6 @@ export default async function QuranIndexPage() {
         </Card>
       </div>
 
-      <Card className="mt-8">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Need detailed pages?</p>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <Link
-            href="/quran/surah/1"
-            className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
-          >
-            Surah detail pages
-          </Link>
-          <Link
-            href="/quran/juz/1"
-            className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
-          >
-            Juz detail pages
-          </Link>
-          <Link
-            href="/quran/read?view=list"
-            className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
-          >
-            Advanced filters
-          </Link>
-          <Link
-            href="/quran/glossary"
-            className="rounded-xl border border-[rgba(var(--kw-accent-rgb),0.24)] bg-[rgba(var(--kw-accent-rgb),0.1)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
-          >
-            Glossary search
-          </Link>
-        </div>
-      </Card>
     </div>
   );
 }

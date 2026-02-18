@@ -16,6 +16,7 @@ import { ReadProgressSync } from "./read-progress-sync";
 
 type ReaderView = "list" | "compact";
 const COMPACT_READER_ANCHOR = "compact-reader";
+const LIST_PAGE_SIZE = 40;
 
 type SearchParamShape = {
   view?: string | string[];
@@ -23,6 +24,7 @@ type SearchParamShape = {
   juz?: string | string[];
   ayah?: string | string[];
   cursor?: string | string[];
+  page?: string | string[];
   anon?: string | string[];
 };
 
@@ -53,7 +55,12 @@ function parseView(raw: string | string[] | undefined): ReaderView {
   return value === "compact" ? "compact" : "list";
 }
 
-function buildHref(filters: AyahFilters & { view?: ReaderView; cursor?: number; anonymous?: boolean }): string {
+function buildHref(filters: AyahFilters & {
+  view?: ReaderView;
+  cursor?: number;
+  page?: number;
+  anonymous?: boolean;
+}): string {
   const params = new URLSearchParams();
   if (filters.view) {
     params.set("view", filters.view);
@@ -69,6 +76,9 @@ function buildHref(filters: AyahFilters & { view?: ReaderView; cursor?: number; 
   }
   if (filters.cursor != null) {
     params.set("cursor", String(filters.cursor));
+  }
+  if (filters.page != null && filters.page > 1) {
+    params.set("page", String(filters.page));
   }
   if (filters.anonymous) {
     params.set("anon", "1");
@@ -89,22 +99,41 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   const juzNumber = parseBoundedInt(searchParams.juz, 1, 30);
   const ayahId = parseBoundedInt(searchParams.ayah, 1, 6236);
   const cursorAyahId = parseBoundedInt(searchParams.cursor, 1, 6236);
+  const requestedPage = parseBoundedInt(searchParams.page, 1, 500) ?? 1;
   const anonymous = readSingle(searchParams.anon) === "1";
 
   const filters: AyahFilters = { surahNumber, juzNumber, ayahId };
   const ayahs = filterAyahs(filters);
   const compact = resolveCompactCursorAyah(ayahs, cursorAyahId);
+  const totalListPages = Math.max(1, Math.ceil(ayahs.length / LIST_PAGE_SIZE));
+  const listPage = Math.min(requestedPage, totalListPages);
+  const listStartOffset = (listPage - 1) * LIST_PAGE_SIZE;
+  const listAyahs = ayahs.slice(listStartOffset, listStartOffset + LIST_PAGE_SIZE);
+  const listStart = ayahs.length > 0 ? listStartOffset + 1 : 0;
+  const listEnd = listStartOffset + listAyahs.length;
   const surahs = listSurahs();
   const juzs = listJuzs();
 
   const baseQuery = { surahNumber, juzNumber, ayahId };
   const cursorForLinks = compact.current?.id ?? cursorAyahId;
-  const listHref = buildHref({ ...baseQuery, view: "list", anonymous });
+  const listHref = buildHref({ ...baseQuery, view: "list", page: view === "list" ? listPage : 1, anonymous });
   const compactHref = `${
     buildHref({ ...baseQuery, view: "compact", cursor: cursorForLinks, anonymous })
   }#${COMPACT_READER_ANCHOR}`;
-  const trackedHref = buildHref({ ...baseQuery, view, cursor: cursorForLinks, anonymous: false });
-  const anonymousHref = buildHref({ ...baseQuery, view, cursor: cursorForLinks, anonymous: true });
+  const trackedHref = buildHref({
+    ...baseQuery,
+    view,
+    cursor: cursorForLinks,
+    page: view === "list" ? listPage : undefined,
+    anonymous: false,
+  });
+  const anonymousHref = buildHref({
+    ...baseQuery,
+    view,
+    cursor: cursorForLinks,
+    page: view === "list" ? listPage : undefined,
+    anonymous: true,
+  });
   const clearHref = anonymous ? "/quran/read?anon=1" : "/quran/read";
   const syncAyah = !anonymous && view === "compact" ? compact.current : null;
 
@@ -251,6 +280,11 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
       <div className="mt-6 flex flex-wrap items-center gap-2">
         <Pill tone="neutral">{ayahs.length} ayahs matched</Pill>
         <Pill tone={anonymous ? "warn" : "accent"}>{anonymous ? "Anonymous mode" : "Tracking mode"}</Pill>
+        {view === "list" && ayahs.length > 0 ? (
+          <Pill tone="neutral">
+            Showing {listStart}-{listEnd}
+          </Pill>
+        ) : null}
         {surahNumber != null ? <Pill tone="accent">Surah {surahNumber}</Pill> : null}
         {juzNumber != null ? <Pill tone="accent">Juz {juzNumber}</Pill> : null}
         {ayahId != null ? <Pill tone="accent">Ayah #{ayahId}</Pill> : null}
@@ -272,7 +306,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
 
       {ayahs.length > 0 && view === "list" ? (
         <div className="mt-8 space-y-3">
-          {ayahs.map((ayah) => (
+          {listAyahs.map((ayah) => (
             <Card key={ayah.id} className="py-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex items-center gap-2">
@@ -294,6 +328,52 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
               </p>
             </Card>
           ))}
+
+          {totalListPages > 1 ? (
+            <Card className="py-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                {listPage > 1 ? (
+                  <Link
+                    href={buildHref({
+                      ...baseQuery,
+                      view: "list",
+                      page: listPage - 1,
+                      anonymous,
+                    })}
+                    className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 font-semibold text-[color:var(--kw-ink)]"
+                  >
+                    Previous page
+                  </Link>
+                ) : (
+                  <span className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/50 px-3 py-2 font-semibold text-[color:var(--kw-faint)]">
+                    Previous page
+                  </span>
+                )}
+
+                <span className="text-[color:var(--kw-muted)]">
+                  Page {listPage} of {totalListPages}
+                </span>
+
+                {listPage < totalListPages ? (
+                  <Link
+                    href={buildHref({
+                      ...baseQuery,
+                      view: "list",
+                      page: listPage + 1,
+                      anonymous,
+                    })}
+                    className="rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+                  >
+                    Next page
+                  </Link>
+                ) : (
+                  <span className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/50 px-3 py-2 font-semibold text-[color:var(--kw-faint)]">
+                    Next page
+                  </span>
+                )}
+              </div>
+            </Card>
+          ) : null}
         </div>
       ) : null}
 

@@ -12,7 +12,6 @@ import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
 import { setActiveSurahCursor, setOpenSession } from "@/hifzer/local/store";
 import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
-import { capturePosthogEvent } from "@/lib/posthog/client";
 
 type TodayPayload = {
   localDate: string;
@@ -205,12 +204,6 @@ export function TodayClient() {
         title: `Mode updated: ${previous} -> ${data.state.mode}`,
         body: explanation.body,
       });
-      capturePosthogEvent("today.mode_shift_notice", {
-        from: previous,
-        to: data.state.mode,
-        debtRatio: data.state.debtRatio,
-        retention3dAvg: data.state.retention3dAvg,
-      });
     }
     window.localStorage.setItem(key, data.state.mode);
   }, [data]);
@@ -283,11 +276,6 @@ export function TodayClient() {
             ? `Switched to Surah ${surah}. Resuming from ayah ${ayah}.`
             : `Switched to Surah ${surah}. Starting from ayah 1.`,
         tone: "success",
-      });
-      capturePosthogEvent("today.session_surah_switched", {
-        targetSurahNumber: surah,
-        targetAyahNumber: ayah,
-        abandonedOpenSessions: abandonedCount,
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to switch session surah.";

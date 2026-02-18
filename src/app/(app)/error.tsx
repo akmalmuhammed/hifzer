@@ -6,7 +6,6 @@ import * as Sentry from "@sentry/nextjs";
 import { AlertTriangle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { capturePosthogEvent } from "@/lib/posthog/client";
 
 export default function AppError(props: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
@@ -14,12 +13,6 @@ export default function AppError(props: { error: Error & { digest?: string }; re
     Sentry.captureException(props.error, {
       tags: { area: "app-error-boundary" },
       extra: { digest: props.error?.digest ?? null },
-    });
-    capturePosthogEvent("ui_error", {
-      area: "app_error_boundary",
-      path: typeof window === "undefined" ? undefined : `${window.location.pathname}${window.location.search}`,
-      message: props.error?.message || "App error boundary triggered.",
-      digest: props.error?.digest ?? null,
     });
   }, [props.error]);
 

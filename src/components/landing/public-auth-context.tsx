@@ -14,14 +14,14 @@ const PublicAuthContext = createContext<PublicAuthValue>({
 });
 
 function ClerkPublicAuthProvider(props: {
-  initialSignedIn: boolean;
+  initialSignedIn?: boolean;
   children: React.ReactNode;
 }) {
   const { isLoaded, isSignedIn } = useAuth();
   const value = useMemo<PublicAuthValue>(
     () => ({
       authEnabled: true,
-      isSignedIn: isLoaded ? Boolean(isSignedIn) : props.initialSignedIn,
+      isSignedIn: isLoaded ? Boolean(isSignedIn) : Boolean(props.initialSignedIn),
     }),
     [isLoaded, isSignedIn, props.initialSignedIn],
   );
@@ -30,7 +30,7 @@ function ClerkPublicAuthProvider(props: {
 
 export function PublicAuthProvider(props: {
   authEnabled: boolean;
-  initialSignedIn: boolean;
+  initialSignedIn?: boolean;
   children: React.ReactNode;
 }) {
   if (!props.authEnabled) {
@@ -47,4 +47,3 @@ export function PublicAuthProvider(props: {
 export function usePublicAuth(): PublicAuthValue {
   return useContext(PublicAuthContext);
 }
-

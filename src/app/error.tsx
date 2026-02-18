@@ -6,7 +6,6 @@ import * as Sentry from "@sentry/nextjs";
 import { AlertTriangle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { capturePosthogEvent } from "@/lib/posthog/client";
 
 export default function RootSegmentError(props: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
@@ -14,12 +13,6 @@ export default function RootSegmentError(props: { error: Error & { digest?: stri
     Sentry.captureException(props.error, {
       tags: { area: "root-error-boundary" },
       extra: { digest: props.error?.digest ?? null },
-    });
-    capturePosthogEvent("ui_error", {
-      area: "root_error_boundary",
-      path: typeof window === "undefined" ? undefined : `${window.location.pathname}${window.location.search}`,
-      message: props.error?.message || "Root error boundary triggered.",
-      digest: props.error?.digest ?? null,
     });
   }, [props.error]);
 

@@ -93,7 +93,7 @@ export function welcomeTemplate(input: WelcomeTemplateInput): {
                     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;">
                       <tr>
                         <td align="center">
-                          <a href="${input.appUrl}" style="display:inline-block;padding:16px 40px;background:#0a8a77;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;border-radius:14px;letter-spacing:-0.2px;box-shadow:0 4px 12px rgba(10,138,119,0.25);">
+                          <a href="${loginUrl}" style="display:inline-block;padding:16px 40px;background:#0a8a77;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;border-radius:14px;letter-spacing:-0.2px;box-shadow:0 4px 12px rgba(10,138,119,0.25);">
                             Enter Hifzer
                           </a>
                         </td>
@@ -149,7 +149,7 @@ export function welcomeTemplate(input: WelcomeTemplateInput): {
     "",
     "We built this tool to serve the guardians of the Book. May Allah make it a means for you to meet Him with His words illuminated in your chest.",
     "",
-    `Enter Hifzer: ${input.appUrl}`,
+    `Enter Hifzer: ${loginUrl}`,
     "",
     "— Akmal",
     "Founder, Hifzer",

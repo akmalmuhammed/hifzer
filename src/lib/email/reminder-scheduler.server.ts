@@ -5,7 +5,6 @@ import * as Sentry from "@sentry/nextjs";
 import { db } from "@/lib/db";
 import { emailConfig } from "@/lib/email/config.server";
 import { dispatchDailyPracticeReminder } from "@/lib/email/service.server";
-import { captureServerPosthogEvent } from "@/lib/posthog/server";
 
 const MINUTES_PER_DAY = 24 * 60;
 const REMINDER_WINDOW_MINUTES = 35;
@@ -225,11 +224,6 @@ export async function runReminderScheduler(now = new Date()): Promise<ReminderRu
     const rule = evaluateReminderEligibility({ candidate, now });
     if (!rule.eligible) {
       summary.skipped += 1;
-      await captureServerPosthogEvent("email.reminder.skipped", {
-        userId: candidate.id,
-        reason: rule.reason,
-        localDate: rule.localDate,
-      });
       continue;
     }
 
@@ -248,11 +242,6 @@ export async function runReminderScheduler(now = new Date()): Promise<ReminderRu
     });
     if (hasCompletedSession) {
       summary.skipped += 1;
-      await captureServerPosthogEvent("email.reminder.skipped", {
-        userId: candidate.id,
-        reason: "session_completed_today",
-        localDate: rule.localDate,
-      });
       continue;
     }
 
@@ -268,30 +257,15 @@ export async function runReminderScheduler(now = new Date()): Promise<ReminderRu
         tags: { area: "email-reminders", provider: "resend", template: "daily_practice_reminder" },
         extra: { clerkUserId: candidate.clerkUserId },
       });
-      await captureServerPosthogEvent("email.reminder.failed", {
-        userId: candidate.id,
-        reason: "clerk_lookup_failed",
-        localDate: rule.localDate,
-      });
       continue;
     }
 
     if (!emailAddress) {
       summary.skipped += 1;
-      await captureServerPosthogEvent("email.reminder.skipped", {
-        userId: candidate.id,
-        reason: "missing_email",
-        localDate: rule.localDate,
-      });
       continue;
     }
 
     summary.eligible += 1;
-    await captureServerPosthogEvent("email.reminder.scheduled", {
-      userId: candidate.id,
-      localDate: rule.localDate,
-      dryRun: cfg.dryRun,
-    });
 
     const dispatch = await dispatchDailyPracticeReminder({
       userId: candidate.id,
@@ -307,39 +281,20 @@ export async function runReminderScheduler(now = new Date()): Promise<ReminderRu
       summary.sent += 1;
       sentCounterToday += 1;
       sentCounterMonth += 1;
-      await captureServerPosthogEvent("email.reminder.sent", {
-        userId: candidate.id,
-        localDate: rule.localDate,
-      });
       continue;
     }
 
     if (dispatch.outcome === "dry_run") {
       summary.skipped += 1;
-      await captureServerPosthogEvent("email.reminder.skipped", {
-        userId: candidate.id,
-        reason: "dry_run",
-        localDate: rule.localDate,
-      });
       continue;
     }
 
     if (dispatch.outcome === "skipped") {
       summary.skipped += 1;
-      await captureServerPosthogEvent("email.reminder.skipped", {
-        userId: candidate.id,
-        reason: dispatch.reason ?? "skipped",
-        localDate: rule.localDate,
-      });
       continue;
     }
 
     summary.failed += 1;
-    await captureServerPosthogEvent("email.reminder.failed", {
-      userId: candidate.id,
-      reason: dispatch.reason ?? "send_failed",
-      localDate: rule.localDate,
-    });
   }
 
   return summary;

@@ -1,9 +1,16 @@
 import { auth } from "@clerk/nextjs/server";
 import * as Sentry from "@sentry/nextjs";
+import { unstable_cache } from "next/cache";
 import { NextResponse } from "next/server";
 import { getDashboardOverview } from "@/hifzer/dashboard/server";
 
 export const runtime = "nodejs";
+
+const getCachedDashboardOverview = unstable_cache(
+  async (clerkUserId: string) => getDashboardOverview(clerkUserId),
+  ["dashboard-overview"],
+  { revalidate: 120 },
+);
 
 export async function GET() {
   const { userId } = await auth();
@@ -12,7 +19,7 @@ export async function GET() {
   }
 
   try {
-    const overview = await getDashboardOverview(userId);
+    const overview = await getCachedDashboardOverview(userId);
     if (!overview) {
       return NextResponse.json({ error: "Database not configured." }, { status: 503 });
     }

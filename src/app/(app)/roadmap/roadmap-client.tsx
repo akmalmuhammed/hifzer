@@ -40,7 +40,7 @@ const LANES: Lane[] = [
       },
       {
         title: "Observability maturity",
-        detail: "Broaden Sentry and PostHog coverage across routing, session completion, and payment-critical flows.",
+        detail: "Broaden Sentry coverage across routing, session completion, and payment-critical flows.",
         status: "planned",
       },
     ],

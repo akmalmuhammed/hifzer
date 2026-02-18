@@ -5,7 +5,6 @@ import { useEffect, useRef } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { capturePosthogEvent } from "@/lib/posthog/client";
 import { trackGaEvent } from "@/lib/ga/client";
 
 const STORAGE_KEYS = {
@@ -92,7 +91,6 @@ export default function NotFoundPage() {
     };
 
     trackGaEvent("page_not_found", payload);
-    capturePosthogEvent("page_not_found", payload);
     Sentry.captureMessage(`404 page_not_found:${currentPath}`, {
       level: "warning",
       tags: { cause_type: cause, navigation_type: navType },
@@ -119,4 +117,3 @@ export default function NotFoundPage() {
     </main>
   );
 }
-

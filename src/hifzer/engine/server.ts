@@ -23,7 +23,7 @@ import { isTransitionSuccess, isWeakTransition } from "@/hifzer/engine/transitio
 import { updateLearnedAverages } from "@/hifzer/engine/debt";
 import type { SessionEventInput, SessionStep, TodayEngineResult } from "@/hifzer/engine/types";
 import { applyGrade, defaultReviewState } from "@/hifzer/srs/update";
-import { verseRefFromAyahId } from "@/hifzer/quran/lookup.server";
+import { getAyahById, verseRefFromAyahId } from "@/hifzer/quran/lookup.server";
 import { listSahihTranslationsForAyahIds } from "@/hifzer/quran/translation.server";
 
 function shiftIsoDate(iso: string, days: number): string {
@@ -288,6 +288,13 @@ export async function startTodaySession(clerkUserId: string) {
   }
   const stepAyahIds = Array.from(ayahIdSet);
   const translationsByAyahId = listSahihTranslationsForAyahIds(stepAyahIds);
+  const ayahTextByAyahId: Record<number, string> = {};
+  for (const ayahId of stepAyahIds) {
+    const ayah = getAyahById(ayahId);
+    if (ayah?.textUthmani) {
+      ayahTextByAyahId[ayahId] = ayah.textUthmani;
+    }
+  }
 
   return {
     sessionId: session.id,
@@ -299,6 +306,7 @@ export async function startTodaySession(clerkUserId: string) {
       provider: "tanzil.en.sahih" as const,
       byAyahId: translationsByAyahId,
     },
+    ayahTextByAyahId,
   };
 }
 
