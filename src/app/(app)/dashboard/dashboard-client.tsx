@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { AreaTrend } from "@/components/charts/area-trend";
 import { DonutProgress } from "@/components/charts/donut-progress";
-import { HeatStrip } from "@/components/charts/heat-strip";
 import { Sparkline } from "@/components/charts/sparkline";
 import { StackedBars } from "@/components/charts/stacked-bars";
 import { PageHeader } from "@/components/app/page-header";
@@ -25,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
+import { addIsoDaysUtc } from "@/hifzer/derived/dates";
 import styles from "./dashboard.module.css";
 
 type DashboardOverview = {
@@ -152,6 +152,20 @@ function formatMaybeDateTime(value: string | null): string {
   return new Date(value).toLocaleString();
 }
 
+function activityColor(value: number, max: number): string {
+  if (value <= 0) {
+    return "rgba(11,18,32,0.06)";
+  }
+  const pct = value / Math.max(1, max);
+  if (pct < 0.34) {
+    return "rgba(10,138,119,0.24)";
+  }
+  if (pct < 0.67) {
+    return "rgba(10,138,119,0.42)";
+  }
+  return "rgba(var(--kw-accent-rgb),0.64)";
+}
+
 function DashboardSkeleton() {
   return (
     <div className="space-y-4">
@@ -217,13 +231,32 @@ export function DashboardClient() {
     () => overview?.sessionTrend14d.map((point) => point.recallEvents) ?? [],
     [overview],
   );
-  const heatDays = useMemo(
-    () =>
-      overview?.sessionTrend14d.map((point) => ({
-        date: point.date,
-        value: point.recallEvents + point.browseAyahs + (point.completedSessions * 2),
-      })) ?? [],
-    [overview],
+  const activityDays = useMemo(() => {
+    if (!overview) {
+      return [];
+    }
+    const pointMap = new Map(
+      overview.sessionTrend14d.map((point) => [
+        point.date,
+        point.recallEvents + point.browseAyahs + (point.completedSessions * 2),
+      ]),
+    );
+    const latestDate = overview.sessionTrend14d[overview.sessionTrend14d.length - 1]?.date;
+    if (!latestDate) {
+      return [];
+    }
+    const start = addIsoDaysUtc(latestDate, -55);
+    return Array.from({ length: 56 }, (_, index) => {
+      const date = addIsoDaysUtc(start, index);
+      return {
+        date,
+        value: pointMap.get(date) ?? 0,
+      };
+    });
+  }, [overview]);
+  const activityMax = useMemo(
+    () => Math.max(1, ...activityDays.map((day) => day.value)),
+    [activityDays],
   );
 
   const gradeSegments = useMemo(() => {
@@ -431,8 +464,13 @@ export function DashboardClient() {
           </div>
 
           <div className="grid gap-4 xl:grid-cols-2">
-            <motion.div initial={reduceMotion ? false : { opacity: 0, y: 10 }} animate={reduceMotion ? {} : { opacity: 1, y: 0 }} transition={{ ...cardTransition, delay: 0.2 }}>
-              <Card className={styles.sectionGlow}>
+            <motion.div
+              className="h-full"
+              initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+              animate={reduceMotion ? {} : { opacity: 1, y: 0 }}
+              transition={{ ...cardTransition, delay: 0.2 }}
+            >
+              <Card className="h-full">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Momentum stream</p>
@@ -462,8 +500,13 @@ export function DashboardClient() {
               </Card>
             </motion.div>
 
-            <motion.div initial={reduceMotion ? false : { opacity: 0, y: 10 }} animate={reduceMotion ? {} : { opacity: 1, y: 0 }} transition={{ ...cardTransition, delay: 0.24 }}>
-              <Card>
+            <motion.div
+              className="h-full"
+              initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+              animate={reduceMotion ? {} : { opacity: 1, y: 0 }}
+              transition={{ ...cardTransition, delay: 0.24 }}
+            >
+              <Card className="h-full">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Recitation quality</p>
@@ -499,8 +542,13 @@ export function DashboardClient() {
           </div>
 
           <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-            <motion.div initial={reduceMotion ? false : { opacity: 0, y: 10 }} animate={reduceMotion ? {} : { opacity: 1, y: 0 }} transition={{ ...cardTransition, delay: 0.28 }}>
-              <Card>
+            <motion.div
+              className="h-full"
+              initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+              animate={reduceMotion ? {} : { opacity: 1, y: 0 }}
+              transition={{ ...cardTransition, delay: 0.28 }}
+            >
+              <Card className="h-full">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Qur&apos;an compass</p>
@@ -548,8 +596,13 @@ export function DashboardClient() {
               </Card>
             </motion.div>
 
-            <motion.div initial={reduceMotion ? false : { opacity: 0, y: 10 }} animate={reduceMotion ? {} : { opacity: 1, y: 0 }} transition={{ ...cardTransition, delay: 0.32 }}>
-              <Card>
+            <motion.div
+              className="h-full"
+              initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+              animate={reduceMotion ? {} : { opacity: 1, y: 0 }}
+              transition={{ ...cardTransition, delay: 0.32 }}
+            >
+              <Card className="h-full">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Review health map</p>
@@ -558,7 +611,24 @@ export function DashboardClient() {
                   <Waves size={18} className="text-[color:var(--kw-muted)]" />
                 </div>
                 <div className="mt-4">
-                  <HeatStrip days={heatDays} tone="brand" animate ariaLabel="Review and browse activity heat strip" />
+                  <div className={styles.activityGrid} aria-label="Review and browse activity heat map">
+                    {activityDays.map((day) => (
+                      <span
+                        key={day.date}
+                        title={`${formatLocalDate(day.date)}: ${day.value}`}
+                        className={styles.activityCell}
+                        style={{ backgroundColor: activityColor(day.value, activityMax) }}
+                      />
+                    ))}
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-[color:var(--kw-faint)]">
+                    <span>Low</span>
+                    <span className={styles.legendCell} style={{ backgroundColor: activityColor(0, activityMax) }} />
+                    <span className={styles.legendCell} style={{ backgroundColor: activityColor(Math.ceil(activityMax * 0.34), activityMax) }} />
+                    <span className={styles.legendCell} style={{ backgroundColor: activityColor(Math.ceil(activityMax * 0.67), activityMax) }} />
+                    <span className={styles.legendCell} style={{ backgroundColor: activityColor(activityMax, activityMax) }} />
+                    <span>High</span>
+                  </div>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-2">
                   <div className={`${styles.kpiTile} px-3 py-2`}>
