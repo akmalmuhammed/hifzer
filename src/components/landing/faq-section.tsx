@@ -108,8 +108,9 @@ export function FaqSection() {
         >
           <blockquote className="text-center">
             <p className="mx-auto max-w-lg text-sm leading-7 text-[color:var(--kw-muted)]">
-              &ldquo;I built Hifzer after losing eight juz in university. Years of work faded fast without a system.
-              This product is the tool I wish I had then.&rdquo;
+              &ldquo;I memorized with a teacher but had no system for what came after. Without structured review,
+              what I learned started slipping — and I had no way to know which ayahs were fading until they were already gone.
+              Hifzer is the system I needed but didn&apos;t have.&rdquo;
             </p>
             <footer className="mt-4 text-xs font-semibold text-[color:var(--kw-faint)]">
               - Akmal, founder
