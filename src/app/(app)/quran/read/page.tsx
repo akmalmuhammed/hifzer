@@ -11,9 +11,11 @@ import {
   type AyahFilters,
 } from "@/hifzer/quran/lookup.server";
 import { getSahihTranslationByAyahId } from "@/hifzer/quran/translation.server";
+import { CompactReaderScroll } from "./compact-reader-scroll";
 import { ReadProgressSync } from "./read-progress-sync";
 
 type ReaderView = "list" | "compact";
+const COMPACT_READER_ANCHOR = "compact-reader";
 
 type SearchParamShape = {
   view?: string | string[];
@@ -98,7 +100,9 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   const baseQuery = { surahNumber, juzNumber, ayahId };
   const cursorForLinks = compact.current?.id ?? cursorAyahId;
   const listHref = buildHref({ ...baseQuery, view: "list", anonymous });
-  const compactHref = buildHref({ ...baseQuery, view: "compact", cursor: cursorForLinks, anonymous });
+  const compactHref = `${
+    buildHref({ ...baseQuery, view: "compact", cursor: cursorForLinks, anonymous })
+  }#${COMPACT_READER_ANCHOR}`;
   const trackedHref = buildHref({ ...baseQuery, view, cursor: cursorForLinks, anonymous: false });
   const anonymousHref = buildHref({ ...baseQuery, view, cursor: cursorForLinks, anonymous: true });
   const clearHref = anonymous ? "/quran/read?anon=1" : "/quran/read";
@@ -113,6 +117,9 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
           ayahNumber={syncAyah.ayahNumber}
           ayahId={syncAyah.id}
         />
+      ) : null}
+      {view === "compact" && compact.current ? (
+        <CompactReaderScroll targetId={COMPACT_READER_ANCHOR} ayahId={compact.current.id} />
       ) : null}
 
       <Link
@@ -291,7 +298,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
       ) : null}
 
       {ayahs.length > 0 && view === "compact" && compact.current ? (
-        <div className="mt-8">
+        <div id={COMPACT_READER_ANCHOR} className="mt-8">
           <Card className="py-3">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex items-center gap-2">
@@ -321,7 +328,13 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
             <div className="mt-6 flex items-center gap-2">
               {compact.prevAyahId ? (
                 <Link
-                  href={buildHref({ ...baseQuery, view: "compact", cursor: compact.prevAyahId, anonymous })}
+                  href={`${buildHref({
+                    ...baseQuery,
+                    view: "compact",
+                    cursor: compact.prevAyahId,
+                    anonymous,
+                  })}#${COMPACT_READER_ANCHOR}`}
+                  scroll={false}
                   className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
                 >
                   Previous
@@ -334,7 +347,13 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
 
               {compact.nextAyahId ? (
                 <Link
-                  href={buildHref({ ...baseQuery, view: "compact", cursor: compact.nextAyahId, anonymous })}
+                  href={`${buildHref({
+                    ...baseQuery,
+                    view: "compact",
+                    cursor: compact.nextAyahId,
+                    anonymous,
+                  })}#${COMPACT_READER_ANCHOR}`}
+                  scroll={false}
                   className="rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
                 >
                   Next
