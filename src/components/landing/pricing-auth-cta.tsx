@@ -10,10 +10,8 @@ export function PricingAuthCta() {
   if (isSignedIn) {
     return (
       <div className="flex w-full items-center gap-3 sm:w-auto">
-        <Button asChild size="lg" className="w-full sm:w-auto">
-          <PublicAuthLink signedInHref="/billing/upgrade" signedOutHref="/signup" className="w-full sm:w-auto">
-            Upgrade plan
-          </PublicAuthLink>
+        <Button size="lg" className="w-full sm:w-auto" disabled>
+          Free for all users
         </Button>
         <PublicAuthLink
           signedInHref="/today"

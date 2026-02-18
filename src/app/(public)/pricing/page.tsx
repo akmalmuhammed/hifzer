@@ -1,14 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { Check, HeartHandshake, Lock, ShieldCheck } from "lucide-react";
+import { Check, Lock, ShieldCheck } from "lucide-react";
 import { PricingAuthCta } from "@/components/landing/pricing-auth-cta";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Pill } from "@/components/ui/pill";
 
 const PLANS = [
@@ -42,11 +40,7 @@ const PLANS = [
   },
 ] as const;
 
-function isPaddleConfigured(): boolean {
-  return Boolean(process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN);
-}
-
-function planAction(planKey: "free" | "pro", paddleReady: boolean, ramadan: boolean) {
+function planAction(planKey: "free" | "pro", ramadan: boolean) {
   if (planKey === "free") {
     return {
       label: "Start free",
@@ -70,21 +64,17 @@ function planAction(planKey: "free" | "pro", paddleReady: boolean, ramadan: bool
   }
 
   return {
-    label: paddleReady ? "Upgrade with Paddle" : "Upgrade coming soon",
-    signedInHref: "/billing/upgrade",
+    label: "Free for all users",
+    signedInHref: "/today",
     signedOutHref: "/signup",
-    note: paddleReady
-      ? "Next: continue to secure checkout through Paddle and activate your paid plan."
-      : "Checkout is being finalized. You can still sign up free now and upgrade later.",
-    disabled: !paddleReady,
-    variant: "primary" as const,
+    note: "Payments are currently paused. Pro features are available free during this period.",
+    disabled: true,
+    variant: "secondary" as const,
   };
 }
 
 export default function PricingPage() {
   const reduceMotion = useReducedMotion();
-  const paddleReady = useMemo(() => isPaddleConfigured(), []);
-  const [donation, setDonation] = useState("10");
 
   return (
     <div className="pb-12 pt-10 md:pb-16 md:pt-14">
@@ -108,7 +98,7 @@ export default function PricingPage() {
 
       <div className="mt-10 grid gap-4 md:grid-cols-2">
         {PLANS.map((p, idx) => {
-          const action = planAction(p.key, paddleReady, p.ramadan);
+          const action = planAction(p.key, p.ramadan);
 
           return (
             <motion.div
@@ -196,7 +186,7 @@ export default function PricingPage() {
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
             <Pill tone="neutral">Clerk auth</Pill>
-            <Pill tone="neutral">Paddle billing</Pill>
+            <Pill tone="neutral">Billing paused</Pill>
             <Pill tone="neutral">Sentry monitoring</Pill>
             <Link href="/roadmap" className="text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">Public roadmap</Link>
             <Link href="/changelog" className="text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">Changelog</Link>
@@ -218,46 +208,7 @@ export default function PricingPage() {
         </Card>
       </div>
 
-      <div className="mt-10">
-        <Card className="overflow-hidden">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Support the work</p>
-              <p className="mt-2 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
-                If Hifzer helps you stay consistent, you can optionally make a one-time donation.
-              </p>
-            </div>
-            <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)]">
-              <HeartHandshake size={18} />
-            </span>
-          </div>
-
-          <div className="mt-6 grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                Amount (USD)
-              </p>
-              <div className="mt-2 flex max-w-sm items-center gap-2">
-                <Input
-                  inputMode="decimal"
-                  value={donation}
-                  onChange={(e) => setDonation(e.target.value)}
-                  placeholder="10"
-                />
-                <span className="text-sm font-semibold text-[color:var(--kw-muted)]">USD</span>
-              </div>
-              <p className="mt-2 text-xs text-[color:var(--kw-faint)]">
-                Donation checkout will use Paddle once configured.
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="secondary" size="lg" disabled={!paddleReady}>
-                Donate
-              </Button>
-            </div>
-          </div>
-        </Card>
-      </div>
+      {/* Donation block intentionally hidden while donations are paused. */}
 
       <div className="mt-8">
         <Card>
