@@ -31,6 +31,7 @@ export function ReadProgressSync(props: {
         surahNumber: props.surahNumber,
         ayahNumber: props.ayahNumber,
         cursorAyahId: props.ayahId,
+        source: "quran_read",
       }),
     }).catch(() => {
       // Fail-open: local reading should continue even if profile sync fails.

@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getAyahById, getSurahInfo } from "@/hifzer/quran/lookup";
 import { getOrCreateUserProfile, saveStartPoint } from "@/hifzer/profile/server";
+import { recordQuranBrowseAyahRangeRead } from "@/hifzer/quran/read-progress.server";
 
 export const runtime = "nodejs";
 
@@ -58,11 +59,22 @@ export async function POST(req: Request) {
 
   const rangeStartAyahId = surah.startAyahId + (fromAyahNumber - 1);
   const rangeEndAyahId = surah.startAyahId + (toAyahNumber - 1);
+  const ayahIds = Array.from(
+    { length: rangeEndAyahId - rangeStartAyahId + 1 },
+    (_, index) => rangeStartAyahId + index,
+  );
 
   const profile = await getOrCreateUserProfile(userId);
   if (!profile) {
     return NextResponse.json({ error: "Database not configured." }, { status: 503 });
   }
+
+  const tracking = await recordQuranBrowseAyahRangeRead({
+    profileId: profile.id,
+    mode: profile.mode,
+    timezone: profile.timezone,
+    ayahIds,
+  });
 
   const previousCursorAyahId = profile.cursorAyahId;
   const updatedCursorAyahId = Math.max(previousCursorAyahId, rangeEndAyahId);
@@ -77,6 +89,11 @@ export async function POST(req: Request) {
     previousCursorAyahId,
     updatedCursorAyahId,
     activeSurahNumber,
+    tracking: {
+      recordedAyahCount: tracking.recordedAyahCount,
+      alreadyTrackedAyahCount: tracking.alreadyTrackedAyahCount,
+      totalAyahCount: ayahIds.length,
+    },
     range: {
       surahNumber,
       fromAyahNumber,

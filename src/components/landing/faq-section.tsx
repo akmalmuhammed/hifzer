@@ -4,32 +4,31 @@ import { useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import clsx from "clsx";
-import { Card } from "@/components/ui/card";
 
 const FAQS = [
   {
     q: "What is Hifzer?",
-    a: "Hifzer is a Hifz Operating System — a daily, research-aligned workflow that helps you encode new ayahs correctly and retain everything long-term. It's not a Quran reader and not a generic flashcard app. It's a retention system purpose-built for Qur'an memorization.",
+    a: "Hifzer is a Hifz Operating System - a daily, research-aligned workflow that helps you encode new ayahs correctly and retain them long-term. It is not only a Qur'an reader and not a generic flashcard app.",
   },
   {
     q: "How does the review system work?",
-    a: "Every ayah has its own SRS schedule. After learning, it goes through early checkpoints (+4h → +8h → +24h) and then long-term stations (1d → 2d → 4d → 7d → 14d → 30d → 90d). When you grade an ayah (Again / Hard / Good / Easy), it moves forward or back through the stations. The system also tracks review debt in minutes and automatically shifts between Normal, Consolidation, and Catch-up modes.",
+    a: "Each ayah has its own SRS schedule. Early checkpoints run at +4h -> +8h -> +24h, then long-term stations continue (1d -> 2d -> 4d -> 7d -> 14d -> 30d -> 90d). Your Again/Hard/Good/Easy grade moves the item forward or back.",
   },
   {
     q: "What makes Hifzer different from other Quran apps?",
-    a: "Quality gates. Most apps let you sprint ahead and forget everything behind you. Hifzer blocks new material until yesterday's Sabaq passes a warm-up test. It runs weekly consolidation checks. And it measures review debt in minutes, not just items — so when debt grows, new memorization automatically pauses until retention is stable.",
+    a: "Quality gates. Most apps let you sprint ahead and forget what is behind. Hifzer blocks new material until warm-up passes, runs weekly consolidation checks, and uses review-debt minutes to protect retention.",
   },
   {
     q: "Is it free?",
-    a: "Right now, everything — including Pro — is completely free as a Ramadan gift. The full Hifz OS, warm-up gate, Sabqi + Manzil review, per-ayah grading, and audio are always free. The Pro tier (weekly tests, monthly audits, themes, upcoming AI scoring) will be $7/month after the limited-time offer ends. No card required to start.",
+    a: "Core features are free, including the full daily loop, warm-up gate, Sabqi + Manzil review, per-ayah grading, and audio. Pro adds advanced features and is currently offered free for a limited Ramadan period.",
   },
   {
     q: "Can I use it with a teacher?",
-    a: "Yes. Hifzer is designed to complement a teacher, not replace one. The assessment captures whether you have a teacher, and the system adapts. Your teacher handles tajweed and oral correction; Hifzer handles scheduling, review debt, and daily plan structure.",
+    a: "Yes. Hifzer complements a teacher. Your teacher handles oral correction and tajweed depth; Hifzer handles scheduling, review debt, and daily structure.",
   },
   {
     q: "What happens if I miss days?",
-    a: "The system adapts automatically. After 1 missed day, it's review-first. After 2, it's review-only. After 3+, it enters a structured Catch-up mode with new material blocked until retention is stable. No guilt loops — the plan just adjusts.",
+    a: "The system adapts automatically. After 1 missed day it becomes review-first, after 2 it is review-only, and after 3+ it enters catch-up mode with new blocked until retention stabilizes.",
   },
 ] as const;
 
@@ -109,10 +108,11 @@ export function FaqSection() {
         >
           <blockquote className="text-center">
             <p className="mx-auto max-w-lg text-sm leading-7 text-[color:var(--kw-muted)]">
-              &ldquo;I built Hifzer after losing eight juz following university. Years of work, gone in months without a system. I didn&apos;t want to build an app — I wanted the tool that would have saved me. This is it.&rdquo;
+              &ldquo;I built Hifzer after losing eight juz in university. Years of work faded fast without a system.
+              This product is the tool I wish I had then.&rdquo;
             </p>
             <footer className="mt-4 text-xs font-semibold text-[color:var(--kw-faint)]">
-              — Akmal, founder
+              - Akmal, founder
             </footer>
           </blockquote>
         </motion.div>

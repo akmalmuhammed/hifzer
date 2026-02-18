@@ -55,7 +55,7 @@ export function ComparisonMatrix() {
         </div>
         <p className="max-w-xl text-sm leading-6 text-[color:var(--kw-muted)]">
           Teacher-only methods rely on intuition. Flashcard apps ignore Hifz methodology.
-          Hifzer combines both — and adds intelligent retention protection.
+          Hifzer combines both and adds retention protection.
         </p>
       </div>
 
@@ -127,11 +127,11 @@ export function ComparisonMatrix() {
         <p className="text-sm leading-7 text-[color:var(--kw-muted)]">
           Try the system that combines all three.
         </p>
-        <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
-          <Button size="lg" className="gap-2">
+        <Button asChild size="lg" className="gap-2">
+          <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
             Get started free <ArrowRight size={16} />
-          </Button>
-        </PublicAuthLink>
+          </PublicAuthLink>
+        </Button>
       </motion.div>
     </section>
   );

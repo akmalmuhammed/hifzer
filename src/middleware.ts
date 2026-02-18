@@ -18,13 +18,28 @@ const isProtectedRoute = createRouteMatcher([
   "/milestones(.*)",
   "/fluency(.*)",
   "/billing(.*)",
-  "/quran(.*)",
 ]);
 
+function isProtectedQuranPath(pathname: string): boolean {
+  return pathname === "/quran" || pathname.startsWith("/quran/");
+}
+
 const protectedMiddleware = clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req)) {
-    await auth.protect();
+  const pathname = req.nextUrl.pathname;
+  const shouldProtect = isProtectedRoute(req) || isProtectedQuranPath(pathname);
+  if (!shouldProtect) {
+    return NextResponse.next();
   }
+
+  const { userId } = await auth();
+  if (!userId) {
+    const signInUrl = new URL("/login", req.url);
+    const redirectPath = `${pathname}${req.nextUrl.search}`;
+    signInUrl.searchParams.set("redirect_url", redirectPath || "/today");
+    return NextResponse.redirect(signInUrl);
+  }
+
+  return NextResponse.next();
 });
 
 export default clerkEnabled()

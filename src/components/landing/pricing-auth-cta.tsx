@@ -9,27 +9,36 @@ export function PricingAuthCta() {
 
   if (isSignedIn) {
     return (
-      <PublicAuthLink signedInHref="/today" className="w-full sm:w-auto">
-        <Button size="lg" className="w-full sm:w-auto">
-          Open app
+      <div className="flex w-full items-center gap-3 sm:w-auto">
+        <Button asChild size="lg" className="w-full sm:w-auto">
+          <PublicAuthLink signedInHref="/billing/upgrade" signedOutHref="/signup" className="w-full sm:w-auto">
+            Upgrade plan
+          </PublicAuthLink>
         </Button>
-      </PublicAuthLink>
+        <PublicAuthLink
+          signedInHref="/today"
+          className="text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline"
+        >
+          Open app
+        </PublicAuthLink>
+      </div>
     );
   }
 
   return (
-    <>
-      <PublicAuthLink signedInHref="/today" signedOutHref="/login" className="w-full sm:w-auto">
-        <Button size="lg" className="w-full sm:w-auto">
-          Get started
-        </Button>
+    <div className="flex w-full items-center gap-3 sm:w-auto">
+      <Button asChild size="lg" className="w-full sm:w-auto">
+        <PublicAuthLink signedInHref="/today" signedOutHref="/signup" className="w-full sm:w-auto">
+          Start free
+        </PublicAuthLink>
+      </Button>
+      <PublicAuthLink
+        signedInHref="/today"
+        signedOutHref="/login"
+        className="text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline"
+      >
+        Sign in
       </PublicAuthLink>
-      <PublicAuthLink signedInHref="/today" signedOutHref="/login" className="w-full sm:w-auto">
-        <Button size="lg" variant="secondary" className="w-full sm:w-auto">
-          Sign in
-        </Button>
-      </PublicAuthLink>
-    </>
+    </div>
   );
 }
-

@@ -129,11 +129,11 @@ export function PricingTeaser() {
               </ul>
 
               <div className="mt-7">
-                <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
-                  <Button variant={p.highlight ? "primary" : "secondary"} className="w-full">
+                <Button asChild variant={p.highlight ? "primary" : "secondary"} className="w-full">
+                  <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
                     {p.highlight ? "Claim your free access" : "Get started"}
-                  </Button>
-                </PublicAuthLink>
+                  </PublicAuthLink>
+                </Button>
               </div>
             </Card>
           </motion.div>

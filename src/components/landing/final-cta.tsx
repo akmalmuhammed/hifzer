@@ -28,15 +28,16 @@ export function FinalCta() {
             <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Now make it permanent.</span>
           </h2>
           <p className="mx-auto mt-5 max-w-md text-base leading-7 text-[color:var(--kw-muted)]">
-            Your memorization shouldn&apos;t be a phase. Hifzer protects what you&apos;ve built — running the schedule, tracking the debt, and keeping your retention solid every single day.
+            Your memorization should not be a phase. Hifzer protects what you built by running the schedule,
+            tracking review debt, and keeping retention solid every day.
           </p>
 
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
-              <Button size="lg">
+            <Button asChild size="lg">
+              <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
                 Start protecting your Hifz <ArrowRight size={18} />
-              </Button>
-            </PublicAuthLink>
+              </PublicAuthLink>
+            </Button>
           </div>
 
           <p className="mt-5 text-xs text-[color:var(--kw-faint)]">

@@ -55,9 +55,11 @@ export function MarketingNav(props: { authEnabled: boolean }) {
             {showSignedIn ? (
               <>
                 <p className="px-2 text-xs font-semibold text-[color:var(--kw-muted)]">Welcome back</p>
-                <TrackedLink href="/today" telemetryName="marketing.open-app">
-                  <Button size="md">Open app</Button>
-                </TrackedLink>
+                <Button asChild size="md">
+                  <TrackedLink href="/today" telemetryName="marketing.open-app">
+                    Open app
+                  </TrackedLink>
+                </Button>
                 <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] shadow-[var(--kw-shadow-soft)]">
                   <UserButton afterSignOutUrl="/welcome" />
                 </div>
@@ -71,9 +73,11 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                 >
                   Sign in
                 </PublicAuthLink>
-                <PublicAuthLink signedInHref="/today" signedOutHref="/login">
-                  <Button size="md">Get started</Button>
-                </PublicAuthLink>
+                <Button asChild size="md">
+                  <PublicAuthLink signedInHref="/today" signedOutHref="/login">
+                    Get started
+                  </PublicAuthLink>
+                </Button>
               </>
             )}
 
@@ -135,9 +139,11 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                   >
                     Sign in
                   </PublicAuthLink>
-                  <PublicAuthLink signedInHref="/today" signedOutHref="/login" onClick={() => setOpen(false)} className="flex-1">
-                    <Button className="w-full">Get started</Button>
-                  </PublicAuthLink>
+                  <Button asChild className="w-full">
+                    <PublicAuthLink signedInHref="/today" signedOutHref="/login" onClick={() => setOpen(false)} className="flex-1">
+                      Get started
+                    </PublicAuthLink>
+                  </Button>
                 </>
               )}
             </div>

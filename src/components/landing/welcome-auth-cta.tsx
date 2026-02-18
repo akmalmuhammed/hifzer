@@ -10,27 +10,26 @@ export function WelcomeAuthCta() {
 
   if (isSignedIn) {
     return (
-      <PublicAuthLink signedInHref="/today" className="inline-flex">
-        <Button size="lg" className="gap-2">
+      <Button asChild size="lg" className="gap-2">
+        <PublicAuthLink signedInHref="/today" className="inline-flex">
           Open app <ArrowRight size={18} />
-        </Button>
-      </PublicAuthLink>
+        </PublicAuthLink>
+      </Button>
     );
   }
 
   return (
     <>
-      <PublicAuthLink signedInHref="/today" signedOutHref="/login">
-        <Button size="lg">
+      <Button asChild size="lg">
+        <PublicAuthLink signedInHref="/today" signedOutHref="/login">
           Create account <ArrowRight size={18} />
-        </Button>
-      </PublicAuthLink>
-      <PublicAuthLink signedInHref="/today" signedOutHref="/login">
-        <Button size="lg" variant="secondary">
+        </PublicAuthLink>
+      </Button>
+      <Button asChild size="lg" variant="secondary">
+        <PublicAuthLink signedInHref="/today" signedOutHref="/login">
           Sign in
-        </Button>
-      </PublicAuthLink>
+        </PublicAuthLink>
+      </Button>
     </>
   );
 }
-

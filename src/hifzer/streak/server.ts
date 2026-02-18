@@ -1,10 +1,14 @@
-import "server-only";
+﻿import "server-only";
 
 import type { AttemptStage, ReviewPhase } from "@prisma/client";
-import { isoDateToUtcMidnightMs } from "@/hifzer/derived/dates";
 import { isoDateInTimeZone } from "@/hifzer/engine/date";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
-import { verseRefFromAyahId } from "@/hifzer/quran/lookup.server";
+import {
+  QURAN_BROWSE_MARKER_DURATION_SEC,
+  QURAN_BROWSE_MARKER_PHASE,
+  QURAN_BROWSE_MARKER_STAGE,
+  recordQuranBrowseAyahRead,
+} from "@/hifzer/quran/read-progress.server";
 import { db } from "@/lib/db";
 import {
   MIN_QUALIFIED_SECONDS_PER_DAY,
@@ -16,10 +20,7 @@ import {
 
 const RECALL_STAGES: AttemptStage[] = ["WARMUP", "REVIEW", "WEEKLY_TEST", "LINK", "LINK_REPAIR"];
 const NEW_BLIND_PHASE: ReviewPhase = "NEW_BLIND";
-const BROWSE_MARKER_STAGE: AttemptStage = "REVIEW";
-const BROWSE_MARKER_PHASE: ReviewPhase = "STANDARD";
 const MIN_QUALIFIED_AYAHS_PER_DAY = 1;
-const MARKER_SESSION_OFFSET_MS = 36 * 60 * 60 * 1000;
 
 export type StreakSummary = {
   onboardingEligible: boolean;
@@ -98,23 +99,17 @@ function isBrowseMarkerRow(row: {
   stage: AttemptStage;
   phase: ReviewPhase;
   grade: string | null;
+  durationSec: number;
   ayahId: number;
   fromAyahId: number | null;
   toAyahId: number | null;
 }): boolean {
-  return row.stage === BROWSE_MARKER_STAGE &&
-    row.phase === BROWSE_MARKER_PHASE &&
+  return row.stage === QURAN_BROWSE_MARKER_STAGE &&
+    row.phase === QURAN_BROWSE_MARKER_PHASE &&
     row.grade == null &&
+    row.durationSec === QURAN_BROWSE_MARKER_DURATION_SEC &&
     row.fromAyahId === row.ayahId &&
     row.toAyahId === row.ayahId;
-}
-
-function syntheticSessionStartedAt(localDate: string): Date {
-  const base = isoDateToUtcMidnightMs(localDate);
-  if (base == null) {
-    return new Date(0);
-  }
-  return new Date(base - MARKER_SESSION_OFFSET_MS);
 }
 
 export async function recordBrowseAyahRecitation(clerkUserId: string, ayahId: number): Promise<StreakRecordResult> {
@@ -128,97 +123,18 @@ export async function recordBrowseAyahRecitation(clerkUserId: string, ayahId: nu
     };
   }
 
-  const normalizedAyahId = Math.floor(ayahId);
-  const verse = verseRefFromAyahId(normalizedAyahId);
-  if (!verse) {
-    return {
-      ok: true,
-      onboardingEligible: true,
-      recorded: false,
-      localDate: null,
-    };
-  }
-
-  const now = new Date();
-  const localDate = isoDateInTimeZone(now, profile.timezone);
-  const startedAt = syntheticSessionStartedAt(localDate);
-  const prisma = db();
-
-  const markerSession = await prisma.session.upsert({
-    where: {
-      userId_startedAt: {
-        userId: profile.id,
-        startedAt,
-      },
-    },
-    create: {
-      userId: profile.id,
-      status: "COMPLETED",
-      startedAt,
-      endedAt: now,
-      localDate,
-      mode: profile.mode,
-      reviewDebtMinutesAtStart: 0,
-      warmupPassed: true,
-      warmupRetryUsed: false,
-      weeklyGateRequired: false,
-      weeklyGatePassed: true,
-      newUnlocked: false,
-      warmupAyahIds: [],
-      reviewAyahIds: [],
-    },
-    update: {
-      localDate,
-      endedAt: now,
-      status: "COMPLETED",
-    },
-    select: { id: true },
-  });
-
-  const existing = await prisma.reviewEvent.findFirst({
-    where: {
-      userId: profile.id,
-      sessionId: markerSession.id,
-      ayahId: normalizedAyahId,
-      stage: BROWSE_MARKER_STAGE,
-      phase: BROWSE_MARKER_PHASE,
-      grade: null,
-      fromAyahId: normalizedAyahId,
-      toAyahId: normalizedAyahId,
-    },
-    select: { id: true },
-  });
-
-  if (existing) {
-    return {
-      ok: true,
-      onboardingEligible: true,
-      recorded: false,
-      localDate,
-    };
-  }
-
-  await prisma.reviewEvent.create({
-    data: {
-      userId: profile.id,
-      sessionId: markerSession.id,
-      surahNumber: verse.surahNumber,
-      ayahId: normalizedAyahId,
-      stage: BROWSE_MARKER_STAGE,
-      phase: BROWSE_MARKER_PHASE,
-      grade: null,
-      durationSec: 1,
-      fromAyahId: normalizedAyahId,
-      toAyahId: normalizedAyahId,
-      createdAt: now,
-    },
+  const result = await recordQuranBrowseAyahRead({
+    profileId: profile.id,
+    mode: profile.mode,
+    timezone: profile.timezone,
+    ayahId: Math.floor(ayahId),
   });
 
   return {
     ok: true,
     onboardingEligible: true,
-    recorded: true,
-    localDate,
+    recorded: result.recorded,
+    localDate: result.localDate,
   };
 }
 
@@ -252,9 +168,10 @@ export async function getUserStreakSummary(clerkUserId: string): Promise<StreakS
           ],
         },
         {
-          stage: BROWSE_MARKER_STAGE,
-          phase: BROWSE_MARKER_PHASE,
+          stage: QURAN_BROWSE_MARKER_STAGE,
+          phase: QURAN_BROWSE_MARKER_PHASE,
           grade: null,
+          durationSec: QURAN_BROWSE_MARKER_DURATION_SEC,
         },
       ],
       session: {

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import clsx from "clsx";
@@ -10,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardKpi, CardSoft, CardTitle } from "@/components/ui/card";
 import { DonutProgress } from "@/components/charts/donut-progress";
 import { HeatStrip } from "@/components/charts/heat-strip";
-
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
@@ -51,16 +51,16 @@ export function Hero() {
             className="inline-flex items-center gap-2 rounded-full border border-[rgba(var(--kw-accent-rgb),0.18)] bg-white/60 px-3 py-1 text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] backdrop-blur"
           >
             <Sparkles size={14} />
-            The operating system for Qur&apos;an memorization
+            For students and busy learners preserving Qur&apos;an memorization
           </motion.p>
 
           <motion.h1
             variants={fadeUp}
             className="mt-5 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl"
           >
-            Hifz that doesn&apos;t decay.
+            Start your first 10-minute Hifz session today.
             <span className="block text-[rgba(var(--kw-accent-rgb),1)]">
-              A protection system for retention.
+              Keep yesterday&apos;s ayahs strong.
             </span>
           </motion.h1>
 
@@ -68,29 +68,45 @@ export function Hero() {
             variants={fadeUp}
             className="mt-5 max-w-xl text-pretty text-base leading-7 text-[color:var(--kw-muted)]"
           >
-            Most of what you memorize fades before it sticks. Hifzer is a daily retention system
-            that blocks false progress, protects what you&apos;ve already learned, and adapts when
-            life gets in the way.
+            In your first session, you run a warm-up check, practice a guided 3x3 loop on new ayahs,
+            and grade recall with clear Again/Hard/Good/Easy feedback. The plan adapts daily so your
+            retention stays stable.
           </motion.p>
 
-          <motion.p
-            variants={fadeUp}
-            className="mt-4 text-xs text-[color:var(--kw-faint)]"
-          >
-            For students, self-taught learners, and anyone serious about keeping their Hifz intact.
-          </motion.p>
+          <motion.div variants={fadeUp} className="mt-5 grid gap-2 text-xs text-[color:var(--kw-faint)] sm:grid-cols-3">
+            <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-1.5 text-center font-semibold">
+              First session: ~10 min
+            </span>
+            <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-1.5 text-center font-semibold">
+              New focus: 5 ayahs + linking
+            </span>
+            <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-1.5 text-center font-semibold">
+              Daily target: 1 session
+            </span>
+          </motion.div>
 
           <motion.div variants={fadeUp} className="mt-7 flex flex-wrap items-center gap-3">
-            <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
-              <Button size="lg">
-                Get started free <ArrowRight size={18} />
-              </Button>
+            <Button asChild size="lg">
+              <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
+                Start your first session <ArrowRight size={18} />
+              </PublicAuthLink>
+            </Button>
+            <PublicAuthLink
+              signedInHref="/quran"
+              signedOutHref="/quran-preview"
+              className="text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline"
+            >
+              Preview Qur&apos;an browsing
             </PublicAuthLink>
-            <PublicAuthLink signedInHref="/quran" signedOutHref="/quran-preview">
-              <Button variant="secondary" size="lg">
-                See how it works
-              </Button>
-            </PublicAuthLink>
+          </motion.div>
+
+          <motion.div variants={fadeUp} className="mt-4 flex flex-wrap items-center gap-2 text-xs text-[color:var(--kw-faint)]">
+            <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1">Auth: Clerk</span>
+            <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1">Billing: Paddle</span>
+            <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1">Monitoring: Sentry</span>
+            <Link href="/legal/terms" className="font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">
+              Terms + privacy
+            </Link>
           </motion.div>
 
           <motion.div variants={fadeUp} className="mt-9 grid gap-3 sm:grid-cols-3">
@@ -128,7 +144,7 @@ export function Hero() {
               <div>
                 <CardTitle>Today&apos;s plan</CardTitle>
                 <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
-                  Balanced practice · 18 minutes
+                  Balanced practice - 18 minutes
                 </p>
               </div>
               <span className="rounded-full border border-[rgba(10,138,119,0.26)] bg-[rgba(10,138,119,0.10)] px-2.5 py-1 text-xs font-semibold text-[color:var(--kw-teal-800)]">
@@ -179,7 +195,7 @@ export function Hero() {
                 </p>
                 <ul className="mt-2 space-y-2 text-sm">
                   {[
-                    { t: "Sabaq", c: "brand", title: "New", meta: "5 ayahs · linking on" },
+                    { t: "Sabaq", c: "brand", title: "New", meta: "5 ayahs - linking on" },
                     { t: "Sabqi", c: "accent", title: "Recent review", meta: "12 due today" },
                     { t: "Manzil", c: "warn", title: "Long review", meta: "8 due this week" },
                   ].map((s, i) => (

@@ -75,6 +75,11 @@ export function QuranProgressBackfill(props: Props) {
         movedCursor?: boolean;
         updatedCursorAyahId?: number;
         activeSurahNumber?: number;
+        tracking?: {
+          recordedAyahCount?: number;
+          alreadyTrackedAyahCount?: number;
+          totalAyahCount?: number;
+        };
       };
 
       if (!res.ok) {
@@ -108,8 +113,8 @@ export function QuranProgressBackfill(props: Props) {
       pushToast({
         title: payload.movedCursor ? "Progress tracker updated" : "Range logged",
         message: payload.movedCursor
-          ? `Marked Surah ${selected.surahNumber}:${safeFrom}-${safeTo} as completed and advanced your tracker.`
-          : `Surah ${selected.surahNumber}:${safeFrom}-${safeTo} was saved. Your tracker was already ahead.`,
+          ? `Tracked ${payload.tracking?.recordedAyahCount ?? 0}/${payload.tracking?.totalAyahCount ?? (safeTo - safeFrom + 1)} ayahs in Surah ${selected.surahNumber}:${safeFrom}-${safeTo}. Resume cursor also advanced.`
+          : `Tracked ${payload.tracking?.recordedAyahCount ?? 0}/${payload.tracking?.totalAyahCount ?? (safeTo - safeFrom + 1)} ayahs in Surah ${selected.surahNumber}:${safeFrom}-${safeTo}. Resume cursor was already ahead.`,
         tone: "success",
       });
       router.refresh();
@@ -139,7 +144,7 @@ export function QuranProgressBackfill(props: Props) {
       </div>
 
       <p className="mt-3 text-sm text-[color:var(--kw-muted)]">
-        Mark any Surah ayah range as completed and sync your tracking cursor so you do not start from zero.
+        Mark only the exact Surah ayah range as read. Ayahs before the selected range are not auto-completed.
       </p>
 
       <div className="mt-4 grid gap-3 md:grid-cols-4">

@@ -32,7 +32,7 @@ const TEACHING_LOOP = [
   {
     step: 4,
     label: "Link step",
-    desc: "Recite previous ayah → current ayah as one chain. Transitions break first.",
+    desc: "Recite previous ayah -> current ayah as one chain. Transitions break first.",
     icon: <Link2 size={18} />,
     detail: "Transition",
   },
@@ -100,7 +100,7 @@ export function SessionWalkthrough() {
               <div>
                 <Pill tone="accent">New ayah loop</Pill>
                 <p className="mt-3 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                  The 3×3 teaching loop
+                  The 3x3 teaching loop
                 </p>
                 <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
                   For each new ayah, four steps that build encoding + linking
@@ -154,11 +154,11 @@ export function SessionWalkthrough() {
         <p className="text-sm leading-7 text-[color:var(--kw-muted)]">
           Ready to try it? Your first session takes 10 minutes.
         </p>
-        <PublicAuthLink signedInHref="/session" signedOutHref="/signup">
-          <Button size="lg" className="gap-2">
+        <Button asChild size="lg" className="gap-2">
+          <PublicAuthLink signedInHref="/session" signedOutHref="/signup">
             Start your first session <ArrowRight size={16} />
-          </Button>
-        </PublicAuthLink>
+          </PublicAuthLink>
+        </Button>
       </motion.div>
     </section>
   );

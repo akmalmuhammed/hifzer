@@ -4,6 +4,9 @@ import { Pill } from "@/components/ui/pill";
 
 export const metadata = {
   title: "Welcome",
+  alternates: {
+    canonical: "/welcome",
+  },
 };
 
 export default function WelcomePage() {

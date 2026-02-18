@@ -5,6 +5,7 @@ import { addIsoDaysUtc } from "@/hifzer/derived/dates";
 import { isoDateInTimeZone } from "@/hifzer/engine/date";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { getAyahById, getSurahInfo } from "@/hifzer/quran/lookup.server";
+import { getQuranReadProgress } from "@/hifzer/quran/read-progress.server";
 import { getUserStreakSummary } from "@/hifzer/streak/server";
 import { db } from "@/lib/db";
 
@@ -174,8 +175,8 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
     trackedAyahs,
     bandsAgg,
     weakTransitions,
-    khatmahCompletions,
     streak,
+    quranReadProgress,
   ] = await Promise.all([
     prisma.session.findMany({
       where: {
@@ -317,14 +318,8 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
         resolvedAt: null,
       },
     }),
-    prisma.session.count({
-      where: {
-        userId: profile.id,
-        status: "COMPLETED",
-        newEndAyahId: TOTAL_AYAHS,
-      },
-    }),
     getUserStreakSummary(clerkUserId),
+    getQuranReadProgress(profile.id),
   ]);
 
   const trendDates = Array.from({ length: 14 }, (_, idx) => addIsoDaysUtc(start14d, idx));
@@ -363,7 +358,6 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
   }
 
   const gradeMix14d = emptyGradeMix();
-  const uniqueSurahsRecited14d = new Set<number>();
   let weightedGradeScore = 0;
   let gradedEventCount = 0;
   for (const event of gradedEvents14d) {
@@ -374,7 +368,6 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
     gradeMix14d[grade] += 1;
     weightedGradeScore += gradeValue(grade);
     gradedEventCount += 1;
-    uniqueSurahsRecited14d.add(event.surahNumber);
     const bucket = trendIndex.get(event.session.localDate);
     if (!bucket) {
       continue;
@@ -383,12 +376,13 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
   }
 
   const browseByDate = new Map<string, Set<number>>();
+  const uniqueBrowseSurahsRecited14d = new Set<number>();
   for (const event of browseEvents14d) {
     const isBrowseMarker = event.fromAyahId === event.ayahId && event.toAyahId === event.ayahId;
     if (!isBrowseMarker) {
       continue;
     }
-    uniqueSurahsRecited14d.add(event.surahNumber);
+    uniqueBrowseSurahsRecited14d.add(event.surahNumber);
     const dateKey = event.session.localDate;
     const set = browseByDate.get(dateKey) ?? new Set<number>();
     set.add(event.ayahId);
@@ -448,17 +442,15 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
     ? Math.round((weightedGradeScore / (gradedEventCount * 3)) * 100)
     : 0;
 
-  const safeCursorAyahId = clamp(profile.cursorAyahId, 1, TOTAL_AYAHS);
-  const cursorAyah = getAyahById(safeCursorAyahId) ?? getAyahById(1);
+  const quranCursorAyahId = clamp(quranReadProgress.lastReadAyahId ?? 1, 1, TOTAL_AYAHS);
+  const cursorAyah = getAyahById(quranCursorAyahId) ?? getAyahById(1);
   const cursorRef = cursorAyah ? `${cursorAyah.surahNumber}:${cursorAyah.ayahNumber}` : "1:1";
   const currentSurah = getSurahInfo(cursorAyah?.surahNumber ?? profile.activeSurahNumber);
   const currentSurahProgressPct = currentSurah && cursorAyah
     ? Math.round((cursorAyah.ayahNumber / Math.max(1, currentSurah.ayahCount)) * 100)
     : 0;
-  const quranCompletionPct = Number(((safeCursorAyahId / TOTAL_AYAHS) * 100).toFixed(1));
-  const completedKhatmahCount = safeCursorAyahId >= TOTAL_AYAHS
-    ? Math.max(1, khatmahCompletions)
-    : khatmahCompletions;
+  const quranCompletionPct = quranReadProgress.completionPct;
+  const completedKhatmahCount = quranReadProgress.completionKhatmahCount;
 
   const recentSessions = recentSessionsRaw
     .filter((session) => session._count.attempts > 0 || session.status === "OPEN")
@@ -514,13 +506,13 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
       byBand,
     },
     quran: {
-      cursorAyahId: safeCursorAyahId,
+      cursorAyahId: quranCursorAyahId,
       cursorRef,
       currentSurahName: currentSurah?.nameTransliteration ?? `Surah ${cursorAyah?.surahNumber ?? 1}`,
       currentSurahProgressPct,
       completedKhatmahCount,
       browseRecitedAyahs7d: browseRecitedAyahs7dSet.size,
-      uniqueSurahsRecited14d: uniqueSurahsRecited14d.size,
+      uniqueSurahsRecited14d: uniqueBrowseSurahsRecited14d.size,
     },
     streak: {
       currentStreakDays: streak.streak.currentStreakDays,

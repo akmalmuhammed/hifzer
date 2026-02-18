@@ -17,42 +17,42 @@ const FEATURES = [
   {
     title: "Plan that adapts",
     copy:
-      "A daily plan that balances new memorization and review automatically. Miss a day? It shifts to protect what you've already memorized first.",
+      "A daily plan that balances new memorization and review automatically. Miss a day? It shifts to protect what you already memorized first.",
     icon: <CalendarDays size={18} />,
     pill: { label: "Plan", tone: "brand" as const },
   },
   {
     title: "Per-ayah grading",
     copy:
-      "Grade every ayah individually — Again, Hard, Good, Easy. The system learns which ayahs need more repetition and which are solid.",
+      "Grade every ayah individually - Again, Hard, Good, Easy. The system learns which ayahs need more repetition and which are stable.",
     icon: <Timer size={18} />,
     pill: { label: "SRS", tone: "accent" as const },
   },
   {
     title: "Transition training",
     copy:
-      "Most forgetting happens between ayahs, not within them. Every session includes a link step so transitions become second nature early.",
+      "Most forgetting happens between ayahs, not inside them. Every session includes a link step so transitions become second nature.",
     icon: <Link2 size={18} />,
     pill: { label: "Flow", tone: "warn" as const },
   },
   {
     title: "Progress you can navigate",
     copy:
-      "See what is due, what is weak, what is improving, and where your plan is headed — all in one view, updated daily.",
+      "See what is due, what is weak, what is improving, and where your plan is headed - all in one view, updated daily.",
     icon: <Map size={18} />,
     pill: { label: "Progress", tone: "neutral" as const },
   },
   {
     title: "Full Qur'an built in",
     copy:
-      "Arabic text, English translation, and surah metadata are included from day one. No extra apps or downloads needed to start memorizing.",
+      "Arabic text, English translation, and surah metadata are included from day one. No extra apps or downloads required.",
     icon: <BookOpenText size={18} />,
     pill: { label: "Qur'an", tone: "brand" as const },
   },
   {
     title: "Audio on every ayah",
     copy:
-      "Listen, repeat, and adjust speed — every ayah has a built-in player. Hear the correct recitation before and during your practice.",
+      "Listen, repeat, and adjust speed - every ayah has a built-in player so you can verify recitation before and during practice.",
     icon: <AudioLines size={18} />,
     pill: { label: "Audio", tone: "accent" as const },
   },
@@ -88,7 +88,8 @@ export function FeatureGrid() {
                 Every screen earns its place.
               </p>
               <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">
-                No clutter, no vanity stats. If something doesn&apos;t help you review or memorize better, it&apos;s not in the app.
+                No clutter, no vanity stats. If something does not help you review or memorize better,
+                it does not belong in the app.
               </p>
             </div>
             <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]">

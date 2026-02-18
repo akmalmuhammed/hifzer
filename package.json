@@ -7,6 +7,8 @@
     "build": "prisma generate --config=./prisma.config.ts && next build",
     "start": "next start",
     "lint": "eslint",
+    "lint:encoding": "node scripts/check-text-encoding.mjs",
+    "lint:ci": "pnpm lint && pnpm lint:encoding",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",

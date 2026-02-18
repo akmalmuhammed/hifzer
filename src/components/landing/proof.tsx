@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { Gauge, Link2, RotateCcw } from "lucide-react";
+import { Gauge, Link2, RotateCcw, ShieldCheck } from "lucide-react";
 import { CardSoft } from "@/components/ui/card";
 import { Sparkline } from "@/components/charts/sparkline";
 
@@ -9,7 +9,7 @@ const SECTIONS = [
   {
     title: "Know exactly where you stand",
     copy:
-      "After each ayah, you grade yourself: Again, Hard, Good, Easy. The system uses that to decide what you review next and when — no guesswork.",
+      "After each ayah, you grade yourself: Again, Hard, Good, Easy. The system uses that to decide what you review next and when - no guesswork.",
     icon: <Gauge size={18} />,
     trend: [0.42, 0.5, 0.56, 0.6, 0.66, 0.7, 0.74],
     meta: "Grades drive your review schedule",
@@ -17,7 +17,7 @@ const SECTIONS = [
   {
     title: "Smooth transitions from day one",
     copy:
-      "Memorizing isn't just learning individual ayahs — it's connecting them. Every session includes a link step so you can recite seamlessly, not just piece by piece.",
+      "Memorizing is not only learning individual ayahs - it is connecting them. Every session includes a link step so you can recite seamlessly, not piece by piece.",
     icon: <Link2 size={18} />,
     trend: [0.18, 0.22, 0.28, 0.33, 0.4, 0.48, 0.55],
     meta: "Connections strengthen with practice",
@@ -25,7 +25,7 @@ const SECTIONS = [
   {
     title: "Miss a day? The plan adjusts",
     copy:
-      "Life happens. After 1 missed day, reviews come first. After 2, new material pauses. After 3+, a structured catch-up kicks in until you're back on track.",
+      "Life happens. After 1 missed day, reviews come first. After 2, new material pauses. After 3+, a structured catch-up kicks in until you are stable again.",
     icon: <RotateCcw size={18} />,
     trend: [0.9, 0.78, 0.66, 0.7, 0.76, 0.82, 0.88],
     meta: "Consistency over perfection",
@@ -88,7 +88,17 @@ export function Proof() {
           </motion.div>
         ))}
       </div>
+
+      <div className="mt-6 rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4 text-sm text-[color:var(--kw-muted)]">
+        <div className="flex items-center gap-2 text-[color:var(--kw-ink)]">
+          <ShieldCheck size={16} />
+          <p className="font-semibold">Transparent product confidence</p>
+        </div>
+        <p className="mt-2 leading-7">
+          We ship in public with a roadmap, changelog, and legal policies always available. If reliability changes,
+          you can verify it directly in-product.
+        </p>
+      </div>
     </section>
   );
 }
-

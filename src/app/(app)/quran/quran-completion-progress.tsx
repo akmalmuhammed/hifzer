@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import type { CSSProperties } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { ArrowRight, Medal, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -9,28 +9,6 @@ import { Pill } from "@/components/ui/pill";
 import styles from "./quran-completion-progress.module.css";
 
 const NUMBER_FORMATTER = new Intl.NumberFormat("en-US");
-const KHATMAH_COUNT_KEY = "hifzer_khatmah_count_v1";
-const LAST_SEEN_AYAH_KEY = "hifzer_khatmah_last_seen_ayah_v1";
-const COMPLETION_WINDOW_AYAHS = 120;
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
-}
-
-function parseStoredInt(raw: string | null): number | null {
-  if (!raw) {
-    return null;
-  }
-  const parsed = Number.parseInt(raw, 10);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function formatPercent(value: number): string {
-  if (value >= 99.95) {
-    return "100.0";
-  }
-  return value.toFixed(1);
-}
 
 type KhatmahTier = {
   threshold: number;
@@ -86,80 +64,33 @@ const SEEKER_TIER: KhatmahTier = {
 };
 
 type QuranCompletionProgressProps = {
-  currentAyahId: number;
+  completionPct: number;
+  completedAyahCount: number;
   totalAyahs: number;
   currentSurahNumber: number;
   currentAyahNumber: number;
-  initialKhatmahCount: number;
+  completedKhatmahCount: number;
   resumeHref: string;
 };
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function formatPercent(value: number): string {
+  if (value >= 99.95) {
+    return "100.0";
+  }
+  return value.toFixed(1);
+}
+
 export function QuranCompletionProgress(props: QuranCompletionProgressProps) {
-  const safeTotalAyahs = Math.max(1, props.totalAyahs);
-  const targetProgress = useMemo(
-    () => clamp((props.currentAyahId / safeTotalAyahs) * 100, 0, 100),
-    [props.currentAyahId, safeTotalAyahs],
-  );
-  const progressRef = useRef(0);
-  const [displayProgress, setDisplayProgress] = useState(0);
-  const [khatmahCount, setKhatmahCount] = useState(() => Math.max(0, Math.floor(props.initialKhatmahCount)));
-
-  useEffect(() => {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) {
-      progressRef.current = targetProgress;
-      setDisplayProgress(targetProgress);
-      return;
-    }
-
-    const from = progressRef.current;
-    const to = targetProgress;
-    const start = performance.now();
-    const durationMs = 1200;
-    let frame = 0;
-
-    const tick = (timestamp: number) => {
-      const elapsed = clamp((timestamp - start) / durationMs, 0, 1);
-      const eased = 1 - Math.pow(1 - elapsed, 3);
-      const next = from + (to - from) * eased;
-      progressRef.current = next;
-      setDisplayProgress(next);
-      if (elapsed < 1) {
-        frame = window.requestAnimationFrame(tick);
-      }
-    };
-
-    frame = window.requestAnimationFrame(tick);
-    return () => {
-      window.cancelAnimationFrame(frame);
-    };
-  }, [targetProgress]);
-
-  useEffect(() => {
-    const baselineCount = Math.max(0, Math.floor(props.initialKhatmahCount));
-    const storedCount = parseStoredInt(window.localStorage.getItem(KHATMAH_COUNT_KEY));
-    const previousAyah = parseStoredInt(window.localStorage.getItem(LAST_SEEN_AYAH_KEY));
-    let nextCount = Math.max(baselineCount, storedCount ?? 0);
-
-    const clampedCurrentAyah = clamp(props.currentAyahId, 1, safeTotalAyahs);
-    const completionWindowStart = Math.max(1, safeTotalAyahs - COMPLETION_WINDOW_AYAHS);
-    const reachedQuranEnd = clampedCurrentAyah >= safeTotalAyahs;
-    const cameFromFinalWindow = previousAyah != null && previousAyah >= completionWindowStart && previousAyah < safeTotalAyahs;
-
-    if (reachedQuranEnd && cameFromFinalWindow) {
-      nextCount += 1;
-    }
-    if (reachedQuranEnd) {
-      nextCount = Math.max(nextCount, 1);
-    }
-
-    setKhatmahCount(nextCount);
-    window.localStorage.setItem(KHATMAH_COUNT_KEY, String(nextCount));
-    window.localStorage.setItem(LAST_SEEN_AYAH_KEY, String(clampedCurrentAyah));
-  }, [props.currentAyahId, props.initialKhatmahCount, safeTotalAyahs]);
-
-  const completedAyahs = clamp(Math.round((displayProgress / 100) * safeTotalAyahs), 0, safeTotalAyahs);
+  const safeTotalAyahs = Math.max(1, Math.floor(props.totalAyahs));
+  const displayProgress = clamp(props.completionPct, 0, 100);
+  const completedAyahs = clamp(Math.floor(props.completedAyahCount), 0, safeTotalAyahs);
   const remainingAyahs = safeTotalAyahs - completedAyahs;
+  const khatmahCount = Math.max(0, Math.floor(props.completedKhatmahCount));
+
   const currentTier = useMemo(() => {
     let tier = SEEKER_TIER;
     for (const candidate of KHATMAH_TIERS) {
@@ -169,10 +100,12 @@ export function QuranCompletionProgress(props: QuranCompletionProgressProps) {
     }
     return tier;
   }, [khatmahCount]);
+
   const nextTier = useMemo(
     () => KHATMAH_TIERS.find((candidate) => candidate.threshold > khatmahCount) ?? null,
     [khatmahCount],
   );
+
   const completionsToNextTier = nextTier ? nextTier.threshold - khatmahCount : 0;
   const ringStyle: CSSProperties = {
     background: `conic-gradient(
@@ -191,12 +124,12 @@ export function QuranCompletionProgress(props: QuranCompletionProgressProps) {
         <div className="mx-auto lg:mx-0">
           <div className={styles.ring} style={ringStyle}>
             <div className={styles.ringInner}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[color:var(--kw-faint)]">Completion</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[color:var(--kw-faint)]">Read coverage</p>
               <p className="mt-1 font-[family-name:var(--font-kw-display)] text-4xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
                 {formatPercent(displayProgress)}%
               </p>
               <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
-                {NUMBER_FORMATTER.format(completedAyahs)} / {NUMBER_FORMATTER.format(safeTotalAyahs)}
+                {NUMBER_FORMATTER.format(completedAyahs)} / {NUMBER_FORMATTER.format(safeTotalAyahs)} ayahs tracked
               </p>
             </div>
           </div>
@@ -207,16 +140,16 @@ export function QuranCompletionProgress(props: QuranCompletionProgressProps) {
             <Pill tone="accent">Total Qur&apos;an progress</Pill>
             <span className="inline-flex items-center gap-1 rounded-full border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.1)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[rgba(var(--kw-accent-rgb),1)]">
               <Sparkles size={12} />
-              Live
+              Read-based
             </span>
           </div>
 
           <p className="mt-3 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-            Surah {props.currentSurahNumber}:{props.currentAyahNumber} checkpoint
+            Last tracked ayah: {props.currentSurahNumber}:{props.currentAyahNumber}
           </p>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-            You have completed {NUMBER_FORMATTER.format(completedAyahs)} ayahs so far.{" "}
-            {NUMBER_FORMATTER.format(remainingAyahs)} ayahs remain to complete the full Qur&apos;an.
+            You have tracked {NUMBER_FORMATTER.format(completedAyahs)} unique ayahs from Qur&apos;an browsing.
+            {" "}{NUMBER_FORMATTER.format(remainingAyahs)} ayahs remain for full coverage.
           </p>
 
           <div className={styles.track}>
@@ -225,7 +158,7 @@ export function QuranCompletionProgress(props: QuranCompletionProgressProps) {
 
           <div className="mt-3 grid gap-2 sm:grid-cols-3">
             <div className={styles.statCard}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--kw-faint)]">Completed</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--kw-faint)]">Tracked</p>
               <p className="mt-1 text-xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
                 {NUMBER_FORMATTER.format(completedAyahs)}
               </p>
@@ -237,7 +170,7 @@ export function QuranCompletionProgress(props: QuranCompletionProgressProps) {
               </p>
             </div>
             <div className={styles.statCard}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--kw-faint)]">Current</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--kw-faint)]">Last</p>
               <p className="mt-1 text-xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
                 {props.currentSurahNumber}:{props.currentAyahNumber}
               </p>

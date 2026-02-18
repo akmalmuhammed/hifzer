@@ -9,6 +9,12 @@ import { Proof } from "@/components/landing/proof";
 import { QualityGates } from "@/components/landing/quality-gates";
 import { SessionWalkthrough } from "@/components/landing/session-walkthrough";
 
+export const metadata = {
+  alternates: {
+    canonical: "/",
+  },
+};
+
 export default function LandingPage() {
   return (
     <div className="pb-8">

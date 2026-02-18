@@ -22,18 +22,15 @@ export function ProductScreenshot() {
             Your daily plan, ready in seconds.
           </h2>
           <p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-[color:var(--kw-muted)]">
-            The home screen shows your queue health, mode, and session counts at a glance — nothing
-            you don&apos;t need, nothing missing.
+            The home screen shows queue health, mode, and session counts at a glance - only what
+            you need to keep retention stable.
           </p>
         </div>
 
         <div className="relative">
-          {/* Glow behind the screenshot */}
           <div className="pointer-events-none absolute -inset-4 -z-10 rounded-[40px] bg-[radial-gradient(ellipse_at_center,rgba(var(--kw-accent-rgb),0.12)_0%,transparent_70%)] blur-2xl" />
 
-          {/* Screenshot frame */}
           <div className="overflow-hidden rounded-[20px] border border-[color:var(--kw-border-2)] shadow-[0_24px_64px_-12px_rgba(0,0,0,0.14),0_0_0_1px_rgba(0,0,0,0.04)]">
-            {/* Fake browser / app chrome bar */}
             <div className="flex items-center gap-2 border-b border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-4 py-3">
               <span className="h-3 w-3 rounded-full bg-[rgba(0,0,0,0.12)]" />
               <span className="h-3 w-3 rounded-full bg-[rgba(0,0,0,0.08)]" />
@@ -45,7 +42,7 @@ export function ProductScreenshot() {
 
             <Image
               src="/hifzer app 1.png"
-              alt="Hifzer Today page — showing queue health, mode, and daily session plan"
+              alt="Hifzer Today page preview showing queue health, mode, and daily session plan"
               width={1400}
               height={900}
               className="w-full"

@@ -1,12 +1,14 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getSurahInfo } from "@/hifzer/quran/lookup";
-import { saveStartPoint } from "@/hifzer/profile/server";
+import { getOrCreateUserProfile, saveStartPoint } from "@/hifzer/profile/server";
+import { recordQuranBrowseAyahRead } from "@/hifzer/quran/read-progress.server";
 
 type Payload = {
   surahNumber?: unknown;
   ayahNumber?: unknown;
   cursorAyahId?: unknown;
+  source?: unknown;
 };
 
 export async function POST(req: Request) {
@@ -25,6 +27,7 @@ export async function POST(req: Request) {
   const surahNumber = Number(payload.surahNumber);
   const ayahNumber = Number(payload.ayahNumber);
   const cursorAyahId = Number(payload.cursorAyahId);
+  const source = typeof payload.source === "string" ? payload.source : null;
 
   if (!Number.isFinite(surahNumber) || !Number.isFinite(ayahNumber) || !Number.isFinite(cursorAyahId)) {
     return NextResponse.json({ error: "surahNumber, ayahNumber, and cursorAyahId are required" }, { status: 400 });
@@ -45,6 +48,17 @@ export async function POST(req: Request) {
   }
 
   const profile = await saveStartPoint(userId, surahNumber, cursorAyahId);
+  if (source === "quran_read") {
+    const fullProfile = await getOrCreateUserProfile(userId);
+    if (fullProfile) {
+      await recordQuranBrowseAyahRead({
+        profileId: fullProfile.id,
+        mode: fullProfile.mode,
+        timezone: fullProfile.timezone,
+        ayahId: cursorAyahId,
+      });
+    }
+  }
+
   return NextResponse.json({ ok: true, profile });
 }
-

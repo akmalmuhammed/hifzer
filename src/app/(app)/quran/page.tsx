@@ -5,8 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { getAyahById, getSurahInfo, listJuzs, listSurahs } from "@/hifzer/quran/lookup.server";
+import { getQuranReadProgress } from "@/hifzer/quran/read-progress.server";
 import { clerkEnabled } from "@/lib/clerk-config";
-import { db, dbConfigured } from "@/lib/db";
 import { QuranCompletionProgress } from "./quran-completion-progress";
 import { QuranProgressBackfill } from "./quran-progress-backfill";
 import { QuranSurahSearch } from "./quran-surah-search";
@@ -17,33 +17,28 @@ export const metadata = {
 
 export default async function QuranIndexPage() {
   const totalAyahs = 6236;
-  let cursorAyahId = 1;
-  let completedKhatmahCount = 0;
+  let readCoverage = {
+    uniqueReadAyahCount: 0,
+    completionPct: 0,
+    completionKhatmahCount: 0,
+    lastReadAyahId: null as number | null,
+    lastReadAt: null as string | null,
+  };
   if (clerkEnabled()) {
     const { userId } = await auth();
     if (userId) {
       const profile = await getOrCreateUserProfile(userId);
-      if (profile?.cursorAyahId) {
-        cursorAyahId = profile.cursorAyahId;
-      }
-      if (profile && dbConfigured()) {
-        completedKhatmahCount = await db().session.count({
-          where: {
-            userId: profile.id,
-            status: "COMPLETED",
-            newEndAyahId: totalAyahs,
-          },
-        });
+      if (profile) {
+        readCoverage = await getQuranReadProgress(profile.id);
       }
     }
   }
-  if (cursorAyahId >= totalAyahs) {
-    completedKhatmahCount = Math.max(1, completedKhatmahCount);
-  }
+
+  const progressAyahId = readCoverage.lastReadAyahId ?? 1;
 
   const surahs = listSurahs();
   const juzs = listJuzs();
-  const lastAyah = getAyahById(cursorAyahId) ?? getAyahById(1);
+  const lastAyah = getAyahById(progressAyahId) ?? getAyahById(1);
   const lastSurah = getSurahInfo(lastAyah?.surahNumber ?? 1);
   const surahProgress = lastSurah && lastAyah ? Math.round((lastAyah.ayahNumber / lastSurah.ayahCount) * 100) : 0;
 
@@ -83,11 +78,12 @@ export default async function QuranIndexPage() {
 
       <div className="mt-8">
         <QuranCompletionProgress
-          currentAyahId={lastAyah?.id ?? 1}
+          completionPct={readCoverage.completionPct}
+          completedAyahCount={readCoverage.uniqueReadAyahCount}
           totalAyahs={totalAyahs}
           currentSurahNumber={lastAyah?.surahNumber ?? 1}
           currentAyahNumber={lastAyah?.ayahNumber ?? 1}
-          initialKhatmahCount={completedKhatmahCount}
+          completedKhatmahCount={readCoverage.completionKhatmahCount}
           resumeHref={trackedHref}
         />
       </div>
@@ -104,7 +100,7 @@ export default async function QuranIndexPage() {
               {lastSurah?.nameTransliteration ?? "Surah 1"} {lastAyah ? `${lastAyah.surahNumber}:${lastAyah.ayahNumber}` : "1:1"}
             </p>
             <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
-              Surah progress {surahProgress}% · Global ayah #{lastAyah?.id ?? 1}
+              Surah progress {surahProgress}% | Last tracked global ayah #{lastAyah?.id ?? 1}
             </p>
             <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-black/[0.06]">
               <div

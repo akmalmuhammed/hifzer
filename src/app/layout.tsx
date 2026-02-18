@@ -35,9 +35,6 @@ export const metadata: Metadata = {
   description:
     "Hifzer is the operating system for Qur'an memorization: quality gates, spaced repetition, and a daily plan that enforces retention.",
   applicationName: "Hifzer",
-  alternates: {
-    canonical: "/",
-  },
   openGraph: {
     type: "website",
     title: "Hifzer",
