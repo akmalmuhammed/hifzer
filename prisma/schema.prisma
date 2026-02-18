@@ -82,6 +82,14 @@ enum SrsGrade {
   EASY
 }
 
+enum EmailDispatchStatus {
+  PENDING
+  SENT
+  FAILED
+  SKIPPED
+  DRY_RUN
+}
+
 model UserProfile {
   id                    String   @id @default(cuid())
   clerkUserId           String   @unique
@@ -92,6 +100,9 @@ model UserProfile {
   dailyMinutes          Int
   practiceDays          Int[]
   reminderTimeLocal     String
+  emailRemindersEnabled Boolean @default(true)
+  emailUnsubscribedAt   DateTime?
+  emailSuppressedAt     DateTime?
   planBias              PlanBias @default(BALANCED)
 
   activeSurahNumber     Int
@@ -125,9 +136,30 @@ model UserProfile {
   weakTransitions       WeakTransition[]
   reviewEvents          ReviewEvent[]
   gateRuns              QualityGateRun[]
+  emailDispatches       EmailDispatch[]
 
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+}
+
+model EmailDispatch {
+  id                String              @id @default(cuid())
+  userId            String
+  templateKey       String
+  localDate         String
+  status            EmailDispatchStatus @default(PENDING)
+  provider          String
+  providerMessageId String?
+  errorCode         String?
+  errorMessage      String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  user              UserProfile         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, templateKey, localDate])
+  @@index([localDate, status])
+  @@index([userId, createdAt])
 }
 
 model Session {

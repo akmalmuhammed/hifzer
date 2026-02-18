@@ -14,6 +14,7 @@ const ROWS = [
   { feature: "Adapts to missed days", teacher: false, generic: false, hifzer: true },
   { feature: "Mode switching (auto)", teacher: false, generic: false, hifzer: true },
   { feature: "Works with a teacher", teacher: true, generic: false, hifzer: true },
+  { feature: "Tajweed correction", teacher: true, generic: false, hifzer: false },
 ] as const;
 
 function CellIcon({ value }: { value: boolean | "partial" }) {
@@ -51,8 +52,8 @@ export function ComparisonMatrix() {
           </h2>
         </div>
         <p className="max-w-xl text-sm leading-6 text-[color:var(--kw-muted)]">
-          Traditional methods rely on teacher intuition. Generic SRS apps ignore Hifz methodology.
-          Hifzer combines both — and adds enforcement.
+          Teacher-only methods rely on intuition. Flashcard apps ignore Hifz methodology.
+          Hifzer combines both — and adds intelligent retention protection.
         </p>
       </div>
 
@@ -71,10 +72,10 @@ export function ComparisonMatrix() {
                   Feature
                 </th>
                 <th className="pb-3 px-3 text-center text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                  Traditional
+                  Teacher-only
                 </th>
                 <th className="pb-3 px-3 text-center text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                  Generic SRS
+                  Anki / Flashcards
                 </th>
                 <th className="pb-3 pl-3 text-center">
                   <Pill tone="accent">Hifzer</Pill>

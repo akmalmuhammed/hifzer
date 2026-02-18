@@ -1,28 +1,36 @@
-import { Bell } from "lucide-react";
-import { PageHeader } from "@/components/app/page-header";
-import { Card } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty-state";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { RemindersSettingsClient } from "./reminders-client";
+import { getProfileSnapshot } from "@/hifzer/profile/server";
 
 export const metadata = {
   title: "Reminders",
 };
 
-export default function ReminderSettingsPage() {
-  return (
-    <div className="space-y-6">
-      <PageHeader
-        eyebrow="Settings"
-        title="Reminders"
-        subtitle="Notification schedule (UI scaffold)."
+export default async function ReminderSettingsPage() {
+  const { userId } = await auth();
+  if (!userId) {
+    redirect("/login");
+  }
+  const profile = await getProfileSnapshot(userId);
+  if (!profile) {
+    return (
+      <RemindersSettingsClient
+        initial={{
+          emailRemindersEnabled: true,
+          reminderTimeLocal: "06:00",
+          timezone: "UTC",
+        }}
       />
-      <Card>
-        <EmptyState
-          title="Reminders not wired yet"
-          message="We will add notification scheduling after onboarding + auth are in place."
-          icon={<Bell size={18} />}
-        />
-      </Card>
-    </div>
+    );
+  }
+  return (
+    <RemindersSettingsClient
+      initial={{
+        emailRemindersEnabled: profile.emailRemindersEnabled,
+        reminderTimeLocal: profile.reminderTimeLocal,
+        timezone: profile.timezone,
+      }}
+    />
   );
 }
-

@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 const FAQS = [
   {
     q: "What is Hifzer?",
-    a: "Hifzer is a Hifz Operating System — a daily, research-aligned workflow that helps you encode new ayahs correctly and retain everything long-term. It's not a Quran reader and not a generic flashcard app. It's an enforcement system for Qur'an memorization.",
+    a: "Hifzer is a Hifz Operating System — a daily, research-aligned workflow that helps you encode new ayahs correctly and retain everything long-term. It's not a Quran reader and not a generic flashcard app. It's a retention system purpose-built for Qur'an memorization.",
   },
   {
     q: "How does the review system work?",
@@ -21,7 +21,7 @@ const FAQS = [
   },
   {
     q: "Is it free?",
-    a: "The full Hifz OS is free — daily Sabaq plan, warm-up gate, Sabqi + Manzil review, transition tracking, per-ayah grading, and audio. The paid tier ($7/month) adds weekly consolidation tests, monthly health audits, extra themes, and upcoming features like AI recitation scoring.",
+    a: "Right now, everything — including Pro — is completely free as a Ramadan gift. The full Hifz OS, warm-up gate, Sabqi + Manzil review, per-ayah grading, and audio are always free. The Pro tier (weekly tests, monthly audits, themes, upcoming AI scoring) will be $7/month after the limited-time offer ends. No card required to start.",
   },
   {
     q: "Can I use it with a teacher?",
@@ -99,6 +99,23 @@ export function FaqSection() {
             </motion.div>
           ))}
         </div>
+
+        <motion.div
+          initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: reduceMotion ? 0 : 0.45, delay: 0.2 }}
+          className="mt-10 border-t border-[color:var(--kw-border-2)] pt-8"
+        >
+          <blockquote className="text-center">
+            <p className="mx-auto max-w-lg text-sm leading-7 text-[color:var(--kw-muted)]">
+              &ldquo;I built Hifzer after losing eight juz following university. Years of work, gone in months without a system. I didn&apos;t want to build an app — I wanted the tool that would have saved me. This is it.&rdquo;
+            </p>
+            <footer className="mt-4 text-xs font-semibold text-[color:var(--kw-faint)]">
+              — Akmal, founder
+            </footer>
+          </blockquote>
+        </motion.div>
       </div>
     </section>
   );

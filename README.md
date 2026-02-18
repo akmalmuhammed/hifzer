@@ -22,6 +22,7 @@ Public:
 - `/legal/refund-policy`
 - `/legal/sources`
 - `/changelog`
+- `/unsubscribe`
 - `/login`
 - `/signup`
 - `/forgot-password`
@@ -90,6 +91,35 @@ PostHog (clicks, route changes, session replay):
 
 - `NEXT_PUBLIC_POSTHOG_KEY`
 - `NEXT_PUBLIC_POSTHOG_HOST` (optional, default `https://us.i.posthog.com`)
+
+## Email (Resend)
+
+Transactional reminder emails are wired with a Resend-first provider layer.
+
+Required environment:
+
+- `EMAIL_PROVIDER=resend`
+- `RESEND_API_KEY`
+- `EMAIL_FROM` (example: `Hifzer <noreply@yourdomain.com>`)
+- `EMAIL_REPLY_TO` (optional)
+- `EMAIL_DRY_RUN` (optional, default `false`)
+- `EMAIL_DAILY_CAP` (optional, default `90`)
+- `EMAIL_MONTHLY_CAP` (optional, default `2800`)
+- `EMAIL_UNSUBSCRIBE_SIGNING_SECRET`
+- `CRON_SECRET`
+- `NEXT_PUBLIC_APP_URL`
+
+Email routes:
+
+- `GET|POST /api/jobs/email-reminders` (cron trigger, bearer `CRON_SECRET`)
+- `POST /api/profile/reminders` (user reminder preferences)
+- `GET /api/email/unsubscribe?token=...` (public one-click unsubscribe)
+
+Recommended Resend domain setup checklist before production sends:
+
+- SPF record present and verified
+- DKIM records present and verified
+- DMARC policy published (`p=none` minimum, tighten after monitoring)
 
 AI editor guidance:
 

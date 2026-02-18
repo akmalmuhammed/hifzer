@@ -21,15 +21,14 @@ export function FinalCta() {
 
         <div className="relative mx-auto max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(var(--kw-accent-rgb),1)]">
-            Your Hifz deserves a system
+            Built to last
           </p>
           <h3 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-4xl leading-[1.05] tracking-tight text-[color:var(--kw-ink)] sm:text-5xl">
-            Everything you&apos;ve memorized
-            <span className="block text-[rgba(var(--kw-accent-rgb),1)]">can still be lost.</span>
+            You&apos;ve put in the work.
+            <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Now make it permanent.</span>
           </h3>
           <p className="mx-auto mt-5 max-w-md text-base leading-7 text-[color:var(--kw-muted)]">
-            Without daily review, retention silently erodes. Hifzer enforces the schedule that keeps
-            it solid — automatically, every day.
+            Your memorization shouldn&apos;t be a phase. Hifzer protects what you&apos;ve built — running the schedule, tracking the debt, and keeping your retention solid every single day.
           </p>
 
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">

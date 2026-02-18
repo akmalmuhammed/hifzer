@@ -33,7 +33,7 @@ const ITEMS = [
   {
     href: "/settings/reminders",
     title: "Reminders",
-    desc: "Notification schedule (UI scaffold).",
+    desc: "Email reminder timing and opt-in controls.",
     icon: <Bell size={18} />,
     tone: "warn" as const,
   },

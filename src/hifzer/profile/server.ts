@@ -25,6 +25,9 @@ export type ProfileSnapshot = {
   dailyMinutes: number;
   practiceDays: number[];
   reminderTimeLocal: string;
+  emailRemindersEnabled: boolean;
+  emailUnsubscribedAt: string | null;
+  emailSuppressedAt: string | null;
   planBias: PlanBias;
   mode: SrsMode;
   hasTeacher: boolean;
@@ -64,6 +67,9 @@ function defaultCreateData(clerkUserId: string) {
     dailyMinutes: DEFAULT_DAILY_MINUTES,
     practiceDays: DEFAULT_PRACTICE_DAYS,
     reminderTimeLocal: DEFAULT_REMINDER_TIME,
+    emailRemindersEnabled: true,
+    emailUnsubscribedAt: null,
+    emailSuppressedAt: null,
     activeSurahNumber,
     cursorAyahId,
     hasTeacher: false,
@@ -90,6 +96,9 @@ function toSnapshot(row: UserProfile): ProfileSnapshot {
     dailyMinutes: row.dailyMinutes,
     practiceDays: row.practiceDays,
     reminderTimeLocal: row.reminderTimeLocal,
+    emailRemindersEnabled: row.emailRemindersEnabled,
+    emailUnsubscribedAt: row.emailUnsubscribedAt ? row.emailUnsubscribedAt.toISOString() : null,
+    emailSuppressedAt: row.emailSuppressedAt ? row.emailSuppressedAt.toISOString() : null,
     planBias: row.planBias,
     mode: row.mode,
     hasTeacher: row.hasTeacher,
@@ -200,6 +209,32 @@ export async function markOnboardingComplete(clerkUserId: string) {
       onboardingCompletedAt: completedAt,
     },
     update: { onboardingCompletedAt: completedAt },
+  });
+  return toSnapshot(row);
+}
+
+export async function saveReminderPrefs(input: {
+  clerkUserId: string;
+  reminderTimeLocal: string;
+  emailRemindersEnabled: boolean;
+}) {
+  if (!dbConfigured()) {
+    return null;
+  }
+  const prisma = db();
+  const row = await prisma.userProfile.upsert({
+    where: { clerkUserId: input.clerkUserId },
+    create: {
+      ...defaultCreateData(input.clerkUserId),
+      reminderTimeLocal: input.reminderTimeLocal,
+      emailRemindersEnabled: input.emailRemindersEnabled,
+      emailUnsubscribedAt: input.emailRemindersEnabled ? null : new Date(),
+    },
+    update: {
+      reminderTimeLocal: input.reminderTimeLocal,
+      emailRemindersEnabled: input.emailRemindersEnabled,
+      emailUnsubscribedAt: input.emailRemindersEnabled ? null : new Date(),
+    },
   });
   return toSnapshot(row);
 }

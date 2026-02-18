@@ -37,6 +37,7 @@ export function HeatStrip(props: {
   tone?: Tone;
   className?: string;
   ariaLabel?: string;
+  animate?: boolean;
 }) {
   const tone = props.tone ?? "brand";
   const ramp = toneRamp(tone);
@@ -96,6 +97,15 @@ export function HeatStrip(props: {
               fill={colorFor(d.value)}
               stroke="rgba(11,18,32,0.10)"
               strokeWidth="0.5"
+              style={
+                props.animate
+                  ? {
+                      opacity: 0,
+                      animation: `kw-cell-pop 0.25s ease both`,
+                      animationDelay: `${0.8 + idx * 40}ms`,
+                    }
+                  : undefined
+              }
               onMouseMove={(event) => {
                 const rect = rootRef.current?.getBoundingClientRect();
                 if (!rect) {
