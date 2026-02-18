@@ -137,7 +137,12 @@ function formatMaybeDateTime(value: string | null): string {
   if (!value) {
     return "No review due";
   }
-  return new Date(value).toLocaleString();
+  return new Date(value).toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 function activityColor(value: number, max: number): string {
@@ -483,51 +488,53 @@ export function DashboardClient() {
           </motion.section>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <motion.div initial={reduceMotion ? false : { opacity: 0, y: 8 }} animate={reduceMotion ? {} : { opacity: 1, y: 0 }} transition={{ ...cardTransition, delay: 0.04 }}>
-              <Card className={`${styles.metricCard} min-h-[140px]`}>
+            <motion.div className="h-full" initial={reduceMotion ? false : { opacity: 0, y: 8 }} animate={reduceMotion ? {} : { opacity: 1, y: 0 }} transition={{ ...cardTransition, delay: 0.04 }}>
+              <Card className={`${styles.metricCard} h-full`}>
                 <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Practice minutes (7d)</p>
                 <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
                   {overview.kpis.totalSessionMinutes7d}
                 </p>
-                <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
+                <p className={`${styles.metricBody} mt-1 text-xs text-[color:var(--kw-muted)]`}>
                   Avg {overview.kpis.avgSessionMinutes7d.toFixed(1)} min per completed session
                 </p>
-                <Sparkline values={overview.sessionTrend14d.map((d) => d.minutes)} tone="accent" className="mt-3" />
+                <Sparkline values={overview.sessionTrend14d.map((d) => d.minutes)} tone="accent" className={styles.metricFoot} />
               </Card>
             </motion.div>
 
-            <motion.div initial={reduceMotion ? false : { opacity: 0, y: 8 }} animate={reduceMotion ? {} : { opacity: 1, y: 0 }} transition={{ ...cardTransition, delay: 0.08 }}>
-              <Card className={`${styles.metricCard} min-h-[140px]`}>
+            <motion.div className="h-full" initial={reduceMotion ? false : { opacity: 0, y: 8 }} animate={reduceMotion ? {} : { opacity: 1, y: 0 }} transition={{ ...cardTransition, delay: 0.08 }}>
+              <Card className={`${styles.metricCard} h-full`}>
                 <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Retention score</p>
                 <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
                   {overview.kpis.retentionScore14d}
                 </p>
-                <p className="mt-1 text-xs text-[color:var(--kw-muted)]">Based on Again/Hard/Good/Easy over 14 days</p>
-                <Sparkline values={trendRecall} tone="brand" className="mt-3" />
+                <p className={`${styles.metricBody} mt-1 text-xs text-[color:var(--kw-muted)]`}>Based on Again/Hard/Good/Easy over 14 days</p>
+                <Sparkline values={trendRecall} tone="brand" className={styles.metricFoot} />
               </Card>
             </motion.div>
 
-            <motion.div initial={reduceMotion ? false : { opacity: 0, y: 8 }} animate={reduceMotion ? {} : { opacity: 1, y: 0 }} transition={{ ...cardTransition, delay: 0.12 }}>
-              <Card className={`${styles.metricCard} min-h-[140px]`}>
+            <motion.div className="h-full" initial={reduceMotion ? false : { opacity: 0, y: 8 }} animate={reduceMotion ? {} : { opacity: 1, y: 0 }} transition={{ ...cardTransition, delay: 0.12 }}>
+              <Card className={`${styles.metricCard} h-full`}>
                 <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Review pressure</p>
                 <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{overview.reviewHealth.dueNow}</p>
-                <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
+                <p className={`${styles.metricBody} mt-1 text-xs text-[color:var(--kw-muted)]`}>
                   Due now | {overview.reviewHealth.dueSoon6h} due in next 6h
                 </p>
-                <p className="mt-3 text-xs text-[color:var(--kw-faint)]">{formatMaybeDateTime(overview.reviewHealth.nextDueAt)}</p>
+                <p className={`${styles.metricFoot} ${styles.metricDate} text-xs text-[color:var(--kw-faint)]`} title={formatMaybeDateTime(overview.reviewHealth.nextDueAt)}>
+                  {formatMaybeDateTime(overview.reviewHealth.nextDueAt)}
+                </p>
               </Card>
             </motion.div>
 
-            <motion.div initial={reduceMotion ? false : { opacity: 0, y: 8 }} animate={reduceMotion ? {} : { opacity: 1, y: 0 }} transition={{ ...cardTransition, delay: 0.16 }}>
-              <Card className={`${styles.metricCard} min-h-[140px]`}>
+            <motion.div className="h-full" initial={reduceMotion ? false : { opacity: 0, y: 8 }} animate={reduceMotion ? {} : { opacity: 1, y: 0 }} transition={{ ...cardTransition, delay: 0.16 }}>
+              <Card className={`${styles.metricCard} h-full`}>
                 <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Streak</p>
                 <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
                   {overview.streak.currentStreakDays}d
                 </p>
-                <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
+                <p className={`${styles.metricBody} mt-1 text-xs text-[color:var(--kw-muted)]`}>
                   Best {overview.streak.bestStreakDays}d {overview.streak.graceInUseToday ? "| grace active" : ""}
                 </p>
-                <div className="mt-3 flex gap-2">
+                <div className={`${styles.metricFoot} flex gap-2`}>
                   <Pill tone="neutral">Today ayahs: {overview.streak.todayQualifiedAyahs}</Pill>
                 </div>
               </Card>
