@@ -68,6 +68,18 @@ export default function RootLayout({
       data-accent="teal"
       className={`${inter.variable} ${mono.variable} ${amiri.variable}`}
     >
+      <head>
+        {/* Google tag (gtag.js) */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-C145MM3CEX" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-C145MM3CEX');`,
+          }}
+        />
+      </head>
       <body className="kw-canvas min-h-dvh bg-[color:var(--kw-bg)] text-[color:var(--kw-ink)] antialiased">
         <a
           href="#main-content"
