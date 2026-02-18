@@ -33,7 +33,7 @@ export function SessionWalkthrough() {
 
   return (
     <section className="py-10 md:py-14">
-      <div className="grid gap-8 md:grid-cols-[1fr_0.9fr] md:items-start">
+      <div className="grid gap-8 md:grid-cols-2 md:items-stretch">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
             What happens today
@@ -75,30 +75,32 @@ export function SessionWalkthrough() {
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: reduceMotion ? 0 : 0.45 }}
         >
-          <Card>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">First session target</p>
-                <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
-                  Most users complete this in around 10 minutes.
-                </p>
+          <Card className="h-full">
+            <div className="flex h-full flex-col">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">First session target</p>
+                  <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
+                    Most users complete this in around 10 minutes.
+                  </p>
+                </div>
+                <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)]">
+                  <Clock3 size={18} />
+                </span>
               </div>
-              <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)]">
-                <Clock3 size={18} />
-              </span>
-            </div>
 
-            <div className="mt-5 rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-              You focus on reciting and grading. Hifzer handles sequencing, spacing, and recovery logic
-              in the background.
-            </div>
+              <div className="mt-5 rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-3 text-sm leading-7 text-[color:var(--kw-muted)]">
+                You focus on reciting and grading. Hifzer handles sequencing, spacing, and recovery logic
+                in the background.
+              </div>
 
-            <div className="mt-6">
-              <Button asChild size="lg" className="w-full gap-2">
-                <PublicAuthLink signedInHref="/session" signedOutHref="/signup">
-                  Start your first session <ArrowRight size={16} />
-                </PublicAuthLink>
-              </Button>
+              <div className="mt-6 md:mt-auto">
+                <Button asChild size="lg" className="w-full gap-2">
+                  <PublicAuthLink signedInHref="/session" signedOutHref="/signup">
+                    Start your first session <ArrowRight size={16} />
+                  </PublicAuthLink>
+                </Button>
+              </div>
             </div>
           </Card>
         </motion.div>

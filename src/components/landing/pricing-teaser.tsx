@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
+import clsx from "clsx";
 import { ArrowRight, Check, Moon } from "lucide-react";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { Button } from "@/components/ui/button";
@@ -72,78 +73,81 @@ export function PricingTeaser() {
             viewport={{ once: true, amount: 0.25 }}
             transition={{ duration: reduceMotion ? 0 : 0.45, delay: idx * 0.05 }}
           >
-            <Card className={p.highlight ? "relative overflow-hidden" : ""}>
+            <Card className={clsx("h-full", p.highlight ? "relative overflow-hidden" : "")}>
               {p.highlight ? (
                 <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[radial-gradient(closest-side,rgba(var(--kw-accent-rgb),0.2),transparent_68%)] blur-2xl" />
               ) : null}
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{p.name}</p>
-                  <p className="mt-1 text-xs text-[color:var(--kw-muted)]">{p.note}</p>
+              <div className="flex h-full flex-col">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{p.name}</p>
+                    <p className="mt-1 text-xs text-[color:var(--kw-muted)]">{p.note}</p>
+                  </div>
+                  {p.highlight ? (
+                    <span className="kw-ramadan-badge inline-flex items-center gap-1.5 rounded-full border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.10)] px-2.5 py-1 text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
+                      <Moon size={12} />
+                      Ramadan Gift
+                    </span>
+                  ) : (
+                    <Pill tone="neutral">Core</Pill>
+                  )}
                 </div>
-                {p.highlight ? (
-                  <span className="kw-ramadan-badge inline-flex items-center gap-1.5 rounded-full border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.10)] px-2.5 py-1 text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
-                    <Moon size={12} />
-                    Ramadan Gift
-                  </span>
-                ) : (
-                  <Pill tone="neutral">Core</Pill>
-                )}
-              </div>
 
-                {p.name === "Pro" ? (
-                  <div className="mt-5">
-                    <div className="relative inline-block">
-                    <span className="font-[family-name:var(--font-kw-display)] text-4xl tracking-tight text-[color:var(--kw-muted)]">
-                      $7
-                    </span>
-                    <span className="ml-2 text-sm font-semibold text-[color:var(--kw-muted)]">
-                      / month
-                    </span>
-                    {/* Animated strikethrough line */}
-                    <span
-                      className="kw-strike-line pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center"
-                      aria-hidden="true"
-                    >
-                      <span className="h-[2px] w-full rounded-full bg-[rgba(var(--kw-accent-rgb),0.7)]" />
-                    </span>
-                  </div>
-                  <div className="kw-price-reveal mt-2 flex items-baseline gap-2">
-                    <span className="font-[family-name:var(--font-kw-display)] text-4xl tracking-tight text-[rgba(var(--kw-accent-rgb),1)]">
-                      Free
-                    </span>
-                    <span className="text-xs font-semibold text-[color:var(--kw-muted)]">
-                      for a limited time
-                    </span>
-                  </div>
-                  </div>
-                ) : (
-                  <p className="mt-5 font-[family-name:var(--font-kw-display)] text-4xl tracking-tight text-[color:var(--kw-ink)]">
-                    {p.price}
-                  </p>
-                )}
+                <div className="mt-5 min-h-[84px]">
+                  {p.name === "Pro" ? (
+                    <div>
+                      <div className="relative inline-block">
+                        <span className="font-[family-name:var(--font-kw-display)] text-4xl tracking-tight text-[color:var(--kw-muted)]">
+                          $7
+                        </span>
+                        <span className="ml-2 text-sm font-semibold text-[color:var(--kw-muted)]">
+                          / month
+                        </span>
+                        <span
+                          className="kw-strike-line pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center"
+                          aria-hidden="true"
+                        >
+                          <span className="h-[2px] w-full rounded-full bg-[rgba(var(--kw-accent-rgb),0.7)]" />
+                        </span>
+                      </div>
+                      <div className="kw-price-reveal mt-2 flex items-baseline gap-2">
+                        <span className="font-[family-name:var(--font-kw-display)] text-4xl tracking-tight text-[rgba(var(--kw-accent-rgb),1)]">
+                          Free
+                        </span>
+                        <span className="text-xs font-semibold text-[color:var(--kw-muted)]">
+                          for a limited time
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="font-[family-name:var(--font-kw-display)] text-4xl tracking-tight text-[color:var(--kw-ink)]">
+                      {p.price}
+                    </p>
+                  )}
+                </div>
 
-              <ul className="mt-5 space-y-2 text-sm text-[color:var(--kw-muted)]">
-                {p.bullets.map((b) => (
-                  <li key={b} className="flex items-start gap-2">
-                    <span className="mt-0.5 grid h-5 w-5 place-items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)]">
-                      <Check size={14} />
-                    </span>
-                    <span className="leading-6">{b}</span>
-                  </li>
-                ))}
-              </ul>
+                <ul className="mt-5 space-y-2 text-sm text-[color:var(--kw-muted)]">
+                  {p.bullets.map((b) => (
+                    <li key={b} className="flex items-start gap-2">
+                      <span className="mt-0.5 grid h-5 w-5 place-items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)]">
+                        <Check size={14} />
+                      </span>
+                      <span className="leading-6">{b}</span>
+                    </li>
+                  ))}
+                </ul>
 
-              <div className="mt-7">
-                <Button asChild variant={p.highlight ? "primary" : "secondary"} className="w-full">
-                  <PublicAuthLink signedInHref={p.ctaHrefSignedIn} signedOutHref={p.ctaHrefSignedOut}>
-                    {p.cta}
-                  </PublicAuthLink>
-                </Button>
-                <p className="mt-2 text-xs text-[color:var(--kw-faint)]">{p.next}</p>
-                {p.footnote ? (
-                  <p className="mt-1 text-xs text-[color:var(--kw-faint)]">{p.footnote}</p>
-                ) : null}
+                <div className="mt-7 md:mt-auto">
+                  <Button asChild variant={p.highlight ? "primary" : "secondary"} className="w-full">
+                    <PublicAuthLink signedInHref={p.ctaHrefSignedIn} signedOutHref={p.ctaHrefSignedOut}>
+                      {p.cta}
+                    </PublicAuthLink>
+                  </Button>
+                  <p className="mt-2 text-xs text-[color:var(--kw-faint)]">{p.next}</p>
+                  {p.footnote ? (
+                    <p className="mt-1 text-xs text-[color:var(--kw-faint)]">{p.footnote}</p>
+                  ) : null}
+                </div>
               </div>
             </Card>
           </motion.div>
