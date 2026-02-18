@@ -11,6 +11,7 @@ import {
   type AyahFilters,
 } from "@/hifzer/quran/lookup.server";
 import { getSahihTranslationByAyahId } from "@/hifzer/quran/translation.server";
+import { ReadProgressSync } from "./read-progress-sync";
 
 type ReaderView = "list" | "compact";
 
@@ -20,6 +21,7 @@ type SearchParamShape = {
   juz?: string | string[];
   ayah?: string | string[];
   cursor?: string | string[];
+  anon?: string | string[];
 };
 
 function readSingle(raw: string | string[] | undefined): string | null {
@@ -49,9 +51,7 @@ function parseView(raw: string | string[] | undefined): ReaderView {
   return value === "compact" ? "compact" : "list";
 }
 
-function buildHref(
-  filters: AyahFilters & { view?: ReaderView; cursor?: number },
-): string {
+function buildHref(filters: AyahFilters & { view?: ReaderView; cursor?: number; anonymous?: boolean }): string {
   const params = new URLSearchParams();
   if (filters.view) {
     params.set("view", filters.view);
@@ -67,6 +67,9 @@ function buildHref(
   }
   if (filters.cursor != null) {
     params.set("cursor", String(filters.cursor));
+  }
+  if (filters.anonymous) {
+    params.set("anon", "1");
   }
 
   const query = params.toString();
@@ -84,6 +87,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   const juzNumber = parseBoundedInt(searchParams.juz, 1, 30);
   const ayahId = parseBoundedInt(searchParams.ayah, 1, 6236);
   const cursorAyahId = parseBoundedInt(searchParams.cursor, 1, 6236);
+  const anonymous = readSingle(searchParams.anon) === "1";
 
   const filters: AyahFilters = { surahNumber, juzNumber, ayahId };
   const ayahs = filterAyahs(filters);
@@ -92,16 +96,25 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   const juzs = listJuzs();
 
   const baseQuery = { surahNumber, juzNumber, ayahId };
-  const listHref = buildHref({ ...baseQuery, view: "list" });
-  const compactHref = buildHref({
-    ...baseQuery,
-    view: "compact",
-    cursor: compact.current?.id ?? undefined,
-  });
-  const clearHref = "/quran/read";
+  const cursorForLinks = compact.current?.id ?? cursorAyahId;
+  const listHref = buildHref({ ...baseQuery, view: "list", anonymous });
+  const compactHref = buildHref({ ...baseQuery, view: "compact", cursor: cursorForLinks, anonymous });
+  const trackedHref = buildHref({ ...baseQuery, view, cursor: cursorForLinks, anonymous: false });
+  const anonymousHref = buildHref({ ...baseQuery, view, cursor: cursorForLinks, anonymous: true });
+  const clearHref = anonymous ? "/quran/read?anon=1" : "/quran/read";
+  const syncAyah = !anonymous && view === "compact" ? compact.current : null;
 
   return (
     <div className="pb-12 pt-10 md:pb-16 md:pt-14">
+      {syncAyah ? (
+        <ReadProgressSync
+          enabled
+          surahNumber={syncAyah.surahNumber}
+          ayahNumber={syncAyah.ayahNumber}
+          ayahId={syncAyah.id}
+        />
+      ) : null}
+
       <Link
         href="/quran"
         className="inline-flex items-center gap-2 rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-white"
@@ -116,12 +129,34 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
           Read with filters + view modes.
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
-          Filter by surah, juz, and global ayah id. Switch between list mode and compact mode.
+          {anonymous
+            ? "Anonymous window is active. Progress and streak events are not tracked."
+            : "Tracking mode is active. Your compact reading position updates from what you read."}
         </p>
       </div>
 
       <Card className="mt-8">
         <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={trackedHref}
+            className={`rounded-full border px-3 py-2 text-sm font-semibold ${
+              !anonymous
+                ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+                : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
+            }`}
+          >
+            Tracking on
+          </Link>
+          <Link
+            href={anonymousHref}
+            className={`rounded-full border px-3 py-2 text-sm font-semibold ${
+              anonymous
+                ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+                : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
+            }`}
+          >
+            Anonymous window
+          </Link>
           <Link
             href={listHref}
             className={`rounded-full border px-3 py-2 text-sm font-semibold ${
@@ -146,6 +181,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
 
         <form className="mt-4 grid gap-3 md:grid-cols-4" method="get" action="/quran/read">
           <input type="hidden" name="view" value={view} />
+          {anonymous ? <input type="hidden" name="anon" value="1" /> : null}
           <label className="text-sm text-[color:var(--kw-muted)]">
             Surah
             <select
@@ -207,12 +243,13 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
 
       <div className="mt-6 flex flex-wrap items-center gap-2">
         <Pill tone="neutral">{ayahs.length} ayahs matched</Pill>
+        <Pill tone={anonymous ? "warn" : "accent"}>{anonymous ? "Anonymous mode" : "Tracking mode"}</Pill>
         {surahNumber != null ? <Pill tone="accent">Surah {surahNumber}</Pill> : null}
         {juzNumber != null ? <Pill tone="accent">Juz {juzNumber}</Pill> : null}
         {ayahId != null ? <Pill tone="accent">Ayah #{ayahId}</Pill> : null}
       </div>
 
-      {!ayahs.length ? (
+      {ayahs.length < 1 ? (
         <Card className="mt-8">
           <Pill tone="warn">No results</Pill>
           <p className="mt-3 text-sm text-[color:var(--kw-muted)]">
@@ -226,7 +263,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
         </Card>
       ) : null}
 
-      {ayahs.length && view === "list" ? (
+      {ayahs.length > 0 && view === "list" ? (
         <div className="mt-8 space-y-3">
           {ayahs.map((ayah) => (
             <Card key={ayah.id} className="py-3">
@@ -238,7 +275,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
                   <span className="text-xs text-[color:var(--kw-faint)]">#{ayah.id}</span>
                 </div>
                 <div className="w-full sm:w-auto">
-                  <AyahAudioPlayer ayahId={ayah.id} streakTrackSource="quran_browse" />
+                  <AyahAudioPlayer ayahId={ayah.id} streakTrackSource={anonymous ? undefined : "quran_browse"} />
                 </div>
               </div>
 
@@ -253,7 +290,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
         </div>
       ) : null}
 
-      {ayahs.length && view === "compact" && compact.current ? (
+      {ayahs.length > 0 && view === "compact" && compact.current ? (
         <div className="mt-8">
           <Card className="py-3">
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -267,7 +304,10 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
                 </span>
               </div>
               <div className="w-full sm:w-auto">
-                <AyahAudioPlayer ayahId={compact.current.id} streakTrackSource="quran_browse" />
+                <AyahAudioPlayer
+                  ayahId={compact.current.id}
+                  streakTrackSource={anonymous ? undefined : "quran_browse"}
+                />
               </div>
             </div>
 
@@ -281,7 +321,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
             <div className="mt-6 flex items-center gap-2">
               {compact.prevAyahId ? (
                 <Link
-                  href={buildHref({ ...baseQuery, view: "compact", cursor: compact.prevAyahId })}
+                  href={buildHref({ ...baseQuery, view: "compact", cursor: compact.prevAyahId, anonymous })}
                   className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
                 >
                   Previous
@@ -294,7 +334,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
 
               {compact.nextAyahId ? (
                 <Link
-                  href={buildHref({ ...baseQuery, view: "compact", cursor: compact.nextAyahId })}
+                  href={buildHref({ ...baseQuery, view: "compact", cursor: compact.nextAyahId, anonymous })}
                   className="rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
                 >
                   Next

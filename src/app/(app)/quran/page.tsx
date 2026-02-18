@@ -1,16 +1,42 @@
+import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
-import { BookOpen } from "lucide-react";
+import { ArrowRight, BookOpen, Compass, EyeOff } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
-import { listJuzs, listSurahs } from "@/hifzer/quran/lookup.server";
+import { getProfileSnapshot } from "@/hifzer/profile/server";
+import { getAyahById, getSurahInfo, listJuzs, listSurahs } from "@/hifzer/quran/lookup.server";
+import { clerkEnabled } from "@/lib/clerk-config";
 
 export const metadata = {
   title: "Qur'an",
 };
 
 export default async function QuranIndexPage() {
+  let cursorAyahId = 1;
+  if (clerkEnabled()) {
+    const { userId } = await auth();
+    if (userId) {
+      const profile = await getProfileSnapshot(userId);
+      if (profile?.cursorAyahId) {
+        cursorAyahId = profile.cursorAyahId;
+      }
+    }
+  }
+
   const surahs = listSurahs();
   const juzs = listJuzs();
+  const lastAyah = getAyahById(cursorAyahId) ?? getAyahById(1);
+  const lastSurah = getSurahInfo(lastAyah?.surahNumber ?? 1);
+  const surahProgress = lastSurah && lastAyah ? Math.round((lastAyah.ayahNumber / lastSurah.ayahCount) * 100) : 0;
+  const quranProgress = Math.round(((lastAyah?.id ?? 1) / 6236) * 100);
+
+  const trackedParams = new URLSearchParams({ view: "compact" });
+  if (lastAyah) {
+    trackedParams.set("surah", String(lastAyah.surahNumber));
+    trackedParams.set("cursor", String(lastAyah.id));
+  }
+  const trackedHref = `/quran/read?${trackedParams.toString()}`;
+  const anonymousHref = `${trackedHref}&anon=1`;
 
   return (
     <div className="pb-12 pt-10 md:pb-16 md:pt-14">
@@ -18,11 +44,11 @@ export default async function QuranIndexPage() {
       <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
-            Browse the Qur&apos;an.
-            <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Arabic + English (Saheeh International).</span>
+            Read the Qur&apos;an with focus.
+            <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Resume instantly or open an anonymous window.</span>
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
-            Surah index and ayah text are backed by a local seed (no external API).
+            Keep your reading flow clean: one primary resume path, one private path, and quick jump controls.
           </p>
         </div>
         <span className="grid h-12 w-12 place-items-center rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
@@ -30,79 +56,147 @@ export default async function QuranIndexPage() {
         </span>
       </div>
 
-      <div className="mt-10">
-        <Card className="group transition hover:bg-white/60">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Reader</p>
-              <p className="mt-2 text-lg font-semibold text-[color:var(--kw-ink)]">Open filtered Qur&apos;an reader</p>
-              <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
-                Toggle between list and compact views, and filter by surah, juz, and global ayah id.
-              </p>
+      <div className="mt-10 grid gap-4 lg:grid-cols-2">
+        <Card className="relative overflow-hidden">
+          <div className="pointer-events-none absolute -right-20 -top-20 h-44 w-44 rounded-full bg-[rgba(var(--kw-accent-rgb),0.09)]" />
+          <div className="relative">
+            <div className="flex items-center gap-2">
+              <Pill tone="accent">Continue reading</Pill>
+              <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">Tracked mode</span>
+            </div>
+            <p className="mt-4 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+              {lastSurah?.nameTransliteration ?? "Surah 1"} {lastAyah ? `${lastAyah.surahNumber}:${lastAyah.ayahNumber}` : "1:1"}
+            </p>
+            <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+              Surah progress {surahProgress}% · Qur&apos;an progress {quranProgress}%
+            </p>
+            <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-black/[0.06]">
+              <div
+                className="h-full rounded-full bg-[rgba(var(--kw-accent-rgb),0.75)] transition-[width]"
+                style={{ width: `${surahProgress}%` }}
+              />
             </div>
             <Link
-              href="/quran/read"
-              className="rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.10)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] transition group-hover:bg-[rgba(var(--kw-accent-rgb),0.14)]"
+              href={trackedHref}
+              className="mt-6 inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
             >
-              Open Reader
+              Continue where I stopped
+              <ArrowRight size={15} />
+            </Link>
+          </div>
+        </Card>
+
+        <Card className="relative overflow-hidden">
+          <div className="pointer-events-none absolute -left-12 -top-20 h-40 w-40 rounded-full bg-[rgba(255,152,52,0.12)]" />
+          <div className="relative">
+            <div className="flex items-center gap-2">
+              <Pill tone="warn">Private mode</Pill>
+              <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">No tracking</span>
+            </div>
+            <p className="mt-4 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">Anonymous window</p>
+            <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+              Read without updating last-read position and without streak tracking from browse audio playback.
+            </p>
+            <Link
+              href={anonymousHref}
+              className="mt-6 inline-flex items-center gap-2 rounded-xl border border-[rgba(255,152,52,0.35)] bg-[rgba(255,152,52,0.14)] px-4 py-2 text-sm font-semibold text-[rgb(163,89,24)]"
+            >
+              Open anonymous window
+              <EyeOff size={15} />
             </Link>
           </div>
         </Card>
       </div>
 
-      <div className="mt-10">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Juz</p>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {juzs.map((j) => (
-            <Link key={j.juzNumber} href={`/quran/juz/${j.juzNumber}`}>
-              <Card className="group transition hover:bg-white/60">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Juz {j.juzNumber}</p>
-                    <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
-                      {j.ayahCount} ayahs - IDs {j.startAyahId}-{j.endAyahId}
-                    </p>
-                  </div>
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.10)] text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] transition group-hover:bg-[rgba(var(--kw-accent-rgb),0.14)]">
-                    {j.juzNumber}
-                  </span>
-                </div>
-              </Card>
-            </Link>
-          ))}
-        </div>
+      <div className="mt-8 grid gap-4 lg:grid-cols-2">
+        <Card>
+          <div className="flex items-center gap-2">
+            <Compass size={16} className="text-[color:var(--kw-faint)]" />
+            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Quick jump</p>
+          </div>
+          <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Start compact reading from any surah.</p>
+          <form className="mt-4 flex flex-wrap items-center gap-2" method="get" action="/quran/read">
+            <input type="hidden" name="view" value="compact" />
+            <label className="sr-only" htmlFor="quran-jump-surah">
+              Surah
+            </label>
+            <select
+              id="quran-jump-surah"
+              name="surah"
+              defaultValue={String(lastAyah?.surahNumber ?? 1)}
+              className="h-10 min-w-[220px] rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
+            >
+              {surahs.map((surah) => (
+                <option key={surah.surahNumber} value={surah.surahNumber}>
+                  Surah {surah.surahNumber} - {surah.nameTransliteration}
+                </option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              className="h-10 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+            >
+              Open surah
+            </button>
+          </form>
+        </Card>
+
+        <Card>
+          <div className="flex items-center gap-2">
+            <Compass size={16} className="text-[color:var(--kw-faint)]" />
+            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Jump by juz</p>
+          </div>
+          <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Start compact reading from any juz range.</p>
+          <form className="mt-4 flex flex-wrap items-center gap-2" method="get" action="/quran/read">
+            <input type="hidden" name="view" value="compact" />
+            <label className="sr-only" htmlFor="quran-jump-juz">
+              Juz
+            </label>
+            <select
+              id="quran-jump-juz"
+              name="juz"
+              defaultValue="1"
+              className="h-10 min-w-[220px] rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
+            >
+              {juzs.map((juz) => (
+                <option key={juz.juzNumber} value={juz.juzNumber}>
+                  Juz {juz.juzNumber}
+                </option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              className="h-10 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+            >
+              Open juz
+            </button>
+          </form>
+        </Card>
       </div>
 
-      <div className="mt-10">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Surahs</p>
-      </div>
-
-      <div className="mt-3 grid gap-4 md:grid-cols-2">
-        {surahs.map((s) => (
-          <Link key={s.surahNumber} href={`/quran/surah/${s.surahNumber}`}>
-            <Card className="group transition hover:bg-white/60">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                    Surah {s.surahNumber} - {s.revelationType} - {s.ayahCount} ayahs
-                  </p>
-                  <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                    <span dir="rtl" className="font-[500]">
-                      {s.nameArabic}
-                    </span>
-                  </p>
-                  <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
-                    {s.nameTransliteration} - {s.nameEnglish}
-                  </p>
-                </div>
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.10)] text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] transition group-hover:bg-[rgba(var(--kw-accent-rgb),0.14)]">
-                  {s.surahNumber}
-                </span>
-              </div>
-            </Card>
+      <Card className="mt-8">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Need detailed pages?</p>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Link
+            href="/quran/surah/1"
+            className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
+          >
+            Surah detail pages
           </Link>
-        ))}
-      </div>
+          <Link
+            href="/quran/juz/1"
+            className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
+          >
+            Juz detail pages
+          </Link>
+          <Link
+            href="/quran/read?view=list"
+            className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
+          >
+            Advanced filters
+          </Link>
+        </div>
+      </Card>
     </div>
   );
 }
