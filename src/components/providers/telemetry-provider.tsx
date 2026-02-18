@@ -5,6 +5,14 @@ import { usePathname } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
 import { capturePosthogEvent, initPosthog } from "@/lib/posthog/client";
 
+const STORAGE_KEYS = {
+  lastClickHref: "hifzer_last_click_href_v1",
+  lastClickFrom: "hifzer_last_click_from_v1",
+  lastClickAt: "hifzer_last_click_at_v1",
+  currentPath: "hifzer_current_path_v1",
+  previousPath: "hifzer_previous_path_v1",
+} as const;
+
 function captureLinkClick(event: MouseEvent) {
   if (event.defaultPrevented || !(event.target instanceof Element)) {
     return;
@@ -50,6 +58,14 @@ function captureLinkClick(event: MouseEvent) {
     altKey: event.altKey,
     button: event.button,
   });
+
+  try {
+    window.sessionStorage.setItem(STORAGE_KEYS.lastClickHref, href);
+    window.sessionStorage.setItem(STORAGE_KEYS.lastClickFrom, from);
+    window.sessionStorage.setItem(STORAGE_KEYS.lastClickAt, String(Date.now()));
+  } catch {
+    // Ignore storage failures.
+  }
 }
 
 export function TelemetryProvider({ children }: { children: React.ReactNode }) {
@@ -64,12 +80,19 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const pathWithSearch = `${path}${window.location.search || ""}`;
     const previous = previousPathRef.current;
+    const priorStoredPath = (() => {
+      try {
+        return window.sessionStorage.getItem(STORAGE_KEYS.currentPath);
+      } catch {
+        return null;
+      }
+    })();
     if (previous == null) {
       capturePosthogEvent("page_view", {
         path: pathWithSearch,
         referrer: document.referrer || null,
       });
-    } else if (previous !== path) {
+    } else if (previous !== pathWithSearch) {
       Sentry.addBreadcrumb({
         category: "navigation",
         message: `route.change:${previous}->${pathWithSearch}`,
@@ -79,6 +102,14 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
         from: previous,
         to: pathWithSearch,
       });
+    }
+    try {
+      if (priorStoredPath && priorStoredPath !== pathWithSearch) {
+        window.sessionStorage.setItem(STORAGE_KEYS.previousPath, priorStoredPath);
+      }
+      window.sessionStorage.setItem(STORAGE_KEYS.currentPath, pathWithSearch);
+    } catch {
+      // Ignore storage failures.
     }
     previousPathRef.current = pathWithSearch;
   }, [path]);
