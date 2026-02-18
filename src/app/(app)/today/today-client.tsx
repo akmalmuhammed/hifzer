@@ -49,6 +49,16 @@ type TodayPayload = {
   monthlyAdjustmentMessage?: string | null;
 };
 
+type LearningLane = {
+  surahNumber: number;
+  surahLabel: string;
+  ayahNumber: number;
+  ayahId: number;
+  progressPct: number;
+  lastTouchedAt: string | null;
+  isActive: boolean;
+};
+
 function modeExplain(state: TodayPayload["state"]): { title: string; body: string; tone: "neutral" | "warn" | "accent" } {
   const debtPct = Math.round(state.debtRatio);
   if (state.mode === "CATCH_UP") {
@@ -142,6 +152,7 @@ export function TodayClient() {
   const [switchingSurah, setSwitchingSurah] = useState(false);
   const [targetSurahNumber, setTargetSurahNumber] = useState(1);
   const [targetAyahNumber, setTargetAyahNumber] = useState(1);
+  const [learningLanes, setLearningLanes] = useState<LearningLane[]>([]);
   const { pushToast } = useToast();
   const [modeShiftNotice, setModeShiftNotice] = useState<{
     from: TodayPayload["state"]["mode"];
@@ -154,12 +165,20 @@ export function TodayClient() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/session/today", { cache: "no-store" });
-      const payload = (await res.json()) as TodayPayload & { error?: string };
-      if (!res.ok) {
+      const [todayRes, lanesRes] = await Promise.all([
+        fetch("/api/session/today", { cache: "no-store" }),
+        fetch("/api/profile/learning-lanes", { cache: "no-store" }),
+      ]);
+      const payload = (await todayRes.json()) as TodayPayload & { error?: string };
+      if (!todayRes.ok) {
         throw new Error(payload.error || "Failed to load today state.");
       }
       setData(payload);
+
+      if (lanesRes.ok) {
+        const lanesPayload = (await lanesRes.json()) as { lanes?: LearningLane[] };
+        setLearningLanes(Array.isArray(lanesPayload.lanes) ? lanesPayload.lanes : []);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load today state.");
     } finally {
@@ -198,12 +217,13 @@ export function TodayClient() {
   const activeSurahNumber = data?.profile.activeSurahNumber ?? null;
 
   useEffect(() => {
-    if (activeSurahNumber == null) {
+    if (activeSurahNumber == null || !Number.isFinite(activeSurahNumber)) {
       return;
     }
     setTargetSurahNumber(activeSurahNumber);
-    setTargetAyahNumber(1);
-  }, [activeSurahNumber]);
+    const activeLane = learningLanes.find((lane) => lane.surahNumber === activeSurahNumber);
+    setTargetAyahNumber(activeLane?.ayahNumber ?? 1);
+  }, [activeSurahNumber, learningLanes]);
 
   async function switchSessionSurah() {
     const surah = Math.floor(targetSurahNumber);
@@ -441,10 +461,28 @@ export function TodayClient() {
 
               {switchOpen ? (
                 <div className="mt-5 rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 p-4">
-                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Pause current lane and switch surah</p>
+                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Switch learning lane</p>
                   <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
-                    This pauses any open session and rebuilds your next session queue from the surah + ayah you set here.
+                    Your current lane is saved. You can jump to another surah and resume this one later.
                   </p>
+                  {learningLanes.length ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {learningLanes.map((lane) => (
+                        <button
+                          key={`lane-${lane.surahNumber}`}
+                          type="button"
+                          onClick={() => {
+                            setTargetSurahNumber(lane.surahNumber);
+                            setTargetAyahNumber(lane.ayahNumber);
+                          }}
+                          className="rounded-full border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-1 text-xs font-semibold text-[color:var(--kw-ink)] hover:bg-white"
+                        >
+                          {lane.surahLabel} · Ayah {lane.ayahNumber} · {lane.progressPct}%
+                          {lane.isActive ? " · active" : ""}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
                   <div className="mt-3 grid gap-3 sm:grid-cols-3">
                     <label className="text-xs text-[color:var(--kw-muted)]">
                       Surah number
@@ -469,7 +507,7 @@ export function TodayClient() {
                     </label>
                     <div className="flex items-end">
                       <Button className="w-full" onClick={() => void switchSessionSurah()} disabled={switchingSurah}>
-                        {switchingSurah ? "Switching..." : "Apply for next sessions"}
+                        {switchingSurah ? "Switching..." : "Save and switch"}
                       </Button>
                     </div>
                   </div>

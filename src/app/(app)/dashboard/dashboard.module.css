@@ -80,54 +80,110 @@
   pointer-events: none;
 }
 
-.sectionGlow {
-  position: relative;
+.qualityOrbWrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.sectionGlow::after {
+.qualityOrb {
+  position: relative;
+  width: 148px;
+  height: 148px;
+  border-radius: 999px;
+  padding: 2px;
+  box-shadow: 0 16px 32px -20px rgba(11, 18, 32, 0.45), 0 0 0 1px rgba(11, 18, 32, 0.06);
+}
+
+.qualityOrb::after {
   content: "";
   position: absolute;
-  inset: auto -20% -140px;
-  height: 180px;
-  background: radial-gradient(closest-side, rgba(var(--kw-accent-rgb), 0.12), transparent 72%);
-  pointer-events: none;
+  inset: -14px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(var(--kw-accent-rgb), 0.16), transparent 68%);
+  z-index: 0;
 }
 
-.sessionRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) repeat(3, minmax(0, 0.8fr));
-  gap: 12px;
+.qualityOrbInner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
   border: 1px solid var(--kw-border-2);
-  border-radius: 14px;
-  background: var(--kw-surface-soft);
-  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.92);
 }
 
-.sessionRow + .sessionRow {
-  margin-top: 10px;
+.qualityOrbValue {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--kw-ink);
 }
 
-.activityGrid {
+.qualityOrbLabel {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--kw-faint);
+}
+
+.calendarWeekdays {
   display: grid;
-  grid-template-rows: repeat(7, minmax(0, 1fr));
-  grid-auto-flow: column;
-  grid-auto-columns: 14px;
-  gap: 6px;
-  justify-content: start;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--kw-faint);
 }
 
-.activityCell {
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;
+.calendarWeekdays span {
+  text-align: center;
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.calendarCell,
+.calendarBlank {
+  aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 0.72rem;
+  font-weight: 600;
   border: 1px solid var(--kw-border-2);
 }
 
-.legendCell {
+.calendarCell {
+  color: rgba(11, 18, 32, 0.78);
+}
+
+.calendarCell[data-future="1"] {
+  opacity: 0.45;
+}
+
+.calendarBlank {
+  border-color: transparent;
+  background: transparent;
+  color: transparent;
+}
+
+.legendCircle {
   width: 12px;
   height: 12px;
-  border-radius: 3px;
+  border-radius: 999px;
   border: 1px solid var(--kw-border-2);
   display: inline-block;
 }
@@ -143,19 +199,13 @@
 }
 
 @media (max-width: 767px) {
-  .sessionRow {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
-    row-gap: 6px;
+  .calendarGrid {
+    gap: 6px;
   }
 
-  .activityGrid {
-    grid-auto-columns: 12px;
-    gap: 5px;
-  }
-
-  .activityCell {
-    width: 12px;
-    height: 12px;
+  .calendarWeekdays {
+    gap: 6px;
+    font-size: 0.58rem;
   }
 }
 

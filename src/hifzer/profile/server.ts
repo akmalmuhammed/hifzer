@@ -8,6 +8,7 @@ import type {
   UserProfile,
 } from "@prisma/client";
 import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
+import { getSurahInfo } from "@/hifzer/quran/lookup.server";
 import { db, dbConfigured } from "@/lib/db";
 
 const DEFAULT_PRACTICE_DAYS = [0, 1, 2, 3, 4, 5, 6];
@@ -50,6 +51,20 @@ export type ProfileSnapshot = {
   accentPreset: string;
   reciterId: string;
 };
+
+export type LearningLaneSnapshot = {
+  surahNumber: number;
+  surahLabel: string;
+  ayahNumber: number;
+  ayahId: number;
+  progressPct: number;
+  lastTouchedAt: string | null;
+  isActive: boolean;
+};
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
 
 function defaultStartPoint() {
   const first = SURAH_INDEX[0];
@@ -264,4 +279,68 @@ export async function saveDisplayPrefs(input: {
     },
   });
   return toSnapshot(row);
+}
+
+export async function listLearningLanes(clerkUserId: string, limit = 8): Promise<LearningLaneSnapshot[]> {
+  const profile = await getOrCreateUserProfile(clerkUserId);
+  if (!profile) {
+    return [];
+  }
+  const activeSurahNumber = profile.activeSurahNumber;
+
+  const rows = await db().reviewEvent.findMany({
+    where: { userId: profile.id },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    take: 4000,
+    select: {
+      surahNumber: true,
+      ayahId: true,
+      createdAt: true,
+    },
+  });
+
+  const lanes: LearningLaneSnapshot[] = [];
+  const seen = new Set<number>();
+
+  function pushLane(input: { surahNumber: number; ayahId: number; touchedAt: Date | null }) {
+    if (seen.has(input.surahNumber)) {
+      return;
+    }
+    const surah = getSurahInfo(input.surahNumber);
+    if (!surah) {
+      return;
+    }
+    const ayahNumber = clamp(input.ayahId - surah.startAyahId + 1, 1, surah.ayahCount);
+    const ayahId = surah.startAyahId + (ayahNumber - 1);
+    const progressPct = Math.max(1, Math.round((ayahNumber / Math.max(1, surah.ayahCount)) * 100));
+    lanes.push({
+      surahNumber: surah.surahNumber,
+      surahLabel: `${surah.nameTransliteration} (${surah.surahNumber})`,
+      ayahNumber,
+      ayahId,
+      progressPct,
+      lastTouchedAt: input.touchedAt ? input.touchedAt.toISOString() : null,
+      isActive: surah.surahNumber === activeSurahNumber,
+    });
+    seen.add(surah.surahNumber);
+  }
+
+  pushLane({
+    surahNumber: profile.activeSurahNumber,
+    ayahId: profile.cursorAyahId,
+    touchedAt: null,
+  });
+
+  for (const row of rows) {
+    pushLane({
+      surahNumber: row.surahNumber,
+      ayahId: row.ayahId,
+      touchedAt: row.createdAt,
+    });
+    if (lanes.length >= limit) {
+      break;
+    }
+  }
+
+  return lanes;
 }

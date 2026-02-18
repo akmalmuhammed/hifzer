@@ -10,6 +10,7 @@ import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
 import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
 import { capturePosthogEvent } from "@/lib/posthog/client";
@@ -17,6 +18,8 @@ import {
   getPendingSessionSyncPayloads,
   pushPendingSessionSyncPayload,
   replacePendingSessionSyncPayloads,
+  setActiveSurahCursor,
+  setOpenSession,
   type PendingSessionSyncPayload,
 } from "@/hifzer/local/store";
 import { getAyahById, verseRefFromAyahId } from "@/hifzer/quran/lookup";
@@ -56,6 +59,15 @@ type SessionStartPayload = {
 };
 
 type SessionEvent = PendingSessionSyncPayload["events"][number];
+type LearningLane = {
+  surahNumber: number;
+  surahLabel: string;
+  ayahNumber: number;
+  ayahId: number;
+  progressPct: number;
+  lastTouchedAt: string | null;
+  isActive: boolean;
+};
 const GRADE_ACTIONS: Array<{
   grade: "AGAIN" | "HARD" | "GOOD" | "EASY";
   hint: string;
@@ -227,6 +239,11 @@ export function SessionClient() {
   const [reviewOnlyLock, setReviewOnlyLock] = useState(false);
   const [showText, setShowText] = useState(true);
   const [showTranslation, setShowTranslation] = useState(true);
+  const [switchOpen, setSwitchOpen] = useState(false);
+  const [switchingSurah, setSwitchingSurah] = useState(false);
+  const [targetSurahNumber, setTargetSurahNumber] = useState(1);
+  const [targetAyahNumber, setTargetAyahNumber] = useState(1);
+  const [learningLanes, setLearningLanes] = useState<LearningLane[]>([]);
   const [textVisibleDuringStep, setTextVisibleDuringStep] = useState(true);
   const [assistedThisStep, setAssistedThisStep] = useState(false);
   const [revealUntilMs, setRevealUntilMs] = useState<number | null>(null);
@@ -271,12 +288,28 @@ export function SessionClient() {
     }
   }, []);
 
+  const loadLearningLanes = useCallback(async () => {
+    try {
+      const res = await fetch("/api/profile/learning-lanes", { cache: "no-store" });
+      if (!res.ok) {
+        return;
+      }
+      const payload = (await res.json()) as { lanes?: LearningLane[] };
+      setLearningLanes(Array.isArray(payload.lanes) ? payload.lanes : []);
+    } catch {
+      // non-blocking: session can still run
+    }
+  }, []);
+
   const loadRun = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       await flushPendingSync();
-      const res = await fetch("/api/session/start", { method: "POST" });
+      const [res] = await Promise.all([
+        fetch("/api/session/start", { method: "POST" }),
+        loadLearningLanes(),
+      ]);
       const payload = (await res.json()) as SessionStartPayload & { error?: string };
       if (!res.ok) {
         throw new Error(payload.error || "Failed to start session.");
@@ -287,12 +320,13 @@ export function SessionClient() {
       setStepStartedAt(Date.now());
       setWarmupRetryUsed(false);
       setReviewOnlyLock(false);
+      setSwitchOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load session.");
     } finally {
       setLoading(false);
     }
-  }, [flushPendingSync]);
+  }, [flushPendingSync, loadLearningLanes]);
 
   useEffect(() => {
     void loadRun();
@@ -345,6 +379,15 @@ export function SessionClient() {
     setAssistedThisStep(false);
     setRevealUntilMs(null);
   }, [currentStep, stepIndex]);
+
+  useEffect(() => {
+    const activeLane = learningLanes.find((lane) => lane.isActive) ?? learningLanes[0];
+    if (!activeLane) {
+      return;
+    }
+    setTargetSurahNumber(activeLane.surahNumber);
+    setTargetAyahNumber(activeLane.ayahNumber);
+  }, [learningLanes]);
 
   useEffect(() => {
     if (!currentStep || revealUntilMs == null) {
@@ -415,6 +458,81 @@ export function SessionClient() {
       message: `Text is visible for ${REVEAL_SECONDS}s. This attempt cannot be graded above HARD.`,
     });
   }, [canRevealCurrentStep, pushToast]);
+
+  const switchSessionSurah = useCallback(async () => {
+    const surah = Math.floor(targetSurahNumber);
+    const ayah = Math.floor(targetAyahNumber);
+    if (!Number.isFinite(surah) || surah < 1 || surah > 114) {
+      pushToast({
+        tone: "warning",
+        title: "Invalid surah",
+        message: "Choose a surah number from 1 to 114.",
+      });
+      return;
+    }
+    if (!Number.isFinite(ayah) || ayah < 1) {
+      pushToast({
+        tone: "warning",
+        title: "Invalid ayah",
+        message: "Ayah number must be 1 or higher.",
+      });
+      return;
+    }
+
+    setSwitchingSurah(true);
+    try {
+      const res = await fetch("/api/profile/start-point", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          surahNumber: surah,
+          ayahNumber: ayah,
+          source: "session_switch",
+          resetOpenSession: true,
+        }),
+      });
+      const payload = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        profile?: { activeSurahNumber?: number; cursorAyahId?: number };
+        abandonedOpenSessions?: number;
+      };
+      if (!res.ok) {
+        throw new Error(payload.error || "Failed to switch session surah.");
+      }
+
+      const nextSurah = Number(payload.profile?.activeSurahNumber);
+      const nextCursor = Number(payload.profile?.cursorAyahId);
+      if (Number.isFinite(nextSurah) && Number.isFinite(nextCursor)) {
+        setActiveSurahCursor(nextSurah, nextCursor);
+      }
+      setOpenSession(null);
+      setSwitchOpen(false);
+      await loadRun();
+
+      const abandonedCount = Number(payload.abandonedOpenSessions ?? 0);
+      pushToast({
+        tone: "success",
+        title: "Surah switched",
+        message: abandonedCount > 0
+          ? `Moved to Surah ${surah}:${ayah}. ${abandonedCount} open session${abandonedCount === 1 ? "" : "s"} paused.`
+          : `Moved to Surah ${surah}:${ayah}.`,
+      });
+      capturePosthogEvent("session.surah_switched", {
+        targetSurahNumber: surah,
+        targetAyahNumber: ayah,
+        abandonedOpenSessions: abandonedCount,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to switch surah.";
+      pushToast({
+        tone: "warning",
+        title: "Switch failed",
+        message,
+      });
+    } finally {
+      setSwitchingSurah(false);
+    }
+  }, [loadRun, pushToast, targetAyahNumber, targetSurahNumber]);
 
   const advance = useCallback(async (grade?: "AGAIN" | "HARD" | "GOOD" | "EASY") => {
     if (!currentStep) {
@@ -582,6 +700,9 @@ export function SessionClient() {
           Back to Today <ArrowRight size={16} />
         </Button>
       </Link>
+      <Button variant="secondary" className="gap-2" onClick={() => setSwitchOpen((prev) => !prev)}>
+        {switchOpen ? "Close surah switcher" : "Switch surah"}
+      </Button>
     </div>
   );
 
@@ -849,6 +970,61 @@ export function SessionClient() {
           </div>
         }
       />
+
+      {switchOpen ? (
+        <Card>
+          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Switch learning lane</p>
+          <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
+            Save current progress, pause this session, and rebuild the queue from another surah.
+          </p>
+          {learningLanes.length ? (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {learningLanes.map((lane) => (
+                <button
+                  key={`session-lane-${lane.surahNumber}`}
+                  type="button"
+                  onClick={() => {
+                    setTargetSurahNumber(lane.surahNumber);
+                    setTargetAyahNumber(lane.ayahNumber);
+                  }}
+                  className="rounded-full border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3 py-1 text-xs font-semibold text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-surface)]"
+                >
+                  {lane.surahLabel} · Ayah {lane.ayahNumber} · {lane.progressPct}%
+                  {lane.isActive ? " · active" : ""}
+                </button>
+              ))}
+            </div>
+          ) : null}
+          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            <label className="text-xs text-[color:var(--kw-muted)]">
+              Surah number
+              <Input
+                type="number"
+                min={1}
+                max={114}
+                value={targetSurahNumber}
+                onChange={(event) => setTargetSurahNumber(Number(event.target.value))}
+                className="mt-1"
+              />
+            </label>
+            <label className="text-xs text-[color:var(--kw-muted)]">
+              Ayah number
+              <Input
+                type="number"
+                min={1}
+                value={targetAyahNumber}
+                onChange={(event) => setTargetAyahNumber(Number(event.target.value))}
+                className="mt-1"
+              />
+            </label>
+            <div className="flex items-end">
+              <Button className="w-full" onClick={() => void switchSessionSurah()} disabled={switchingSurah}>
+                {switchingSurah ? "Switching..." : "Save and switch"}
+              </Button>
+            </div>
+          </div>
+        </Card>
+      ) : null}
 
       {shouldShowWeeklyGateIntro ? (
         <Card className="border-[rgba(234,88,12,0.28)] bg-[rgba(234,88,12,0.10)]">

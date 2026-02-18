@@ -55,36 +55,56 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "cursorAyahId does not match surah+ayah" }, { status: 400 });
   }
 
+  const fullProfile = await getOrCreateUserProfile(userId);
+  if (!fullProfile) {
+    return NextResponse.json({ error: "Database not configured." }, { status: 503 });
+  }
+
+  const previousSurahNumber = fullProfile.activeSurahNumber;
+  const previousCursorAyahId = fullProfile.cursorAyahId;
+
+  if (source === "session_switch" || resetOpenSession) {
+    await recordQuranBrowseAyahRead({
+      profileId: fullProfile.id,
+      mode: fullProfile.mode,
+      timezone: fullProfile.timezone,
+      ayahId: previousCursorAyahId,
+    });
+  }
+
   const profile = await saveStartPoint(userId, surahNumber, expectedAyahId);
   let abandonedOpenSessions = 0;
 
-  if (source === "quran_read" || resetOpenSession) {
-    const fullProfile = await getOrCreateUserProfile(userId);
-    if (fullProfile) {
-      if (resetOpenSession) {
-        const abandoned = await db().session.updateMany({
-          where: {
-            userId: fullProfile.id,
-            status: "OPEN",
-          },
-          data: {
-            status: "ABANDONED",
-            endedAt: new Date(),
-          },
-        });
-        abandonedOpenSessions = abandoned.count;
-      }
-
-      if (source === "quran_read") {
-        await recordQuranBrowseAyahRead({
-          profileId: fullProfile.id,
-          mode: fullProfile.mode,
-          timezone: fullProfile.timezone,
-          ayahId: expectedAyahId,
-        });
-      }
-    }
+  if (resetOpenSession) {
+    const abandoned = await db().session.updateMany({
+      where: {
+        userId: fullProfile.id,
+        status: "OPEN",
+      },
+      data: {
+        status: "ABANDONED",
+        endedAt: new Date(),
+      },
+    });
+    abandonedOpenSessions = abandoned.count;
   }
 
-  return NextResponse.json({ ok: true, profile, abandonedOpenSessions });
+  if (source === "quran_read") {
+    await recordQuranBrowseAyahRead({
+      profileId: fullProfile.id,
+      mode: fullProfile.mode,
+      timezone: fullProfile.timezone,
+      ayahId: expectedAyahId,
+    });
+  }
+
+  return NextResponse.json({
+    ok: true,
+    profile,
+    abandonedOpenSessions,
+    previousLane: {
+      surahNumber: previousSurahNumber,
+      cursorAyahId: previousCursorAyahId,
+    },
+  });
 }

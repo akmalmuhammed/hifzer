@@ -6,25 +6,22 @@ import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
   BookMarked,
-  Clock3,
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
   Compass,
   PlayCircle,
   RefreshCcw,
-  Sparkles,
-  Timer,
   TrendingUp,
-  Waves,
 } from "lucide-react";
 import { AreaTrend } from "@/components/charts/area-trend";
 import { DonutProgress } from "@/components/charts/donut-progress";
 import { Sparkline } from "@/components/charts/sparkline";
-import { StackedBars } from "@/components/charts/stacked-bars";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
-import { addIsoDaysUtc } from "@/hifzer/derived/dates";
 import styles from "./dashboard.module.css";
 
 type DashboardOverview = {
@@ -83,18 +80,9 @@ type DashboardOverview = {
     todayQualifiedAyahs: number;
     lastQualifiedDate: string | null;
   };
-  recentSessions: Array<{
-    id: string;
-    localDate: string;
-    status: "OPEN" | "COMPLETED" | "ABANDONED";
-    mode: "NORMAL" | "CONSOLIDATION" | "CATCH_UP";
-    startedAt: string;
-    endedAt: string | null;
-    durationMin: number;
-    eventCount: number;
-    attemptsCount: number;
-    warmupPassed: boolean | null;
-    weeklyGatePassed: boolean | null;
+  activityByDate: Array<{
+    date: string;
+    value: number;
   }>;
 };
 
@@ -154,16 +142,40 @@ function formatMaybeDateTime(value: string | null): string {
 
 function activityColor(value: number, max: number): string {
   if (value <= 0) {
-    return "rgba(11,18,32,0.06)";
+    return "rgba(10,138,119,0.07)";
   }
   const pct = value / Math.max(1, max);
-  if (pct < 0.34) {
-    return "rgba(10,138,119,0.24)";
+  if (pct < 0.2) {
+    return "rgba(16,185,129,0.24)";
   }
-  if (pct < 0.67) {
-    return "rgba(10,138,119,0.42)";
+  if (pct < 0.45) {
+    return "rgba(16,185,129,0.38)";
   }
-  return "rgba(var(--kw-accent-rgb),0.64)";
+  if (pct < 0.7) {
+    return "rgba(16,185,129,0.58)";
+  }
+  return "rgba(16,185,129,0.82)";
+}
+
+function monthStartFromIso(isoDate: string): Date {
+  const [y, m] = isoDate.split("-").map((v) => Number(v));
+  if (!y || !m) {
+    const now = new Date();
+    return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  }
+  return new Date(Date.UTC(y, m - 1, 1));
+}
+
+function addMonthsUtc(base: Date, offset: number): Date {
+  return new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth() + offset, 1));
+}
+
+function daysInMonthUtc(base: Date): number {
+  return new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth() + 1, 0)).getUTCDate();
+}
+
+function isoDateUtc(year: number, monthIndex: number, day: number): string {
+  return new Date(Date.UTC(year, monthIndex, day)).toISOString().slice(0, 10);
 }
 
 function DashboardSkeleton() {
@@ -190,6 +202,7 @@ export function DashboardClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
+  const [monthCursor, setMonthCursor] = useState(0);
   const reduceMotion = useReducedMotion();
 
   async function load() {
@@ -231,57 +244,115 @@ export function DashboardClient() {
     () => overview?.sessionTrend14d.map((point) => point.recallEvents) ?? [],
     [overview],
   );
-  const activityDays = useMemo(() => {
+  const activityByDate = useMemo(() => {
     if (!overview) {
-      return [];
+      return new Map<string, number>();
     }
-    const pointMap = new Map(
-      overview.sessionTrend14d.map((point) => [
-        point.date,
-        point.recallEvents + point.browseAyahs + (point.completedSessions * 2),
-      ]),
-    );
-    const latestDate = overview.sessionTrend14d[overview.sessionTrend14d.length - 1]?.date;
-    if (!latestDate) {
-      return [];
-    }
-    const start = addIsoDaysUtc(latestDate, -55);
-    return Array.from({ length: 56 }, (_, index) => {
-      const date = addIsoDaysUtc(start, index);
-      return {
-        date,
-        value: pointMap.get(date) ?? 0,
-      };
-    });
+    return new Map(overview.activityByDate.map((entry) => [entry.date, entry.value]));
   }, [overview]);
-  const activityMax = useMemo(
-    () => Math.max(1, ...activityDays.map((day) => day.value)),
-    [activityDays],
+
+  const baseMonthStart = useMemo(
+    () => monthStartFromIso(overview?.today.localDate ?? new Date().toISOString().slice(0, 10)),
+    [overview],
   );
 
-  const gradeSegments = useMemo(() => {
-    if (!overview) {
-      return [];
-    }
-    return [
-      { label: "Again", value: overview.gradeMix14d.AGAIN, color: "rgba(225,29,72,0.78)" },
-      { label: "Hard", value: overview.gradeMix14d.HARD, color: "rgba(234,88,12,0.78)" },
-      { label: "Good", value: overview.gradeMix14d.GOOD, color: "rgba(10,138,119,0.78)" },
-      { label: "Easy", value: overview.gradeMix14d.EASY, color: "rgba(var(--kw-accent-rgb),0.78)" },
-    ];
-  }, [overview]);
+  const selectedMonthStart = useMemo(
+    () => addMonthsUtc(baseMonthStart, monthCursor),
+    [baseMonthStart, monthCursor],
+  );
 
-  const stageSegments = useMemo(() => {
+  const currentMonthSerial = (baseMonthStart.getUTCFullYear() * 12) + baseMonthStart.getUTCMonth();
+  const selectedMonthSerial = (selectedMonthStart.getUTCFullYear() * 12) + selectedMonthStart.getUTCMonth();
+  const canGoPreviousMonth = selectedMonthSerial > (currentMonthSerial - 12);
+  const canGoNextMonth = selectedMonthSerial < (currentMonthSerial + 3);
+
+  const calendarCells = useMemo(() => {
     if (!overview) {
-      return [];
+      return [] as Array<{ key: string; blank: boolean; day: number; date: string; value: number; isFuture: boolean }>;
     }
-    return [
-      { label: "Warmup", value: overview.stageMix14d.WARMUP, color: "rgba(var(--kw-accent-rgb),0.78)" },
-      { label: "Review", value: overview.stageMix14d.REVIEW, color: "rgba(10,138,119,0.78)" },
-      { label: "New", value: overview.stageMix14d.NEW, color: "rgba(14,165,233,0.78)" },
-      { label: "Link", value: overview.stageMix14d.LINK + overview.stageMix14d.LINK_REPAIR, color: "rgba(234,88,12,0.78)" },
-      { label: "Weekly", value: overview.stageMix14d.WEEKLY_TEST, color: "rgba(99,102,241,0.78)" },
-    ];
+    const year = selectedMonthStart.getUTCFullYear();
+    const monthIndex = selectedMonthStart.getUTCMonth();
+    const firstWeekday = (new Date(Date.UTC(year, monthIndex, 1)).getUTCDay() + 6) % 7;
+    const daysInMonth = daysInMonthUtc(selectedMonthStart);
+    const cells: Array<{ key: string; blank: boolean; day: number; date: string; value: number; isFuture: boolean }> = [];
+
+    for (let idx = 0; idx < firstWeekday; idx += 1) {
+      cells.push({
+        key: `blank-${idx}`,
+        blank: true,
+        day: 0,
+        date: "",
+        value: 0,
+        isFuture: false,
+      });
+    }
+
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      const date = isoDateUtc(year, monthIndex, day);
+      cells.push({
+        key: date,
+        blank: false,
+        day,
+        date,
+        value: activityByDate.get(date) ?? 0,
+        isFuture: date > overview.today.localDate,
+      });
+    }
+
+    return cells;
+  }, [activityByDate, overview, selectedMonthStart]);
+
+  const calendarMax = useMemo(
+    () => Math.max(1, ...calendarCells.filter((cell) => !cell.blank).map((cell) => cell.value)),
+    [calendarCells],
+  );
+
+  const recitationQuality = useMemo(() => {
+    if (!overview) {
+      return { qualityPct: 0, stabilityPct: 0, gradeArc: "conic-gradient(#e2e8f0 0 100%)", stageArc: "conic-gradient(#e2e8f0 0 100%)" };
+    }
+    const totalGrades = overview.gradeMix14d.AGAIN + overview.gradeMix14d.HARD + overview.gradeMix14d.GOOD + overview.gradeMix14d.EASY;
+    const qualityPct = totalGrades > 0
+      ? Math.round(((overview.gradeMix14d.GOOD + overview.gradeMix14d.EASY) / totalGrades) * 100)
+      : 0;
+    const stabilityPct = totalGrades > 0
+      ? Math.round((overview.gradeMix14d.EASY / totalGrades) * 100)
+      : 0;
+
+    const againPct = totalGrades > 0 ? (overview.gradeMix14d.AGAIN / totalGrades) : 0;
+    const hardPct = totalGrades > 0 ? (overview.gradeMix14d.HARD / totalGrades) : 0;
+    const goodPct = totalGrades > 0 ? (overview.gradeMix14d.GOOD / totalGrades) : 0;
+    const easyPct = totalGrades > 0 ? (overview.gradeMix14d.EASY / totalGrades) : 0;
+
+    const stageTotal = overview.stageMix14d.WARMUP + overview.stageMix14d.REVIEW + overview.stageMix14d.NEW +
+      overview.stageMix14d.LINK + overview.stageMix14d.WEEKLY_TEST + overview.stageMix14d.LINK_REPAIR;
+    const warmReviewPct = stageTotal > 0 ? ((overview.stageMix14d.WARMUP + overview.stageMix14d.REVIEW) / stageTotal) : 0;
+    const newPct = stageTotal > 0 ? (overview.stageMix14d.NEW / stageTotal) : 0;
+    const linkPct = stageTotal > 0 ? ((overview.stageMix14d.LINK + overview.stageMix14d.LINK_REPAIR) / stageTotal) : 0;
+    const weeklyPct = stageTotal > 0 ? (overview.stageMix14d.WEEKLY_TEST / stageTotal) : 0;
+
+    const gradeArc = `conic-gradient(
+      rgba(225,29,72,0.95) 0 ${(againPct * 100).toFixed(2)}%,
+      rgba(234,88,12,0.95) ${(againPct * 100).toFixed(2)}% ${((againPct + hardPct) * 100).toFixed(2)}%,
+      rgba(16,185,129,0.95) ${((againPct + hardPct) * 100).toFixed(2)}% ${((againPct + hardPct + goodPct) * 100).toFixed(2)}%,
+      rgba(var(--kw-accent-rgb),0.95) ${((againPct + hardPct + goodPct) * 100).toFixed(2)}% ${((againPct + hardPct + goodPct + easyPct) * 100).toFixed(2)}%,
+      rgba(11,18,32,0.08) ${((againPct + hardPct + goodPct + easyPct) * 100).toFixed(2)}% 100%
+    )`;
+
+    const stageArc = `conic-gradient(
+      rgba(var(--kw-accent-rgb),0.92) 0 ${(warmReviewPct * 100).toFixed(2)}%,
+      rgba(56,189,248,0.92) ${(warmReviewPct * 100).toFixed(2)}% ${((warmReviewPct + newPct) * 100).toFixed(2)}%,
+      rgba(251,146,60,0.92) ${((warmReviewPct + newPct) * 100).toFixed(2)}% ${((warmReviewPct + newPct + linkPct) * 100).toFixed(2)}%,
+      rgba(99,102,241,0.92) ${((warmReviewPct + newPct + linkPct) * 100).toFixed(2)}% ${((warmReviewPct + newPct + linkPct + weeklyPct) * 100).toFixed(2)}%,
+      rgba(11,18,32,0.08) ${((warmReviewPct + newPct + linkPct + weeklyPct) * 100).toFixed(2)}% 100%
+    )`;
+
+    return {
+      qualityPct,
+      stabilityPct,
+      gradeArc,
+      stageArc,
+    };
   }, [overview]);
 
   const status = overview ? statusPill(overview.today.status) : null;
@@ -511,29 +582,54 @@ export function DashboardClient() {
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Recitation quality</p>
                     <p className="mt-1 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                      Grade mix + phase distribution
+                      Futuristic quality radar
                     </p>
                   </div>
                   <Pill tone="neutral">14d</Pill>
                 </div>
 
-                <div className="mt-4 space-y-4">
-                  <div>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Grades</p>
-                    <StackedBars segments={gradeSegments} ariaLabel="Grade distribution over 14 days" />
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      <Pill tone="danger">Again {overview.gradeMix14d.AGAIN}</Pill>
-                      <Pill tone="warn">Hard {overview.gradeMix14d.HARD}</Pill>
-                      <Pill tone="success">Good {overview.gradeMix14d.GOOD}</Pill>
-                      <Pill tone="accent">Easy {overview.gradeMix14d.EASY}</Pill>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <div className={styles.qualityOrbWrap}>
+                    <div className={styles.qualityOrb} style={{ background: recitationQuality.gradeArc }}>
+                      <span className={styles.qualityOrbInner}>
+                        <span className={styles.qualityOrbValue}>{recitationQuality.qualityPct}%</span>
+                        <span className={styles.qualityOrbLabel}>Recall quality</span>
+                      </span>
                     </div>
                   </div>
+                  <div className={styles.qualityOrbWrap}>
+                    <div className={styles.qualityOrb} style={{ background: recitationQuality.stageArc }}>
+                      <span className={styles.qualityOrbInner}>
+                        <span className={styles.qualityOrbValue}>{recitationQuality.stabilityPct}%</span>
+                        <span className={styles.qualityOrbLabel}>Easy recall</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
 
-                  <div>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Session stages</p>
-                    <StackedBars segments={stageSegments} ariaLabel="Stage mix over 14 days" />
-                    <p className="mt-2 text-xs text-[color:var(--kw-muted)]">
-                      Warm-up {overview.stageMix14d.WARMUP} | Review {overview.stageMix14d.REVIEW} | New {overview.stageMix14d.NEW}
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                  <div className={`${styles.kpiTile} px-3 py-2`}>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Again / Hard</p>
+                    <p className="mt-1 text-base font-semibold text-[color:var(--kw-ink)]">
+                      {overview.gradeMix14d.AGAIN} / {overview.gradeMix14d.HARD}
+                    </p>
+                  </div>
+                  <div className={`${styles.kpiTile} px-3 py-2`}>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Good / Easy</p>
+                    <p className="mt-1 text-base font-semibold text-[color:var(--kw-ink)]">
+                      {overview.gradeMix14d.GOOD} / {overview.gradeMix14d.EASY}
+                    </p>
+                  </div>
+                  <div className={`${styles.kpiTile} px-3 py-2`}>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Warmup + Review</p>
+                    <p className="mt-1 text-base font-semibold text-[color:var(--kw-ink)]">
+                      {overview.stageMix14d.WARMUP + overview.stageMix14d.REVIEW}
+                    </p>
+                  </div>
+                  <div className={`${styles.kpiTile} px-3 py-2`}>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">New + Link</p>
+                    <p className="mt-1 text-base font-semibold text-[color:var(--kw-ink)]">
+                      {overview.stageMix14d.NEW + overview.stageMix14d.LINK + overview.stageMix14d.LINK_REPAIR}
                     </p>
                   </div>
                 </div>
@@ -606,109 +702,69 @@ export function DashboardClient() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Review health map</p>
-                    <p className="mt-1 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">Daily activity intensity</p>
+                    <p className="mt-1 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">Monthly activity calendar</p>
                   </div>
-                  <Waves size={18} className="text-[color:var(--kw-muted)]" />
+                  <CalendarDays size={18} className="text-[color:var(--kw-muted)]" />
                 </div>
-                <div className="mt-4">
-                  <div className={styles.activityGrid} aria-label="Review and browse activity heat map">
-                    {activityDays.map((day) => (
-                      <span
-                        key={day.date}
-                        title={`${formatLocalDate(day.date)}: ${day.value}`}
-                        className={styles.activityCell}
-                        style={{ backgroundColor: activityColor(day.value, activityMax) }}
-                      />
+                <div className="mt-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="gap-1"
+                      onClick={() => setMonthCursor((prev) => prev - 1)}
+                      disabled={!canGoPreviousMonth}
+                    >
+                      <ChevronLeft size={14} />
+                      Prev
+                    </Button>
+                    <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
+                      {selectedMonthStart.toLocaleDateString(undefined, { month: "long", year: "numeric", timeZone: "UTC" })}
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="gap-1"
+                      onClick={() => setMonthCursor((prev) => prev + 1)}
+                      disabled={!canGoNextMonth}
+                    >
+                      Next
+                      <ChevronRight size={14} />
+                    </Button>
+                  </div>
+
+                  <div className={styles.calendarWeekdays}>
+                    {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((weekday) => (
+                      <span key={weekday}>{weekday}</span>
                     ))}
                   </div>
-                  <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-[color:var(--kw-faint)]">
+
+                  <div className={styles.calendarGrid} aria-label="Monthly activity calendar">
+                    {calendarCells.map((cell) => (
+                      <span
+                        key={cell.key}
+                        title={cell.blank ? "" : `${formatLocalDate(cell.date)}: ${cell.value}`}
+                        className={cell.blank ? styles.calendarBlank : styles.calendarCell}
+                        data-future={cell.isFuture ? "1" : "0"}
+                        style={cell.blank ? undefined : { backgroundColor: activityColor(cell.value, calendarMax) }}
+                      >
+                        {cell.blank ? "" : cell.day}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-[color:var(--kw-faint)]">
                     <span>Low</span>
-                    <span className={styles.legendCell} style={{ backgroundColor: activityColor(0, activityMax) }} />
-                    <span className={styles.legendCell} style={{ backgroundColor: activityColor(Math.ceil(activityMax * 0.34), activityMax) }} />
-                    <span className={styles.legendCell} style={{ backgroundColor: activityColor(Math.ceil(activityMax * 0.67), activityMax) }} />
-                    <span className={styles.legendCell} style={{ backgroundColor: activityColor(activityMax, activityMax) }} />
+                    <span className={styles.legendCircle} style={{ backgroundColor: activityColor(0, calendarMax) }} />
+                    <span className={styles.legendCircle} style={{ backgroundColor: activityColor(Math.ceil(calendarMax * 0.2), calendarMax) }} />
+                    <span className={styles.legendCircle} style={{ backgroundColor: activityColor(Math.ceil(calendarMax * 0.45), calendarMax) }} />
+                    <span className={styles.legendCircle} style={{ backgroundColor: activityColor(calendarMax, calendarMax) }} />
                     <span>High</span>
-                  </div>
-                </div>
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                  <div className={`${styles.kpiTile} px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Band SABQI</p>
-                    <p className="mt-1 text-base font-semibold text-[color:var(--kw-ink)]">{overview.reviewHealth.byBand.SABQI}</p>
-                  </div>
-                  <div className={`${styles.kpiTile} px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Band MANZIL</p>
-                    <p className="mt-1 text-base font-semibold text-[color:var(--kw-ink)]">{overview.reviewHealth.byBand.MANZIL}</p>
-                  </div>
-                  <div className={`${styles.kpiTile} px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Reminder</p>
-                    <p className="mt-1 text-base font-semibold text-[color:var(--kw-ink)]">{overview.profile.reminderTimeLocal}</p>
-                  </div>
-                  <div className={`${styles.kpiTile} px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Today date</p>
-                    <p className="mt-1 text-base font-semibold text-[color:var(--kw-ink)]">{formatLocalDate(overview.today.localDate)}</p>
                   </div>
                 </div>
               </Card>
             </motion.div>
           </div>
-
-          <motion.div initial={reduceMotion ? false : { opacity: 0, y: 10 }} animate={reduceMotion ? {} : { opacity: 1, y: 0 }} transition={{ ...cardTransition, delay: 0.36 }}>
-            <Card>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Recent execution ledger</p>
-                  <p className="mt-1 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">Latest sessions and gates</p>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-[color:var(--kw-muted)]">
-                  <Clock3 size={14} />
-                  <span>{overview.recentSessions.length} sessions</span>
-                </div>
-              </div>
-
-              <div className="mt-4">
-                {overview.recentSessions.length ? (
-                  overview.recentSessions.map((session) => (
-                    <div key={session.id} className={styles.sessionRow}>
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-[color:var(--kw-ink)]">
-                          {formatLocalDate(session.localDate)} | {modeLabel(session.mode)}
-                        </p>
-                        <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
-                          {session.status === "OPEN" ? "In progress" : `${session.durationMin} min`} | {session.eventCount} events
-                        </p>
-                      </div>
-                      <div className="text-right text-xs text-[color:var(--kw-muted)]">
-                        <Timer size={14} className="ml-auto" />
-                        {session.attemptsCount} attempts
-                      </div>
-                      <div className="text-right">
-                        <Pill tone={session.warmupPassed ? "success" : "neutral"}>
-                          Warm-up {session.warmupPassed ? "pass" : "n/a"}
-                        </Pill>
-                      </div>
-                      <div className="text-right">
-                        <Pill tone={session.weeklyGatePassed ? "success" : "neutral"}>
-                          Weekly {session.weeklyGatePassed ? "pass" : "n/a"}
-                        </Pill>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <EmptyState
-                    title="No recent sessions"
-                    message="Start a session to begin your live performance ledger."
-                    action={(
-                      <Link href="/session">
-                        <Button className="gap-2">
-                          Start now <Sparkles size={15} />
-                        </Button>
-                      </Link>
-                    )}
-                  />
-                )}
-              </div>
-            </Card>
-          </motion.div>
         </div>
       ) : null}
 

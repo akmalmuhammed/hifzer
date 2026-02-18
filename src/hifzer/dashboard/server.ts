@@ -80,18 +80,9 @@ export type DashboardOverview = {
     todayQualifiedAyahs: number;
     lastQualifiedDate: string | null;
   };
-  recentSessions: Array<{
-    id: string;
-    localDate: string;
-    status: "OPEN" | "COMPLETED" | "ABANDONED";
-    mode: SrsMode;
-    startedAt: string;
-    endedAt: string | null;
-    durationMin: number;
-    eventCount: number;
-    attemptsCount: number;
-    warmupPassed: boolean | null;
-    weeklyGatePassed: boolean | null;
+  activityByDate: Array<{
+    date: string;
+    value: number;
   }>;
 };
 
@@ -162,10 +153,11 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
   const todayLocalDate = isoDateInTimeZone(now, profile.timezone);
   const start14d = addIsoDaysUtc(todayLocalDate, -13);
   const start7d = addIsoDaysUtc(todayLocalDate, -6);
+  const start365d = addIsoDaysUtc(todayLocalDate, -364);
 
   const [
     sessions14d,
-    recentSessionsRaw,
+    sessions365d,
     gradedEvents14d,
     stageAgg14d,
     browseEvents14d,
@@ -202,22 +194,17 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
       },
     }),
     prisma.session.findMany({
-      where: { userId: profile.id },
-      orderBy: { startedAt: "desc" },
-      take: 16,
+      where: {
+        userId: profile.id,
+        localDate: { gte: start365d, lte: todayLocalDate },
+      },
       select: {
-        id: true,
         localDate: true,
         status: true,
-        mode: true,
-        startedAt: true,
-        endedAt: true,
-        warmupPassed: true,
-        weeklyGatePassed: true,
         _count: {
           select: {
-            reviewEvents: true,
             attempts: true,
+            reviewEvents: true,
           },
         },
       },
@@ -452,22 +439,26 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
   const quranCompletionPct = quranReadProgress.completionPct;
   const completedKhatmahCount = quranReadProgress.completionKhatmahCount;
 
-  const recentSessions = recentSessionsRaw
-    .filter((session) => session._count.attempts > 0 || session.status === "OPEN")
-    .slice(0, 6)
-    .map((session) => ({
-      id: session.id,
-      localDate: session.localDate,
-      status: session.status,
-      mode: session.mode,
-      startedAt: session.startedAt.toISOString(),
-      endedAt: session.endedAt ? session.endedAt.toISOString() : null,
-      durationMin: Math.round(sessionDurationMinutes(session.startedAt, session.endedAt)),
-      eventCount: session._count.reviewEvents,
-      attemptsCount: session._count.attempts,
-      warmupPassed: session.warmupPassed,
-      weeklyGatePassed: session.weeklyGatePassed,
-    }));
+  const activityByDateMap = new Map<string, number>();
+  for (const session of sessions365d) {
+    const attemptsScore = session._count.attempts > 0
+      ? Math.max(1, Math.round(session._count.attempts * 0.55))
+      : 0;
+    const eventsScore = session._count.reviewEvents > 0
+      ? Math.max(1, Math.min(8, Math.round(session._count.reviewEvents / 4)))
+      : 0;
+    const openSessionScore = session.status === "OPEN" ? 1 : 0;
+    const value = attemptsScore + eventsScore + openSessionScore;
+    if (value < 1) {
+      continue;
+    }
+    const current = activityByDateMap.get(session.localDate) ?? 0;
+    activityByDateMap.set(session.localDate, current + value);
+  }
+
+  const activityByDate = Array.from(activityByDateMap.entries())
+    .map(([date, value]) => ({ date, value }))
+    .sort((a, b) => a.date.localeCompare(b.date));
 
   const todayStatus: TodayStatus = completedToday > 0 ? "completed" : (openToday > 0 ? "in_progress" : "idle");
 
@@ -521,6 +512,6 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
       todayQualifiedAyahs: streak.streak.todayQualifiedAyahs,
       lastQualifiedDate: streak.streak.lastQualifiedDate,
     },
-    recentSessions,
+    activityByDate,
   };
 }
