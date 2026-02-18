@@ -11,6 +11,7 @@ import {
   House,
   LayoutDashboard,
   LifeBuoy,
+  LibraryBig,
   Map,
   PlayCircle,
   Settings,
@@ -36,6 +37,7 @@ const INSIGHTS: NavItem[] = [
   { href: "/progress", label: "Progress", icon: TrendingUp },
   { href: "/streak", label: "Streak", icon: Flame },
   { href: "/history/sessions", label: "Sessions", icon: History },
+  { href: "/quran/glossary", label: "Glossary", icon: LibraryBig },
 ];
 
 const PLATFORM: NavItem[] = [
@@ -80,6 +82,9 @@ function isActive(pathname: string, href: string): boolean {
   }
   if (href === "/history/sessions") {
     return pathname === "/history/sessions" || pathname.startsWith("/history/");
+  }
+  if (href === "/quran/glossary") {
+    return pathname === "/quran/glossary";
   }
   if (href === "/quran") {
     return pathname === "/quran" || pathname.startsWith("/quran/");
