@@ -472,9 +472,9 @@ html[data-mode="dark"] .kw-stars-lg {
     rgba(200, 170, 100, 0.08) 100%
   );
   border-radius: 999px;
-  transform: rotate(-35deg);
+  transform: rotate(var(--kw-shoot-angle, -35deg));
   opacity: 0;
-  animation: kw-shoot 18s ease-in infinite;
+  animation: kw-shoot 30s ease-in-out infinite;
 }
 
 html[data-mode="dark"] .kw-shooting-star {
@@ -491,18 +491,20 @@ html[data-mode="dark"] .kw-shooting-star {
 @keyframes kw-shoot {
   0% {
     opacity: 0;
-    transform: rotate(-35deg) translate(0, 0);
+    transform: rotate(var(--kw-shoot-angle, -35deg)) translate(0, 0);
   }
-  2% {
+  2.5% {
     opacity: 1;
   }
-  5% {
+  7% {
     opacity: 0;
-    transform: rotate(-35deg) translate(300px, 200px);
+    transform: rotate(var(--kw-shoot-angle, -35deg))
+      translate(var(--kw-shoot-dx, 300px), var(--kw-shoot-dy, 200px));
   }
   100% {
     opacity: 0;
-    transform: rotate(-35deg) translate(300px, 200px);
+    transform: rotate(var(--kw-shoot-angle, -35deg))
+      translate(var(--kw-shoot-dx, 300px), var(--kw-shoot-dy, 200px));
   }
 }
 

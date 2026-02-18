@@ -1,5 +1,7 @@
 "use client";
 
+import type { CSSProperties } from "react";
+
 /**
  * Deterministic seeded PRNG (linear congruential generator).
  * Avoids Math.random() to prevent SSR/client hydration mismatch.
@@ -23,12 +25,44 @@ function generateStars(count: number, seed: number, w: number, h: number): strin
   return shadows.join(", ");
 }
 
+type ShootingStarStyle = CSSProperties & {
+  "--kw-shoot-angle": string;
+  "--kw-shoot-dx": string;
+  "--kw-shoot-dy": string;
+};
+
+function generateShootingStars(count: number, seed: number): ShootingStarStyle[] {
+  const rng = seededRandom(seed);
+  const stars: ShootingStarStyle[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const angle = -160 + rng() * 320;
+    const distance = 240 + rng() * 300;
+    const radians = (angle * Math.PI) / 180;
+    const dx = Math.cos(radians) * distance;
+    const dy = Math.sin(radians) * distance;
+
+    stars.push({
+      top: `${Math.round(8 + rng() * 78)}%`,
+      left: `${Math.round(8 + rng() * 84)}%`,
+      animationDelay: `${(rng() * 24).toFixed(1)}s`,
+      animationDuration: `${(24 + rng() * 18).toFixed(1)}s`,
+      "--kw-shoot-angle": `${angle.toFixed(1)}deg`,
+      "--kw-shoot-dx": `${dx.toFixed(0)}px`,
+      "--kw-shoot-dy": `${dy.toFixed(0)}px`,
+    });
+  }
+
+  return stars;
+}
+
 const W = 2400;
 const H = 1600;
 
 const LAYER_1 = generateStars(120, 1337, W, H);
 const LAYER_2 = generateStars(80, 4242, W, H);
 const LAYER_3 = generateStars(40, 7777, W, H);
+const SHOOTING_STARS = generateShootingStars(6, 9099);
 
 export function Starfield() {
   return (
@@ -37,17 +71,15 @@ export function Starfield() {
       style={{ zIndex: -1 }}
       aria-hidden="true"
     >
-      {/* Star layers — each is a single element with many box-shadows */}
+      {/* Star layers: each is a single element with many box-shadows. */}
       <div className="kw-stars kw-stars-sm" style={{ boxShadow: LAYER_1 }} />
       <div className="kw-stars kw-stars-md" style={{ boxShadow: LAYER_2 }} />
       <div className="kw-stars kw-stars-lg" style={{ boxShadow: LAYER_3 }} />
 
-      {/* Shooting stars — staggered animation delays */}
-      <div className="kw-shooting-star" style={{ top: "12%", left: "70%", animationDelay: "0s" }} />
-      <div className="kw-shooting-star" style={{ top: "28%", left: "45%", animationDelay: "3.2s" }} />
-      <div className="kw-shooting-star" style={{ top: "55%", left: "82%", animationDelay: "6.8s" }} />
-      <div className="kw-shooting-star" style={{ top: "38%", left: "20%", animationDelay: "10.1s" }} />
-      <div className="kw-shooting-star" style={{ top: "68%", left: "60%", animationDelay: "14.5s" }} />
+      {/* Shooting stars: deterministic, slower, and mixed directions. */}
+      {SHOOTING_STARS.map((style, index) => (
+        <div key={`shooting-star-${index}`} className="kw-shooting-star" style={style} />
+      ))}
     </div>
   );
 }
