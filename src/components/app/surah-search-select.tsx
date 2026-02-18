@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Search, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
@@ -14,7 +15,10 @@ type SurahSearchSelectProps = {
 export function SurahSearchSelect(props: SurahSearchSelectProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [menuRect, setMenuRect] = useState<{ top: number; left: number; width: number } | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
   const selected = useMemo(
     () => SURAH_INDEX.find((row) => row.surahNumber === props.value) ?? null,
@@ -35,25 +39,50 @@ export function SurahSearchSelect(props: SurahSearchSelectProps) {
   }, [query]);
 
   useEffect(() => {
+    function updateRect() {
+      if (!buttonRef.current) {
+        return;
+      }
+      const rect = buttonRef.current.getBoundingClientRect();
+      setMenuRect({
+        top: rect.bottom + 8,
+        left: rect.left,
+        width: rect.width,
+      });
+    }
+
     function onPointerDown(event: MouseEvent) {
-      if (!rootRef.current) {
+      if (!rootRef.current && !menuRef.current) {
         return;
       }
       const target = event.target;
       if (!(target instanceof Node)) {
         return;
       }
-      if (!rootRef.current.contains(target)) {
+      const insideRoot = rootRef.current?.contains(target) ?? false;
+      const insideMenu = menuRef.current?.contains(target) ?? false;
+      if (!insideRoot && !insideMenu) {
         setOpen(false);
       }
     }
+
+    if (open) {
+      updateRect();
+      window.addEventListener("resize", updateRect);
+      window.addEventListener("scroll", updateRect, true);
+    }
     window.addEventListener("mousedown", onPointerDown);
-    return () => window.removeEventListener("mousedown", onPointerDown);
-  }, []);
+    return () => {
+      window.removeEventListener("mousedown", onPointerDown);
+      window.removeEventListener("resize", updateRect);
+      window.removeEventListener("scroll", updateRect, true);
+    };
+  }, [open]);
 
   return (
     <div ref={rootRef} className="relative">
       <button
+        ref={buttonRef}
         type="button"
         disabled={props.disabled}
         onClick={() => setOpen((prev) => !prev)}
@@ -67,51 +96,62 @@ export function SurahSearchSelect(props: SurahSearchSelectProps) {
         <ChevronDown size={15} className={open ? "rotate-180 transition-transform" : "transition-transform"} />
       </button>
 
-      {open ? (
-        <div className="absolute z-50 mt-2 w-full rounded-2xl border border-[color:var(--kw-border)] bg-white p-2 shadow-[var(--kw-shadow)]">
-          <div className="relative">
-            <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--kw-faint)]" />
-            <Input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search by surah number or name"
-              className="pl-9"
-              autoFocus
-            />
-          </div>
-          <div className="mt-2 max-h-60 overflow-y-auto">
-            {filtered.map((row) => {
-              const active = row.surahNumber === props.value;
-              return (
-                <button
-                  key={row.surahNumber}
-                  type="button"
-                  onClick={() => {
-                    props.onChange(row.surahNumber);
-                    setOpen(false);
-                    setQuery("");
-                  }}
-                  className={[
-                    "w-full rounded-xl px-2 py-2 text-left text-sm transition",
-                    active
-                      ? "bg-[rgba(var(--kw-accent-rgb),0.12)] text-[color:var(--kw-ink)]"
-                      : "text-[color:var(--kw-muted)] hover:bg-[color:var(--kw-surface)]",
-                  ].join(" ")}
-                >
-                  <span className="font-semibold text-[color:var(--kw-ink)]">
-                    {row.surahNumber}. {row.nameTransliteration}
-                  </span>
-                  <span className="ml-2 text-xs text-[color:var(--kw-faint)]">({row.nameEnglish})</span>
-                </button>
-              );
-            })}
-            {!filtered.length ? (
-              <p className="px-2 py-3 text-xs text-[color:var(--kw-faint)]">No matching surah.</p>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
+      {open && menuRect && typeof document !== "undefined"
+        ? createPortal(
+          <div
+            ref={menuRef}
+            className="z-[140] rounded-2xl border border-[color:var(--kw-border)] bg-white p-2 shadow-[var(--kw-shadow)]"
+            style={{
+              position: "fixed",
+              top: menuRect.top,
+              left: menuRect.left,
+              width: menuRect.width,
+            }}
+          >
+            <div className="relative">
+              <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--kw-faint)]" />
+              <Input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search by surah number or name"
+                className="pl-9"
+                autoFocus
+              />
+            </div>
+            <div className="mt-2 max-h-60 overflow-y-auto">
+              {filtered.map((row) => {
+                const active = row.surahNumber === props.value;
+                return (
+                  <button
+                    key={row.surahNumber}
+                    type="button"
+                    onClick={() => {
+                      props.onChange(row.surahNumber);
+                      setOpen(false);
+                      setQuery("");
+                    }}
+                    className={[
+                      "w-full rounded-xl px-2 py-2 text-left text-sm transition",
+                      active
+                        ? "bg-[rgba(var(--kw-accent-rgb),0.12)] text-[color:var(--kw-ink)]"
+                        : "text-[color:var(--kw-muted)] hover:bg-[color:var(--kw-surface)]",
+                    ].join(" ")}
+                  >
+                    <span className="font-semibold text-[color:var(--kw-ink)]">
+                      {row.surahNumber}. {row.nameTransliteration}
+                    </span>
+                    <span className="ml-2 text-xs text-[color:var(--kw-faint)]">({row.nameEnglish})</span>
+                  </button>
+                );
+              })}
+              {!filtered.length ? (
+                <p className="px-2 py-3 text-xs text-[color:var(--kw-faint)]">No matching surah.</p>
+              ) : null}
+            </div>
+          </div>,
+          document.body,
+        )
+        : null}
     </div>
   );
 }
-

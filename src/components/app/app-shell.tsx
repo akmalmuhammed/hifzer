@@ -21,7 +21,6 @@ import {
 import { HifzerMark } from "@/components/brand/hifzer-mark";
 import { StreakCornerBadge } from "@/components/app/streak-corner-badge";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 type NavItem = { href: string; label: string; icon: typeof House };
 
@@ -122,12 +121,8 @@ function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
 
 export function AppShell(props: { children: React.ReactNode; streakEnabled?: boolean }) {
   const pathname = usePathname();
-  const [insightsOpen, setInsightsOpen] = useState(() => {
-    return INSIGHTS.some((item) => isActive(pathname, item.href));
-  });
-  const [platformOpen, setPlatformOpen] = useState(() => {
-    return PLATFORM.some((item) => isActive(pathname, item.href));
-  });
+  const [insightsOpen, setInsightsOpen] = useState(true);
+  const [platformOpen, setPlatformOpen] = useState(true);
 
   return (
     <div className="min-h-dvh">
@@ -200,19 +195,6 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
               />
             </nav>
 
-            <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-4 py-3 text-xs text-[color:var(--kw-muted)]">
-              <div className="mb-2 flex items-center justify-between">
-                <p className="font-semibold text-[color:var(--kw-ink)]">Keyboard</p>
-                <div className="-mr-1 -mt-1 scale-90">
-                  <ThemeToggle />
-                </div>
-              </div>
-              <p className="leading-6">
-                In session: <span className="font-semibold">1</span> Again, <span className="font-semibold">2</span>{" "}
-                Hard, <span className="font-semibold">3</span> Good, <span className="font-semibold">4</span>{" "}
-                Easy, <span className="font-semibold">T</span> toggle text.
-              </p>
-            </div>
           </div>
         </aside>
 
