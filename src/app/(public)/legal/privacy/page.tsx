@@ -77,8 +77,8 @@ export default function LegalPrivacyPage() {
           <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">7. Contact</h2>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
             Privacy requests:{" "}
-            <a href="mailto:support@hifzer.app" className="font-semibold text-[rgba(31,54,217,1)] hover:underline">
-              support@hifzer.app
+            <a href="mailto:support@hifzer.com" className="font-semibold text-[rgba(31,54,217,1)] hover:underline">
+              support@hifzer.com
             </a>
           </p>
         </Card>

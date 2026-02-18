@@ -11,7 +11,8 @@ import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
 import styles from "./support.module.css";
 
-const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@hifzer.app";
+const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@hifzer.com";
+const DEVELOPER_EMAIL = process.env.NEXT_PUBLIC_DEVELOPER_EMAIL ?? "akmal@hifzer.com";
 
 type Category = "bug" | "feature" | "billing" | "feedback";
 
@@ -53,10 +54,23 @@ export function SupportClient() {
     return `mailto:${SUPPORT_EMAIL}?subject=${encodeMailto(finalSubject)}&body=${encodeMailto(finalBody)}`;
   }, [category, message, subject]);
 
+  const developerMailtoHref = useMemo(() => {
+    return `mailto:${DEVELOPER_EMAIL}?subject=${encodeMailto("Hifzer developer contact")}`;
+  }, []);
+
   async function copyEmail() {
     try {
       await navigator.clipboard.writeText(SUPPORT_EMAIL);
       pushToast({ tone: "success", title: "Email copied", message: SUPPORT_EMAIL });
+    } catch {
+      pushToast({ tone: "warning", title: "Copy failed", message: "Please copy the email manually." });
+    }
+  }
+
+  async function copyDeveloperEmail() {
+    try {
+      await navigator.clipboard.writeText(DEVELOPER_EMAIL);
+      pushToast({ tone: "success", title: "Developer email copied", message: DEVELOPER_EMAIL });
     } catch {
       pushToast({ tone: "warning", title: "Copy failed", message: "Please copy the email manually." });
     }
@@ -107,7 +121,7 @@ export function SupportClient() {
             <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">Usually within 24-48 hours</p>
           </div>
           <div className={`${styles.tipCard} px-3 py-3`}>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Email</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Support email</p>
             <button
               type="button"
               onClick={copyEmail}
@@ -212,6 +226,19 @@ export function SupportClient() {
             <div className="mt-3 flex flex-wrap gap-2">
               <Pill tone="accent">Bug fixes first</Pill>
               <Pill tone="neutral">Roadmap-driven features</Pill>
+            </div>
+            <div className="mt-4 border-t border-[color:var(--kw-border-2)] pt-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Developer direct</p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <a href={developerMailtoHref}>
+                  <Button variant="secondary" size="sm" className="gap-2">
+                    {DEVELOPER_EMAIL} <Mail size={14} />
+                  </Button>
+                </a>
+                <Button variant="ghost" size="sm" className="gap-2" onClick={copyDeveloperEmail}>
+                  Copy <ClipboardCopy size={14} />
+                </Button>
+              </div>
             </div>
           </Card>
         </motion.div>
