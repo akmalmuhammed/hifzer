@@ -4,11 +4,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import clsx from "clsx";
-import { ArrowRight, CalendarCheck2, Headphones, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { WindLines } from "@/components/brand/wind-lines";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardKpi, CardSoft, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardKpi, CardTitle } from "@/components/ui/card";
 import { DonutProgress } from "@/components/charts/donut-progress";
 import { HeatStrip } from "@/components/charts/heat-strip";
 
@@ -101,36 +101,9 @@ export function Hero() {
           </motion.div>
 
           <motion.div variants={fadeUp} className="mt-4 flex flex-wrap items-center gap-2 text-xs text-[color:var(--kw-faint)]">
-            <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1">Auth: Clerk</span>
-            <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1">Billing: Paddle</span>
-            <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1">Monitoring: Sentry</span>
             <Link href="/legal/terms" className="font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">
               Terms + privacy
             </Link>
-          </motion.div>
-
-          <motion.div variants={fadeUp} className="mt-9 grid gap-3 sm:grid-cols-3">
-            {[
-              { icon: <ShieldCheck size={16} />, label: "Quality gates", value: "Block false progress" },
-              { icon: <CalendarCheck2 size={16} />, label: "Review debt engine", value: "Minutes-based control" },
-              { icon: <Headphones size={16} />, label: "Audio-first sessions", value: "Recall + grade + repeat" },
-            ].map((stat) => (
-              <CardSoft key={stat.label} className="px-4 py-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                      {stat.label}
-                    </p>
-                    <p className="mt-2 text-lg font-semibold text-[color:var(--kw-ink)]">
-                      {stat.value}
-                    </p>
-                  </div>
-                  <span className="grid h-9 w-9 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)]">
-                    {stat.icon}
-                  </span>
-                </div>
-              </CardSoft>
-            ))}
           </motion.div>
         </motion.div>
 
