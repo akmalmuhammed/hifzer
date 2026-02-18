@@ -10,6 +10,8 @@ import {
   History,
   House,
   LayoutDashboard,
+  LifeBuoy,
+  Map,
   PlayCircle,
   Settings,
   TrendingUp,
@@ -36,6 +38,11 @@ const INSIGHTS: NavItem[] = [
   { href: "/history/sessions", label: "Sessions", icon: History },
 ];
 
+const PLATFORM: NavItem[] = [
+  { href: "/roadmap", label: "Roadmap", icon: Map },
+  { href: "/support", label: "Support", icon: LifeBuoy },
+];
+
 const MOBILE_NAV: NavItem[] = [
   { href: "/welcome", label: "Home", icon: House },
   { href: "/dashboard", label: "Dash", icon: LayoutDashboard },
@@ -55,6 +62,12 @@ function isActive(pathname: string, href: string): boolean {
   }
   if (href === "/today") {
     return pathname === "/" || pathname === "/today";
+  }
+  if (href === "/roadmap") {
+    return pathname === "/roadmap";
+  }
+  if (href === "/support") {
+    return pathname === "/support";
   }
   if (href === "/settings") {
     return pathname === "/settings" || pathname.startsWith("/settings/");
@@ -107,6 +120,9 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
   const [insightsOpen, setInsightsOpen] = useState(() => {
     return INSIGHTS.some((item) => isActive(pathname, item.href));
   });
+  const [platformOpen, setPlatformOpen] = useState(() => {
+    return PLATFORM.some((item) => isActive(pathname, item.href));
+  });
 
   return (
     <div className="min-h-dvh">
@@ -145,6 +161,27 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
               {insightsOpen ? (
                 <div className="space-y-1">
                   {INSIGHTS.map((item) => (
+                    <NavLink key={item.href} item={item} pathname={pathname} />
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="space-y-1">
+              <button
+                type="button"
+                onClick={() => setPlatformOpen((v) => !v)}
+                className="flex w-full items-center justify-between rounded-[14px] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[color:var(--kw-faint)] transition hover:text-[color:var(--kw-muted)]"
+              >
+                <span>Product</span>
+                <ChevronDown
+                  size={14}
+                  className={clsx("transition-transform", platformOpen && "rotate-180")}
+                />
+              </button>
+              {platformOpen ? (
+                <div className="space-y-1">
+                  {PLATFORM.map((item) => (
                     <NavLink key={item.href} item={item} pathname={pathname} />
                   ))}
                 </div>

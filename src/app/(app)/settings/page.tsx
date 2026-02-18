@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell, Eye, GraduationCap, Palette, SlidersHorizontal, Target, UserRound, Volume2 } from "lucide-react";
+import { Bell, Eye, GraduationCap, LifeBuoy, Map, Palette, SlidersHorizontal, Target, UserRound, Volume2 } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
@@ -71,6 +71,20 @@ const ITEMS = [
     desc: "SRS thresholds and queue tuning placeholders.",
     icon: <SlidersHorizontal size={18} />,
     tone: "warn" as const,
+  },
+  {
+    href: "/roadmap",
+    title: "Roadmap",
+    desc: "Upcoming AI recitation, mobile apps, and infrastructure plans.",
+    icon: <Map size={18} />,
+    tone: "accent" as const,
+  },
+  {
+    href: "/support",
+    title: "Support",
+    desc: "Talk directly to the dev team and send structured feedback.",
+    icon: <LifeBuoy size={18} />,
+    tone: "brand" as const,
   },
 ] as const;
 

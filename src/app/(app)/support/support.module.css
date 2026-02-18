@@ -1,0 +1,33 @@
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: calc(var(--kw-radius-xl) + 2px);
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.24);
+  background:
+    radial-gradient(920px 280px at -5% -55%, rgba(var(--kw-accent-rgb), 0.2), transparent 62%),
+    radial-gradient(760px 220px at 110% -45%, rgba(10, 138, 119, 0.18), transparent 62%),
+    linear-gradient(140deg, var(--kw-card-strong), var(--kw-surface-strong));
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(to right, rgba(11, 18, 32, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(11, 18, 32, 0.04) 1px, transparent 1px);
+  background-size: 26px 26px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), transparent 88%);
+}
+
+.panel {
+  border-radius: 18px;
+  border: 1px solid var(--kw-border-2);
+  background: var(--kw-surface);
+}
+
+.tipCard {
+  border-radius: 14px;
+  border: 1px solid var(--kw-border-2);
+  background: var(--kw-surface-soft);
+}

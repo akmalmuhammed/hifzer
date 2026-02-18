@@ -29,12 +29,15 @@ Public:
 
 App routes:
 
+- `/dashboard`
 - `/today`
 - `/session`
 - `/quran`
 - `/quran/surah/[id]`
 - `/quran/juz/[id]`
 - `/progress/*`
+- `/roadmap`
+- `/support`
 - `/settings/*`
 
 Legacy namespace (preserved):
