@@ -4,12 +4,15 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, BookOpenText, ChevronDown, PlayCircle, RefreshCcw } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
+import { SessionFlowTutorial } from "@/components/app/session-flow-tutorial";
+import { SurahSearchSelect } from "@/components/app/surah-search-select";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
 import { setActiveSurahCursor, setOpenSession } from "@/hifzer/local/store";
+import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
 import { capturePosthogEvent } from "@/lib/posthog/client";
 
 type TodayPayload = {
@@ -221,25 +224,28 @@ export function TodayClient() {
       return;
     }
     setTargetSurahNumber(activeSurahNumber);
+    const currentSurah = SURAH_INDEX.find((row) => row.surahNumber === activeSurahNumber);
     const activeLane = learningLanes.find((lane) => lane.surahNumber === activeSurahNumber);
-    setTargetAyahNumber(activeLane?.ayahNumber ?? 1);
+    const initialAyah = activeLane?.ayahNumber ?? 1;
+    setTargetAyahNumber(Math.max(1, Math.min(currentSurah?.ayahCount ?? initialAyah, initialAyah)));
   }, [activeSurahNumber, learningLanes]);
 
   async function switchSessionSurah() {
     const surah = Math.floor(targetSurahNumber);
     const ayah = Math.floor(targetAyahNumber);
-    if (!Number.isFinite(surah) || surah < 1 || surah > 114) {
+    const selectedSurah = SURAH_INDEX.find((row) => row.surahNumber === surah);
+    if (!Number.isFinite(surah) || !selectedSurah) {
       pushToast({
         title: "Invalid surah",
-        message: "Choose a surah number from 1 to 114.",
+        message: "Choose a valid surah from the selector.",
         tone: "warning",
       });
       return;
     }
-    if (!Number.isFinite(ayah) || ayah < 1) {
+    if (!Number.isFinite(ayah) || ayah < 1 || ayah > selectedSurah.ayahCount) {
       pushToast({
         title: "Invalid ayah",
-        message: "Ayah number must be 1 or higher.",
+        message: `Ayah must be between 1 and ${selectedSurah.ayahCount} for ${selectedSurah.nameTransliteration}.`,
         tone: "warning",
       });
       return;
@@ -335,6 +341,10 @@ export function TodayClient() {
       !data.state.warmupRequired &&
       !data.state.weeklyGateRequired,
   );
+  const selectedSurah = useMemo(
+    () => SURAH_INDEX.find((row) => row.surahNumber === targetSurahNumber) ?? null,
+    [targetSurahNumber],
+  );
 
   return (
     <div className="space-y-6">
@@ -352,6 +362,8 @@ export function TodayClient() {
           </div>
         }
       />
+
+      <SessionFlowTutorial surface="today" />
 
       {/* ---------- Monthly adjustment banner ---------- */}
       {data?.monthlyAdjustmentMessage ? (
@@ -477,29 +489,33 @@ export function TodayClient() {
                           }}
                           className="rounded-full border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-1 text-xs font-semibold text-[color:var(--kw-ink)] hover:bg-white"
                         >
-                          {lane.surahLabel} · Ayah {lane.ayahNumber} · {lane.progressPct}%
-                          {lane.isActive ? " · active" : ""}
+                          {lane.surahLabel} - Ayah {lane.ayahNumber} - {lane.progressPct}%
+                          {lane.isActive ? " - active" : ""}
                         </button>
                       ))}
                     </div>
                   ) : null}
                   <div className="mt-3 grid gap-3 sm:grid-cols-3">
                     <label className="text-xs text-[color:var(--kw-muted)]">
-                      Surah number
-                      <Input
-                        type="number"
-                        min={1}
-                        max={114}
-                        value={targetSurahNumber}
-                        onChange={(event) => setTargetSurahNumber(Number(event.target.value))}
-                        className="mt-1"
-                      />
+                      Surah
+                      <div className="mt-1">
+                        <SurahSearchSelect
+                          value={targetSurahNumber}
+                          onChange={(surahNumber) => {
+                            setTargetSurahNumber(surahNumber);
+                            const surah = SURAH_INDEX.find((row) => row.surahNumber === surahNumber);
+                            setTargetAyahNumber((prev) => Math.max(1, Math.min(prev, surah?.ayahCount ?? prev)));
+                          }}
+                          disabled={switchingSurah}
+                        />
+                      </div>
                     </label>
                     <label className="text-xs text-[color:var(--kw-muted)]">
-                      Ayah number
+                      Ayah number {selectedSurah ? `(1-${selectedSurah.ayahCount})` : ""}
                       <Input
                         type="number"
                         min={1}
+                        max={selectedSurah?.ayahCount ?? undefined}
                         value={targetAyahNumber}
                         onChange={(event) => setTargetAyahNumber(Number(event.target.value))}
                         className="mt-1"
@@ -598,3 +614,4 @@ export function TodayClient() {
     </div>
   );
 }
+

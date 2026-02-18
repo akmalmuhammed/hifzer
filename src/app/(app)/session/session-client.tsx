@@ -6,6 +6,8 @@ import { useSearchParams } from "next/navigation";
 import { ArrowRight, CheckCircle2, CornerDownLeft, Link2, PlayCircle, RotateCcw } from "lucide-react";
 import clsx from "clsx";
 import { PageHeader } from "@/components/app/page-header";
+import { SessionFlowTutorial } from "@/components/app/session-flow-tutorial";
+import { SurahSearchSelect } from "@/components/app/surah-search-select";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -22,6 +24,7 @@ import {
   setOpenSession,
   type PendingSessionSyncPayload,
 } from "@/hifzer/local/store";
+import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
 import { getAyahById, verseRefFromAyahId } from "@/hifzer/quran/lookup";
 
 type Step =
@@ -386,7 +389,8 @@ export function SessionClient() {
       return;
     }
     setTargetSurahNumber(activeLane.surahNumber);
-    setTargetAyahNumber(activeLane.ayahNumber);
+    const surah = SURAH_INDEX.find((row) => row.surahNumber === activeLane.surahNumber);
+    setTargetAyahNumber(Math.max(1, Math.min(activeLane.ayahNumber, surah?.ayahCount ?? activeLane.ayahNumber)));
   }, [learningLanes]);
 
   useEffect(() => {
@@ -462,19 +466,20 @@ export function SessionClient() {
   const switchSessionSurah = useCallback(async () => {
     const surah = Math.floor(targetSurahNumber);
     const ayah = Math.floor(targetAyahNumber);
-    if (!Number.isFinite(surah) || surah < 1 || surah > 114) {
+    const selectedSurah = SURAH_INDEX.find((row) => row.surahNumber === surah);
+    if (!Number.isFinite(surah) || !selectedSurah) {
       pushToast({
         tone: "warning",
         title: "Invalid surah",
-        message: "Choose a surah number from 1 to 114.",
+        message: "Choose a valid surah from the selector.",
       });
       return;
     }
-    if (!Number.isFinite(ayah) || ayah < 1) {
+    if (!Number.isFinite(ayah) || ayah < 1 || ayah > selectedSurah.ayahCount) {
       pushToast({
         tone: "warning",
         title: "Invalid ayah",
-        message: "Ayah number must be 1 or higher.",
+        message: `Ayah must be between 1 and ${selectedSurah.ayahCount} for ${selectedSurah.nameTransliteration}.`,
       });
       return;
     }
@@ -941,10 +946,11 @@ export function SessionClient() {
       : isGraded(currentStep) && !coachSeen.grades
         ? {
           key: "grades" as CoachKey,
-          title: "How grades work",
-          message: "Tap Again, Hard, Good, or Easy. Your choice saves the step and moves you forward immediately.",
-        }
-        : null;
+        title: "How grades work",
+        message: "Tap Again, Hard, Good, or Easy. Your choice saves the step and moves you forward immediately.",
+      }
+      : null;
+  const selectedSurah = SURAH_INDEX.find((row) => row.surahNumber === targetSurahNumber) ?? null;
 
   return (
     <div className="space-y-6">
@@ -971,6 +977,8 @@ export function SessionClient() {
         }
       />
 
+      <SessionFlowTutorial surface="session" />
+
       {switchOpen ? (
         <Card>
           <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Switch learning lane</p>
@@ -989,29 +997,33 @@ export function SessionClient() {
                   }}
                   className="rounded-full border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3 py-1 text-xs font-semibold text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-surface)]"
                 >
-                  {lane.surahLabel} · Ayah {lane.ayahNumber} · {lane.progressPct}%
-                  {lane.isActive ? " · active" : ""}
+                  {lane.surahLabel} - Ayah {lane.ayahNumber} - {lane.progressPct}%
+                  {lane.isActive ? " - active" : ""}
                 </button>
               ))}
             </div>
           ) : null}
           <div className="mt-3 grid gap-3 sm:grid-cols-3">
             <label className="text-xs text-[color:var(--kw-muted)]">
-              Surah number
-              <Input
-                type="number"
-                min={1}
-                max={114}
-                value={targetSurahNumber}
-                onChange={(event) => setTargetSurahNumber(Number(event.target.value))}
-                className="mt-1"
-              />
+              Surah
+              <div className="mt-1">
+                <SurahSearchSelect
+                  value={targetSurahNumber}
+                  onChange={(surahNumber) => {
+                    setTargetSurahNumber(surahNumber);
+                    const surah = SURAH_INDEX.find((row) => row.surahNumber === surahNumber);
+                    setTargetAyahNumber((prev) => Math.max(1, Math.min(prev, surah?.ayahCount ?? prev)));
+                  }}
+                  disabled={switchingSurah}
+                />
+              </div>
             </label>
             <label className="text-xs text-[color:var(--kw-muted)]">
-              Ayah number
+              Ayah number {selectedSurah ? `(1-${selectedSurah.ayahCount})` : ""}
               <Input
                 type="number"
                 min={1}
+                max={selectedSurah?.ayahCount ?? undefined}
                 value={targetAyahNumber}
                 onChange={(event) => setTargetAyahNumber(Number(event.target.value))}
                 className="mt-1"
@@ -1176,3 +1188,4 @@ export function SessionClient() {
     </div>
   );
 }
+
