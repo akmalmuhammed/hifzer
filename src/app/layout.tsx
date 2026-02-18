@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, IBM_Plex_Mono } from "next/font/google";
+import { Inter, IBM_Plex_Mono, Amiri } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { AppProviders } from "@/components/providers/app-providers";
 import { clerkAuthRoutes } from "@/lib/auth-redirects";
@@ -16,6 +16,12 @@ const mono = IBM_Plex_Mono({
   variable: "--font-kw-mono",
   subsets: ["latin"],
   weight: ["400", "500"],
+});
+
+const amiri = Amiri({
+  variable: "--font-quran-uthmani",
+  subsets: ["arabic"],
+  weight: ["400", "700"],
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ? new URL(process.env.NEXT_PUBLIC_SITE_URL) : undefined;
@@ -62,7 +68,7 @@ export default function RootLayout({
       data-mode="light"
       data-theme="standard"
       data-accent="teal"
-      className={`${inter.variable} ${mono.variable}`}
+      className={`${inter.variable} ${mono.variable} ${amiri.variable}`}
     >
       <body className="kw-canvas min-h-dvh bg-[color:var(--kw-bg)] text-[color:var(--kw-ink)] antialiased">
         <a

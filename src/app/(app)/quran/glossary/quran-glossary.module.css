@@ -1,0 +1,147 @@
+.shell {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.18);
+  background:
+    radial-gradient(700px 280px at 8% 10%, rgba(var(--kw-accent-rgb), 0.12), transparent 62%),
+    radial-gradient(600px 240px at 95% 15%, rgba(10, 138, 119, 0.1), transparent 65%),
+    var(--kw-card-strong);
+  padding: 18px;
+}
+
+.shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.22), transparent 35%);
+}
+
+.searchBar {
+  position: relative;
+  display: flex;
+  min-height: 50px;
+  align-items: center;
+  border-radius: 16px;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.22);
+  background: rgba(255, 255, 255, 0.8);
+  padding: 0 12px;
+  box-shadow:
+    0 12px 28px rgba(11, 18, 32, 0.08),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.scopeToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 9999px;
+  padding: 3px;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.2);
+  background: rgba(var(--kw-accent-rgb), 0.08);
+}
+
+.scopeButton {
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--kw-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 6px 10px;
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease;
+}
+
+.scopeButtonActive {
+  border-color: rgba(var(--kw-accent-rgb), 0.25);
+  background: rgba(var(--kw-accent-rgb), 0.16);
+  color: rgba(var(--kw-accent-rgb), 1);
+}
+
+.topicChip {
+  border-radius: 9999px;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.22);
+  background: rgba(var(--kw-accent-rgb), 0.08);
+  color: rgba(var(--kw-accent-rgb), 1);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 6px 12px;
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.topicChip:hover {
+  transform: translateY(-1px);
+  background: rgba(var(--kw-accent-rgb), 0.14);
+  box-shadow: 0 8px 18px rgba(var(--kw-accent-rgb), 0.18);
+}
+
+.resultCard {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.14);
+  background: rgba(255, 255, 255, 0.66);
+  padding: 13px 14px;
+  box-shadow: 0 12px 26px rgba(11, 18, 32, 0.06);
+  transition:
+    transform 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.resultCard:hover {
+  transform: translateY(-1px);
+  border-color: rgba(var(--kw-accent-rgb), 0.24);
+  box-shadow: 0 16px 30px rgba(var(--kw-accent-rgb), 0.14);
+}
+
+.resultCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.18), transparent 38%);
+}
+
+.matchMark {
+  border-radius: 6px;
+  background: rgba(var(--kw-accent-rgb), 0.16);
+  color: var(--kw-ink);
+  padding: 0 3px;
+}
+
+.emptyState {
+  border-radius: 18px;
+  border: 1px dashed rgba(var(--kw-accent-rgb), 0.24);
+  background: rgba(var(--kw-accent-rgb), 0.06);
+  padding: 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topicChip,
+  .resultCard {
+    transition: none !important;
+  }
+}
+
+html[data-mode="dark"] .searchBar {
+  background: rgba(15, 23, 42, 0.74);
+}
+
+html[data-mode="dark"] .resultCard {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(var(--kw-accent-rgb), 0.24);
+}
+
+html[data-mode="dark"] .emptyState {
+  background: rgba(var(--kw-accent-rgb), 0.14);
+}

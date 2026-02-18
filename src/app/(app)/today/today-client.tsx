@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, BookOpenText, CalendarDays, PlayCircle, RefreshCcw, Target } from "lucide-react";
+import { ArrowRight, BookOpenText, ChevronDown, PlayCircle, RefreshCcw } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -79,10 +79,62 @@ function modeExplain(state: TodayPayload["state"]): { title: string; body: strin
   };
 }
 
+function modeTone(mode: TodayPayload["state"]["mode"]): "accent" | "warn" {
+  if (mode === "NORMAL") return "accent";
+  return "warn";
+}
+
+/* ---------- Skeleton placeholders ---------- */
+
+function HeroSkeleton() {
+  return (
+    <Card className="relative overflow-hidden">
+      {/* gradient accent mimicking the real hero */}
+      <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[radial-gradient(closest-side,rgba(var(--kw-accent-rgb),0.18),transparent_68%)] blur-2xl" />
+
+      <div className="relative space-y-5">
+        {/* title line */}
+        <div className="h-7 w-56 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+        {/* subtitle / time line */}
+        <div className="h-4 w-40 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+
+        {/* pill row */}
+        <div className="flex items-center gap-2">
+          <div className="h-7 w-28 animate-pulse rounded-full bg-[color:var(--kw-skeleton)]" />
+          <div className="h-7 w-20 animate-pulse rounded-full bg-[color:var(--kw-skeleton)]" />
+          <div className="h-7 w-20 animate-pulse rounded-full bg-[color:var(--kw-skeleton)]" />
+          <div className="h-7 w-16 animate-pulse rounded-full bg-[color:var(--kw-skeleton)]" />
+        </div>
+
+        {/* button row */}
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-40 animate-pulse rounded-2xl bg-[color:var(--kw-skeleton)]" />
+          <div className="h-10 w-32 animate-pulse rounded-2xl bg-[color:var(--kw-skeleton)]" />
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function DetailsSkeleton() {
+  return (
+    <Card>
+      <div className="space-y-4">
+        <div className="h-4 w-32 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+        <div className="h-4 w-64 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+        <div className="h-4 w-48 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+      </div>
+    </Card>
+  );
+}
+
+/* ---------- Main component ---------- */
+
 export function TodayClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<TodayPayload | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [modeShiftNotice, setModeShiftNotice] = useState<{
     from: TodayPayload["state"]["mode"];
     to: TodayPayload["state"]["mode"];
@@ -146,6 +198,22 @@ export function TodayClient() {
     );
   }, [data]);
 
+  const totalQueueItems = useMemo(() => {
+    if (!data) return 0;
+    return (
+      data.state.queue.warmupAyahIds.length +
+      data.state.queue.weeklyGateAyahIds.length +
+      data.state.queue.sabqiReviewAyahIds.length +
+      data.state.queue.manzilReviewAyahIds.length +
+      data.state.queue.newAyahIds.length
+    );
+  }, [data]);
+
+  const estimatedMinutes = useMemo(() => {
+    // ~1.2 min per ayah is a reasonable estimate for mixed review/new
+    return Math.max(1, Math.round(totalQueueItems * 1.2));
+  }, [totalQueueItems]);
+
   const modeExplanation = data ? modeExplain(data.state) : null;
   const hasReviewPressure = Boolean(data && (data.state.dueNowCount > 0 || data.state.dueSoonCount > 0));
   const canStartNewNow = Boolean(
@@ -160,21 +228,9 @@ export function TodayClient() {
       <PageHeader
         eyebrow="Home"
         title="Today"
-        subtitle="Server-first queue with debt control, dynamic review floor, and quality gates."
+        subtitle="Your daily memorization session, powered by spaced repetition."
         right={
           <div className="flex items-center gap-2">
-            <Link href="/session">
-              <Button className="gap-2">
-                Start session <PlayCircle size={16} />
-              </Button>
-            </Link>
-            {hasReviewPressure ? (
-              <Link href="/session?focus=review">
-                <Button variant="secondary" className="gap-2">
-                  Quick review <ArrowRight size={16} />
-                </Button>
-              </Link>
-            ) : null}
             <Link href="/quran">
               <Button variant="secondary" className="gap-2">
                 Browse Qur&apos;an <BookOpenText size={16} />
@@ -184,6 +240,7 @@ export function TodayClient() {
         }
       />
 
+      {/* ---------- Monthly adjustment banner ---------- */}
       {data?.monthlyAdjustmentMessage ? (
         <Card className="border-[rgba(31,54,217,0.2)] bg-[rgba(31,54,217,0.08)]">
           <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{data.monthlyAdjustmentMessage}</p>
@@ -193,6 +250,7 @@ export function TodayClient() {
         </Card>
       ) : null}
 
+      {/* ---------- Mode shift notice ---------- */}
       {modeShiftNotice ? (
         <Card className="border-[rgba(31,54,217,0.2)] bg-[rgba(31,54,217,0.08)]">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -207,138 +265,164 @@ export function TodayClient() {
         </Card>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* ---------- Loading skeleton ---------- */}
+      {loading ? (
+        <>
+          <HeroSkeleton />
+          <DetailsSkeleton />
+        </>
+      ) : error ? (
+        /* ---------- Error state ---------- */
         <Card>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                Queue health
-              </p>
-              <p className="mt-2 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                {loading ? "Loading..." : error ? "Unavailable" : data?.state.mode}
-              </p>
-              {!loading && !error && data ? (
-                <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
-                  Debt: {data.state.reviewDebtMinutes.toFixed(1)} min ({Math.round(data.state.debtRatio)}% of budget)
-                </p>
-              ) : null}
-            </div>
-            <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
-              <CalendarDays size={18} />
-            </span>
-          </div>
-
-          {!loading && !error && data ? (
-            <div className="mt-5 flex flex-wrap items-center gap-2">
-              <Pill tone="neutral">Review floor: {data.state.reviewFloorPct}%</Pill>
-              {data.state.warmupRequired ? <Pill tone="warn">Warm-up gate</Pill> : null}
-              {data.state.weeklyGateRequired ? <Pill tone="warn">Weekly gate</Pill> : null}
-              {data.state.monthlyTestRequired ? <Pill tone="warn">Monthly retention guard</Pill> : null}
-              <Pill tone={data.state.newUnlocked ? "accent" : "neutral"}>
-                {data.state.newUnlocked ? "Mode allows new" : "Mode blocks new"}
-              </Pill>
-              <Pill tone={canStartNewNow ? "success" : "neutral"}>
-                {canStartNewNow ? "Can start new now" : "Gate pass required"}
-              </Pill>
-            </div>
-          ) : null}
-        </Card>
-
-        <Card>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                Today counts
-              </p>
-              {!loading && !error && data ? (
-                <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                  <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-3">
-                    <p className="text-xs text-[color:var(--kw-faint)]">Warmup</p>
-                    <p className="mt-1 text-2xl font-semibold text-[color:var(--kw-ink)]">
-                      {data.state.queue.warmupAyahIds.length}
-                    </p>
-                  </div>
-                  <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-3">
-                    <p className="text-xs text-[color:var(--kw-faint)]">Review</p>
-                    <p className="mt-1 text-2xl font-semibold text-[color:var(--kw-ink)]">{reviewCount}</p>
-                  </div>
-                  <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-3">
-                    <p className="text-xs text-[color:var(--kw-faint)]">New</p>
-                    <p className="mt-1 text-2xl font-semibold text-[color:var(--kw-ink)]">
-                      {data.state.queue.newAyahIds.length}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
-                  {error ?? "Loading queue..."}
-                </p>
-              )}
-            </div>
-            <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
-              <Target size={18} />
-            </span>
-          </div>
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            <Link href="/session">
-              <Button className="gap-2">
-                Begin session <ArrowRight size={16} />
-              </Button>
-            </Link>
-            <Link href="/session?focus=review">
-              <Button variant="secondary" className="gap-2">
-                Review-only <PlayCircle size={16} />
-              </Button>
-            </Link>
+          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Unable to load session</p>
+          <p className="mt-1 text-sm text-[color:var(--kw-muted)]">{error}</p>
+          <div className="mt-4">
             <Button variant="secondary" className="gap-2" onClick={() => void load()}>
-              Reload <RefreshCcw size={16} />
+              Retry <RefreshCcw size={16} />
             </Button>
           </div>
         </Card>
-      </div>
+      ) : data ? (
+        <>
+          {/* ========== PRIMARY HERO CARD ========== */}
+          <Card className="relative overflow-hidden">
+            {/* Radial gradient accent */}
+            <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[radial-gradient(closest-side,rgba(var(--kw-accent-rgb),0.22),transparent_68%)] blur-2xl" />
+            <div className="pointer-events-none absolute -bottom-32 -left-32 h-64 w-64 rounded-full bg-[radial-gradient(closest-side,rgba(var(--kw-accent-rgb),0.10),transparent_68%)] blur-3xl" />
 
-      {!loading && !error && data ? (
-        <Card>
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                Mode explainer
-              </p>
-              <p className="mt-2 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                {modeExplanation?.title}
-              </p>
-              <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                {modeExplanation?.body}
-              </p>
-            </div>
-            <Pill tone={modeExplanation?.tone ?? "neutral"}>{data.state.mode}</Pill>
-          </div>
-        </Card>
-      ) : null}
+            <div className="relative">
+              {/* Top row: title + mode pill */}
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 className="font-[family-name:var(--font-kw-display)] text-2xl tracking-tight text-[color:var(--kw-ink)] sm:text-3xl">
+                    Your session is ready
+                  </h2>
+                  <p className="mt-1.5 text-sm text-[color:var(--kw-muted)]">
+                    {totalQueueItems === 0
+                      ? "No items queued today"
+                      : `~${estimatedMinutes} min \u00B7 ${totalQueueItems} ayah${totalQueueItems !== 1 ? "s" : ""} queued`}
+                  </p>
+                </div>
+                <Pill tone={modeTone(data.state.mode)}>{data.state.mode.replace("_", " ")}</Pill>
+              </div>
 
-      {!loading && !error && data ? (
-        <Card>
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                Due now / soon
-              </p>
-              <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
-                Due now: <span className="font-semibold text-[color:var(--kw-ink)]">{data.state.dueNowCount}</span>
-                {" - "}
-                Due in next 6h: <span className="font-semibold text-[color:var(--kw-ink)]">{data.state.dueSoonCount}</span>
-              </p>
-              <p className="mt-1 text-xs text-[color:var(--kw-faint)]">
-                Next due: {data.state.nextDueAt ? new Date(data.state.nextDueAt).toLocaleString() : "No upcoming review"}
-              </p>
+              {/* Queue summary pills */}
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <Pill tone="neutral">
+                  Warmup: {data.state.queue.warmupAyahIds.length}
+                </Pill>
+                <Pill tone="neutral">
+                  Review: {reviewCount}
+                </Pill>
+                <Pill tone="neutral">
+                  New: {data.state.queue.newAyahIds.length}
+                </Pill>
+                {hasReviewPressure ? (
+                  <Pill tone="warn">
+                    {data.state.dueNowCount} due now
+                  </Pill>
+                ) : null}
+              </div>
+
+              {/* Action buttons */}
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <Link href="/session">
+                  <Button size="lg" className="gap-2">
+                    Start session <PlayCircle size={18} />
+                  </Button>
+                </Link>
+                {hasReviewPressure ? (
+                  <Link href="/session?focus=review">
+                    <Button variant="secondary" className="gap-2">
+                      Quick review <ArrowRight size={16} />
+                    </Button>
+                  </Link>
+                ) : null}
+                <Button variant="ghost" className="gap-2" onClick={() => void load()}>
+                  Reload <RefreshCcw size={16} />
+                </Button>
+              </div>
             </div>
-            <Link href="/session?focus=review">
-              <Button variant="secondary" className="gap-2">
-                Start quick review <PlayCircle size={16} />
-              </Button>
-            </Link>
+          </Card>
+
+          {/* ========== COLLAPSIBLE DIAGNOSTICS ========== */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setDetailsOpen((prev) => !prev)}
+              className="group flex w-full items-center gap-2 rounded-2xl px-1 py-2 text-left text-sm font-semibold text-[color:var(--kw-muted)] transition hover:text-[color:var(--kw-ink)]"
+            >
+              <ChevronDown
+                size={16}
+                className={`transition-transform duration-200 ${detailsOpen ? "rotate-0" : "-rotate-90"}`}
+              />
+              {detailsOpen ? "Hide details" : "Show details"}
+            </button>
+
+            {detailsOpen ? (
+              <div className="mt-2 grid gap-4 md:grid-cols-2">
+                {/* Debt & review floor */}
+                <Card>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+                    Queue health
+                  </p>
+                  <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+                    Debt: {data.state.reviewDebtMinutes.toFixed(1)} min ({Math.round(data.state.debtRatio)}% of budget)
+                  </p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <Pill tone="neutral">Review floor: {data.state.reviewFloorPct}%</Pill>
+                    {data.state.warmupRequired ? <Pill tone="warn">Warm-up gate</Pill> : null}
+                    {data.state.weeklyGateRequired ? <Pill tone="warn">Weekly gate</Pill> : null}
+                    {data.state.monthlyTestRequired ? <Pill tone="warn">Monthly retention guard</Pill> : null}
+                    <Pill tone={data.state.newUnlocked ? "accent" : "neutral"}>
+                      {data.state.newUnlocked ? "Mode allows new" : "Mode blocks new"}
+                    </Pill>
+                    <Pill tone={canStartNewNow ? "success" : "neutral"}>
+                      {canStartNewNow ? "Can start new now" : "Gate pass required"}
+                    </Pill>
+                  </div>
+                </Card>
+
+                {/* Mode explainer */}
+                <Card>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+                    Mode explainer
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
+                    {modeExplanation?.title}
+                  </p>
+                  <p className="mt-1.5 text-sm leading-7 text-[color:var(--kw-muted)]">
+                    {modeExplanation?.body}
+                  </p>
+                </Card>
+
+                {/* Due now / soon */}
+                <Card className="md:col-span-2">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+                        Due now / soon
+                      </p>
+                      <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+                        Due now: <span className="font-semibold text-[color:var(--kw-ink)]">{data.state.dueNowCount}</span>
+                        {" \u2014 "}
+                        Due in next 6h: <span className="font-semibold text-[color:var(--kw-ink)]">{data.state.dueSoonCount}</span>
+                      </p>
+                      <p className="mt-1 text-xs text-[color:var(--kw-faint)]">
+                        Next due: {data.state.nextDueAt ? new Date(data.state.nextDueAt).toLocaleString() : "No upcoming review"}
+                      </p>
+                    </div>
+                    <Link href="/session?focus=review">
+                      <Button variant="secondary" className="gap-2">
+                        Start quick review <PlayCircle size={16} />
+                      </Button>
+                    </Link>
+                  </div>
+                </Card>
+              </div>
+            ) : null}
           </div>
-        </Card>
+        </>
       ) : null}
     </div>
   );

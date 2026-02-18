@@ -16,6 +16,7 @@ const PLANS = [
     price: "$0",
     note: "Build the habit",
     highlight: false,
+    ramadan: false,
     bullets: [
       "Daily plan and session flow",
       "Per-ayah grading (Again/Hard/Good/Easy)",
@@ -24,10 +25,11 @@ const PLANS = [
     ],
   },
   {
-    name: "Paid",
+    name: "Pro",
     price: "$7",
-    note: "More personalization",
+    note: "Free for a limited time",
     highlight: true,
+    ramadan: true,
     bullets: [
       "Theme presets (Paper + future seasonal)",
       "Accent presets (more combinations)",
@@ -85,12 +87,24 @@ export default function PricingPage() {
                   <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{p.name}</p>
                   <p className="mt-1 text-xs text-[color:var(--kw-muted)]">{p.note}</p>
                 </div>
-                {p.highlight ? <Pill tone="accent">Recommended</Pill> : <Pill tone="neutral">Core</Pill>}
+                <div className="flex items-center gap-2">
+                  {p.ramadan ? <Pill tone="brand">Ramadan gift</Pill> : null}
+                  {p.highlight ? <Pill tone="accent">Recommended</Pill> : <Pill tone="neutral">Core</Pill>}
+                </div>
               </div>
 
               <p className="mt-5 font-[family-name:var(--font-kw-display)] text-4xl tracking-tight text-[color:var(--kw-ink)]">
-                {p.price}
-                {p.name === "Paid" ? <span className="ml-2 text-sm font-semibold text-[color:var(--kw-muted)]">/ month</span> : null}
+                {p.ramadan ? (
+                  <>
+                    <span className="relative inline-block text-[color:var(--kw-faint)]">
+                      {p.price}<span className="ml-1 text-sm font-semibold">/ month</span>
+                      <span className="kw-strike-line absolute left-0 top-1/2 h-[2px] w-full origin-left bg-[color:var(--kw-ember-500)]" />
+                    </span>
+                    <span className="kw-price-reveal ml-3 text-2xl font-semibold text-[rgba(var(--kw-accent-rgb),1)]">Free</span>
+                  </>
+                ) : (
+                  p.price
+                )}
               </p>
 
               <ul className="mt-5 space-y-2 text-sm text-[color:var(--kw-muted)]">
@@ -105,22 +119,18 @@ export default function PricingPage() {
               </ul>
 
               <div className="mt-7">
-                <Button variant={p.highlight ? "primary" : "secondary"} className="w-full" disabled={!paddleReady && p.name === "Paid"}>
-                  {p.name === "Paid" ? (
-                    <span className="inline-flex items-center gap-2">
-                      {!paddleReady ? <Lock size={16} /> : null}
-                      Upgrade with Paddle
-                    </span>
+                <Button variant={p.highlight ? "primary" : "secondary"} className="w-full" disabled={!paddleReady && p.highlight && !p.ramadan}>
+                  {p.highlight ? (
+                    p.ramadan ? "Claim your free access" : (
+                      <span className="inline-flex items-center gap-2">
+                        {!paddleReady ? <Lock size={16} /> : null}
+                        Upgrade with Paddle
+                      </span>
+                    )
                   ) : (
                     "Start free"
                   )}
                 </Button>
-                {!paddleReady && p.name === "Paid" ? (
-                  <p className="mt-2 text-xs text-[color:var(--kw-faint)]">
-                    Paddle is not configured yet. Set <code>NEXT_PUBLIC_PADDLE_CLIENT_TOKEN</code> to
-                    enable checkout.
-                  </p>
-                ) : null}
               </div>
             </Card>
           </motion.div>

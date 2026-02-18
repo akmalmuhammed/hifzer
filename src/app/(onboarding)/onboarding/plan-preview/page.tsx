@@ -90,7 +90,7 @@ export default function PlanPreviewPage() {
                 Fluency check <ArrowRight size={16} />
               </Button>
             </Link>
-            <Link href="/onboarding/permissions">
+            <Link href="/onboarding/complete">
               <Button variant="secondary" className="gap-2">
                 Continue <ArrowRight size={16} />
               </Button>

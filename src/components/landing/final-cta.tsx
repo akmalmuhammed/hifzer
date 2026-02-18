@@ -23,10 +23,10 @@ export function FinalCta() {
           <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(var(--kw-accent-rgb),1)]">
             Built to last
           </p>
-          <h3 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-4xl leading-[1.05] tracking-tight text-[color:var(--kw-ink)] sm:text-5xl">
+          <h2 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-4xl leading-[1.05] tracking-tight text-[color:var(--kw-ink)] sm:text-5xl">
             You&apos;ve put in the work.
             <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Now make it permanent.</span>
-          </h3>
+          </h2>
           <p className="mx-auto mt-5 max-w-md text-base leading-7 text-[color:var(--kw-muted)]">
             Your memorization shouldn&apos;t be a phase. Hifzer protects what you&apos;ve built — running the schedule, tracking the debt, and keeping your retention solid every single day.
           </p>

@@ -1,7 +1,9 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { Check, Minus } from "lucide-react";
+import { ArrowRight, Check, Minus, Tilde } from "lucide-react";
+import { PublicAuthLink } from "@/components/landing/public-auth-link";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 
@@ -27,7 +29,7 @@ function CellIcon({ value }: { value: boolean | "partial" }) {
   if (value === "partial")
     return (
       <span className="grid h-6 w-6 place-items-center rounded-full border border-[rgba(234,179,8,0.26)] bg-[rgba(234,179,8,0.10)] text-[color:var(--kw-ember-600)]">
-        <Check size={14} />
+        <Tilde size={14} />
       </span>
     );
   return (
@@ -113,6 +115,23 @@ export function ComparisonMatrix() {
             </tbody>
           </table>
         </Card>
+      </motion.div>
+
+      <motion.div
+        initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.5 }}
+        transition={{ duration: reduceMotion ? 0 : 0.4 }}
+        className="mt-10 flex flex-col items-center gap-3 text-center"
+      >
+        <p className="text-sm leading-7 text-[color:var(--kw-muted)]">
+          Try the system that combines all three.
+        </p>
+        <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
+          <Button size="lg" className="gap-2">
+            Get started free <ArrowRight size={16} />
+          </Button>
+        </PublicAuthLink>
       </motion.div>
     </section>
   );

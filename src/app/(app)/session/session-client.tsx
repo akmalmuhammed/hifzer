@@ -223,6 +223,7 @@ export function SessionClient() {
   const [stepStartedAt, setStepStartedAt] = useState(Date.now());
   const [events, setEvents] = useState<SessionEvent[]>([]);
   const [warmupRetryUsed, setWarmupRetryUsed] = useState(false);
+  const [warmupInterstitial, setWarmupInterstitial] = useState(false);
   const [reviewOnlyLock, setReviewOnlyLock] = useState(false);
   const [showText, setShowText] = useState(true);
   const [showTranslation, setShowTranslation] = useState(true);
@@ -474,13 +475,7 @@ export function SessionClient() {
         const pass = gatePass(Array.from(latest.values()));
         if (!pass && !warmupRetryUsed) {
           setWarmupRetryUsed(true);
-          setStepIndex(0);
-          setStepStartedAt(Date.now());
-          pushToast({
-            tone: "warning",
-            title: "Warm-up retry",
-            message: "Retry warm-up once before new memorization unlocks.",
-          });
+          setWarmupInterstitial(true);
           return;
         }
         if (!pass && warmupRetryUsed) {
@@ -593,10 +588,30 @@ export function SessionClient() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <PageHeader eyebrow="Practice" title="Session" subtitle="Loading session..." right={rightActions} />
-        <Card>
-          <p className="text-sm text-[color:var(--kw-muted)]">Preparing today&apos;s queue...</p>
-        </Card>
+        <div className="space-y-2">
+          <div className="h-4 w-20 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+          <div className="h-8 w-48 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+          <div className="h-4 w-64 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+        </div>
+        <div className="rounded-[22px] border border-[color:var(--kw-border)] p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-28 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+            <div className="h-6 w-20 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+          </div>
+          <div className="rounded-[18px] border border-[color:var(--kw-border)] p-4 space-y-3">
+            <div className="h-3 w-24 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+            <div className="h-8 w-full animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+            <div className="h-8 w-3/4 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+            <div className="h-4 w-full animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+          </div>
+          <div className="h-10 w-40 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="h-14 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+            <div className="h-14 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+            <div className="h-14 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+            <div className="h-14 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -621,29 +636,133 @@ export function SessionClient() {
     );
   }
 
-  if (done) {
+  if (warmupInterstitial) {
     return (
       <div className="space-y-6">
-        <PageHeader eyebrow="Practice" title="Session complete" subtitle="Your events were recorded and retention state updated." right={rightActions} />
+        <PageHeader eyebrow="Practice" title="Warm-up check" subtitle="Let's review how the warm-up went." right={rightActions} />
         <Card>
-          <div className="flex items-start gap-3">
-            <span className="grid h-12 w-12 place-items-center rounded-[22px] border border-[rgba(22,163,74,0.26)] bg-[rgba(22,163,74,0.10)] text-[color:var(--kw-lime-600)] shadow-[var(--kw-shadow-soft)]">
-              <CheckCircle2 size={18} />
+          <div className="flex flex-col items-center text-center space-y-5 py-6">
+            <span className="grid h-16 w-16 place-items-center rounded-full border border-[rgba(234,88,12,0.26)] bg-[rgba(234,88,12,0.10)] text-[rgba(234,88,12,0.85)]">
+              <RotateCcw size={28} />
             </span>
-            <div className="space-y-3">
-              <p className="text-sm leading-7 text-[color:var(--kw-muted)]">
-                Session completed. You can return to Today for the refreshed queue.
+            <div className="space-y-1.5 max-w-sm">
+              <h2 className="text-lg font-semibold text-[color:var(--kw-ink)]">Your warm-up showed some gaps</h2>
+              <p className="text-sm leading-relaxed text-[color:var(--kw-muted)]">
+                Recalling yesterday&apos;s material is important for long-term retention. A second pass helps
+                reinforce fragile connections before moving on.
               </p>
-              <div className="flex flex-wrap items-center gap-2">
-                <Link href="/today">
-                  <Button className="gap-2">
-                    Go to Today <ArrowRight size={16} />
-                  </Button>
-                </Link>
-                <Button variant="secondary" className="gap-2" onClick={() => void loadRun()}>
-                  Start another <PlayCircle size={16} />
-                </Button>
+            </div>
+            <Button
+              className="gap-2"
+              onClick={() => {
+                setWarmupInterstitial(false);
+                setStepIndex(0);
+                setStepStartedAt(Date.now());
+              }}
+            >
+              Let&apos;s try once more <RotateCcw size={16} />
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (done) {
+    const gradeCounts = { AGAIN: 0, HARD: 0, GOOD: 0, EASY: 0 };
+    for (const ev of events) {
+      if (ev.grade && ev.grade in gradeCounts) {
+        gradeCounts[ev.grade as keyof typeof gradeCounts]++;
+      }
+    }
+    const totalGraded = gradeCounts.AGAIN + gradeCounts.HARD + gradeCounts.GOOD + gradeCounts.EASY;
+    const positiveRatio = totalGraded > 0 ? (gradeCounts.GOOD + gradeCounts.EASY) / totalGraded : 1;
+    const encouragement =
+      positiveRatio >= 0.8
+        ? "Strong session! Your recall is solid."
+        : positiveRatio >= 0.5
+          ? "Good effort. Consistency builds mastery."
+          : "Keep pushing! Every repetition strengthens memory.";
+
+    const elapsedMs = Date.now() - new Date(run.startedAt).getTime();
+    const elapsedTotalSec = Math.max(0, Math.floor(elapsedMs / 1000));
+    const elapsedMin = Math.floor(elapsedTotalSec / 60);
+    const elapsedSec = elapsedTotalSec % 60;
+    const timeLabel = elapsedMin > 0 ? `${elapsedMin} min ${elapsedSec} sec` : `${elapsedSec} sec`;
+
+    const gradeColors: Record<string, string> = {
+      AGAIN: "border-[rgba(239,68,68,0.30)] bg-[rgba(239,68,68,0.10)] text-[rgba(239,68,68,0.90)]",
+      HARD: "border-[rgba(234,88,12,0.30)] bg-[rgba(234,88,12,0.10)] text-[rgba(234,88,12,0.90)]",
+      GOOD: "border-[rgba(22,163,74,0.30)] bg-[rgba(22,163,74,0.10)] text-[rgba(22,163,74,0.90)]",
+      EASY: "border-[rgba(37,99,235,0.30)] bg-[rgba(37,99,235,0.10)] text-[rgba(37,99,235,0.90)]",
+    };
+
+    return (
+      <div className="space-y-6">
+        <PageHeader eyebrow="Practice" title="Session complete" subtitle="Your progress has been saved." right={rightActions} />
+        <Card>
+          <div className="flex flex-col items-center text-center space-y-6 py-4">
+            {/* Success icon with glow */}
+            <div className="relative">
+              <span className="absolute inset-0 rounded-full bg-[rgba(22,163,74,0.18)] blur-xl" />
+              <span className="relative grid h-20 w-20 place-items-center rounded-full border border-[rgba(22,163,74,0.26)] bg-[rgba(22,163,74,0.10)] text-[color:var(--kw-lime-600)] shadow-[0_0_30px_rgba(22,163,74,0.15)]">
+                <CheckCircle2 size={36} />
+              </span>
+            </div>
+
+            {/* Title and encouragement */}
+            <div className="space-y-1">
+              <h2 className="text-xl font-semibold text-[color:var(--kw-ink)]">Session complete</h2>
+              <p className="text-sm text-[color:var(--kw-muted)]">{encouragement}</p>
+            </div>
+
+            {/* Stats row */}
+            <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
+              <div className="flex flex-col items-center rounded-[18px] border border-[color:var(--kw-border)] bg-white/70 px-4 py-3 shadow-[var(--kw-shadow-soft)]">
+                <span className="text-lg font-semibold text-[color:var(--kw-ink)]">{timeLabel}</span>
+                <span className="text-xs text-[color:var(--kw-muted)]">Time spent</span>
               </div>
+              <div className="flex flex-col items-center rounded-[18px] border border-[color:var(--kw-border)] bg-white/70 px-4 py-3 shadow-[var(--kw-shadow-soft)]">
+                <span className="text-lg font-semibold text-[color:var(--kw-ink)]">{events.length} / {filteredSteps.length}</span>
+                <span className="text-xs text-[color:var(--kw-muted)]">Steps completed</span>
+              </div>
+            </div>
+
+            {/* Grade breakdown pills */}
+            {totalGraded > 0 ? (
+              <div className="space-y-2 w-full max-w-md">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Grade breakdown</p>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  {(["AGAIN", "HARD", "GOOD", "EASY"] as const).map((g) =>
+                    gradeCounts[g] > 0 ? (
+                      <span
+                        key={g}
+                        className={clsx(
+                          "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold",
+                          gradeColors[g],
+                        )}
+                      >
+                        {g}
+                        <span className="rounded-full bg-white/50 px-1.5 py-0.5 text-[10px] font-bold leading-none">
+                          {gradeCounts[g]}
+                        </span>
+                      </span>
+                    ) : null,
+                  )}
+                </div>
+              </div>
+            ) : null}
+
+            {/* Action buttons */}
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+              <Link href="/today">
+                <Button className="gap-2">
+                  Go to Today <ArrowRight size={16} />
+                </Button>
+              </Link>
+              <Button variant="secondary" className="gap-2" onClick={() => void loadRun()}>
+                Start another <PlayCircle size={16} />
+              </Button>
             </div>
           </div>
         </Card>
@@ -806,7 +925,7 @@ export function SessionClient() {
                 </p>
                 {showText ? (
                   <div className="mt-3 space-y-4">
-                    <div dir="rtl" className="text-right text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
+                    <div dir="rtl" className="text-right font-[family-name:var(--font-kw-quran)] text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
                       {ayah?.textUthmani ?? "Ayah text unavailable"}
                     </div>
                     {showTranslation ? (

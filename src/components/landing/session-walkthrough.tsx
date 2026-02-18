@@ -2,6 +2,8 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, BookOpenText, Eye, EyeOff, Headphones, Link2 } from "lucide-react";
+import { PublicAuthLink } from "@/components/landing/public-auth-link";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 
@@ -141,6 +143,23 @@ export function SessionWalkthrough() {
           </Card>
         </motion.div>
       </div>
+
+      <motion.div
+        initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.5 }}
+        transition={{ duration: reduceMotion ? 0 : 0.4 }}
+        className="mt-10 flex flex-col items-center gap-3 text-center"
+      >
+        <p className="text-sm leading-7 text-[color:var(--kw-muted)]">
+          Ready to try it? Your first session takes 10 minutes.
+        </p>
+        <PublicAuthLink signedInHref="/session" signedOutHref="/signup">
+          <Button size="lg" className="gap-2">
+            Start your first session <ArrowRight size={16} />
+          </Button>
+        </PublicAuthLink>
+      </motion.div>
     </section>
   );
 }

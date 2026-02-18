@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(ls:*)",
-      "Bash(npx next build)"
+      "Bash(npx next build)",
+      "Bash(head -20 grep -n \"CTA\\\\|signup\\\\|sign.up\\\\|Ready to try\" /workspaces/hifzer/src/components/landing/comparison-matrix.tsx)",
+      "Bash(# Check if settings has an index page ls /workspaces/hifzer/src/app/\\\\\\(app\\\\\\)/settings/ # Check streak rules language for simplified text grep -n \"\"qualified ayah\\\\|120 seconds\\\\|2 minutes\\\\|minQualified\"\" /workspaces/hifzer/src/app/\\\\\\(app\\\\\\)/streak/streak-client.tsx)",
+      "Bash(cat:*)"
     ]
   }
 }

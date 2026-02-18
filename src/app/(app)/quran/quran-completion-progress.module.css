@@ -1,0 +1,327 @@
+.card {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(var(--kw-accent-rgb), 0.24);
+  background:
+    linear-gradient(145deg, rgba(var(--kw-accent-rgb), 0.08), rgba(255, 255, 255, 0.06)),
+    var(--kw-card-strong);
+}
+
+.ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(520px 220px at 12% 12%, rgba(var(--kw-accent-rgb), 0.15), transparent 60%),
+    radial-gradient(440px 180px at 92% 18%, rgba(10, 138, 119, 0.14), transparent 62%);
+}
+
+.orbOne {
+  position: absolute;
+  top: -84px;
+  right: -56px;
+  height: 196px;
+  width: 196px;
+  border-radius: 9999px;
+  background: rgba(var(--kw-accent-rgb), 0.2);
+  filter: blur(42px);
+  pointer-events: none;
+  animation: quran-progress-orb-float 8s ease-in-out infinite;
+}
+
+.orbTwo {
+  position: absolute;
+  bottom: -120px;
+  left: 24%;
+  height: 192px;
+  width: 192px;
+  border-radius: 9999px;
+  background: rgba(10, 138, 119, 0.16);
+  filter: blur(50px);
+  pointer-events: none;
+  animation: quran-progress-orb-float 10s ease-in-out infinite reverse;
+}
+
+.ring {
+  position: relative;
+  height: 208px;
+  width: 208px;
+  border-radius: 9999px;
+  padding: 11px;
+  box-shadow:
+    inset 0 0 0 1px rgba(var(--kw-accent-rgb), 0.2),
+    0 0 32px rgba(var(--kw-accent-rgb), 0.2);
+  animation: quran-progress-ring-glow 3.6s ease-in-out infinite;
+}
+
+.ring::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: inherit;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.24);
+  opacity: 0.8;
+  filter: blur(1px);
+  animation: quran-progress-halo 4.4s ease-in-out infinite;
+}
+
+.ringInner {
+  position: relative;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.6)),
+    var(--kw-card);
+  box-shadow: inset 0 0 0 1px rgba(var(--kw-accent-rgb), 0.14);
+  backdrop-filter: blur(7px);
+}
+
+.track {
+  position: relative;
+  margin-top: 14px;
+  height: 11px;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: rgba(var(--kw-accent-rgb), 0.12);
+  box-shadow: inset 0 0 0 1px rgba(var(--kw-accent-rgb), 0.14);
+}
+
+.fill {
+  position: relative;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    rgba(10, 138, 119, 0.9) 0%,
+    rgba(var(--kw-accent-rgb), 0.92) 45%,
+    rgba(var(--kw-accent-rgb), 1) 100%
+  );
+  box-shadow: 0 0 16px rgba(var(--kw-accent-rgb), 0.36);
+  transition: width 220ms linear;
+}
+
+.fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 10%, rgba(255, 255, 255, 0.62) 42%, transparent 72%);
+  transform: translateX(-130%);
+  animation: quran-progress-shimmer 2.6s linear infinite;
+}
+
+.statCard {
+  border-radius: var(--kw-radius-lg);
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.16);
+  background: rgba(255, 255, 255, 0.58);
+  padding: 10px 12px;
+  box-shadow: 0 8px 24px rgba(11, 18, 32, 0.08);
+}
+
+.rankSection {
+  margin-top: 14px;
+  border-radius: var(--kw-radius-lg);
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.18);
+  background:
+    linear-gradient(155deg, rgba(var(--kw-accent-rgb), 0.12), rgba(255, 255, 255, 0.5)),
+    rgba(255, 255, 255, 0.64);
+  padding: 12px;
+}
+
+.rankCountPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 9999px;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.24);
+  background: rgba(var(--kw-accent-rgb), 0.12);
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: rgba(var(--kw-accent-rgb), 1);
+}
+
+.currentRankBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.3);
+  background: rgba(var(--kw-accent-rgb), 0.18);
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(var(--kw-accent-rgb), 1);
+  animation: quran-rank-pill-glow 2.8s ease-in-out infinite;
+}
+
+.badgeGrid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  gap: 8px;
+}
+
+.badgeItem {
+  position: relative;
+  border-radius: 14px;
+  padding: 10px 10px 9px;
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+}
+
+.badgeItemUnlocked {
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.26);
+  background: rgba(var(--kw-accent-rgb), 0.1);
+  box-shadow: 0 8px 20px rgba(var(--kw-accent-rgb), 0.14);
+}
+
+.badgeItemLocked {
+  border: 1px dashed rgba(11, 18, 32, 0.18);
+  background: rgba(255, 255, 255, 0.48);
+  opacity: 0.74;
+}
+
+.badgeItemActive {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(var(--kw-accent-rgb), 0.22);
+}
+
+.badgeItemActive::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.3);
+  animation: quran-rank-active-outline 2.1s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.badgeItemCount {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(var(--kw-accent-rgb), 0.92);
+}
+
+.badgeItemName {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--kw-ink);
+}
+
+.badgeItemTitle {
+  margin-top: 1px;
+  font-size: 11px;
+  color: var(--kw-muted);
+  line-height: 1.35;
+}
+
+@keyframes quran-progress-orb-float {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes quran-progress-ring-glow {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 1px rgba(var(--kw-accent-rgb), 0.2),
+      0 0 26px rgba(var(--kw-accent-rgb), 0.2);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 1px rgba(var(--kw-accent-rgb), 0.26),
+      0 0 44px rgba(var(--kw-accent-rgb), 0.34);
+  }
+}
+
+@keyframes quran-progress-halo {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.03);
+    opacity: 1;
+  }
+}
+
+@keyframes quran-progress-shimmer {
+  100% {
+    transform: translateX(145%);
+  }
+}
+
+@keyframes quran-rank-pill-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(var(--kw-accent-rgb), 0);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(var(--kw-accent-rgb), 0.28);
+  }
+}
+
+@keyframes quran-rank-active-outline {
+  0%, 100% {
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbOne,
+  .orbTwo,
+  .ring,
+  .ring::before,
+  .fill::after,
+  .currentRankBadge,
+  .badgeItemActive::after {
+    animation: none !important;
+  }
+
+  .fill {
+    transition: none;
+  }
+}
+
+html[data-mode="dark"] .ringInner {
+  background:
+    linear-gradient(160deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.72)),
+    var(--kw-card);
+}
+
+html[data-mode="dark"] .statCard {
+  background: rgba(15, 23, 42, 0.56);
+  border-color: rgba(var(--kw-accent-rgb), 0.24);
+}
+
+html[data-mode="dark"] .rankSection {
+  background:
+    linear-gradient(155deg, rgba(var(--kw-accent-rgb), 0.18), rgba(15, 23, 42, 0.58)),
+    rgba(15, 23, 42, 0.54);
+  border-color: rgba(var(--kw-accent-rgb), 0.3);
+}
+
+html[data-mode="dark"] .badgeItemLocked {
+  border-color: rgba(148, 163, 184, 0.32);
+  background: rgba(15, 23, 42, 0.44);
+}

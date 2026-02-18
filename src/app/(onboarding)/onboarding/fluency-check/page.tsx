@@ -17,7 +17,7 @@ export default function OnboardingFluencyCheckPage() {
         title="Fluency check"
         subtitle="A live recitation test (UI scaffold). Later: mic capture + AI feedback."
         right={
-          <Link href="/onboarding/permissions">
+          <Link href="/onboarding/complete">
             <Button variant="secondary" className="gap-2">
               Skip for now <ArrowRight size={16} />
             </Button>
@@ -31,7 +31,7 @@ export default function OnboardingFluencyCheckPage() {
           message="For now, complete onboarding and begin with self-grading. Fluency track can be added next."
           icon={<Mic size={18} />}
           action={
-            <Link href="/onboarding/permissions">
+            <Link href="/onboarding/complete">
               <Button className="gap-2">
                 Continue <ArrowRight size={16} />
               </Button>

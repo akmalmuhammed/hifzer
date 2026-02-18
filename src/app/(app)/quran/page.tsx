@@ -1,26 +1,44 @@
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Compass, EyeOff } from "lucide-react";
+import { ArrowRight, BookOpen, Compass, EyeOff, Search } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
-import { getProfileSnapshot } from "@/hifzer/profile/server";
+import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { getAyahById, getSurahInfo, listJuzs, listSurahs } from "@/hifzer/quran/lookup.server";
 import { clerkEnabled } from "@/lib/clerk-config";
+import { db, dbConfigured } from "@/lib/db";
+import { QuranCompletionProgress } from "./quran-completion-progress";
+import { QuranProgressBackfill } from "./quran-progress-backfill";
+import { QuranSurahSearch } from "./quran-surah-search";
 
 export const metadata = {
   title: "Qur'an",
 };
 
 export default async function QuranIndexPage() {
+  const totalAyahs = 6236;
   let cursorAyahId = 1;
+  let completedKhatmahCount = 0;
   if (clerkEnabled()) {
     const { userId } = await auth();
     if (userId) {
-      const profile = await getProfileSnapshot(userId);
+      const profile = await getOrCreateUserProfile(userId);
       if (profile?.cursorAyahId) {
         cursorAyahId = profile.cursorAyahId;
       }
+      if (profile && dbConfigured()) {
+        completedKhatmahCount = await db().session.count({
+          where: {
+            userId: profile.id,
+            status: "COMPLETED",
+            newEndAyahId: totalAyahs,
+          },
+        });
+      }
     }
+  }
+  if (cursorAyahId >= totalAyahs) {
+    completedKhatmahCount = Math.max(1, completedKhatmahCount);
   }
 
   const surahs = listSurahs();
@@ -28,7 +46,6 @@ export default async function QuranIndexPage() {
   const lastAyah = getAyahById(cursorAyahId) ?? getAyahById(1);
   const lastSurah = getSurahInfo(lastAyah?.surahNumber ?? 1);
   const surahProgress = lastSurah && lastAyah ? Math.round((lastAyah.ayahNumber / lastSurah.ayahCount) * 100) : 0;
-  const quranProgress = Math.round(((lastAyah?.id ?? 1) / 6236) * 100);
 
   const trackedParams = new URLSearchParams({ view: "compact" });
   if (lastAyah) {
@@ -50,10 +67,29 @@ export default async function QuranIndexPage() {
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
             Keep your reading flow clean: one primary resume path, one private path, and quick jump controls.
           </p>
+          <div className="mt-4">
+            <Link
+              href="/quran/glossary"
+              className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.24)] bg-[rgba(var(--kw-accent-rgb),0.1)] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-[rgba(var(--kw-accent-rgb),1)]"
+            >
+              Open Qur&apos;anic glossary search
+            </Link>
+          </div>
         </div>
         <span className="grid h-12 w-12 place-items-center rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
           <BookOpen size={18} />
         </span>
+      </div>
+
+      <div className="mt-8">
+        <QuranCompletionProgress
+          currentAyahId={lastAyah?.id ?? 1}
+          totalAyahs={totalAyahs}
+          currentSurahNumber={lastAyah?.surahNumber ?? 1}
+          currentAyahNumber={lastAyah?.ayahNumber ?? 1}
+          initialKhatmahCount={completedKhatmahCount}
+          resumeHref={trackedHref}
+        />
       </div>
 
       <div className="mt-10 grid gap-4 lg:grid-cols-2">
@@ -68,7 +104,7 @@ export default async function QuranIndexPage() {
               {lastSurah?.nameTransliteration ?? "Surah 1"} {lastAyah ? `${lastAyah.surahNumber}:${lastAyah.ayahNumber}` : "1:1"}
             </p>
             <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
-              Surah progress {surahProgress}% · Qur&apos;an progress {quranProgress}%
+              Surah progress {surahProgress}% · Global ayah #{lastAyah?.id ?? 1}
             </p>
             <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-black/[0.06]">
               <div
@@ -107,6 +143,39 @@ export default async function QuranIndexPage() {
           </div>
         </Card>
       </div>
+
+      <Card className="mt-8">
+        <div className="flex items-center gap-2">
+          <Search size={16} className="text-[color:var(--kw-faint)]" />
+          <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Search surahs</p>
+        </div>
+        <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+          Find a surah by name, English meaning, or number.
+        </p>
+        <div className="mt-4">
+          <QuranSurahSearch
+            surahs={surahs.map((s) => ({
+              surahNumber: s.surahNumber,
+              nameTransliteration: s.nameTransliteration,
+              nameArabic: s.nameArabic,
+              nameEnglish: s.nameEnglish,
+              ayahCount: s.ayahCount,
+            }))}
+          />
+        </div>
+      </Card>
+
+      <Card className="mt-8">
+        <QuranProgressBackfill
+          defaultSurahNumber={lastAyah?.surahNumber ?? 1}
+          surahs={surahs.map((surah) => ({
+            surahNumber: surah.surahNumber,
+            ayahCount: surah.ayahCount,
+            startAyahId: surah.startAyahId,
+            nameTransliteration: surah.nameTransliteration,
+          }))}
+        />
+      </Card>
 
       <div className="mt-8 grid gap-4 lg:grid-cols-2">
         <Card>
@@ -194,6 +263,12 @@ export default async function QuranIndexPage() {
             className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
           >
             Advanced filters
+          </Link>
+          <Link
+            href="/quran/glossary"
+            className="rounded-xl border border-[rgba(var(--kw-accent-rgb),0.24)] bg-[rgba(var(--kw-accent-rgb),0.1)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+          >
+            Glossary search
           </Link>
         </div>
       </Card>

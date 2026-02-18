@@ -66,9 +66,24 @@ export function ProgressClient() {
       />
 
       {loading ? (
-        <Card>
-          <p className="text-sm text-[color:var(--kw-muted)]">Loading progress metrics...</p>
-        </Card>
+        <>
+          <div className="grid gap-4 md:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i}>
+                <div className="h-3 w-24 animate-pulse rounded-full bg-[color:var(--kw-skeleton)]" />
+                <div className="mt-4 h-8 w-16 animate-pulse rounded-[14px] bg-[color:var(--kw-skeleton)]" />
+              </Card>
+            ))}
+          </div>
+          <Card>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="h-6 w-20 animate-pulse rounded-full bg-[color:var(--kw-skeleton)]" />
+              <div className="h-6 w-16 animate-pulse rounded-full bg-[color:var(--kw-skeleton)]" />
+              <div className="h-6 w-16 animate-pulse rounded-full bg-[color:var(--kw-skeleton)]" />
+              <div className="h-6 w-16 animate-pulse rounded-full bg-[color:var(--kw-skeleton)]" />
+            </div>
+          </Card>
+        </>
       ) : error ? (
         <Card>
           <EmptyState

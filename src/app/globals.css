@@ -6,7 +6,7 @@
   --kw-ink: #0b1220;
   --kw-ink-2: #132033;
   --kw-muted: rgba(11, 18, 32, 0.64);
-  --kw-faint: rgba(11, 18, 32, 0.46);
+  --kw-faint: rgba(11, 18, 32, 0.52);
   --kw-border: rgba(11, 18, 32, 0.12);
   --kw-border-2: rgba(11, 18, 32, 0.08);
 
@@ -114,7 +114,7 @@ html[data-mode="dark"] {
   --kw-ink: rgba(248, 250, 252, 0.92);
   --kw-ink-2: rgba(248, 250, 252, 0.82);
   --kw-muted: rgba(248, 250, 252, 0.68);
-  --kw-faint: rgba(248, 250, 252, 0.5);
+  --kw-faint: rgba(248, 250, 252, 0.56);
   --kw-border: rgba(248, 250, 252, 0.14);
   --kw-border-2: rgba(248, 250, 252, 0.1);
 
@@ -197,6 +197,7 @@ html[data-mode="dark"] {
   --font-sans: var(--font-kw-sans);
   --font-mono: var(--font-kw-mono);
   --font-kw-display: var(--font-kw-sans);
+  --font-kw-quran: var(--font-quran-uthmani), "KFGQPC Uthmanic Script HAFS", "Scheherazade New", "Amiri", "Noto Naskh Arabic", "Traditional Arabic", serif;
 }
 
 body {
