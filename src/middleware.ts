@@ -25,16 +25,21 @@ function isProtectedQuranPath(pathname: string): boolean {
 }
 
 /**
- * SECURITY: Ensures the redirect path is always relative to prevent open redirect.
- * Rejects anything that looks like an absolute URL (// or scheme://).
+ * SECURITY: Ensures redirect targets are relative app paths.
+ * Rejects absolute/protocol-relative URLs to prevent open redirect.
  */
-function safeRedirectPath(pathname: string, search: string): string {
-  const raw = `${pathname}${search}`;
-  // Must start with "/" and must not be protocol-relative "//"
-  if (raw.startsWith("/") && !raw.startsWith("//")) {
-    return raw;
+function safeRedirectPath(candidate: string | null | undefined, fallback = "/today"): string {
+  const raw = (candidate ?? "").trim();
+  if (!raw) {
+    return fallback;
   }
-  return "/today";
+  if (!raw.startsWith("/") || raw.startsWith("//")) {
+    return fallback;
+  }
+  if (/^[a-z][a-z0-9+.-]*:/i.test(raw)) {
+    return fallback;
+  }
+  return raw;
 }
 
 const protectedMiddleware = clerkMiddleware(async (auth, req) => {
@@ -47,7 +52,11 @@ const protectedMiddleware = clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
   if (!userId) {
     const signInUrl = new URL("/login", req.url);
-    const redirectPath = safeRedirectPath(pathname, req.nextUrl.search);
+    const search = new URLSearchParams(req.nextUrl.searchParams);
+    search.delete("redirect_url");
+    const fallbackPath = `${pathname}${search.size > 0 ? `?${search.toString()}` : ""}`;
+    const requestedRedirect = req.nextUrl.searchParams.get("redirect_url");
+    const redirectPath = safeRedirectPath(requestedRedirect, safeRedirectPath(fallbackPath));
     signInUrl.searchParams.set("redirect_url", redirectPath);
     return NextResponse.redirect(signInUrl);
   }

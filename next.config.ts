@@ -31,6 +31,20 @@ function toHttpOrigin(value: string | undefined): string | null {
   }
 }
 
+function toOriginOrHttpsHost(value: string | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.startsWith("/")) {
+    return null;
+  }
+  const withScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
+  return toHttpOrigin(withScheme);
+}
+
 function frontendApiToOrigin(value: string): string | null {
   const cleaned = value.trim().replace(/\$$/, "");
   if (!cleaned) {
@@ -93,14 +107,41 @@ function getSiteRootDomainOrigin(): string | null {
   }
 }
 
+function getSiteRootAccountOrigin(): string | null {
+  const site = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+    || process.env.NEXT_PUBLIC_APP_URL?.trim()
+    || "https://hifzer.com";
+  const origin = toHttpOrigin(site);
+  if (!origin) {
+    return null;
+  }
+
+  try {
+    const host = new URL(origin).hostname;
+    const rootDomain = host.replace(/^www\./, "");
+    if (!rootDomain) {
+      return null;
+    }
+    return `https://accounts.${rootDomain}`;
+  } catch {
+    return null;
+  }
+}
+
 const clerkOrigins = unique([
   getClerkFrontendApiOriginFromPublishableKey(),
-  toHttpOrigin(process.env.NEXT_PUBLIC_CLERK_FRONTEND_API_URL),
-  toHttpOrigin(process.env.CLERK_FRONTEND_API_URL),
-  toHttpOrigin(process.env.NEXT_PUBLIC_CLERK_PROXY_URL),
-  toHttpOrigin(process.env.CLERK_PROXY_URL),
+  toOriginOrHttpsHost(process.env.NEXT_PUBLIC_CLERK_FRONTEND_API_URL),
+  toOriginOrHttpsHost(process.env.CLERK_FRONTEND_API_URL),
+  toOriginOrHttpsHost(process.env.NEXT_PUBLIC_CLERK_PROXY_URL),
+  toOriginOrHttpsHost(process.env.CLERK_PROXY_URL),
+  toOriginOrHttpsHost(process.env.NEXT_PUBLIC_CLERK_DOMAIN),
+  toOriginOrHttpsHost(process.env.CLERK_DOMAIN),
   getSiteRootDomainOrigin(),
   "https://clerk.hifzer.com",
+]);
+const clerkAccountOrigins = unique([
+  getSiteRootAccountOrigin(),
+  "https://accounts.hifzer.com",
 ]);
 const cspScriptSrc = unique([
   "'self'",
@@ -109,13 +150,33 @@ const cspScriptSrc = unique([
   "https://*.clerk.com",
   "https://*.clerk.accounts.dev",
   ...clerkOrigins,
+  ...clerkAccountOrigins,
   "https://challenges.cloudflare.com",
+]);
+const cspStyleSrc = unique([
+  "'self'",
+  "'unsafe-inline'",
+  "https://fonts.googleapis.com",
+  "https://*.clerk.com",
+  "https://*.clerk.accounts.dev",
+  ...clerkOrigins,
+  ...clerkAccountOrigins,
+]);
+const cspFontSrc = unique([
+  "'self'",
+  "https://fonts.gstatic.com",
+  "data:",
+  "https://*.clerk.com",
+  "https://*.clerk.accounts.dev",
+  ...clerkOrigins,
+  ...clerkAccountOrigins,
 ]);
 const cspConnectSrc = unique([
   "'self'",
   "https://*.clerk.accounts.dev",
   "https://*.clerk.com",
   ...clerkOrigins,
+  ...clerkAccountOrigins,
   "https://clerk-telemetry.com",
   "https://*.clerk-telemetry.com",
   "https://sentry.io",
@@ -132,6 +193,7 @@ const cspFrameSrc = unique([
   "https://*.clerk.accounts.dev",
   "https://challenges.cloudflare.com",
   ...clerkOrigins,
+  ...clerkAccountOrigins,
 ]);
 
 const nextConfig: NextConfig = {
@@ -177,8 +239,8 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               // Keep Clerk working across dev + prod instances (different frontend API hostnames)
               `script-src ${cspScriptSrc.join(" ")}`,
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com",
+              `style-src ${cspStyleSrc.join(" ")}`,
+              `font-src ${cspFontSrc.join(" ")}`,
               `img-src ${cspImgSrc.join(" ")}`,
               `connect-src ${cspConnectSrc.join(" ")}`,
               "worker-src 'self' blob:",

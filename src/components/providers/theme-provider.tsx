@@ -24,11 +24,30 @@ const STORAGE_KEYS = {
   accent: "hifzer_accent_v1",
 } as const;
 
-function readStored<T extends string>(key: string, fallback: T, allowed: readonly T[]): T {
+function safeStorageGet(key: string): string | null {
   if (typeof window === "undefined") {
-    return fallback;
+    return null;
   }
-  const raw = window.localStorage.getItem(key);
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeStorageSet(key: string, value: string): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // Ignore storage failures (private mode / blocked storage) to avoid hydration crashes.
+  }
+}
+
+function readStored<T extends string>(key: string, fallback: T, allowed: readonly T[]): T {
+  const raw = safeStorageGet(key);
   if (!raw) {
     return fallback;
   }
@@ -59,12 +78,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     applyToDocument(mode, theme, accent);
-    if (typeof window === "undefined") {
-      return;
-    }
-    window.localStorage.setItem(STORAGE_KEYS.mode, mode);
-    window.localStorage.setItem(STORAGE_KEYS.theme, theme);
-    window.localStorage.setItem(STORAGE_KEYS.accent, accent);
+    safeStorageSet(STORAGE_KEYS.mode, mode);
+    safeStorageSet(STORAGE_KEYS.theme, theme);
+    safeStorageSet(STORAGE_KEYS.accent, accent);
   }, [accent, mode, theme]);
 
   const value = useMemo<ThemeState>(
