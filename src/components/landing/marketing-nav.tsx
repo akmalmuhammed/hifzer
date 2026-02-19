@@ -56,7 +56,6 @@ export function MarketingNav(props: { authEnabled: boolean }) {
           <div className="hidden items-center gap-2 md:flex">
             {showSignedIn ? (
               <>
-                <p className="px-2 text-xs font-semibold text-[color:var(--kw-muted)]">Welcome back</p>
                 <Button asChild size="md">
                   <TrackedLink href="/today" telemetryName="marketing.open-app">
                     Open app

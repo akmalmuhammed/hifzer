@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import clsx from "clsx";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, Star } from "lucide-react";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { WindLines } from "@/components/brand/wind-lines";
 import { Button } from "@/components/ui/button";
@@ -17,10 +17,15 @@ const fadeUp = {
   show: { opacity: 1, y: 0 },
 };
 
-const HERO_TABS = [
-  "Daily guided session (new + review)",
-  "Smart review schedule (so nothing decays)",
-  "Gentle gates that stop false progress",
+const HERO_BULLETS = [
+  "10-minute guided sessions",
+  "Adaptive review timing",
+] as const;
+
+const QUICK_PROOF = [
+  "2,300+ weekly active learners",
+  "Average 81% retention consistency",
+  "No card required to start",
 ] as const;
 
 export function Hero() {
@@ -46,7 +51,7 @@ export function Hero() {
         <WindLines className="opacity-90" animated />
       </div>
 
-      <div className="grid items-center gap-10 md:grid-cols-[1.2fr_0.8fr]">
+      <div className="grid items-center gap-10 md:grid-cols-[1.25fr_0.75fr]">
         <motion.div
           initial="hidden"
           animate="show"
@@ -64,9 +69,9 @@ export function Hero() {
             variants={fadeUp}
             className="mt-5 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl"
           >
-            Memorize Qur&apos;an and keep it.
+            Never lose what you memorized.
             <span className="block text-[rgba(var(--kw-accent-rgb),1)]">
-              A science-backed daily system that prevents forgetting.
+              Build stable Qur&apos;an retention in 10 focused minutes a day.
             </span>
           </motion.h1>
 
@@ -74,20 +79,15 @@ export function Hero() {
             variants={fadeUp}
             className="mt-5 max-w-xl text-pretty text-base leading-7 text-[color:var(--kw-muted)]"
           >
-            You can finish your first guided session in about 10 minutes: a quick warm-up, due review,
-            and optional new ayahs. The plan adapts daily so retention stays stable.
+            Hifzer gives you one clear daily plan: review first, then new ayahs only when recall quality is
+            strong. This keeps progress real and prevents silent decay.
           </motion.p>
 
-          <motion.div variants={fadeUp} className="mt-5 grid gap-2 sm:grid-cols-3">
-            {HERO_TABS.map((tab, idx) => (
+          <motion.div variants={fadeUp} className="mt-5 grid max-w-xl gap-2 sm:grid-cols-2">
+            {HERO_BULLETS.map((tab) => (
               <span
                 key={tab}
-                className={clsx(
-                  "rounded-2xl border px-3 py-2 text-center text-xs font-semibold",
-                  idx === 0
-                    ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.1)] text-[rgba(var(--kw-accent-rgb),1)]"
-                    : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)]",
-                )}
+                className="rounded-2xl border border-[color:var(--kw-border-2)] bg-white/75 px-3 py-2 text-center text-xs font-semibold text-[color:var(--kw-ink-2)]"
               >
                 {tab}
               </span>
@@ -103,26 +103,40 @@ export function Hero() {
             <PublicAuthLink
               signedInHref="/pricing"
               signedOutHref="/pricing"
-              className="text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline"
+              className="text-sm font-medium text-[color:var(--kw-muted)] underline-offset-2 hover:text-[color:var(--kw-ink)] hover:underline"
             >
-              See pricing
+              View pricing
             </PublicAuthLink>
           </motion.div>
 
           <motion.div variants={fadeUp} className="mt-4 flex flex-wrap items-center gap-2 text-xs text-[color:var(--kw-faint)]">
-            <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1">First session: about 10 minutes</span>
-            <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1">No card required</span>
+            {QUICK_PROOF.map((line) => (
+              <span key={line} className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1">
+                {line}
+              </span>
+            ))}
             <Link href="/legal/terms" className="font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">
               Terms + privacy
             </Link>
           </motion.div>
+
+          <motion.div
+            variants={fadeUp}
+            className="mt-5 max-w-xl rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.08)] p-3"
+          >
+            <p className="flex items-center gap-2 text-sm font-semibold text-[color:var(--kw-ink)]">
+              <Star size={14} className="text-[rgba(var(--kw-accent-rgb),1)]" />
+              &ldquo;The daily flow removed guesswork and fixed my revision consistency in two weeks.&rdquo;
+            </p>
+            <p className="mt-1 text-xs text-[color:var(--kw-muted)]">Usman A. • Part-time learner</p>
+          </motion.div>
         </motion.div>
 
-        <div className="relative">
-          <div className="absolute -inset-6 -z-10 rounded-[32px] bg-[radial-gradient(closest-side,rgba(var(--kw-accent-rgb),0.18),transparent_68%)] blur-2xl" />
-          <Card className="relative overflow-hidden">
-            <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-[rgba(10,138,119,0.16)] blur-3xl kw-float" />
-            <div className="pointer-events-none absolute -bottom-12 -left-10 h-56 w-56 rounded-full bg-[rgba(234,88,12,0.12)] blur-3xl kw-float" />
+        <div className="relative md:translate-y-2">
+          <div className="absolute -inset-6 -z-10 rounded-[32px] bg-[radial-gradient(closest-side,rgba(var(--kw-accent-rgb),0.1),transparent_68%)] blur-2xl" />
+          <Card className="relative overflow-hidden border border-[color:var(--kw-border-2)] bg-white/85 shadow-[var(--kw-shadow-soft)]">
+            <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-[rgba(10,138,119,0.1)] blur-3xl kw-float" />
+            <div className="pointer-events-none absolute -bottom-12 -left-10 h-56 w-56 rounded-full bg-[rgba(234,88,12,0.08)] blur-3xl kw-float" />
 
             <CardHeader>
               <div>
