@@ -85,14 +85,95 @@ const SESSION_COACH_KEYS = {
   grades: "hifzer_tip_session_grades_v1",
   weeklyGate: "hifzer_tip_weekly_gate_v1",
 } as const;
+const SESSION_PROGRESS_KEY = "hifzer_open_session_progress_v1";
 
 type CoachKey = keyof typeof SESSION_COACH_KEYS;
+type StoredSessionProgress = {
+  sessionId: string;
+  localDate: string;
+  quickReviewMode: boolean;
+  stepIndex: number;
+  events: SessionEvent[];
+  warmupRetryUsed: boolean;
+  warmupInterstitial: boolean;
+  reviewOnlyLock: boolean;
+};
 
 function gradeScore(grade: "AGAIN" | "HARD" | "GOOD" | "EASY"): number {
   if (grade === "AGAIN") return 0;
   if (grade === "HARD") return 1;
   if (grade === "GOOD") return 2;
   return 3;
+}
+
+function applyStepFilters(steps: Step[], quickReviewMode: boolean, reviewOnlyLock: boolean): Step[] {
+  let nextSteps = steps;
+  if (quickReviewMode) {
+    nextSteps = nextSteps.filter((step) => step.stage === "REVIEW" || step.stage === "LINK_REPAIR");
+  }
+  if (reviewOnlyLock) {
+    nextSteps = nextSteps.filter((step) => step.stage !== "NEW" && step.stage !== "LINK");
+  }
+  return nextSteps;
+}
+
+function readStoredSessionProgress(): StoredSessionProgress | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  try {
+    const raw = window.localStorage.getItem(SESSION_PROGRESS_KEY);
+    if (!raw) {
+      return null;
+    }
+    const parsed = JSON.parse(raw) as Partial<StoredSessionProgress>;
+    if (
+      typeof parsed.sessionId !== "string" ||
+      typeof parsed.localDate !== "string" ||
+      typeof parsed.quickReviewMode !== "boolean" ||
+      typeof parsed.stepIndex !== "number" ||
+      !Array.isArray(parsed.events) ||
+      typeof parsed.warmupRetryUsed !== "boolean" ||
+      typeof parsed.warmupInterstitial !== "boolean" ||
+      typeof parsed.reviewOnlyLock !== "boolean"
+    ) {
+      return null;
+    }
+    return {
+      sessionId: parsed.sessionId,
+      localDate: parsed.localDate,
+      quickReviewMode: parsed.quickReviewMode,
+      stepIndex: parsed.stepIndex,
+      events: parsed.events as SessionEvent[],
+      warmupRetryUsed: parsed.warmupRetryUsed,
+      warmupInterstitial: parsed.warmupInterstitial,
+      reviewOnlyLock: parsed.reviewOnlyLock,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredSessionProgress(progress: StoredSessionProgress): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  try {
+    window.localStorage.setItem(SESSION_PROGRESS_KEY, JSON.stringify(progress));
+  } catch {
+    // Ignore storage errors (private mode / quota).
+  }
+}
+
+function clearStoredSessionProgress(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  try {
+    window.localStorage.removeItem(SESSION_PROGRESS_KEY);
+  } catch {
+    // Ignore storage errors.
+  }
 }
 
 function gatePass(grades: Array<"AGAIN" | "HARD" | "GOOD" | "EASY">): boolean {
@@ -328,19 +409,42 @@ export function SessionClient() {
       if (!res.ok) {
         throw new Error(payload.error || "Failed to start session.");
       }
+
+      const restored = readStoredSessionProgress();
+      const resumeState = restored &&
+          restored.sessionId === payload.sessionId &&
+          restored.localDate === payload.localDate &&
+          restored.quickReviewMode === quickReviewMode
+        ? restored
+        : null;
+
+      const nextReviewOnlyLock = resumeState?.reviewOnlyLock ?? false;
+      const nextWarmupRetryUsed = resumeState?.warmupRetryUsed ?? false;
+      const nextWarmupInterstitial = resumeState?.warmupInterstitial ?? false;
+      const nextEvents = resumeState?.events ?? [];
+      const filteredLength = applyStepFilters(payload.steps, quickReviewMode, nextReviewOnlyLock).length;
+      const rawStepIndex = resumeState ? Math.floor(resumeState.stepIndex) : 0;
+      const nextStepIndex = Number.isFinite(rawStepIndex)
+        ? Math.max(0, Math.min(rawStepIndex, filteredLength))
+        : 0;
+      if (!resumeState) {
+        clearStoredSessionProgress();
+      }
+
       setRun(payload);
-      setStepIndex(0);
-      setEvents([]);
+      setStepIndex(nextStepIndex);
+      setEvents(nextEvents);
       setStepStartedAt(Date.now());
-      setWarmupRetryUsed(false);
-      setReviewOnlyLock(false);
+      setWarmupRetryUsed(nextWarmupRetryUsed);
+      setWarmupInterstitial(nextWarmupInterstitial);
+      setReviewOnlyLock(nextReviewOnlyLock);
       setSwitchOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load session.");
     } finally {
       setLoading(false);
     }
-  }, [flushPendingSync, loadLearningLanes]);
+  }, [flushPendingSync, loadLearningLanes, quickReviewMode]);
 
   useEffect(() => {
     void loadRun();
@@ -358,14 +462,7 @@ export function SessionClient() {
     if (!run) {
       return [];
     }
-    let nextSteps = run.steps;
-    if (quickReviewMode) {
-      nextSteps = nextSteps.filter((step) => step.stage === "REVIEW" || step.stage === "LINK_REPAIR");
-    }
-    if (reviewOnlyLock) {
-      nextSteps = nextSteps.filter((step) => step.stage !== "NEW" && step.stage !== "LINK");
-    }
-    return nextSteps;
+    return applyStepFilters(run.steps, quickReviewMode, reviewOnlyLock);
   }, [quickReviewMode, run, reviewOnlyLock]);
 
   const currentStep = filteredSteps[stepIndex] ?? null;
@@ -513,6 +610,7 @@ export function SessionClient() {
         setActiveSurahCursor(nextSurah, nextCursor);
       }
       setOpenSession(null);
+      clearStoredSessionProgress();
       setSwitchOpen(false);
       await loadRun();
 
@@ -631,7 +729,6 @@ export function SessionClient() {
     currentStep,
     events,
     pushToast,
-    quickReviewMode,
     run,
     stepIndex,
     stepStartedAt,
@@ -647,6 +744,38 @@ export function SessionClient() {
     }
     void completeRun();
   }, [completeRun, done]);
+
+  useEffect(() => {
+    if (!run || done) {
+      return;
+    }
+    writeStoredSessionProgress({
+      sessionId: run.sessionId,
+      localDate: run.localDate,
+      quickReviewMode,
+      stepIndex,
+      events,
+      warmupRetryUsed,
+      warmupInterstitial,
+      reviewOnlyLock,
+    });
+  }, [
+    done,
+    events,
+    quickReviewMode,
+    reviewOnlyLock,
+    run,
+    stepIndex,
+    warmupInterstitial,
+    warmupRetryUsed,
+  ]);
+
+  useEffect(() => {
+    if (!done) {
+      return;
+    }
+    clearStoredSessionProgress();
+  }, [done]);
 
   const rightActions = (
     <div className="flex items-center gap-2">
