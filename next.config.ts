@@ -48,7 +48,7 @@ function decodeBase64Url(value: string): string {
   return Buffer.from(padded, "base64").toString("utf8");
 }
 
-function getClerkFrontendApiOrigin(): string | null {
+function getClerkFrontendApiOriginFromPublishableKey(): string | null {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim()
     || process.env.CLERK_PUBLISHABLE_KEY?.trim();
   if (!publishableKey) {
@@ -72,21 +72,50 @@ function getClerkFrontendApiOrigin(): string | null {
   }
 }
 
-const clerkFrontendApiOrigin = getClerkFrontendApiOrigin();
+function getSiteRootDomainOrigin(): string | null {
+  const site = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+    || process.env.NEXT_PUBLIC_APP_URL?.trim()
+    || "https://hifzer.com";
+  const origin = toHttpOrigin(site);
+  if (!origin) {
+    return null;
+  }
+
+  try {
+    const host = new URL(origin).hostname;
+    const rootDomain = host.replace(/^www\./, "");
+    if (!rootDomain) {
+      return null;
+    }
+    return `https://clerk.${rootDomain}`;
+  } catch {
+    return null;
+  }
+}
+
+const clerkOrigins = unique([
+  getClerkFrontendApiOriginFromPublishableKey(),
+  toHttpOrigin(process.env.NEXT_PUBLIC_CLERK_FRONTEND_API_URL),
+  toHttpOrigin(process.env.CLERK_FRONTEND_API_URL),
+  toHttpOrigin(process.env.NEXT_PUBLIC_CLERK_PROXY_URL),
+  toHttpOrigin(process.env.CLERK_PROXY_URL),
+  getSiteRootDomainOrigin(),
+  "https://clerk.hifzer.com",
+]);
 const cspScriptSrc = unique([
   "'self'",
   "'unsafe-inline'",
   "https://clerk.com",
   "https://*.clerk.com",
   "https://*.clerk.accounts.dev",
-  clerkFrontendApiOrigin,
+  ...clerkOrigins,
   "https://challenges.cloudflare.com",
 ]);
 const cspConnectSrc = unique([
   "'self'",
   "https://*.clerk.accounts.dev",
   "https://*.clerk.com",
-  clerkFrontendApiOrigin,
+  ...clerkOrigins,
   "https://clerk-telemetry.com",
   "https://*.clerk-telemetry.com",
   "https://sentry.io",
@@ -99,8 +128,10 @@ const cspImgSrc = unique([
 ]);
 const cspFrameSrc = unique([
   "'self'",
+  "https://*.clerk.com",
+  "https://*.clerk.accounts.dev",
   "https://challenges.cloudflare.com",
-  clerkFrontendApiOrigin,
+  ...clerkOrigins,
 ]);
 
 const nextConfig: NextConfig = {
