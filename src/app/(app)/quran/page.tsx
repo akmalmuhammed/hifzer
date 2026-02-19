@@ -41,6 +41,15 @@ export default async function QuranIndexPage() {
   const lastAyah = getAyahById(progressAyahId) ?? getAyahById(1);
   const lastSurah = getSurahInfo(lastAyah?.surahNumber ?? 1);
   const surahProgress = lastSurah && lastAyah ? Math.round((lastAyah.ayahNumber / lastSurah.ayahCount) * 100) : 0;
+  const nextSurahNumber = lastSurah &&
+      lastAyah &&
+      lastAyah.ayahNumber >= lastSurah.ayahCount &&
+      lastSurah.surahNumber < 114
+    ? lastSurah.surahNumber + 1
+    : null;
+  const nextSurahHref = nextSurahNumber != null
+    ? `/quran/read?${new URLSearchParams({ view: "compact", surah: String(nextSurahNumber) }).toString()}`
+    : null;
 
   const trackedParams = new URLSearchParams({ view: "compact" });
   if (lastAyah) {
@@ -115,6 +124,15 @@ export default async function QuranIndexPage() {
               Continue where I stopped
               <ArrowRight size={15} />
             </Link>
+            {nextSurahHref ? (
+              <Link
+                href={nextSurahHref}
+                className="mt-3 inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
+              >
+                Go to next surah
+                <ArrowRight size={15} />
+              </Link>
+            ) : null}
           </div>
         </Card>
 

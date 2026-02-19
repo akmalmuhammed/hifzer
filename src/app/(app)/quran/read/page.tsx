@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import {
   filterAyahs,
+  getSurahInfo,
   listJuzs,
   listSurahs,
   resolveCompactCursorAyah,
@@ -136,6 +137,20 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   });
   const clearHref = anonymous ? "/quran/read?anon=1" : "/quran/read";
   const syncAyah = !anonymous && view === "compact" ? compact.current : null;
+  const currentSurahInfo = compact.current ? getSurahInfo(compact.current.surahNumber) : null;
+  const nextSurahNumber = currentSurahInfo &&
+      compact.current &&
+      compact.current.ayahNumber >= currentSurahInfo.ayahCount &&
+      compact.current.surahNumber < 114
+    ? compact.current.surahNumber + 1
+    : null;
+  const nextSurahHref = nextSurahNumber
+    ? `${buildHref({
+      view: "compact",
+      surahNumber: nextSurahNumber,
+      anonymous,
+    })}#${COMPACT_READER_ANCHOR}`
+    : null;
 
   return (
     <div className="pb-12 pt-10 md:pb-16 md:pt-14">
@@ -437,6 +452,14 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
                   className="rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
                 >
                   Next
+                </Link>
+              ) : nextSurahHref ? (
+                <Link
+                  href={nextSurahHref}
+                  scroll={false}
+                  className="rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+                >
+                  Next Surah
                 </Link>
               ) : (
                 <span className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/50 px-3 py-2 text-sm font-semibold text-[color:var(--kw-faint)]">
