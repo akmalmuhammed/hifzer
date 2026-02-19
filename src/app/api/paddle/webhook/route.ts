@@ -1,5 +1,6 @@
 import { EventName, type EventEntity } from "@paddle/paddle-node-sdk";
 import type { Prisma, SubscriptionPlan, SubscriptionStatus } from "@prisma/client";
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { db, dbConfigured } from "@/lib/db";
@@ -154,7 +155,8 @@ export async function POST(req: Request) {
     event = await paddleClient().webhooks.unmarshal(requestBody, paddleWebhookSecret(), signature);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Invalid webhook signature.";
-    return NextResponse.json({ error: message }, { status: 401 });
+    Sentry.captureException(error, { tags: { route: "/api/paddle/webhook" } });
+    return NextResponse.json({ error: "Webhook processing failed." }, { status: 400 });
   }
 
   if (

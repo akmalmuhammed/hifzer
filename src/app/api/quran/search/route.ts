@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { searchQuranAyahs, type QuranSearchScope } from "@/hifzer/quran/search.server";
 
@@ -19,6 +20,11 @@ function parseLimit(raw: string | null): number {
 }
 
 export async function GET(req: Request) {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const url = new URL(req.url);
   const q = (url.searchParams.get("q") ?? "").trim();
   const scope = parseScope(url.searchParams.get("scope"));

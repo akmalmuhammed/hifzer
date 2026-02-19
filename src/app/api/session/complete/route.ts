@@ -97,12 +97,11 @@ export async function POST(req: Request) {
     });
     return NextResponse.json(result);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to complete session.";
     Sentry.captureException(error, {
       tags: { route: "/api/session/complete", method: "POST" },
       user: { id: userId },
       extra: { eventCount: events.length },
     });
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to complete session." }, { status: 500 });
   }
 }

@@ -6,11 +6,17 @@ import { getDashboardOverview } from "@/hifzer/dashboard/server";
 
 export const runtime = "nodejs";
 
-const getCachedDashboardOverview = unstable_cache(
-  async (clerkUserId: string) => getDashboardOverview(clerkUserId),
-  ["dashboard-overview"],
-  { revalidate: 120 },
-);
+function makeCachedDashboardOverview(clerkUserId: string) {
+  return unstable_cache(
+    async () => getDashboardOverview(clerkUserId),
+    // Cache key is user-scoped to prevent cross-user cache contamination
+    [`dashboard-overview:${clerkUserId}`],
+    {
+      revalidate: 120,
+      tags: [`dashboard-overview:${clerkUserId}`],
+    },
+  );
+}
 
 export async function GET() {
   const { userId } = await auth();
@@ -19,7 +25,7 @@ export async function GET() {
   }
 
   try {
-    const overview = await getCachedDashboardOverview(userId);
+    const overview = await makeCachedDashboardOverview(userId)();
     if (!overview) {
       return NextResponse.json({ error: "Database not configured." }, { status: 503 });
     }
@@ -28,7 +34,6 @@ export async function GET() {
       overview,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to load dashboard overview.";
     Sentry.captureException(error, {
       tags: {
         route: "/api/dashboard/overview",
@@ -36,6 +41,6 @@ export async function GET() {
       },
       user: { id: userId },
     });
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to load dashboard overview." }, { status: 500 });
   }
 }

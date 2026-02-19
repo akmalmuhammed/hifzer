@@ -36,12 +36,11 @@ export async function POST(req: Request) {
     const result = await recordBrowseAyahRecitation(userId, Math.floor(ayahId));
     return NextResponse.json(result);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to record recitation.";
     Sentry.captureException(error, {
       tags: { route: "/api/streak/recite", method: "POST" },
       user: { id: userId },
       extra: { ayahId: Math.floor(ayahId), source },
     });
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to record recitation." }, { status: 500 });
   }
 }

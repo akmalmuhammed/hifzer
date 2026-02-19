@@ -54,11 +54,10 @@ export async function POST(req: Request) {
     });
     return NextResponse.json({ ok: true, profile });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to save assessment.";
     Sentry.captureException(error, {
       tags: { route: "/api/profile/assessment", method: "POST" },
       user: { id: userId },
     });
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to save assessment." }, { status: 500 });
   }
 }

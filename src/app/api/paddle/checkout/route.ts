@@ -23,8 +23,7 @@ export async function POST() {
   try {
     priceId = paddlePaidPriceId();
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Paddle is not configured.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Paddle is not configured." }, { status: 500 });
   }
 
   const user = await currentUser();

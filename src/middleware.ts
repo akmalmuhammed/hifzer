@@ -24,6 +24,19 @@ function isProtectedQuranPath(pathname: string): boolean {
   return pathname === "/quran" || pathname.startsWith("/quran/");
 }
 
+/**
+ * SECURITY: Ensures the redirect path is always relative to prevent open redirect.
+ * Rejects anything that looks like an absolute URL (// or scheme://).
+ */
+function safeRedirectPath(pathname: string, search: string): string {
+  const raw = `${pathname}${search}`;
+  // Must start with "/" and must not be protocol-relative "//"
+  if (raw.startsWith("/") && !raw.startsWith("//")) {
+    return raw;
+  }
+  return "/today";
+}
+
 const protectedMiddleware = clerkMiddleware(async (auth, req) => {
   const pathname = req.nextUrl.pathname;
   const shouldProtect = isProtectedRoute(req) || isProtectedQuranPath(pathname);
@@ -34,8 +47,8 @@ const protectedMiddleware = clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
   if (!userId) {
     const signInUrl = new URL("/login", req.url);
-    const redirectPath = `${pathname}${req.nextUrl.search}`;
-    signInUrl.searchParams.set("redirect_url", redirectPath || "/today");
+    const redirectPath = safeRedirectPath(pathname, req.nextUrl.search);
+    signInUrl.searchParams.set("redirect_url", redirectPath);
     return NextResponse.redirect(signInUrl);
   }
 
@@ -45,8 +58,8 @@ const protectedMiddleware = clerkMiddleware(async (auth, req) => {
 export default clerkEnabled()
   ? protectedMiddleware
   : function middleware() {
-      return NextResponse.next();
-    };
+    return NextResponse.next();
+  };
 
 export const config = {
   matcher: ["/((?!_next|.*\\..*).*)"],

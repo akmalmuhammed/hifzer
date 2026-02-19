@@ -4,6 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { emailConfig } from "@/lib/email/config.server";
 import { sendRawEmail } from "@/lib/email/service.server";
 import { invitationTemplate } from "@/lib/email/templates/invitation";
+import { isValidBearerToken } from "@/lib/timing-safe";
+
+const MAX_RECIPIENTS = 100;
 
 type Recipient = {
   email: string;
@@ -15,10 +18,10 @@ type RequestBody = {
 };
 
 export async function POST(req: NextRequest) {
-  // Secured with CRON_SECRET — same pattern as email-reminders job
+  // Secured with CRON_SECRET — timing-safe comparison to prevent side-channel attack
   const authHeader = req.headers.get("authorization");
   const cfg = emailConfig();
-  if (authHeader !== `Bearer ${cfg.cronSecret}`) {
+  if (!isValidBearerToken(authHeader, cfg.cronSecret)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -32,6 +35,13 @@ export async function POST(req: NextRequest) {
   const { recipients } = body;
   if (!Array.isArray(recipients) || recipients.length === 0) {
     return NextResponse.json({ error: "recipients must be a non-empty array" }, { status: 400 });
+  }
+  // Cap batch size to prevent quota exhaustion and memory spikes
+  if (recipients.length > MAX_RECIPIENTS) {
+    return NextResponse.json(
+      { error: `Maximum ${MAX_RECIPIENTS} recipients per request.` },
+      { status: 400 },
+    );
   }
 
   const results: Array<{ email: string; ok: boolean; messageId?: string | null; error?: string }> =

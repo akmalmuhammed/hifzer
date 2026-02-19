@@ -23,6 +23,6 @@ export async function GET() {
       },
       user: { id: userId },
     });
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to load learning lanes." }, { status: 500 });
   }
 }

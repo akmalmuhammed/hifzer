@@ -22,6 +22,40 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          // Prevents MIME-sniffing attacks
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          // Prevents clickjacking via iframe embedding
+          { key: "X-Frame-Options", value: "DENY" },
+          // Controls how much referrer info is sent with requests
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // Disable access to sensitive browser APIs not needed by the app
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          // Force HTTPS for 1 year (only effective when served over HTTPS)
+          { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
+          // Basic Content-Security-Policy — tightened for Clerk + Sentry
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self'",
+              // Next.js requires unsafe-inline for styles; Clerk loads scripts from its CDN
+              "script-src 'self' 'unsafe-inline' https://clerk.com https://*.clerk.accounts.dev https://challenges.cloudflare.com",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "font-src 'self' https://fonts.gstatic.com",
+              "img-src 'self' data: https://img.clerk.com",
+              "connect-src 'self' https://*.clerk.accounts.dev https://sentry.io https://o*.ingest.sentry.io",
+              "frame-src https://challenges.cloudflare.com",
+              "frame-ancestors 'none'",
+            ].join("; "),
+          },
+        ],
+      },
+    ];
+  },
   allowedDevOrigins: [
     "http://localhost",
     "http://127.0.0.1",

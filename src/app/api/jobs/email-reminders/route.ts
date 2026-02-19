@@ -2,19 +2,14 @@ import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { emailConfig } from "@/lib/email/config.server";
 import { runReminderScheduler } from "@/lib/email/reminder-scheduler.server";
+import { isValidBearerToken } from "@/lib/timing-safe";
 
 export const runtime = "nodejs";
 
 function authorized(req: Request): boolean {
   const header = req.headers.get("authorization");
-  if (!header || !header.toLowerCase().startsWith("bearer ")) {
-    return false;
-  }
-  const token = header.slice(7).trim();
-  if (!token) {
-    return false;
-  }
-  return token === emailConfig().cronSecret;
+  // Use timing-safe comparison to prevent side-channel secret extraction
+  return isValidBearerToken(header, emailConfig().cronSecret);
 }
 
 async function handleCron(req: Request, method: "GET" | "POST") {
@@ -39,8 +34,7 @@ async function handleCron(req: Request, method: "GET" | "POST") {
         template: "daily_practice_reminder",
       },
     });
-    const message = error instanceof Error ? error.message : "Reminder scheduler failed.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Reminder scheduler failed." }, { status: 500 });
   }
 }
 

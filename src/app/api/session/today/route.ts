@@ -28,11 +28,10 @@ export async function GET() {
         : null,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to build today state.";
     Sentry.captureException(error, {
       tags: { route: "/api/session/today", method: "GET" },
       user: { id: userId },
     });
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to build today state." }, { status: 500 });
   }
 }

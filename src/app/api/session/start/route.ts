@@ -15,11 +15,10 @@ export async function POST() {
     const result = await startTodaySession(userId);
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to start session.";
     Sentry.captureException(error, {
       tags: { route: "/api/session/start", method: "POST" },
       user: { id: userId },
     });
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to start session." }, { status: 500 });
   }
 }

@@ -92,11 +92,10 @@ export async function GET() {
       recentSessions,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to load progress summary.";
     Sentry.captureException(error, {
       tags: { route: "/api/progress/summary", method: "GET" },
       user: { id: userId },
     });
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to load progress summary." }, { status: 500 });
   }
 }

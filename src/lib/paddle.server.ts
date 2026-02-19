@@ -16,6 +16,15 @@ function readRequiredEnv(name: string): string {
 
 function resolveEnvironment(): Environment {
   const value = process.env.PADDLE_ENVIRONMENT?.trim().toLowerCase();
+  // SECURITY: In production, Paddle must be explicitly set to production mode.
+  // A missing or mistyped env var would silently route real users through sandbox
+  // (no actual charges), creating fraudulent-subscription risk.
+  if (process.env.NODE_ENV === "production" && value !== "production") {
+    throw new Error(
+      "PADDLE_ENVIRONMENT must be set to 'production' in production builds. " +
+      `Got: ${JSON.stringify(value ?? "")}`
+    );
+  }
   return value === "production" ? Environment.production : Environment.sandbox;
 }
 
