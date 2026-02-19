@@ -170,6 +170,10 @@ const cspImgSrc = unique([
   "data:",
   "https://img.clerk.com",
 ]);
+const cspMediaSrc = unique([
+  "'self'",
+  toHttpOrigin(process.env.NEXT_PUBLIC_HIFZER_AUDIO_BASE_URL?.trim()),
+]);
 const cspFrameSrc = unique([
   "'self'",
   "https://*.clerk.com",
@@ -225,6 +229,7 @@ const nextConfig: NextConfig = {
               `style-src ${cspStyleSrc.join(" ")}`,
               `font-src ${cspFontSrc.join(" ")}`,
               `img-src ${cspImgSrc.join(" ")}`,
+              `media-src ${cspMediaSrc.join(" ")}`,
               `connect-src ${cspConnectSrc.join(" ")}`,
               "worker-src 'self' blob:",
               `frame-src ${cspFrameSrc.join(" ")}`,
