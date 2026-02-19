@@ -152,6 +152,7 @@ const cspScriptSrc = unique([
   ...clerkOrigins,
   ...clerkAccountOrigins,
   "https://challenges.cloudflare.com",
+  "https://www.googletagmanager.com",
 ]);
 const cspStyleSrc = unique([
   "'self'",
@@ -181,6 +182,8 @@ const cspConnectSrc = unique([
   "https://*.clerk-telemetry.com",
   "https://sentry.io",
   "https://o*.ingest.sentry.io",
+  "https://www.googletagmanager.com",
+  "https://www.google-analytics.com",
 ]);
 const cspImgSrc = unique([
   "'self'",
@@ -245,7 +248,7 @@ const nextConfig: NextConfig = {
               `connect-src ${cspConnectSrc.join(" ")}`,
               "worker-src 'self' blob:",
               `frame-src ${cspFrameSrc.join(" ")}`,
-              "form-action 'self'",
+              `form-action 'self' ${[...clerkOrigins, ...clerkAccountOrigins].join(" ")}`,
               "frame-ancestors 'none'",
             ].join("; "),
           },
