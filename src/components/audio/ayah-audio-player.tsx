@@ -32,6 +32,7 @@ export function AyahAudioPlayer(props: {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const repeatLeftRef = useRef(0);
   const streakMarkedRef = useRef(false);
+  const isScrubbingRef = useRef(false);
 
   const [playing, setPlaying] = useState(false);
   const [repeatCount, setRepeatCount] = useState(1);
@@ -71,6 +72,9 @@ export function AyahAudioPlayer(props: {
     const audioEl: HTMLAudioElement = audio;
 
     function syncTime() {
+      if (isScrubbingRef.current) {
+        return;
+      }
       setCurrentTime(audioEl.currentTime);
       setDuration(Number.isFinite(audioEl.duration) ? audioEl.duration : 0);
     }
@@ -145,6 +149,24 @@ export function AyahAudioPlayer(props: {
     audio.pause();
   }
 
+  function seekToTime(nextTime: number) {
+    const audio = audioRef.current;
+    if (!audio || !Number.isFinite(duration) || duration <= 0) {
+      return;
+    }
+    const clamped = Math.max(0, Math.min(duration, nextTime));
+    audio.currentTime = clamped;
+    setCurrentTime(clamped);
+  }
+
+  function onSeekInput(rawValue: string) {
+    const value = Number(rawValue);
+    if (!Number.isFinite(value)) {
+      return;
+    }
+    seekToTime(value);
+  }
+
   const disabled = !src;
 
   return (
@@ -187,10 +209,34 @@ export function AyahAudioPlayer(props: {
                 </span>
               )}
             </div>
-            <div className="mt-1 h-1.5 w-44 overflow-hidden rounded-full bg-black/[0.06]">
-              <div
-                className="h-full rounded-full bg-[rgba(31,54,217,0.75)] transition-[width]"
-                style={{ width: `${progress01 * 100}%` }}
+            <div className="relative mt-1 w-44">
+              <div className="h-1.5 overflow-hidden rounded-full bg-black/[0.06]">
+                <div
+                  className="h-full rounded-full bg-[rgba(31,54,217,0.75)] transition-[width]"
+                  style={{ width: `${progress01 * 100}%` }}
+                />
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={duration > 0 ? duration : 0}
+                step={0.01}
+                value={currentTime}
+                disabled={disabled || duration <= 0}
+                onPointerDown={() => {
+                  isScrubbingRef.current = true;
+                }}
+                onPointerUp={() => {
+                  isScrubbingRef.current = false;
+                }}
+                onBlur={() => {
+                  isScrubbingRef.current = false;
+                }}
+                onInput={(event) => onSeekInput(event.currentTarget.value)}
+                onChange={(event) => onSeekInput(event.currentTarget.value)}
+                className="absolute inset-0 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
+                aria-label="Seek audio position"
+                title="Drag to seek"
               />
             </div>
           </div>
@@ -235,4 +281,3 @@ export function AyahAudioPlayer(props: {
     </div>
   );
 }
-
