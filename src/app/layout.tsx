@@ -65,7 +65,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const authEnabled = clerkEnabled();
-  const clerkDomain = process.env.NEXT_PUBLIC_CLERK_DOMAIN || undefined;
   return (
     <html
       lang="en"
@@ -95,7 +94,6 @@ gtag('config', 'G-C145MM3CEX');`,
         </a>
         {authEnabled ? (
           <ClerkProvider
-            {...(clerkDomain ? { domain: clerkDomain } : {})}
             signInUrl={clerkAuthRoutes.signInUrl}
             signUpUrl={clerkAuthRoutes.signUpUrl}
             signInForceRedirectUrl={clerkAuthRoutes.signInForceRedirectUrl}
