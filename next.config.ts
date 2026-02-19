@@ -31,6 +31,17 @@ function toHttpOrigin(value: string | undefined): string | null {
   }
 }
 
+function frontendApiToOrigin(value: string): string | null {
+  const cleaned = value.trim().replace(/\$$/, "");
+  if (!cleaned) {
+    return null;
+  }
+  const withScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(cleaned)
+    ? cleaned
+    : `https://${cleaned}`;
+  return toHttpOrigin(withScheme);
+}
+
 function decodeBase64Url(value: string): string {
   const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
   const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
@@ -55,7 +66,7 @@ function getClerkFrontendApiOrigin(): string | null {
   }
 
   try {
-    return toHttpOrigin(decodeBase64Url(encodedFrontendApi));
+    return frontendApiToOrigin(decodeBase64Url(encodedFrontendApi));
   } catch {
     return null;
   }
@@ -89,6 +100,7 @@ const cspImgSrc = unique([
 const cspFrameSrc = unique([
   "'self'",
   "https://challenges.cloudflare.com",
+  clerkFrontendApiOrigin,
 ]);
 
 const nextConfig: NextConfig = {
