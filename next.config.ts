@@ -1,6 +1,96 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
+function unique(values: Array<string | null | undefined>): string[] {
+  const out = new Set<string>();
+  for (const value of values) {
+    if (!value) {
+      continue;
+    }
+    const trimmed = value.trim();
+    if (trimmed.length === 0) {
+      continue;
+    }
+    out.add(trimmed);
+  }
+  return [...out];
+}
+
+function toHttpOrigin(value: string | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+      return null;
+    }
+    return parsed.origin;
+  } catch {
+    return null;
+  }
+}
+
+function decodeBase64Url(value: string): string {
+  const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+  return Buffer.from(padded, "base64").toString("utf8");
+}
+
+function getClerkFrontendApiOrigin(): string | null {
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim()
+    || process.env.CLERK_PUBLISHABLE_KEY?.trim();
+  if (!publishableKey) {
+    return null;
+  }
+
+  const match = /^pk_(?:test|live)_(.+)$/.exec(publishableKey);
+  if (!match) {
+    return null;
+  }
+
+  const encodedFrontendApi = match[1].split("$")[0];
+  if (!encodedFrontendApi) {
+    return null;
+  }
+
+  try {
+    return toHttpOrigin(decodeBase64Url(encodedFrontendApi));
+  } catch {
+    return null;
+  }
+}
+
+const clerkFrontendApiOrigin = getClerkFrontendApiOrigin();
+const cspScriptSrc = unique([
+  "'self'",
+  "'unsafe-inline'",
+  "https://clerk.com",
+  "https://*.clerk.com",
+  "https://*.clerk.accounts.dev",
+  clerkFrontendApiOrigin,
+  "https://challenges.cloudflare.com",
+]);
+const cspConnectSrc = unique([
+  "'self'",
+  "https://*.clerk.accounts.dev",
+  "https://*.clerk.com",
+  clerkFrontendApiOrigin,
+  "https://clerk-telemetry.com",
+  "https://*.clerk-telemetry.com",
+  "https://sentry.io",
+  "https://o*.ingest.sentry.io",
+]);
+const cspImgSrc = unique([
+  "'self'",
+  "data:",
+  "https://img.clerk.com",
+]);
+const cspFrameSrc = unique([
+  "'self'",
+  "https://challenges.cloudflare.com",
+]);
+
 const nextConfig: NextConfig = {
   typedRoutes: false,
   async redirects() {
@@ -42,13 +132,15 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              // Next.js requires unsafe-inline for styles; Clerk loads scripts from its CDN
-              "script-src 'self' 'unsafe-inline' https://clerk.com https://*.clerk.accounts.dev https://challenges.cloudflare.com",
+              // Keep Clerk working across dev + prod instances (different frontend API hostnames)
+              `script-src ${cspScriptSrc.join(" ")}`,
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: https://img.clerk.com",
-              "connect-src 'self' https://*.clerk.accounts.dev https://sentry.io https://o*.ingest.sentry.io",
-              "frame-src https://challenges.cloudflare.com",
+              `img-src ${cspImgSrc.join(" ")}`,
+              `connect-src ${cspConnectSrc.join(" ")}`,
+              "worker-src 'self' blob:",
+              `frame-src ${cspFrameSrc.join(" ")}`,
+              "form-action 'self'",
               "frame-ancestors 'none'",
             ].join("; "),
           },
