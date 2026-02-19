@@ -60,7 +60,16 @@ Compatibility redirects:
 
 ## Auth (Clerk)
 
-Clerk is scaffolded and enabled when both `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` are set.
+Clerk is enabled when both `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` are set.
+
+Route model:
+
+- Public auth URLs remain `/login` and `/signup`.
+- Internally these now use catch-all routes:
+  - `src/app/(auth)/login/[[...login]]/page.tsx`
+  - `src/app/(auth)/signup/[[...signup]]/page.tsx`
+- Do not point Clerk app-domain auth to `/sign-in` in this repo:
+  `/sign-in` is reserved as a legacy redirect to `/legacy/sign-in`.
 
 Recommended redirect contract:
 
@@ -71,9 +80,25 @@ Recommended redirect contract:
 - `NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/today`
 - `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/today`
 
+Fresh-start baseline:
+
+- Keep only required Clerk env vars for initial rollout:
+  - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+  - `CLERK_SECRET_KEY`
+- For phase-1 isolation, leave these unset:
+  - `HIFZER_TEST_AUTH_BYPASS`
+  - `NEXT_PUBLIC_CLERK_FRONTEND_API_URL`
+  - `CLERK_FRONTEND_API_URL`
+  - `NEXT_PUBLIC_CLERK_DOMAIN`
+  - `CLERK_DOMAIN`
+  - `NEXT_PUBLIC_CLERK_PROXY_URL`
+  - `CLERK_PROXY_URL`
+
 - `middleware.ts` protects app + onboarding routes when Clerk is configured.
 - App gating now also checks Prisma `UserProfile.onboardingCompletedAt` in `(app)` layout.
 - Onboarding redirects are driven by DB-backed profile state, not middleware cookie checks.
+
+Runbook: see `docs/clerk-reset-runbook.md`.
 
 ## Monitoring (No DB Writes)
 

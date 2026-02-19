@@ -53,6 +53,8 @@ export default async function SignupPage() {
         ) : (
           <div className="grid place-items-center py-6">
             <SignUp
+              path="/signup"
+              routing="path"
               forceRedirectUrl={clerkAuthRoutes.signUpForceRedirectUrl}
               fallbackRedirectUrl={clerkAuthRoutes.signUpFallbackRedirectUrl}
             />

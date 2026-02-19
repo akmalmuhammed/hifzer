@@ -31,20 +31,6 @@ function toHttpOrigin(value: string | undefined): string | null {
   }
 }
 
-function toOriginOrHttpsHost(value: string | undefined): string | null {
-  if (!value) {
-    return null;
-  }
-  const trimmed = value.trim();
-  if (!trimmed || trimmed.startsWith("/")) {
-    return null;
-  }
-  const withScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)
-    ? trimmed
-    : `https://${trimmed}`;
-  return toHttpOrigin(withScheme);
-}
-
 function frontendApiToOrigin(value: string): string | null {
   const cleaned = value.trim().replace(/\$$/, "");
   if (!cleaned) {
@@ -130,12 +116,6 @@ function getSiteRootAccountOrigin(): string | null {
 
 const clerkOrigins = unique([
   getClerkFrontendApiOriginFromPublishableKey(),
-  toOriginOrHttpsHost(process.env.NEXT_PUBLIC_CLERK_FRONTEND_API_URL),
-  toOriginOrHttpsHost(process.env.CLERK_FRONTEND_API_URL),
-  toOriginOrHttpsHost(process.env.NEXT_PUBLIC_CLERK_PROXY_URL),
-  toOriginOrHttpsHost(process.env.CLERK_PROXY_URL),
-  toOriginOrHttpsHost(process.env.NEXT_PUBLIC_CLERK_DOMAIN),
-  toOriginOrHttpsHost(process.env.CLERK_DOMAIN),
   getSiteRootDomainOrigin(),
   "https://clerk.hifzer.com",
 ]);

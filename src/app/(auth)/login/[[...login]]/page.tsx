@@ -56,6 +56,8 @@ export default async function LoginPage() {
         ) : (
           <div className="grid place-items-center py-6">
             <SignIn
+              path="/login"
+              routing="path"
               forceRedirectUrl={clerkAuthRoutes.signInForceRedirectUrl}
               fallbackRedirectUrl={clerkAuthRoutes.signInFallbackRedirectUrl}
             />

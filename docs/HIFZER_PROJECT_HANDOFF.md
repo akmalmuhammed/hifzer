@@ -256,7 +256,16 @@ Feature flags/config:
 
 - `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN`
 - `NEXT_PUBLIC_HIFZER_AUDIO_BASE_URL`
-- `HIFZER_TEST_AUTH_BYPASS=1` (test-only; Playwright server context)
+- `HIFZER_TEST_AUTH_BYPASS=1` (test-only; never set in production)
+
+Clerk reset guidance:
+
+- Keep production auth URLs on `/login` and `/signup`.
+- Internally use catch-all Clerk routes:
+  - `src/app/(auth)/login/[[...login]]/page.tsx`
+  - `src/app/(auth)/signup/[[...signup]]/page.tsx`
+- Keep `/sign-in` reserved for the existing legacy redirect.
+- For baseline key rotation, unset optional Clerk domain/proxy/FAPI env vars.
 
 ## 9. Testing and Quality Gates
 
