@@ -406,9 +406,17 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
                   {compact.index + 1} / {ayahs.length}
                 </span>
               </div>
-              <div className="w-full sm:w-auto">
+              <div className="w-full sm:w-auto flex items-start justify-end gap-2">
+                <ReaderBookmarkControl
+                  ayahId={compact.current.id}
+                  surahNumber={compact.current.surahNumber}
+                  ayahNumber={compact.current.ayahNumber}
+                  anonymous={anonymous}
+                  className="shrink-0"
+                />
                 <AyahAudioPlayer
                   ayahId={compact.current.id}
+                  className="w-full sm:w-auto"
                   streakTrackSource={anonymous ? undefined : "quran_browse"}
                 />
               </div>
@@ -420,12 +428,6 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
             <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
               {getSahihTranslationByAyahId(compact.current.id) ?? "Translation unavailable"}
             </p>
-            <ReaderBookmarkControl
-              ayahId={compact.current.id}
-              surahNumber={compact.current.surahNumber}
-              ayahNumber={compact.current.ayahNumber}
-              anonymous={anonymous}
-            />
 
             <div className="mt-6 flex items-center gap-2">
               {compact.prevAyahId ? (
