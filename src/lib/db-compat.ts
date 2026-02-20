@@ -7,6 +7,7 @@ let coreSchemaCapabilitiesPromise: Promise<CoreSchemaCapabilities> | null = null
 
 export type CoreSchemaCapabilities = {
   hasQuranLaneColumns: boolean;
+  hasSessionModernColumns: boolean;
   hasSessionPlanJson: boolean;
 };
 
@@ -29,7 +30,7 @@ function resolveDbSchemaName(): string {
 
 async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
   if (!dbConfigured()) {
-    return { hasQuranLaneColumns: false, hasSessionPlanJson: false };
+    return { hasQuranLaneColumns: false, hasSessionModernColumns: false, hasSessionPlanJson: false };
   }
 
   const prisma = db();
@@ -42,7 +43,19 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
       WHERE table_schema = ${schema}
         AND (
           (LOWER(table_name) = LOWER('UserProfile') AND LOWER(column_name) IN (LOWER('quranActiveSurahNumber'), LOWER('quranCursorAyahId')))
-          OR (LOWER(table_name) = LOWER('Session') AND LOWER(column_name) = LOWER('planJson'))
+          OR (
+            LOWER(table_name) = LOWER('Session')
+            AND LOWER(column_name) IN (
+              LOWER('mode'),
+              LOWER('newUnlocked'),
+              LOWER('reviewDebtMinutesAtStart'),
+              LOWER('warmupPassed'),
+              LOWER('warmupRetryUsed'),
+              LOWER('weeklyGateRequired'),
+              LOWER('weeklyGatePassed'),
+              LOWER('planJson')
+            )
+          )
         )
     `;
 
@@ -60,11 +73,19 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
     return {
       hasQuranLaneColumns:
         profileColumns.has("quranactivesurahnumber") && profileColumns.has("qurancursorayahid"),
+      hasSessionModernColumns:
+        sessionColumns.has("mode") &&
+        sessionColumns.has("newunlocked") &&
+        sessionColumns.has("reviewdebtminutesatstart") &&
+        sessionColumns.has("warmuppassed") &&
+        sessionColumns.has("warmupretryused") &&
+        sessionColumns.has("weeklygaterequired") &&
+        sessionColumns.has("weeklygatepassed"),
       hasSessionPlanJson: sessionColumns.has("planjson"),
     };
   } catch {
     // Fail-safe: assume legacy schema if capability probing fails.
-    return { hasQuranLaneColumns: false, hasSessionPlanJson: false };
+    return { hasQuranLaneColumns: false, hasSessionModernColumns: false, hasSessionPlanJson: false };
   }
 }
 
@@ -273,6 +294,7 @@ export async function ensureCoreSchemaCompatibility(): Promise<void> {
       `);
       coreSchemaCapabilitiesPromise = Promise.resolve({
         hasQuranLaneColumns: true,
+        hasSessionModernColumns: true,
         hasSessionPlanJson: true,
       });
     })().catch((error) => {

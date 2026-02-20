@@ -1,12 +1,13 @@
 import "server-only";
 
 import type {
+  AyahReview,
   AttemptStage,
   Prisma,
   ReviewPhase,
-  Session,
   SrsGrade,
   UserProfile,
+  WeakTransition,
 } from "@prisma/client";
 import { db } from "@/lib/db";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
@@ -25,6 +26,7 @@ import type { SessionEventInput, SessionStep, TodayEngineResult, TodayQueuePlan 
 import { applyGrade, defaultReviewState } from "@/hifzer/srs/update";
 import { getAyahById, verseRefFromAyahId } from "@/hifzer/quran/lookup.server";
 import { listSahihTranslationsForAyahIds } from "@/hifzer/quran/translation.server";
+import { getCoreSchemaCapabilities } from "@/lib/db-compat";
 
 function shiftIsoDate(iso: string, days: number): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
@@ -318,6 +320,57 @@ function toReviewPhase(phase: SessionEventInput["phase"]): ReviewPhase {
   return phase;
 }
 
+function looksLikeMissingCoreSchema(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    message.includes("P2021") ||
+    message.includes("P2022") ||
+    /column .* does not exist/i.test(message) ||
+    /relation .* does not exist/i.test(message)
+  );
+}
+
+async function withMissingSchemaFallback<T>(run: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await run();
+  } catch (error) {
+    if (!looksLikeMissingCoreSchema(error)) {
+      throw error;
+    }
+    return fallback;
+  }
+}
+
+type OpenSessionRecord = {
+  id: string;
+  startedAt: Date;
+  localDate: string;
+  mode: UserProfile["mode"];
+  weeklyGateRequired: boolean;
+  newUnlocked: boolean;
+  planJson: Prisma.JsonValue | null;
+};
+
+function toOpenSessionRecord(input: {
+  id: string;
+  startedAt: Date;
+  localDate: string;
+  mode?: UserProfile["mode"] | null;
+  weeklyGateRequired?: boolean | null;
+  newUnlocked?: boolean | null;
+  planJson?: Prisma.JsonValue | null;
+}): OpenSessionRecord {
+  return {
+    id: input.id,
+    startedAt: input.startedAt,
+    localDate: input.localDate,
+    mode: input.mode ?? "NORMAL",
+    weeklyGateRequired: input.weeklyGateRequired ?? false,
+    newUnlocked: input.newUnlocked ?? true,
+    planJson: input.planJson ?? null,
+  };
+}
+
 async function findLastCompletedLocalDate(profileId: string): Promise<string | null> {
   const prisma = db();
   const row = await prisma.session.findFirst({
@@ -384,12 +437,30 @@ export async function loadTodayState(clerkUserId: string): Promise<{
   const prisma = db();
   const now = new Date();
   const localDate = isoDateInTimeZone(now, profile.timezone);
-  const [allReviews, weakTransitions, lastCompletedLocalDate, retention3dAvg, weeklyDue] = await Promise.all([
-    prisma.ayahReview.findMany({ where: { userId: profile.id } }),
-    prisma.weakTransition.findMany({ where: { userId: profile.id } }),
-    findLastCompletedLocalDate(profile.id),
-    loadRetention3d(profile.id, now),
-    weeklyGateDue(profile.id, now),
+  const capabilities = await getCoreSchemaCapabilities();
+  const hasSessionModernColumns = capabilities.hasSessionModernColumns;
+
+  const [allReviews, weakTransitions, lastCompletedLocalDate, retention3dAvg, weeklyDue, yesterdayNew] = await Promise.all([
+    hasSessionModernColumns
+      ? withMissingSchemaFallback<AyahReview[]>(
+          () => prisma.ayahReview.findMany({ where: { userId: profile.id } }),
+          [],
+        )
+      : Promise.resolve<AyahReview[]>([]),
+    hasSessionModernColumns
+      ? withMissingSchemaFallback<WeakTransition[]>(
+          () => prisma.weakTransition.findMany({ where: { userId: profile.id } }),
+          [],
+        )
+      : Promise.resolve<WeakTransition[]>([]),
+    withMissingSchemaFallback<string | null>(() => findLastCompletedLocalDate(profile.id), null),
+    hasSessionModernColumns
+      ? withMissingSchemaFallback<number>(() => loadRetention3d(profile.id, now), 2)
+      : Promise.resolve(2),
+    hasSessionModernColumns
+      ? withMissingSchemaFallback<boolean>(() => weeklyGateDue(profile.id, now), true)
+      : Promise.resolve(true),
+    withMissingSchemaFallback<number[]>(() => yesterdayNewAyahIds(profile.id, localDate), []),
   ]);
   const dueReviews = allReviews.filter((r) => r.nextReviewAt.getTime() <= now.getTime());
   const dueSoonHorizon = now.getTime() + (6 * 60 * 60 * 1000);
@@ -400,7 +471,6 @@ export async function loadTodayState(clerkUserId: string): Promise<{
   const nextDueAtDate = allReviews
     .map((r) => r.nextReviewAt)
     .sort((a, b) => a.getTime() - b.getTime())[0] ?? null;
-  const yesterdayNew = await yesterdayNewAyahIds(profile.id, localDate);
 
   let state = buildTodayEngineQueue({
     profile,
@@ -432,32 +502,115 @@ async function ensureOpenSession(
   profile: UserProfile,
   state: TodayEngineResult,
   steps: SessionStep[],
-): Promise<{ session: Session; state: TodayEngineResult; steps: SessionStep[] }> {
+): Promise<{ session: OpenSessionRecord; state: TodayEngineResult; steps: SessionStep[] }> {
   const prisma = db();
-  const existing = await prisma.session.findFirst({
-    where: {
-      userId: profile.id,
-      status: "OPEN",
-      localDate: state.localDate,
-    },
-    orderBy: { startedAt: "desc" },
-  });
-  if (existing) {
-    const plan = parseSessionPlanSnapshot(existing.planJson);
-    if (plan && plan.localDate === existing.localDate) {
-      return {
-        session: existing,
-        state: stateWithSessionPlan(state, plan),
-        steps: plan.steps,
-      };
+  const capabilities = await getCoreSchemaCapabilities();
+  const hasSessionModernColumns = capabilities.hasSessionModernColumns;
+  const hasSessionPlanJson = hasSessionModernColumns && capabilities.hasSessionPlanJson;
+
+  let existing: OpenSessionRecord | null;
+  if (hasSessionModernColumns) {
+    if (hasSessionPlanJson) {
+      const row = await withMissingSchemaFallback(
+        () =>
+          prisma.session.findFirst({
+            where: {
+              userId: profile.id,
+              status: "OPEN",
+              localDate: state.localDate,
+            },
+            orderBy: { startedAt: "desc" },
+            select: {
+              id: true,
+              startedAt: true,
+              localDate: true,
+              mode: true,
+              weeklyGateRequired: true,
+              newUnlocked: true,
+              planJson: true,
+            },
+          }),
+        null,
+      );
+      existing = row ? toOpenSessionRecord(row) : null;
+    } else {
+      const row = await withMissingSchemaFallback(
+        () =>
+          prisma.session.findFirst({
+            where: {
+              userId: profile.id,
+              status: "OPEN",
+              localDate: state.localDate,
+            },
+            orderBy: { startedAt: "desc" },
+            select: {
+              id: true,
+              startedAt: true,
+              localDate: true,
+              mode: true,
+              weeklyGateRequired: true,
+              newUnlocked: true,
+            },
+          }),
+        null,
+      );
+      existing = row ? toOpenSessionRecord(row) : null;
     }
-    const updated = await prisma.session.update({
-      where: { id: existing.id },
-      data: {
-        planJson: buildSessionPlanSnapshot(existing.localDate, state, steps),
-      },
-    });
-    return { session: updated, state, steps };
+  } else {
+    const row = await withMissingSchemaFallback(
+      () =>
+        prisma.session.findFirst({
+          where: {
+            userId: profile.id,
+            status: "OPEN",
+            localDate: state.localDate,
+          },
+          orderBy: { startedAt: "desc" },
+          select: {
+            id: true,
+            startedAt: true,
+            localDate: true,
+          },
+        }),
+      null,
+    );
+    existing = row ? toOpenSessionRecord(row) : null;
+  }
+
+  if (existing) {
+    if (hasSessionPlanJson) {
+      const plan = parseSessionPlanSnapshot(existing.planJson);
+      if (plan && plan.localDate === existing.localDate) {
+        return {
+          session: existing,
+          state: stateWithSessionPlan(state, plan),
+          steps: plan.steps,
+        };
+      }
+      const updated = await withMissingSchemaFallback(
+        () =>
+          prisma.session.update({
+            where: { id: existing.id },
+            data: {
+              planJson: buildSessionPlanSnapshot(existing.localDate, state, steps),
+            },
+            select: {
+              id: true,
+              startedAt: true,
+              localDate: true,
+              mode: true,
+              weeklyGateRequired: true,
+              newUnlocked: true,
+              planJson: true,
+            },
+          }),
+        null,
+      );
+      if (updated) {
+        return { session: toOpenSessionRecord(updated), state, steps };
+      }
+    }
+    return { session: existing, state, steps };
   }
 
   const reviewAyahIds = [
@@ -466,28 +619,91 @@ async function ensureOpenSession(
     ...state.queue.manzilReviewAyahIds,
   ];
 
-  const session = await prisma.session.create({
+  if (hasSessionModernColumns) {
+    if (hasSessionPlanJson) {
+      const session = await prisma.session.create({
+        data: {
+          userId: profile.id,
+          status: "OPEN",
+          localDate: state.localDate,
+          mode: state.mode,
+          reviewDebtMinutesAtStart: Math.round(state.reviewDebtMinutes),
+          warmupPassed: state.warmupRequired ? null : true,
+          warmupRetryUsed: false,
+          weeklyGateRequired: state.weeklyGateRequired,
+          weeklyGatePassed: state.weeklyGateRequired ? null : true,
+          newUnlocked: state.newUnlocked,
+          warmupAyahIds: state.queue.warmupAyahIds,
+          reviewAyahIds,
+          newStartAyahId: state.queue.newAyahIds[0] ?? null,
+          newEndAyahId: state.queue.newAyahIds.length
+            ? state.queue.newAyahIds[state.queue.newAyahIds.length - 1]
+            : null,
+          planJson: buildSessionPlanSnapshot(state.localDate, state, steps),
+        },
+        select: {
+          id: true,
+          startedAt: true,
+          localDate: true,
+          mode: true,
+          weeklyGateRequired: true,
+          newUnlocked: true,
+          planJson: true,
+        },
+      });
+      return { session: toOpenSessionRecord(session), state, steps };
+    }
+
+    const session = await prisma.session.create({
+      data: {
+        userId: profile.id,
+        status: "OPEN",
+        localDate: state.localDate,
+        mode: state.mode,
+        reviewDebtMinutesAtStart: Math.round(state.reviewDebtMinutes),
+        warmupPassed: state.warmupRequired ? null : true,
+        warmupRetryUsed: false,
+        weeklyGateRequired: state.weeklyGateRequired,
+        weeklyGatePassed: state.weeklyGateRequired ? null : true,
+        newUnlocked: state.newUnlocked,
+        warmupAyahIds: state.queue.warmupAyahIds,
+        reviewAyahIds,
+        newStartAyahId: state.queue.newAyahIds[0] ?? null,
+        newEndAyahId: state.queue.newAyahIds.length
+          ? state.queue.newAyahIds[state.queue.newAyahIds.length - 1]
+          : null,
+      },
+      select: {
+        id: true,
+        startedAt: true,
+        localDate: true,
+        mode: true,
+        weeklyGateRequired: true,
+        newUnlocked: true,
+      },
+    });
+    return { session: toOpenSessionRecord(session), state, steps };
+  }
+
+  const legacySession = await prisma.session.create({
     data: {
       userId: profile.id,
       status: "OPEN",
       localDate: state.localDate,
-      mode: state.mode,
-      reviewDebtMinutesAtStart: Math.round(state.reviewDebtMinutes),
-      warmupPassed: state.warmupRequired ? null : true,
-      warmupRetryUsed: false,
-      weeklyGateRequired: state.weeklyGateRequired,
-      weeklyGatePassed: state.weeklyGateRequired ? null : true,
-      newUnlocked: state.newUnlocked,
       warmupAyahIds: state.queue.warmupAyahIds,
       reviewAyahIds,
       newStartAyahId: state.queue.newAyahIds[0] ?? null,
       newEndAyahId: state.queue.newAyahIds.length
         ? state.queue.newAyahIds[state.queue.newAyahIds.length - 1]
         : null,
-      planJson: buildSessionPlanSnapshot(state.localDate, state, steps),
+    },
+    select: {
+      id: true,
+      startedAt: true,
+      localDate: true,
     },
   });
-  return { session, state, steps };
+  return { session: toOpenSessionRecord(legacySession), state, steps };
 }
 
 export async function startTodaySession(clerkUserId: string) {
