@@ -383,6 +383,25 @@ html[data-mode="dark"] [class~="focus:bg-white"]:focus {
   animation: kw-float 10s ease-in-out infinite;
 }
 
+@keyframes kw-beta-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.kw-beta-marquee-track {
+  animation: kw-beta-marquee 24s linear infinite;
+}
+
+.kw-beta-marquee-segment {
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding-inline: 1.25rem;
+}
+
 .kw-glass {
   background: var(--kw-card);
   border: 1px solid var(--kw-border-2);
@@ -560,6 +579,10 @@ html[data-mode="dark"] .kw-wind-animated .kw-wind-paths {
 /* ── Reduced motion ──────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
+  .kw-beta-marquee-track {
+    animation: none !important;
+  }
+
   .kw-stars-sm,
   .kw-stars-md,
   .kw-stars-lg {

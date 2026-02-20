@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, IBM_Plex_Mono, Amiri } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { AppProviders } from "@/components/providers/app-providers";
+import { PublicBetaBanner } from "@/components/site/public-beta-banner";
 import { clerkAuthRoutes } from "@/lib/auth-redirects";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { getSiteUrl } from "@/lib/site-url";
@@ -92,6 +93,7 @@ gtag('config', 'G-C145MM3CEX');`,
         >
           Skip to main content
         </a>
+        <PublicBetaBanner />
         {authEnabled ? (
           <ClerkProvider
             signInUrl={clerkAuthRoutes.signInUrl}
