@@ -1,9 +1,14 @@
 .calendarFrame {
+  --streak-future-bg: rgba(11, 18, 32, 0.05);
+  --streak-ineligible-bg: rgba(11, 18, 32, 0.04);
+  --streak-ring-rest: rgba(11, 18, 32, 0.12);
+  --streak-ring-inner: rgba(255, 255, 255, 0.62);
+
   border: 1px solid var(--kw-border-2);
   border-radius: 18px;
   background:
     radial-gradient(circle at 12% 10%, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0)),
-    rgba(255, 255, 255, 0.7);
+    var(--kw-surface);
   padding: 14px;
 }
 
@@ -42,12 +47,12 @@
 }
 
 .calendarCell {
-  color: rgba(11, 18, 32, 0.86);
+  color: var(--kw-ink-2);
   transition: transform 140ms ease, filter 140ms ease;
 }
 
 .calendarCell[data-qualified="1"] {
-  color: rgba(11, 18, 32, 0.95);
+  color: var(--kw-ink);
 }
 
 .calendarCell[data-future="1"] {
@@ -73,6 +78,13 @@
   border-radius: 999px;
   border: 1px solid var(--kw-border-2);
   display: inline-block;
+}
+
+:global(html[data-mode="dark"]) .calendarFrame {
+  --streak-future-bg: rgba(148, 163, 184, 0.14);
+  --streak-ineligible-bg: rgba(148, 163, 184, 0.1);
+  --streak-ring-rest: rgba(148, 163, 184, 0.38);
+  --streak-ring-inner: rgba(248, 250, 252, 0.42);
 }
 
 @media (max-width: 767px) {

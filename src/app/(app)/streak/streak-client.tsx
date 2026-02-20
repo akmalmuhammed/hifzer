@@ -90,10 +90,10 @@ function isoDateUtc(year: number, monthIndex: number, day: number): string {
 
 function activityColor(value: number, max: number, eligible: boolean, isFuture: boolean): string {
   if (isFuture) {
-    return "rgba(11,18,32,0.05)";
+    return "var(--streak-future-bg)";
   }
   if (!eligible) {
-    return "rgba(11,18,32,0.04)";
+    return "var(--streak-ineligible-bg)";
   }
   if (value <= 0) {
     return "rgba(16,185,129,0.10)";
@@ -113,11 +113,11 @@ function activityColor(value: number, max: number, eligible: boolean, isFuture: 
 
 function ringShadow(value: number, max: number, qualified: boolean): string {
   if (!qualified || value <= 0) {
-    return "inset 0 0 0 1px rgba(11,18,32,0.12)";
+    return "inset 0 0 0 1px var(--streak-ring-rest)";
   }
   const pct = value / Math.max(1, max);
   const glow = 0.2 + (pct * 0.35);
-  return `inset 0 0 0 1px rgba(255,255,255,0.62), 0 0 0 1px rgba(16,185,129,${glow.toFixed(2)})`;
+  return `inset 0 0 0 1px var(--streak-ring-inner), 0 0 0 1px rgba(16,185,129,${glow.toFixed(2)})`;
 }
 
 export function StreakClient() {
