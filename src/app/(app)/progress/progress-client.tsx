@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, BookOpen, CalendarDays, PlayCircle, RefreshCcw, TrendingUp } from "lucide-react";
 import { DonutProgress } from "@/components/charts/donut-progress";
 import { PageHeader } from "@/components/app/page-header";
@@ -45,6 +45,9 @@ type ProgressSummaryPayload = {
     surahsCovered: number;
     surahsLeft: number;
     surahCoveragePct: number;
+    juzsCovered: number;
+    juzsLeft: number;
+    juzCoveragePct: number;
     completionKhatmahCount: number;
     lastReadAyahId: number | null;
     lastReadAt: string | null;
@@ -138,10 +141,54 @@ function buildContinueQuranHref(payload: ProgressSummaryPayload["quran"]): strin
   return `/quran/read?${params.toString()}`;
 }
 
+function useCountUp(target: number, durationMs = 900): number {
+  const [value, setValue] = useState(0);
+  const valueRef = useRef(0);
+
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
+
+  useEffect(() => {
+    const safeTarget = Math.max(0, Math.floor(target));
+    const from = valueRef.current;
+    if (from === safeTarget) {
+      return;
+    }
+
+    let rafId = 0;
+    let startedAt: number | null = null;
+
+    const tick = (now: number) => {
+      if (startedAt == null) {
+        startedAt = now;
+      }
+      const elapsed = now - startedAt;
+      const progress = Math.max(0, Math.min(1, elapsed / durationMs));
+      const eased = 1 - ((1 - progress) ** 3);
+      const next = Math.round(from + ((safeTarget - from) * eased));
+      setValue(next);
+      if (progress < 1) {
+        rafId = window.requestAnimationFrame(tick);
+      }
+    };
+
+    rafId = window.requestAnimationFrame(tick);
+    return () => {
+      window.cancelAnimationFrame(rafId);
+    };
+  }, [durationMs, target]);
+
+  return value;
+}
+
 export function ProgressClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<ProgressSummaryPayload | null>(null);
+  const animatedAyahs = useCountUp(data?.quran.ayahsRecited ?? 0);
+  const animatedSurahs = useCountUp(data?.quran.surahsCovered ?? 0);
+  const animatedJuzs = useCountUp(data?.quran.juzsCovered ?? 0);
 
   async function load() {
     setLoading(true);
@@ -249,11 +296,24 @@ export function ProgressClient() {
                   Local date {formatIsoDate(data.localDate)} | Last refresh {formatDateTime(data.generatedAt)}
                 </p>
               </div>
-              <div className="grid gap-2 rounded-2xl border border-[color:var(--kw-border-2)] bg-white/75 p-4 text-sm shadow-[var(--kw-shadow-soft)]">
-                <span className="text-[color:var(--kw-muted)]">Tracked ayahs</span>
-                <span className="text-2xl font-semibold text-[color:var(--kw-ink)]">{data.hifz.trackedAyahs}</span>
-                <span className="text-[color:var(--kw-muted)]">Qur&apos;an ayah coverage</span>
-                <span className="text-lg font-semibold text-[color:var(--kw-ink)]">{data.quran.ayahCoveragePct.toFixed(1)}%</span>
+              <div className="w-full max-w-[360px] rounded-2xl border border-[color:var(--kw-border-2)] bg-white/75 p-4 shadow-[var(--kw-shadow-soft)]">
+                <div className="grid gap-2 sm:grid-cols-3">
+                  <div className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2.5">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Tracked ayah</p>
+                    <p className="mt-1 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{animatedAyahs}</p>
+                  </div>
+                  <div className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2.5">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Tracked surah</p>
+                    <p className="mt-1 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{animatedSurahs}</p>
+                  </div>
+                  <div className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2.5">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Tracked juz</p>
+                    <p className="mt-1 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{animatedJuzs}</p>
+                  </div>
+                </div>
+                <p className="mt-2 text-xs text-[color:var(--kw-muted)]">
+                  Coverage: ayah {data.quran.ayahCoveragePct.toFixed(1)}% | surah {data.quran.surahCoveragePct.toFixed(1)}% | juz {data.quran.juzCoveragePct.toFixed(1)}%
+                </p>
               </div>
             </div>
           </Card>

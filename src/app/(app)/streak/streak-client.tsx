@@ -293,7 +293,7 @@ export function StreakClient() {
         </Card>
       ) : (
         <>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Current streak</p>
               <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{data.streak.currentStreakDays}</p>
@@ -301,12 +301,6 @@ export function StreakClient() {
             <Card>
               <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Best streak</p>
               <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{data.streak.bestStreakDays}</p>
-            </Card>
-            <Card>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Today qualified</p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                {data.streak.todayQualifiedAyahs} ayah{data.streak.todayQualifiedAyahs === 1 ? "" : "s"}
-              </p>
             </Card>
           </div>
 

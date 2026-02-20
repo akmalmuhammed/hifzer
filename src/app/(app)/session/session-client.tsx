@@ -780,16 +780,21 @@ export function SessionClient() {
   const rightActions = (
     <div className="flex items-center gap-2">
       {canRevealCurrentStep ? (
-        <button
+        <Button
           type="button"
+          variant="secondary"
           onClick={revealTemporarily}
-          className="rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-[rgba(var(--kw-accent-rgb),0.14)]"
+          className={clsx(
+            "gap-2 whitespace-nowrap border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] hover:bg-[rgba(var(--kw-accent-rgb),0.14)]",
+            showText && revealUntilMs ? "text-[rgba(var(--kw-accent-rgb),1)]" : "text-[color:var(--kw-ink)]",
+          )}
         >
           {showText && revealUntilMs ? "Reveal active" : "Reveal (I'm stuck)"}
-        </button>
+        </Button>
       ) : currentStep?.kind === "AYAH" ? (
-        <button
+        <Button
           type="button"
+          variant="secondary"
           onClick={() => {
             setShowText((v) => {
               const next = !v;
@@ -799,30 +804,28 @@ export function SessionClient() {
               return next;
             });
           }}
-          className="rounded-2xl border border-[color:var(--kw-border)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-white"
+          className="gap-2 whitespace-nowrap"
         >
           {showText ? "Hide text" : "Show text"}
-        </button>
+        </Button>
       ) : null}
       {currentStep?.kind === "AYAH" ? (
-        <button
+        <Button
           type="button"
+          variant="secondary"
           onClick={() => setShowTranslation((v) => !v)}
           disabled={!showText}
-          className={clsx(
-            "rounded-2xl border border-[color:var(--kw-border)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-white",
-            !showText && "cursor-not-allowed opacity-60",
-          )}
+          className="gap-2 whitespace-nowrap"
         >
           {showTranslation ? "Hide translation" : "Show translation"}
-        </button>
+        </Button>
       ) : null}
       <Link href="/today">
-        <Button variant="secondary" className="gap-2">
+        <Button variant="secondary" className="gap-2 whitespace-nowrap">
           Back to Today <ArrowRight size={16} />
         </Button>
       </Link>
-      <Button variant="secondary" className="gap-2" onClick={() => setSwitchOpen((prev) => !prev)}>
+      <Button variant="secondary" className="gap-2 whitespace-nowrap" onClick={() => setSwitchOpen((prev) => !prev)}>
         {switchOpen ? "Close surah switcher" : "Switch surah"}
       </Button>
     </div>

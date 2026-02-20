@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
-import { ArrowRight, BookMarked, BookOpen, Compass, EyeOff, Search } from "lucide-react";
+import { ArrowRight, BookMarked, BookOpen, Compass, EyeOff } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
@@ -9,7 +9,6 @@ import { getQuranReadProgress } from "@/hifzer/quran/read-progress.server";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { QuranCompletionProgress } from "./quran-completion-progress";
 import { QuranProgressBackfill } from "./quran-progress-backfill";
-import { QuranSurahSearch } from "./quran-surah-search";
 
 export const metadata = {
   title: "Qur'an",
@@ -164,27 +163,6 @@ export default async function QuranIndexPage() {
           </div>
         </Card>
       </div>
-
-      <Card className="mt-8">
-        <div className="flex items-center gap-2">
-          <Search size={16} className="text-[color:var(--kw-faint)]" />
-          <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Search surahs</p>
-        </div>
-        <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
-          Find a surah by name, English meaning, or number.
-        </p>
-        <div className="mt-4">
-          <QuranSurahSearch
-            surahs={surahs.map((s) => ({
-              surahNumber: s.surahNumber,
-              nameTransliteration: s.nameTransliteration,
-              nameArabic: s.nameArabic,
-              nameEnglish: s.nameEnglish,
-              ayahCount: s.ayahCount,
-            }))}
-          />
-        </div>
-      </Card>
 
       <Card className="mt-8">
         <QuranProgressBackfill

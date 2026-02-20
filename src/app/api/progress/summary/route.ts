@@ -16,6 +16,7 @@ import { db } from "@/lib/db";
 
 const TOTAL_AYAHS = 6236;
 const TOTAL_SURAHS = 114;
+const TOTAL_JUZ = 30;
 const MAX_SESSION_MINUTES_BUCKET = 240;
 const HIFZ_GRADED_STAGES: AttemptStage[] = ["WARMUP", "REVIEW", "NEW", "LINK", "WEEKLY_TEST", "LINK_REPAIR"];
 
@@ -211,12 +212,20 @@ export async function GET() {
     const ayahCoveragePct = Number(((ayahsRecited / TOTAL_AYAHS) * 100).toFixed(1));
 
     const surahSet = new Set<number>();
+    const juzSet = new Set<number>();
     for (const row of quranDistinctAyahs) {
       surahSet.add(row.surahNumber);
+      const ayah = getAyahById(row.ayahId);
+      if (ayah) {
+        juzSet.add(ayah.juzNumber);
+      }
     }
     const surahsCovered = surahSet.size;
     const surahsLeft = Math.max(0, TOTAL_SURAHS - surahsCovered);
     const surahCoveragePct = Number(((surahsCovered / TOTAL_SURAHS) * 100).toFixed(1));
+    const juzsCovered = juzSet.size;
+    const juzsLeft = Math.max(0, TOTAL_JUZ - juzsCovered);
+    const juzCoveragePct = Number(((juzsCovered / TOTAL_JUZ) * 100).toFixed(1));
 
     const lastReadAyah = quranReadProgress.lastReadAyahId
       ? getAyahById(quranReadProgress.lastReadAyahId)
@@ -256,6 +265,9 @@ export async function GET() {
         surahsCovered,
         surahsLeft,
         surahCoveragePct,
+        juzsCovered,
+        juzsLeft,
+        juzCoveragePct,
         completionKhatmahCount: quranReadProgress.completionKhatmahCount,
         lastReadAyahId: quranReadProgress.lastReadAyahId,
         lastReadAt: quranReadProgress.lastReadAt,
