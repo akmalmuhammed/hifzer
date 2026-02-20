@@ -38,9 +38,6 @@ export function MarketingFooter() {
           <TrackedLink href="/compare" telemetryName="footer.compare" className="font-semibold text-[color:var(--kw-ink)] hover:underline">
             Compare
           </TrackedLink>
-          <TrackedLink href="/pricing" telemetryName="footer.pricing" className="font-semibold text-[color:var(--kw-ink)] hover:underline">
-            Pricing
-          </TrackedLink>
           <PublicAuthLink
             signedInHref="/today"
             signedOutHref="/signup"

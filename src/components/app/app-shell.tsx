@@ -7,7 +7,6 @@ import {
   BookOpenText,
   CalendarDays,
   ChevronDown,
-  History,
   House,
   LifeBuoy,
   LibraryBig,
@@ -33,7 +32,6 @@ const PRIMARY: NavItem[] = [
 const INSIGHTS: NavItem[] = [
   { href: "/progress", label: "Progress", icon: TrendingUp },
   { href: "/streak", label: "Streak", icon: Flame },
-  { href: "/history/sessions", label: "Sessions", icon: History },
   { href: "/quran/glossary", label: "Glossary", icon: LibraryBig },
 ];
 
@@ -72,9 +70,6 @@ function isActive(pathname: string, href: string): boolean {
   }
   if (href === "/streak") {
     return pathname === "/streak";
-  }
-  if (href === "/history/sessions") {
-    return pathname === "/history/sessions" || pathname.startsWith("/history/");
   }
   if (href === "/quran/glossary") {
     return pathname === "/quran/glossary";

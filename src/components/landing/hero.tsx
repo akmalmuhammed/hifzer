@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import clsx from "clsx";
@@ -20,12 +19,6 @@ const fadeUp = {
 const HERO_BULLETS = [
   "10-minute guided sessions",
   "Adaptive review timing",
-] as const;
-
-const QUICK_PROOF = [
-  "2,300+ weekly active learners",
-  "Average 81% retention consistency",
-  "No card required to start",
 ] as const;
 
 export function Hero() {
@@ -69,9 +62,9 @@ export function Hero() {
             variants={fadeUp}
             className="mt-5 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl"
           >
-            Never lose what you memorized.
+            Preserve the Qur&apos;an Allah placed in your heart.
             <span className="block text-[rgba(var(--kw-accent-rgb),1)]">
-              Build stable Qur&apos;an retention in 10 focused minutes a day.
+              A learning system made to preserve your Hifz, even with a busy life.
             </span>
           </motion.h1>
 
@@ -79,8 +72,8 @@ export function Hero() {
             variants={fadeUp}
             className="mt-5 max-w-xl text-pretty text-base leading-7 text-[color:var(--kw-muted)]"
           >
-            Hifzer gives you one clear daily plan: review first, then new ayahs only when recall quality is
-            strong. This keeps progress real and prevents silent decay.
+            Keep a stable daily loop: review first, unlock new ayahs only with strong recall, and continue
+            recitation with built-in Qur&apos;an tools.
           </motion.p>
 
           <motion.div variants={fadeUp} className="mt-5 grid max-w-xl gap-2 sm:grid-cols-2">
@@ -101,23 +94,12 @@ export function Hero() {
               </PublicAuthLink>
             </Button>
             <PublicAuthLink
-              signedInHref="/pricing"
-              signedOutHref="/pricing"
+              signedInHref="/welcome"
+              signedOutHref="/welcome"
               className="text-sm font-medium text-[color:var(--kw-muted)] underline-offset-2 hover:text-[color:var(--kw-ink)] hover:underline"
             >
-              View pricing
+              Learn how it works
             </PublicAuthLink>
-          </motion.div>
-
-          <motion.div variants={fadeUp} className="mt-4 flex flex-wrap items-center gap-2 text-xs text-[color:var(--kw-faint)]">
-            {QUICK_PROOF.map((line) => (
-              <span key={line} className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1">
-                {line}
-              </span>
-            ))}
-            <Link href="/legal/terms" className="font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">
-              Terms + privacy
-            </Link>
           </motion.div>
 
           <motion.div

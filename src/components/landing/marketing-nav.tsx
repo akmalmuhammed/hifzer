@@ -14,7 +14,6 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 const LINKS = [
   { href: "/welcome", label: "How it works" },
   { href: "/compare", label: "Compare" },
-  { href: "/pricing", label: "Pricing" },
 ] as const;
 
 export function MarketingNav(props: { authEnabled: boolean }) {

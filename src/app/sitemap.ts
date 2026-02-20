@@ -8,7 +8,6 @@ const STATIC_ROUTES = [
   "/welcome",
   "/compare",
   "/quran-preview",
-  "/pricing",
   "/legal",
   "/legal/terms",
   "/legal/privacy",

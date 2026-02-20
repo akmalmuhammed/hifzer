@@ -46,11 +46,6 @@ export default async function LoginPage() {
                   Back to welcome <ArrowRight size={16} />
                 </Button>
               </Link>
-              <Link href="/pricing">
-                <Button variant="secondary" className="gap-2">
-                  Pricing <ArrowRight size={16} />
-                </Button>
-              </Link>
             </div>
           </>
         ) : (

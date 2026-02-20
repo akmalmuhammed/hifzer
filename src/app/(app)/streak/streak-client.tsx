@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, Flame, PlayCircle, RefreshCcw } from "lucide-react";
+import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, PlayCircle, RefreshCcw } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -293,41 +293,6 @@ export function StreakClient() {
         </Card>
       ) : (
         <>
-          <Card className={`${styles.heroShell} relative overflow-hidden`}>
-            <div className={styles.heroOrb} />
-            <div className={styles.heroOrbAlt} />
-            <div className="relative flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <Pill tone="accent">Streak engine</Pill>
-                <h2 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-4xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-5xl">
-                  Keep your streak alive one day at a time.
-                </h2>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
-                  GitHub-style activity intensity based on daily unique ayahs. Hover any day to inspect how much you
-                  recited.
-                </p>
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <Pill tone="neutral">Min {data.rule.minQualifiedAyahsPerDay} ayah/day</Pill>
-                  <Pill tone="warn">1-day grace supported</Pill>
-                  {data.streak.graceInUseToday ? <Pill tone="warn">Grace in use today</Pill> : <Pill tone="success">Streak active</Pill>}
-                </div>
-              </div>
-              <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/75 p-4 shadow-[var(--kw-shadow-soft)]">
-                <div className="flex items-center gap-3">
-                  <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[rgba(245,158,11,0.3)] bg-[rgba(245,158,11,0.14)] text-[color:var(--kw-ember-600)]">
-                    <Flame size={18} />
-                  </span>
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">Current streak</p>
-                    <p className="text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                      {data.streak.currentStreakDays}d
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
-
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Current streak</p>

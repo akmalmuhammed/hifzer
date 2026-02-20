@@ -40,9 +40,7 @@ export function FinalCta() {
             </Button>
           </div>
 
-          <p className="mt-5 text-xs text-[color:var(--kw-faint)]">
-            Free forever for core features. No card required.
-          </p>
+          <p className="mt-5 text-xs text-[color:var(--kw-faint)]">Start when ready and build a steady daily rhythm.</p>
         </div>
       </motion.div>
     </section>
