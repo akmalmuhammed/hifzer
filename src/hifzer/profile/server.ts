@@ -150,7 +150,12 @@ export async function getOrCreateUserProfile(clerkUserId: string): Promise<UserP
     return null;
   }
 
-  await ensureCoreSchemaCompatibility();
+  // Runtime schema patching is opt-in only. In managed production databases
+  // the app role often lacks DDL privileges, and unconditional ALTER TABLE
+  // attempts can fail every request.
+  if (process.env.HIFZER_RUNTIME_SCHEMA_PATCH === "1") {
+    await ensureCoreSchemaCompatibility();
+  }
 
   const prisma = db();
 
