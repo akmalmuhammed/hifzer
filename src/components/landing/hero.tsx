@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import clsx from "clsx";
-import { ArrowRight, Sparkles, Star } from "lucide-react";
+import { ArrowRight, Download, Share, Sparkles, Star } from "lucide-react";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { WindLines } from "@/components/brand/wind-lines";
+import { useInstallApp } from "@/components/pwa/use-install-app";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardKpi, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/components/ui/toast";
 import { DonutProgress } from "@/components/charts/donut-progress";
 import { HeatStrip } from "@/components/charts/heat-strip";
 
@@ -23,6 +25,8 @@ const HERO_BULLETS = [
 
 export function Hero() {
   const reduceMotion = useReducedMotion();
+  const install = useInstallApp();
+  const { pushToast } = useToast();
   const [donutReady, setDonutReady] = useState(false);
 
   useEffect(() => {
@@ -37,6 +41,35 @@ export function Hero() {
     const v = values[idx % values.length] ?? 0;
     return { date: base.toISOString(), value: Math.round(v * 10) };
   });
+
+  const InstallIcon = install.canPrompt ? Download : Share;
+
+  const onInstallNow = async () => {
+    const result = await install.requestInstall();
+    if (result === "accepted") {
+      pushToast({
+        tone: "success",
+        title: "Installed",
+        message: "Hifzer was added to your home screen.",
+      });
+      return;
+    }
+    if (result === "ios_instructions") {
+      pushToast({
+        tone: "warning",
+        title: "iPhone install",
+        message: "Tap Share, then Add to Home Screen.",
+      });
+      return;
+    }
+    if (result === "unavailable") {
+      pushToast({
+        tone: "warning",
+        title: "Install prompt not ready",
+        message: "Use the Android/iPhone links below for manual steps.",
+      });
+    }
+  };
 
   return (
     <section className="relative overflow-hidden pb-10 pt-10 md:pb-16 md:pt-14">
@@ -93,13 +126,53 @@ export function Hero() {
                 Start your first session <ArrowRight size={18} />
               </PublicAuthLink>
             </Button>
-            <PublicAuthLink
-              signedInHref="/"
-              signedOutHref="/"
-              className="text-sm font-medium text-[color:var(--kw-muted)] underline-offset-2 hover:text-[color:var(--kw-ink)] hover:underline"
+            <Button
+              type="button"
+              size="lg"
+              variant="secondary"
+              onClick={() => {
+                void onInstallNow();
+              }}
+              className="w-full !whitespace-normal sm:w-auto"
             >
-              Learn how it works
-            </PublicAuthLink>
+              <InstallIcon size={18} />
+              Add to Home Screen now
+            </Button>
+          </motion.div>
+
+          <motion.div variants={fadeUp} className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+            <a
+              href="#install-guide-android"
+              className="font-medium text-[color:var(--kw-muted)] underline underline-offset-2 hover:text-[color:var(--kw-ink)]"
+            >
+              How to add on Android
+            </a>
+            <a
+              href="#install-guide-iphone"
+              className="font-medium text-[color:var(--kw-muted)] underline underline-offset-2 hover:text-[color:var(--kw-ink)]"
+            >
+              How to add on iPhone
+            </a>
+          </motion.div>
+
+          <motion.div
+            variants={fadeUp}
+            className="mt-3 grid max-w-xl gap-2 sm:grid-cols-2"
+          >
+            <div
+              id="install-guide-android"
+              className="rounded-2xl border border-[color:var(--kw-border-2)] bg-white/75 p-3 text-xs leading-6 text-[color:var(--kw-ink-2)]"
+            >
+              <p className="font-semibold text-[color:var(--kw-ink)]">Android</p>
+              <p>Open Chrome/Edge menu (three dots), then tap Add to Home screen or Install app.</p>
+            </div>
+            <div
+              id="install-guide-iphone"
+              className="rounded-2xl border border-[color:var(--kw-border-2)] bg-white/75 p-3 text-xs leading-6 text-[color:var(--kw-ink-2)]"
+            >
+              <p className="font-semibold text-[color:var(--kw-ink)]">iPhone (Safari)</p>
+              <p>Tap Share, choose Add to Home Screen, then tap Add in the top-right.</p>
+            </div>
           </motion.div>
 
           <motion.div
