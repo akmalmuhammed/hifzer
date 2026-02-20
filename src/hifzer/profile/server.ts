@@ -2,6 +2,7 @@ import "server-only";
 
 import type {
   PlanBias,
+  Prisma,
   SrsMode,
   SubscriptionPlan,
   SubscriptionStatus,
@@ -9,7 +10,7 @@ import type {
 } from "@prisma/client";
 import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
 import { getSurahInfo } from "@/hifzer/quran/lookup.server";
-import { ensureCoreSchemaCompatibility } from "@/lib/db-compat";
+import { ensureCoreSchemaCompatibility, getCoreSchemaCapabilities } from "@/lib/db-compat";
 import { db, dbConfigured } from "@/lib/db";
 
 const DEFAULT_PRACTICE_DAYS = [0, 1, 2, 3, 4, 5, 6];
@@ -77,21 +78,29 @@ function defaultStartPoint() {
   return { activeSurahNumber: first.surahNumber, cursorAyahId: first.startAyahId };
 }
 
-function defaultCreateData(clerkUserId: string) {
+function defaultCreateData(clerkUserId: string, input?: { includeQuranLane?: boolean }) {
   const { activeSurahNumber, cursorAyahId } = defaultStartPoint();
-  return {
+  const base = {
     clerkUserId,
     timezone: "UTC",
     dailyMinutes: DEFAULT_DAILY_MINUTES,
     practiceDays: DEFAULT_PRACTICE_DAYS,
     reminderTimeLocal: DEFAULT_REMINDER_TIME,
+    activeSurahNumber,
+    cursorAyahId,
+    darkMode: false,
+    themePreset: DEFAULT_THEME,
+    accentPreset: DEFAULT_ACCENT,
+    reciterId: DEFAULT_RECITER,
+  };
+  if (input?.includeQuranLane === false) {
+    return base;
+  }
+  return {
+    ...base,
     emailRemindersEnabled: true,
     emailUnsubscribedAt: null,
     emailSuppressedAt: null,
-    activeSurahNumber,
-    cursorAyahId,
-    quranActiveSurahNumber: activeSurahNumber,
-    quranCursorAyahId: cursorAyahId,
     hasTeacher: false,
     avgReviewSeconds: 45,
     avgNewSeconds: 90,
@@ -100,10 +109,8 @@ function defaultCreateData(clerkUserId: string) {
     consolidationThresholdPct: 25,
     catchUpThresholdPct: 45,
     plan: "FREE" as const,
-    darkMode: false,
-    themePreset: DEFAULT_THEME,
-    accentPreset: DEFAULT_ACCENT,
-    reciterId: DEFAULT_RECITER,
+    quranActiveSurahNumber: activeSurahNumber,
+    quranCursorAyahId: cursorAyahId,
   };
 }
 
@@ -145,15 +152,113 @@ function toSnapshot(row: UserProfile): ProfileSnapshot {
   };
 }
 
+type MinimalUserProfileRow = Pick<
+  UserProfile,
+  | "id"
+  | "clerkUserId"
+  | "timezone"
+  | "onboardingCompletedAt"
+  | "dailyMinutes"
+  | "practiceDays"
+  | "reminderTimeLocal"
+  | "planBias"
+  | "activeSurahNumber"
+  | "cursorAyahId"
+  | "mode"
+  | "darkMode"
+  | "themePreset"
+  | "accentPreset"
+  | "reciterId"
+  | "createdAt"
+  | "updatedAt"
+>;
+
+const MINIMAL_USER_PROFILE_SELECT = {
+  id: true,
+  clerkUserId: true,
+  timezone: true,
+  onboardingCompletedAt: true,
+  dailyMinutes: true,
+  practiceDays: true,
+  reminderTimeLocal: true,
+  planBias: true,
+  activeSurahNumber: true,
+  cursorAyahId: true,
+  mode: true,
+  darkMode: true,
+  themePreset: true,
+  accentPreset: true,
+  reciterId: true,
+  createdAt: true,
+  updatedAt: true,
+} satisfies Prisma.UserProfileSelect;
+
+function withCompatDefaults(row: MinimalUserProfileRow): UserProfile {
+  return {
+    ...row,
+    emailRemindersEnabled: true,
+    emailUnsubscribedAt: null,
+    emailSuppressedAt: null,
+    hasTeacher: false,
+    avgReviewSeconds: 45,
+    avgNewSeconds: 90,
+    avgLinkSeconds: 35,
+    reviewFloorPct: 70,
+    consolidationThresholdPct: 25,
+    catchUpThresholdPct: 45,
+    rebalanceUntil: null,
+    quranActiveSurahNumber: row.activeSurahNumber,
+    quranCursorAyahId: row.cursorAyahId,
+    plan: "FREE",
+    paddleCustomerId: null,
+    paddleSubscriptionId: null,
+    subscriptionStatus: null,
+    currentPeriodEnd: null,
+  };
+}
+
+async function upsertProfileCompat(input: {
+  clerkUserId: string;
+  buildCreate: (hasQuranLaneColumns: boolean) => Prisma.UserProfileCreateInput;
+  buildUpdate: (hasQuranLaneColumns: boolean) => Prisma.UserProfileUpdateInput;
+  refreshCapabilities?: boolean;
+}): Promise<UserProfile> {
+  const capabilities = await getCoreSchemaCapabilities({ refresh: input.refreshCapabilities === true });
+  const hasQuranLaneColumns = capabilities.hasQuranLaneColumns;
+  const prisma = db();
+
+  if (hasQuranLaneColumns) {
+    return prisma.userProfile.upsert({
+      where: { clerkUserId: input.clerkUserId },
+      create: input.buildCreate(true),
+      update: input.buildUpdate(true),
+    });
+  }
+
+  const row = await prisma.userProfile.upsert({
+    where: { clerkUserId: input.clerkUserId },
+    create: input.buildCreate(false),
+    update: input.buildUpdate(false),
+    select: MINIMAL_USER_PROFILE_SELECT,
+  });
+  return withCompatDefaults(row as MinimalUserProfileRow);
+}
+
 function looksLikeMissingCoreSchema(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
   return (
     message.includes("quranActiveSurahNumber") ||
     message.includes("quranCursorAyahId") ||
     message.includes("planJson") ||
+    message.includes("P2021") ||
     message.includes("P2022") ||
-    /column .* does not exist/i.test(message)
+    /column .* does not exist/i.test(message) ||
+    /relation .* does not exist/i.test(message)
   );
+}
+
+function runtimeSchemaPatchEnabled(): boolean {
+  return process.env.HIFZER_RUNTIME_SCHEMA_PATCH !== "0";
 }
 
 export async function getOrCreateUserProfile(clerkUserId: string): Promise<UserProfile | null> {
@@ -161,27 +266,40 @@ export async function getOrCreateUserProfile(clerkUserId: string): Promise<UserP
     return null;
   }
 
-  const prisma = db();
-  const upsertProfile = () =>
-    prisma.userProfile.upsert({
-      where: { clerkUserId },
-      create: defaultCreateData(clerkUserId),
-      update: {},
-    });
+  const patchEnabled = runtimeSchemaPatchEnabled();
 
   try {
-    // Runtime schema patching stays opt-in by default, but we still support
-    // one-time automatic recovery when the DB is missing core columns.
-    if (process.env.HIFZER_RUNTIME_SCHEMA_PATCH === "1") {
-      await ensureCoreSchemaCompatibility();
+    if (patchEnabled) {
+      try {
+        await ensureCoreSchemaCompatibility();
+      } catch {
+        // Continue in compatibility mode even when patching is blocked.
+      }
     }
-    return await upsertProfile();
+    return await upsertProfileCompat({
+      clerkUserId,
+      buildCreate: (hasQuranLaneColumns) =>
+        defaultCreateData(clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
+      buildUpdate: () => ({}),
+    });
   } catch (error) {
     if (!looksLikeMissingCoreSchema(error)) {
       throw error;
     }
-    await ensureCoreSchemaCompatibility();
-    return upsertProfile();
+    if (patchEnabled) {
+      try {
+        await ensureCoreSchemaCompatibility();
+      } catch {
+        // Ignore schema patch failures and retry in legacy-compatible mode.
+      }
+    }
+    return upsertProfileCompat({
+      clerkUserId,
+      buildCreate: (hasQuranLaneColumns) =>
+        defaultCreateData(clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
+      buildUpdate: () => ({}),
+      refreshCapabilities: true,
+    });
   }
 }
 
@@ -194,15 +312,14 @@ export async function saveStartPoint(clerkUserId: string, activeSurahNumber: num
   if (!dbConfigured()) {
     return null;
   }
-  const prisma = db();
-  const row = await prisma.userProfile.upsert({
-    where: { clerkUserId },
-    create: {
-      ...defaultCreateData(clerkUserId),
+  const row = await upsertProfileCompat({
+    clerkUserId,
+    buildCreate: (hasQuranLaneColumns) => ({
+      ...defaultCreateData(clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
       activeSurahNumber,
       cursorAyahId,
-    },
-    update: { activeSurahNumber, cursorAyahId },
+    }),
+    buildUpdate: () => ({ activeSurahNumber, cursorAyahId }),
   });
   return toSnapshot(row);
 }
@@ -211,15 +328,20 @@ export async function saveQuranStartPoint(clerkUserId: string, quranActiveSurahN
   if (!dbConfigured()) {
     return null;
   }
-  const prisma = db();
-  const row = await prisma.userProfile.upsert({
-    where: { clerkUserId },
-    create: {
-      ...defaultCreateData(clerkUserId),
-      quranActiveSurahNumber,
-      quranCursorAyahId,
-    },
-    update: { quranActiveSurahNumber, quranCursorAyahId },
+  const row = await upsertProfileCompat({
+    clerkUserId,
+    buildCreate: (hasQuranLaneColumns) => ({
+      ...defaultCreateData(clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
+      activeSurahNumber: quranActiveSurahNumber,
+      cursorAyahId: quranCursorAyahId,
+      ...(hasQuranLaneColumns
+        ? { quranActiveSurahNumber, quranCursorAyahId }
+        : {}),
+    }),
+    buildUpdate: (hasQuranLaneColumns) =>
+      hasQuranLaneColumns
+        ? { quranActiveSurahNumber, quranCursorAyahId }
+        : { activeSurahNumber: quranActiveSurahNumber, cursorAyahId: quranCursorAyahId },
   });
   return toSnapshot(row);
 }
@@ -239,24 +361,24 @@ export async function saveAssessment(input: {
     0,
     Math.max(1, Math.min(7, Math.floor(input.practiceDaysPerWeek))),
   );
-  const prisma = db();
-  const row = await prisma.userProfile.upsert({
-    where: { clerkUserId: input.clerkUserId },
-    create: {
-      ...defaultCreateData(input.clerkUserId),
-      dailyMinutes: Math.max(5, Math.min(240, Math.floor(input.dailyMinutes))),
+  const boundedDailyMinutes = Math.max(5, Math.min(240, Math.floor(input.dailyMinutes)));
+  const row = await upsertProfileCompat({
+    clerkUserId: input.clerkUserId,
+    buildCreate: (hasQuranLaneColumns) => ({
+      ...defaultCreateData(input.clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
+      dailyMinutes: boundedDailyMinutes,
       practiceDays,
       planBias: input.planBias,
-      hasTeacher: input.hasTeacher,
+      ...(hasQuranLaneColumns ? { hasTeacher: input.hasTeacher } : {}),
       timezone: input.timezone || "UTC",
-    },
-    update: {
-      dailyMinutes: Math.max(5, Math.min(240, Math.floor(input.dailyMinutes))),
+    }),
+    buildUpdate: (hasQuranLaneColumns) => ({
+      dailyMinutes: boundedDailyMinutes,
       practiceDays,
       planBias: input.planBias,
-      hasTeacher: input.hasTeacher,
+      ...(hasQuranLaneColumns ? { hasTeacher: input.hasTeacher } : {}),
       timezone: input.timezone || "UTC",
-    },
+    }),
   });
   return toSnapshot(row);
 }
@@ -265,15 +387,14 @@ export async function markOnboardingComplete(clerkUserId: string) {
   if (!dbConfigured()) {
     return null;
   }
-  const prisma = db();
   const completedAt = new Date();
-  const row = await prisma.userProfile.upsert({
-    where: { clerkUserId },
-    create: {
-      ...defaultCreateData(clerkUserId),
+  const row = await upsertProfileCompat({
+    clerkUserId,
+    buildCreate: (hasQuranLaneColumns) => ({
+      ...defaultCreateData(clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
       onboardingCompletedAt: completedAt,
-    },
-    update: { onboardingCompletedAt: completedAt },
+    }),
+    buildUpdate: () => ({ onboardingCompletedAt: completedAt }),
   });
   return toSnapshot(row);
 }
@@ -286,20 +407,28 @@ export async function saveReminderPrefs(input: {
   if (!dbConfigured()) {
     return null;
   }
-  const prisma = db();
-  const row = await prisma.userProfile.upsert({
-    where: { clerkUserId: input.clerkUserId },
-    create: {
-      ...defaultCreateData(input.clerkUserId),
+  const unsubscribedAt = input.emailRemindersEnabled ? null : new Date();
+  const row = await upsertProfileCompat({
+    clerkUserId: input.clerkUserId,
+    buildCreate: (hasQuranLaneColumns) => ({
+      ...defaultCreateData(input.clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
       reminderTimeLocal: input.reminderTimeLocal,
-      emailRemindersEnabled: input.emailRemindersEnabled,
-      emailUnsubscribedAt: input.emailRemindersEnabled ? null : new Date(),
-    },
-    update: {
+      ...(hasQuranLaneColumns
+        ? {
+            emailRemindersEnabled: input.emailRemindersEnabled,
+            emailUnsubscribedAt: unsubscribedAt,
+          }
+        : {}),
+    }),
+    buildUpdate: (hasQuranLaneColumns) => ({
       reminderTimeLocal: input.reminderTimeLocal,
-      emailRemindersEnabled: input.emailRemindersEnabled,
-      emailUnsubscribedAt: input.emailRemindersEnabled ? null : new Date(),
-    },
+      ...(hasQuranLaneColumns
+        ? {
+            emailRemindersEnabled: input.emailRemindersEnabled,
+            emailUnsubscribedAt: unsubscribedAt,
+          }
+        : {}),
+    }),
   });
   return toSnapshot(row);
 }
@@ -313,20 +442,19 @@ export async function saveDisplayPrefs(input: {
   if (!dbConfigured()) {
     return null;
   }
-  const prisma = db();
-  const row = await prisma.userProfile.upsert({
-    where: { clerkUserId: input.clerkUserId },
-    create: {
-      ...defaultCreateData(input.clerkUserId),
+  const row = await upsertProfileCompat({
+    clerkUserId: input.clerkUserId,
+    buildCreate: (hasQuranLaneColumns) => ({
+      ...defaultCreateData(input.clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
       darkMode: input.darkMode,
       themePreset: input.themePreset,
       accentPreset: input.accentPreset,
-    },
-    update: {
+    }),
+    buildUpdate: () => ({
       darkMode: input.darkMode,
       themePreset: input.themePreset,
       accentPreset: input.accentPreset,
-    },
+    }),
   });
   return toSnapshot(row);
 }
@@ -338,16 +466,23 @@ export async function listLearningLanes(clerkUserId: string, limit = 8): Promise
   }
   const activeSurahNumber = profile.activeSurahNumber;
 
-  const rows = await db().reviewEvent.findMany({
-    where: { userId: profile.id },
-    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-    take: 4000,
-    select: {
-      surahNumber: true,
-      ayahId: true,
-      createdAt: true,
-    },
-  });
+  let rows: Array<{ surahNumber: number; ayahId: number; createdAt: Date }> = [];
+  try {
+    rows = await db().reviewEvent.findMany({
+      where: { userId: profile.id },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: 4000,
+      select: {
+        surahNumber: true,
+        ayahId: true,
+        createdAt: true,
+      },
+    });
+  } catch (error) {
+    if (!looksLikeMissingCoreSchema(error)) {
+      throw error;
+    }
+  }
 
   const lanes: LearningLaneSnapshot[] = [];
   const seen = new Set<number>();
