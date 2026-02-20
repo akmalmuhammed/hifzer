@@ -90,6 +90,16 @@ enum EmailDispatchStatus {
   DRY_RUN
 }
 
+enum BookmarkMutationType {
+  CREATE
+  UPDATE
+  DELETE
+  RESTORE
+  CATEGORY_CREATE
+  CATEGORY_UPDATE
+  CATEGORY_DELETE
+}
+
 model UserProfile {
   id                    String   @id @default(cuid())
   clerkUserId           String   @unique
@@ -137,6 +147,9 @@ model UserProfile {
   reviewEvents          ReviewEvent[]
   gateRuns              QualityGateRun[]
   emailDispatches       EmailDispatch[]
+  bookmarkCategories    BookmarkCategory[]
+  bookmarks             Bookmark[]
+  bookmarkEvents        BookmarkEvent[]
 
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
@@ -160,6 +173,65 @@ model EmailDispatch {
   @@unique([userId, templateKey, localDate])
   @@index([localDate, status])
   @@index([userId, createdAt])
+}
+
+model BookmarkCategory {
+  id         String      @id @default(cuid())
+  userId     String
+  name       String
+  sortOrder  Int         @default(0)
+  archivedAt DateTime?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  user       UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookmarks  Bookmark[]
+
+  @@index([userId, updatedAt])
+  @@index([userId, archivedAt])
+}
+
+model Bookmark {
+  id         String            @id @default(cuid())
+  userId     String
+  ayahId     Int
+  surahNumber Int
+  ayahNumber Int
+  name       String
+  note       String?
+  categoryId String?
+  isPinned   Boolean           @default(false)
+  version    Int               @default(1)
+  deletedAt  DateTime?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  user       UserProfile       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category   BookmarkCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  events     BookmarkEvent[]
+
+  @@index([userId, updatedAt])
+  @@index([userId, deletedAt])
+  @@index([userId, ayahId])
+  @@index([categoryId])
+}
+
+model BookmarkEvent {
+  id               String               @id @default(cuid())
+  userId           String
+  bookmarkId       String?
+  mutationType     BookmarkMutationType
+  clientMutationId String
+  payloadJson      Json?
+  occurredAt       DateTime             @default(now())
+  createdAt        DateTime             @default(now())
+
+  user             UserProfile          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookmark         Bookmark?            @relation(fields: [bookmarkId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, clientMutationId])
+  @@index([userId, occurredAt])
+  @@index([bookmarkId, occurredAt])
 }
 
 model Session {

@@ -12,6 +12,7 @@ import {
   type AyahFilters,
 } from "@/hifzer/quran/lookup.server";
 import { getSahihTranslationByAyahId } from "@/hifzer/quran/translation.server";
+import { ReaderBookmarkControl } from "@/components/bookmarks/reader-bookmark-control";
 import { CompactReaderScroll } from "./compact-reader-scroll";
 import { ReadProgressSync } from "./read-progress-sync";
 
@@ -419,6 +420,12 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
             <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
               {getSahihTranslationByAyahId(compact.current.id) ?? "Translation unavailable"}
             </p>
+            <ReaderBookmarkControl
+              ayahId={compact.current.id}
+              surahNumber={compact.current.surahNumber}
+              ayahNumber={compact.current.ayahNumber}
+              anonymous={anonymous}
+            />
 
             <div className="mt-6 flex items-center gap-2">
               {compact.prevAyahId ? (

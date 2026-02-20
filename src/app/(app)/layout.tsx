@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app/app-shell";
+import { BookmarkSyncAgent } from "@/components/bookmarks/bookmark-sync-agent";
 import { ProfileHydrator } from "@/components/providers/profile-hydrator";
 import { getProfileSnapshot } from "@/hifzer/profile/server";
 import { clerkEnabled } from "@/lib/clerk-config";
@@ -24,6 +25,7 @@ export default async function AppGroupLayout({ children }: { children: React.Rea
   return (
     <AppShell streakEnabled={Boolean(profile?.onboardingCompleted)}>
       <ProfileHydrator profile={profile} />
+      <BookmarkSyncAgent />
       {children}
     </AppShell>
   );

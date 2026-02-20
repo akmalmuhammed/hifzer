@@ -13,6 +13,8 @@ export const STORAGE_KEYS = {
   sessions: "hifzer_sessions_v1",
   lastCompletedLocalDate: "hifzer_last_completed_local_date_v1",
   pendingSessionSync: "hifzer_pending_session_events_v2",
+  bookmarks: "hifzer_bookmarks_v1",
+  pendingBookmarkSync: "hifzer_pending_bookmark_sync_v1",
   cutoverApplied: "hifzer_cutover_v3_applied",
 } as const;
 
@@ -49,6 +51,7 @@ export type StoredSession = {
 };
 
 const MAX_STORED_ATTEMPTS = 2000;
+const MAX_PENDING_BOOKMARK_MUTATIONS = 200;
 
 function isBrowser(): boolean {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
@@ -321,6 +324,158 @@ export function replacePendingSessionSyncPayloads(payloads: PendingSessionSyncPa
     return;
   }
   window.localStorage.setItem(STORAGE_KEYS.pendingSessionSync, JSON.stringify(payloads.slice(-20)));
+}
+
+export type StoredBookmarkCategory = {
+  id: string;
+  name: string;
+  sortOrder: number;
+  archivedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type StoredBookmark = {
+  id: string;
+  ayahId: number;
+  surahNumber: number;
+  ayahNumber: number;
+  name: string;
+  note: string | null;
+  categoryId: string | null;
+  isPinned: boolean;
+  version: number;
+  deletedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  category: StoredBookmarkCategory | null;
+};
+
+export type StoredBookmarkState = {
+  categories: StoredBookmarkCategory[];
+  bookmarks: StoredBookmark[];
+  syncedAt: string | null;
+};
+
+export type PendingBookmarkSyncMutationType =
+  | "CREATE"
+  | "UPDATE"
+  | "DELETE"
+  | "RESTORE"
+  | "CATEGORY_CREATE"
+  | "CATEGORY_UPDATE"
+  | "CATEGORY_DELETE";
+
+export type PendingBookmarkSyncMutation = {
+  clientMutationId: string;
+  type: PendingBookmarkSyncMutationType;
+  bookmarkId?: string;
+  categoryId?: string;
+  expectedVersion?: number;
+  data?: Record<string, unknown>;
+  queuedAt: string;
+};
+
+function emptyBookmarkState(): StoredBookmarkState {
+  return {
+    categories: [],
+    bookmarks: [],
+    syncedAt: null,
+  };
+}
+
+export function getStoredBookmarkState(): StoredBookmarkState {
+  if (!isBrowser()) {
+    return emptyBookmarkState();
+  }
+  return safeJsonParse<StoredBookmarkState>(window.localStorage.getItem(STORAGE_KEYS.bookmarks)) ?? emptyBookmarkState();
+}
+
+export function replaceStoredBookmarkState(state: StoredBookmarkState) {
+  if (!isBrowser()) {
+    return;
+  }
+  window.localStorage.setItem(STORAGE_KEYS.bookmarks, JSON.stringify(state));
+}
+
+export function upsertStoredBookmarkCategory(category: StoredBookmarkCategory) {
+  if (!isBrowser()) {
+    return;
+  }
+  const state = getStoredBookmarkState();
+  const next = state.categories.filter((x) => x.id !== category.id);
+  next.push(category);
+  next.sort((a, b) => (a.sortOrder - b.sortOrder) || a.name.localeCompare(b.name));
+  replaceStoredBookmarkState({
+    ...state,
+    categories: next,
+    syncedAt: state.syncedAt,
+  });
+}
+
+export function upsertStoredBookmark(bookmark: StoredBookmark) {
+  if (!isBrowser()) {
+    return;
+  }
+  const state = getStoredBookmarkState();
+  const next = state.bookmarks.filter((x) => x.id !== bookmark.id);
+  next.push(bookmark);
+  next.sort((a, b) => {
+    if (a.isPinned !== b.isPinned) {
+      return a.isPinned ? -1 : 1;
+    }
+    return b.updatedAt.localeCompare(a.updatedAt);
+  });
+  replaceStoredBookmarkState({
+    ...state,
+    bookmarks: next,
+    syncedAt: state.syncedAt,
+  });
+}
+
+export function removeStoredBookmark(bookmarkId: string) {
+  if (!isBrowser()) {
+    return;
+  }
+  const state = getStoredBookmarkState();
+  replaceStoredBookmarkState({
+    ...state,
+    bookmarks: state.bookmarks.filter((x) => x.id !== bookmarkId),
+  });
+}
+
+export function getPendingBookmarkSyncMutations(): PendingBookmarkSyncMutation[] {
+  if (!isBrowser()) {
+    return [];
+  }
+  return safeJsonParse<PendingBookmarkSyncMutation[]>(
+    window.localStorage.getItem(STORAGE_KEYS.pendingBookmarkSync),
+  ) ?? [];
+}
+
+export function pushPendingBookmarkSyncMutation(payload: Omit<PendingBookmarkSyncMutation, "queuedAt"> & { queuedAt?: string }) {
+  if (!isBrowser()) {
+    return;
+  }
+  const current = getPendingBookmarkSyncMutations();
+  current.push({
+    ...payload,
+    queuedAt: payload.queuedAt ?? new Date().toISOString(),
+  });
+  window.localStorage.setItem(
+    STORAGE_KEYS.pendingBookmarkSync,
+    JSON.stringify(current.slice(-MAX_PENDING_BOOKMARK_MUTATIONS)),
+  );
+}
+
+export function replacePendingBookmarkSyncMutations(payloads: PendingBookmarkSyncMutation[]) {
+  if (!isBrowser()) {
+    return;
+  }
+  window.localStorage.setItem(
+    STORAGE_KEYS.pendingBookmarkSync,
+    JSON.stringify(payloads.slice(-MAX_PENDING_BOOKMARK_MUTATIONS)),
+  );
 }
 
 export function applyFreshStartBridge() {

@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Compass, EyeOff, Search } from "lucide-react";
+import { ArrowRight, BookMarked, BookOpen, Compass, EyeOff, Search } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
@@ -69,14 +69,21 @@ export default async function QuranIndexPage() {
             <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Resume instantly or open an anonymous window.</span>
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
-            Keep your reading flow clean: one primary resume path, one private path, and quick jump controls.
+            Keep your reading flow clean: one primary resume path, one private path, smart bookmarks, and quick jump controls.
           </p>
-          <div className="mt-4">
+          <div className="mt-4 flex flex-wrap gap-2">
             <Link
               href="/quran/glossary"
               className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.24)] bg-[rgba(var(--kw-accent-rgb),0.1)] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-[rgba(var(--kw-accent-rgb),1)]"
             >
               Open Qur&apos;anic glossary search
+            </Link>
+            <Link
+              href="/quran/bookmarks"
+              className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-ink)]"
+            >
+              Open smart bookmarks
+              <BookMarked size={14} />
             </Link>
           </div>
         </div>
