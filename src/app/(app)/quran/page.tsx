@@ -222,12 +222,12 @@ export default async function QuranIndexPage() {
             </label>
             <select
               id="quran-jump-juz"
-              name="juz"
-              defaultValue="1"
+              name="cursor"
+              defaultValue={String(juzs[0]?.startAyahId ?? 1)}
               className="h-10 min-w-[220px] rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
             >
               {juzs.map((juz) => (
-                <option key={juz.juzNumber} value={juz.juzNumber}>
+                <option key={juz.juzNumber} value={juz.startAyahId}>
                   Juz {juz.juzNumber}
                 </option>
               ))}

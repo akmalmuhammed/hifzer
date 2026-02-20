@@ -6,7 +6,6 @@ import { Pill } from "@/components/ui/pill";
 import {
   filterAyahs,
   getSurahInfo,
-  listJuzs,
   listSurahs,
   resolveCompactCursorAyah,
   type AyahFilters,
@@ -23,7 +22,6 @@ const LIST_PAGE_SIZE = 40;
 type SearchParamShape = {
   view?: string | string[];
   surah?: string | string[];
-  juz?: string | string[];
   ayah?: string | string[];
   cursor?: string | string[];
   page?: string | string[];
@@ -70,9 +68,6 @@ function buildHref(filters: AyahFilters & {
   if (filters.surahNumber != null) {
     params.set("surah", String(filters.surahNumber));
   }
-  if (filters.juzNumber != null) {
-    params.set("juz", String(filters.juzNumber));
-  }
   if (filters.ayahId != null) {
     params.set("ayah", String(filters.ayahId));
   }
@@ -98,13 +93,12 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   const searchParams = await props.searchParams;
   const view = parseView(searchParams.view);
   const surahNumber = parseBoundedInt(searchParams.surah, 1, 114);
-  const juzNumber = parseBoundedInt(searchParams.juz, 1, 30);
   const ayahId = parseBoundedInt(searchParams.ayah, 1, 6236);
   const cursorAyahId = parseBoundedInt(searchParams.cursor, 1, 6236);
   const requestedPage = parseBoundedInt(searchParams.page, 1, 500) ?? 1;
   const anonymous = readSingle(searchParams.anon) === "1";
 
-  const filters: AyahFilters = { surahNumber, juzNumber, ayahId };
+  const filters: AyahFilters = { surahNumber, ayahId };
   const ayahs = filterAyahs(filters);
   const compact = resolveCompactCursorAyah(ayahs, cursorAyahId);
   const totalListPages = Math.max(1, Math.ceil(ayahs.length / LIST_PAGE_SIZE));
@@ -114,9 +108,8 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   const listStart = ayahs.length > 0 ? listStartOffset + 1 : 0;
   const listEnd = listStartOffset + listAyahs.length;
   const surahs = listSurahs();
-  const juzs = listJuzs();
 
-  const baseQuery = { surahNumber, juzNumber, ayahId };
+  const baseQuery = { surahNumber, ayahId };
   const cursorForLinks = compact.current?.id ?? cursorAyahId;
   const listHref = buildHref({ ...baseQuery, view: "list", page: view === "list" ? listPage : 1, anonymous });
   const compactHref = `${
@@ -231,7 +224,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
           </Link>
         </div>
 
-        <form className="mt-4 grid gap-3 md:grid-cols-4" method="get" action="/quran/read">
+        <form className="mt-4 grid gap-3 md:grid-cols-3" method="get" action="/quran/read">
           <input type="hidden" name="view" value={view} />
           {anonymous ? <input type="hidden" name="anon" value="1" /> : null}
           <label className="text-sm text-[color:var(--kw-muted)]">
@@ -245,21 +238,6 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
               {surahs.map((surah) => (
                 <option key={surah.surahNumber} value={surah.surahNumber}>
                   {surah.surahNumber} - {surah.nameTransliteration}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="text-sm text-[color:var(--kw-muted)]">
-            Juz
-            <select
-              name="juz"
-              defaultValue={juzNumber != null ? String(juzNumber) : ""}
-              className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
-            >
-              <option value="">All juz</option>
-              {juzs.map((juz) => (
-                <option key={juz.juzNumber} value={juz.juzNumber}>
-                  Juz {juz.juzNumber}
                 </option>
               ))}
             </select>
@@ -302,7 +280,6 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
           </Pill>
         ) : null}
         {surahNumber != null ? <Pill tone="accent">Surah {surahNumber}</Pill> : null}
-        {juzNumber != null ? <Pill tone="accent">Juz {juzNumber}</Pill> : null}
         {ayahId != null ? <Pill tone="accent">Ayah #{ayahId}</Pill> : null}
       </div>
 
