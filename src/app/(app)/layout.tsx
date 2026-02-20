@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import * as Sentry from "@sentry/nextjs";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app/app-shell";
 import { BookmarkSyncAgent } from "@/components/bookmarks/bookmark-sync-agent";
@@ -15,7 +16,15 @@ export default async function AppGroupLayout({ children }: { children: React.Rea
     if (!userId) {
       redirect("/login");
     }
-    profile = await getProfileSnapshot(userId);
+    try {
+      profile = await getProfileSnapshot(userId);
+    } catch (error) {
+      Sentry.captureException(error, {
+        tags: { area: "app-layout", operation: "getProfileSnapshot" },
+        user: { id: userId },
+      });
+      profile = null;
+    }
 
     if (dbConfigured() && profile && !profile.onboardingCompleted) {
       redirect("/onboarding/welcome");

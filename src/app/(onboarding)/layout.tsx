@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import * as Sentry from "@sentry/nextjs";
 import { redirect } from "next/navigation";
 import { ProfileHydrator } from "@/components/providers/profile-hydrator";
 import { getProfileSnapshot } from "@/hifzer/profile/server";
@@ -12,7 +13,15 @@ export default async function OnboardingLayout({ children }: { children: React.R
     if (!userId) {
       redirect("/login");
     }
-    profile = await getProfileSnapshot(userId);
+    try {
+      profile = await getProfileSnapshot(userId);
+    } catch (error) {
+      Sentry.captureException(error, {
+        tags: { area: "onboarding-layout", operation: "getProfileSnapshot" },
+        user: { id: userId },
+      });
+      profile = null;
+    }
   }
 
   return (

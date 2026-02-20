@@ -9,6 +9,7 @@ import type {
 } from "@prisma/client";
 import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
 import { getSurahInfo } from "@/hifzer/quran/lookup.server";
+import { ensureCoreSchemaCompatibility } from "@/lib/db-compat";
 import { db, dbConfigured } from "@/lib/db";
 
 const DEFAULT_PRACTICE_DAYS = [0, 1, 2, 3, 4, 5, 6];
@@ -148,6 +149,8 @@ export async function getOrCreateUserProfile(clerkUserId: string): Promise<UserP
   if (!dbConfigured()) {
     return null;
   }
+
+  await ensureCoreSchemaCompatibility();
 
   const prisma = db();
 
