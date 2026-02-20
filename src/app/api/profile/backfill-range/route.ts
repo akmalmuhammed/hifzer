@@ -1,8 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getAyahById, getSurahInfo } from "@/hifzer/quran/lookup";
 import { getOrCreateUserProfile, saveQuranStartPoint } from "@/hifzer/profile/server";
 import { recordQuranBrowseAyahRangeRead } from "@/hifzer/quran/read-progress.server";
+import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -20,6 +22,35 @@ function looksLikeMissingCoreSchema(error: unknown): boolean {
     /column .* does not exist/i.test(message) ||
     /relation .* does not exist/i.test(message)
   );
+}
+
+async function fallbackUpdateQuranStartPoint(input: {
+  profileId: string;
+  quranActiveSurahNumber: number;
+  updatedCursorAyahId: number;
+}): Promise<void> {
+  try {
+    await db().userProfile.updateMany({
+      where: { id: input.profileId },
+      data: {
+        quranActiveSurahNumber: input.quranActiveSurahNumber,
+        quranCursorAyahId: input.updatedCursorAyahId,
+      },
+    });
+    return;
+  } catch (error) {
+    if (!looksLikeMissingCoreSchema(error)) {
+      throw error;
+    }
+  }
+
+  await db().userProfile.updateMany({
+    where: { id: input.profileId },
+    data: {
+      activeSurahNumber: input.quranActiveSurahNumber,
+      cursorAyahId: input.updatedCursorAyahId,
+    },
+  });
 }
 
 function parsePositiveInt(value: unknown): number | null {
@@ -74,58 +105,79 @@ export async function POST(req: Request) {
     (_, index) => rangeStartAyahId + index,
   );
 
-  const profile = await getOrCreateUserProfile(userId);
-  if (!profile) {
-    return NextResponse.json({ error: "Database not configured." }, { status: 503 });
-  }
-
-  let tracking = {
-    recordedAyahCount: 0,
-    alreadyTrackedAyahCount: 0,
-    localDate: null as string | null,
-  };
-  let trackingUnavailable = false;
   try {
-    tracking = await recordQuranBrowseAyahRangeRead({
-      profileId: profile.id,
-      mode: profile.mode,
-      timezone: profile.timezone,
-      ayahIds,
+    const profile = await getOrCreateUserProfile(userId);
+    if (!profile) {
+      return NextResponse.json({ error: "Database not configured." }, { status: 503 });
+    }
+
+    let tracking = {
+      recordedAyahCount: 0,
+      alreadyTrackedAyahCount: 0,
+      localDate: null as string | null,
+    };
+    let trackingUnavailable = false;
+    try {
+      tracking = await recordQuranBrowseAyahRangeRead({
+        profileId: profile.id,
+        mode: profile.mode,
+        timezone: profile.timezone,
+        ayahIds,
+      });
+    } catch (error) {
+      if (!looksLikeMissingCoreSchema(error)) {
+        throw error;
+      }
+      trackingUnavailable = true;
+    }
+
+    const previousCursorAyahId = profile.quranCursorAyahId;
+    const updatedCursorAyahId = Math.max(previousCursorAyahId, rangeEndAyahId);
+    const updatedAyah = getAyahById(updatedCursorAyahId);
+    const quranActiveSurahNumber = updatedAyah?.surahNumber ?? profile.quranActiveSurahNumber;
+
+    let updatedProfile;
+    try {
+      updatedProfile = await saveQuranStartPoint(userId, quranActiveSurahNumber, updatedCursorAyahId);
+    } catch (error) {
+      if (!looksLikeMissingCoreSchema(error)) {
+        throw error;
+      }
+      await fallbackUpdateQuranStartPoint({
+        profileId: profile.id,
+        quranActiveSurahNumber,
+        updatedCursorAyahId,
+      });
+      updatedProfile = await getOrCreateUserProfile(userId);
+    }
+
+    return NextResponse.json({
+      ok: true,
+      movedCursor: updatedCursorAyahId > previousCursorAyahId,
+      previousCursorAyahId,
+      updatedCursorAyahId,
+      quranActiveSurahNumber,
+      tracking: {
+        recordedAyahCount: tracking.recordedAyahCount,
+        alreadyTrackedAyahCount: tracking.alreadyTrackedAyahCount,
+        totalAyahCount: ayahIds.length,
+        unavailable: trackingUnavailable,
+      },
+      range: {
+        surahNumber,
+        fromAyahNumber,
+        toAyahNumber,
+        rangeStartAyahId,
+        rangeEndAyahId,
+        ayahCount: toAyahNumber - fromAyahNumber + 1,
+      },
+      profile: updatedProfile,
     });
   } catch (error) {
-    if (!looksLikeMissingCoreSchema(error)) {
-      throw error;
-    }
-    trackingUnavailable = true;
+    Sentry.captureException(error, {
+      tags: { route: "/api/profile/backfill-range", method: "POST" },
+      user: { id: userId },
+    });
+    return NextResponse.json({ error: "Failed to backfill Qur'an range." }, { status: 500 });
   }
-
-  const previousCursorAyahId = profile.quranCursorAyahId;
-  const updatedCursorAyahId = Math.max(previousCursorAyahId, rangeEndAyahId);
-  const updatedAyah = getAyahById(updatedCursorAyahId);
-  const quranActiveSurahNumber = updatedAyah?.surahNumber ?? profile.quranActiveSurahNumber;
-
-  const updatedProfile = await saveQuranStartPoint(userId, quranActiveSurahNumber, updatedCursorAyahId);
-
-  return NextResponse.json({
-    ok: true,
-    movedCursor: updatedCursorAyahId > previousCursorAyahId,
-    previousCursorAyahId,
-    updatedCursorAyahId,
-    quranActiveSurahNumber,
-    tracking: {
-      recordedAyahCount: tracking.recordedAyahCount,
-      alreadyTrackedAyahCount: tracking.alreadyTrackedAyahCount,
-      totalAyahCount: ayahIds.length,
-      unavailable: trackingUnavailable,
-    },
-    range: {
-      surahNumber,
-      fromAyahNumber,
-      toAyahNumber,
-      rangeStartAyahId,
-      rangeEndAyahId,
-      ayahCount: toAyahNumber - fromAyahNumber + 1,
-    },
-    profile: updatedProfile,
-  });
 }
