@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import clsx from "clsx";
 import { Pause, Play, Repeat2, Zap } from "lucide-react";
 import { audioUrl } from "@/hifzer/audio/config";
@@ -23,6 +23,7 @@ export function AyahAudioPlayer(props: {
   reciterId?: string;
   className?: string;
   streakTrackSource?: "quran_browse";
+  trailingControl?: ReactNode;
 }) {
   const src = useMemo(
     () => audioUrl(props.reciterId ?? "default", props.ayahId),
@@ -276,6 +277,8 @@ export function AyahAudioPlayer(props: {
             <Zap size={14} />
             <span>{speed}x</span>
           </button>
+
+          {props.trailingControl ? <div className="shrink-0">{props.trailingControl}</div> : null}
         </div>
       </div>
     </div>

@@ -14,10 +14,12 @@ type Props = {
   ayahNumber: number;
   anonymous: boolean;
   className?: string;
+  variant?: "standalone" | "inline";
 };
 
 export function ReaderBookmarkControl(props: Props) {
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const inline = props.variant === "inline";
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(`Surah ${props.surahNumber}:${props.ayahNumber}`);
   const [note, setNote] = useState("");
@@ -56,7 +58,7 @@ export function ReaderBookmarkControl(props: Props) {
     if (!open) {
       return;
     }
-    function onPointerDown(event: MouseEvent) {
+    function onPointerDown(event: PointerEvent) {
       const target = event.target as Node | null;
       if (!target) {
         return;
@@ -70,10 +72,10 @@ export function ReaderBookmarkControl(props: Props) {
         setOpen(false);
       }
     }
-    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("pointerdown", onPointerDown);
     document.addEventListener("keydown", onEscape);
     return () => {
-      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("keydown", onEscape);
     };
   }, [open]);
@@ -122,10 +124,14 @@ export function ReaderBookmarkControl(props: Props) {
         }}
         disabled={props.anonymous}
         className={clsx(
-          "group relative grid h-9 w-9 place-items-center rounded-2xl border shadow-[var(--kw-shadow-soft)] transition",
+          inline
+            ? "relative inline-flex h-9 w-9 items-center justify-center rounded-2xl border shadow-[var(--kw-shadow-soft)] transition"
+            : "group relative grid h-9 w-9 place-items-center rounded-2xl border shadow-[var(--kw-shadow-soft)] transition",
           props.anonymous
-            ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]"
-            : "border-[rgba(43,75,255,0.22)] bg-[rgba(43,75,255,0.10)] text-[rgba(31,54,217,1)] hover:bg-[rgba(43,75,255,0.14)]",
+            ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] text-[color:var(--kw-faint)]"
+            : inline
+              ? "border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-strong)]"
+              : "border-[rgba(43,75,255,0.22)] bg-[rgba(43,75,255,0.10)] text-[rgba(31,54,217,1)] hover:bg-[rgba(43,75,255,0.14)]",
         )}
         aria-label={props.anonymous ? "Bookmarks unavailable in anonymous mode" : "Save bookmark"}
         title={props.anonymous ? "Bookmarks unavailable in anonymous mode" : "Save bookmark"}
@@ -145,7 +151,14 @@ export function ReaderBookmarkControl(props: Props) {
       ) : null}
 
       {open ? (
-        <div className="kw-glass-strong absolute right-0 top-12 z-30 w-[min(92vw,360px)] overflow-hidden rounded-[var(--kw-radius-xl)]">
+        <>
+          <button
+            type="button"
+            aria-label="Dismiss bookmark panel"
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 z-30 bg-black/35 backdrop-blur-[1px] sm:hidden"
+          />
+          <div className="kw-glass-strong fixed inset-x-3 bottom-3 z-40 flex max-h-[calc(100dvh-1.5rem)] w-auto flex-col overflow-hidden rounded-[var(--kw-radius-xl)] sm:absolute sm:inset-auto sm:right-0 sm:top-12 sm:z-30 sm:w-[min(92vw,360px)] sm:max-h-[min(80vh,620px)]">
           <div className="flex items-center justify-between border-b border-[color:var(--kw-border-2)] px-4 py-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">Bookmark ayah</p>
@@ -163,7 +176,7 @@ export function ReaderBookmarkControl(props: Props) {
             </button>
           </div>
 
-          <div className="space-y-3 px-4 py-3">
+            <div className="space-y-3 overflow-y-auto px-4 py-3">
             <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--kw-faint)]">
               Name
               <input
@@ -220,7 +233,8 @@ export function ReaderBookmarkControl(props: Props) {
               <p className="text-xs text-[color:var(--kw-muted)]">{feedback}</p>
             ) : null}
           </div>
-        </div>
+          </div>
+        </>
       ) : null}
     </div>
   );

@@ -383,18 +383,20 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
                   {compact.index + 1} / {ayahs.length}
                 </span>
               </div>
-              <div className="w-full sm:w-auto flex items-start justify-end gap-2">
-                <ReaderBookmarkControl
-                  ayahId={compact.current.id}
-                  surahNumber={compact.current.surahNumber}
-                  ayahNumber={compact.current.ayahNumber}
-                  anonymous={anonymous}
-                  className="shrink-0"
-                />
+              <div className="w-full sm:w-auto">
                 <AyahAudioPlayer
                   ayahId={compact.current.id}
                   className="w-full sm:w-auto"
                   streakTrackSource={anonymous ? undefined : "quran_browse"}
+                  trailingControl={
+                    <ReaderBookmarkControl
+                      ayahId={compact.current.id}
+                      surahNumber={compact.current.surahNumber}
+                      ayahNumber={compact.current.ayahNumber}
+                      anonymous={anonymous}
+                      variant="inline"
+                    />
+                  }
                 />
               </div>
             </div>
