@@ -100,6 +100,7 @@ export async function queueAndFlushBookmarkMutation(
   sent: number;
   remaining: number;
   state: StoredBookmarkState;
+  error?: string;
 }> {
   queueBookmarkMutation(input);
   return flushPendingBookmarkMutations();
@@ -110,6 +111,7 @@ export async function flushPendingBookmarkMutations(): Promise<{
   sent: number;
   remaining: number;
   state: StoredBookmarkState;
+  error?: string;
 }> {
   const pending = getPendingBookmarkSyncMutations();
   if (!pending.length) {
@@ -137,11 +139,21 @@ export async function flushPendingBookmarkMutations(): Promise<{
       body: JSON.stringify({ mutations }),
     });
     if (!res.ok) {
+      let error = `Bookmark sync failed (${res.status}).`;
+      try {
+        const data = (await res.json()) as { error?: unknown; code?: unknown };
+        if (typeof data.error === "string" && data.error.trim().length > 0) {
+          error = typeof data.code === "string" ? `${data.error} (${data.code})` : data.error;
+        }
+      } catch {
+        // keep default error message
+      }
       return {
         ok: false,
         sent: pending.length,
         remaining: pending.length,
         state: getStoredBookmarkState(),
+        error,
       };
     }
     payload = (await res.json()) as BookmarkSyncResponse;
@@ -151,6 +163,7 @@ export async function flushPendingBookmarkMutations(): Promise<{
       sent: pending.length,
       remaining: pending.length,
       state: getStoredBookmarkState(),
+      error: "Network error while syncing bookmarks.",
     };
   }
 
@@ -182,10 +195,21 @@ export async function flushPendingBookmarkMutations(): Promise<{
   });
   replacePendingBookmarkSyncMutations(remainingMutations);
 
+  let error: string | undefined;
+  if (remainingMutations.length > 0) {
+    const failed = (payload?.results ?? []).find((row) => row.ok !== true);
+    if (failed?.error && failed.error.trim().length > 0) {
+      error = typeof failed.code === "string" ? `${failed.error} (${failed.code})` : failed.error;
+    } else {
+      error = `${remainingMutations.length} bookmark change(s) are still pending sync.`;
+    }
+  }
+
   return {
     ok: remainingMutations.length === 0,
     sent: pending.length,
     remaining: remainingMutations.length,
     state: getStoredBookmarkState(),
+    error,
   };
 }

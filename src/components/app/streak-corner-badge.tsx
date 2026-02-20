@@ -53,7 +53,7 @@ export function StreakCornerBadge(props: { enabled: boolean }) {
     };
   }, [pathname, props.enabled]);
 
-  const showThemeToggle = pathname === "/";
+  const showThemeToggle = true;
   const showStreakBadge = props.enabled && Boolean(data?.onboardingEligible);
 
   if (!showStreakBadge && !showThemeToggle) {

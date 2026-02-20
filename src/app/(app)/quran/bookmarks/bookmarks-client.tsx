@@ -24,6 +24,18 @@ type BookmarkDraft = {
   isPinned: boolean;
 };
 
+async function readApiError(res: Response): Promise<string | null> {
+  try {
+    const data = (await res.json()) as { error?: unknown; code?: unknown };
+    if (typeof data.error === "string" && data.error.trim().length > 0) {
+      return typeof data.code === "string" ? `${data.error} (${data.code})` : data.error;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 function toDraft(bookmark: BookmarkSnapshot): BookmarkDraft {
   return {
     name: bookmark.name,
@@ -84,7 +96,7 @@ export function BookmarkManagerClient() {
       const result = await flushPendingBookmarkMutations();
       setPendingCount(result.remaining);
       if (result.remaining > 0) {
-        setFeedback(`${result.remaining} bookmark changes pending sync.`);
+        setFeedback(result.error ?? `${result.remaining} bookmark changes pending sync.`);
       }
     } finally {
       if (manual) {
@@ -144,7 +156,7 @@ export function BookmarkManagerClient() {
     try {
       const result = await queueAndFlushBookmarkMutation(mutation);
       setPendingCount(result.remaining);
-      setFeedback(result.remaining > 0 ? "Saved locally, pending sync." : successText);
+      setFeedback(result.remaining > 0 ? (result.error ?? "Saved locally, pending sync.") : successText);
       await refreshFromApi();
     } finally {
       setBusyKey(null);
@@ -157,20 +169,70 @@ export function BookmarkManagerClient() {
       return;
     }
     const sortOrder = Number(newCategorySortOrder);
-    await runMutation(
-      "category-create",
-      {
-        clientMutationId: newBookmarkMutationId("cat_create"),
+    const normalizedSortOrder = Number.isFinite(sortOrder) ? Math.floor(sortOrder) : 0;
+    const clientMutationId = newBookmarkMutationId("cat_create");
+
+    setBusyKey("category-create");
+    setFeedback(null);
+    try {
+      const res = await fetch("/api/bookmarks/categories", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          clientMutationId,
+          name: trimmed,
+          sortOrder: normalizedSortOrder,
+        }),
+      });
+
+      if (res.ok) {
+        await refreshFromApi();
+        setPendingCount(getPendingBookmarkSyncMutations().length);
+        setFeedback("Category created.");
+        setNewCategoryName("");
+        setNewCategorySortOrder("0");
+        return;
+      }
+
+      if (res.status < 500) {
+        setFeedback((await readApiError(res)) ?? "Could not create category.");
+        return;
+      }
+
+      const result = await queueAndFlushBookmarkMutation({
+        clientMutationId,
         type: "CATEGORY_CREATE",
         data: {
           name: trimmed,
-          sortOrder: Number.isFinite(sortOrder) ? Math.floor(sortOrder) : 0,
+          sortOrder: normalizedSortOrder,
         },
-      },
-      "Category created.",
-    );
-    setNewCategoryName("");
-    setNewCategorySortOrder("0");
+      });
+      setPendingCount(result.remaining);
+      setFeedback(result.remaining > 0 ? (result.error ?? "Saved locally, pending sync.") : "Category created.");
+      await refreshFromApi();
+      if (result.remaining === 0) {
+        setNewCategoryName("");
+        setNewCategorySortOrder("0");
+      }
+    } catch {
+      const result = await queueAndFlushBookmarkMutation({
+        clientMutationId,
+        type: "CATEGORY_CREATE",
+        data: {
+          name: trimmed,
+          sortOrder: normalizedSortOrder,
+        },
+      });
+      setPendingCount(result.remaining);
+      setFeedback(result.remaining > 0 ? (result.error ?? "Saved locally, pending sync.") : "Category created.");
+      await refreshFromApi();
+      if (result.remaining === 0) {
+        setNewCategoryName("");
+        setNewCategorySortOrder("0");
+      }
+    } finally {
+      setBusyKey(null);
+    }
   }
 
   async function saveBookmark(bookmark: BookmarkSnapshot) {
