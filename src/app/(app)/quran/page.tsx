@@ -192,7 +192,7 @@ export default async function QuranIndexPage() {
               id="quran-jump-surah"
               name="surah"
               defaultValue={String(lastAyah?.surahNumber ?? 1)}
-              className="h-10 min-w-[220px] rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
+              className="h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)] sm:min-w-[220px] sm:w-auto"
             >
               {surahs.map((surah) => (
                 <option key={surah.surahNumber} value={surah.surahNumber}>
@@ -202,7 +202,7 @@ export default async function QuranIndexPage() {
             </select>
             <button
               type="submit"
-              className="h-10 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+              className="h-10 w-full rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] sm:w-auto"
             >
               Open surah
             </button>
@@ -224,7 +224,7 @@ export default async function QuranIndexPage() {
               id="quran-jump-juz"
               name="cursor"
               defaultValue={String(juzs[0]?.startAyahId ?? 1)}
-              className="h-10 min-w-[220px] rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
+              className="h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)] sm:min-w-[220px] sm:w-auto"
             >
               {juzs.map((juz) => (
                 <option key={juz.juzNumber} value={juz.startAyahId}>
@@ -234,7 +234,7 @@ export default async function QuranIndexPage() {
             </select>
             <button
               type="submit"
-              className="h-10 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+              className="h-10 w-full rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] sm:w-auto"
             >
               Open juz
             </button>

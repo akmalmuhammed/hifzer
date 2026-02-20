@@ -9,7 +9,7 @@ export function PageHeader(props: {
   className?: string;
 }) {
   return (
-    <div className={clsx("flex flex-wrap items-end justify-between gap-4", props.className)}>
+    <div className={clsx("flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between", props.className)}>
       <div className="min-w-0">
         {props.eyebrow ? (
           <div className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
@@ -25,8 +25,7 @@ export function PageHeader(props: {
           </p>
         ) : null}
       </div>
-      {props.right ? <div className="shrink-0">{props.right}</div> : null}
+      {props.right ? <div className="w-full min-w-0 sm:w-auto sm:max-w-full">{props.right}</div> : null}
     </div>
   );
 }
-

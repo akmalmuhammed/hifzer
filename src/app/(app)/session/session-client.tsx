@@ -778,14 +778,14 @@ export function SessionClient() {
   }, [done]);
 
   const rightActions = (
-    <div className="flex items-center gap-2">
+    <div className="flex w-full flex-wrap items-stretch gap-2 sm:w-auto sm:items-center">
       {canRevealCurrentStep ? (
         <Button
           type="button"
           variant="secondary"
           onClick={revealTemporarily}
           className={clsx(
-            "gap-2 whitespace-nowrap border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] hover:bg-[rgba(var(--kw-accent-rgb),0.14)]",
+            "w-full gap-2 border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] hover:bg-[rgba(var(--kw-accent-rgb),0.14)] sm:w-auto",
             showText && revealUntilMs ? "text-[rgba(var(--kw-accent-rgb),1)]" : "text-[color:var(--kw-ink)]",
           )}
         >
@@ -804,7 +804,7 @@ export function SessionClient() {
               return next;
             });
           }}
-          className="gap-2 whitespace-nowrap"
+          className="w-full gap-2 sm:w-auto"
         >
           {showText ? "Hide text" : "Show text"}
         </Button>
@@ -815,17 +815,21 @@ export function SessionClient() {
           variant="secondary"
           onClick={() => setShowTranslation((v) => !v)}
           disabled={!showText}
-          className="gap-2 whitespace-nowrap"
+          className="w-full gap-2 sm:w-auto"
         >
           {showTranslation ? "Hide translation" : "Show translation"}
         </Button>
       ) : null}
-      <Link href="/today">
-        <Button variant="secondary" className="gap-2 whitespace-nowrap">
+      <Link href="/today" className="w-full sm:w-auto">
+        <Button variant="secondary" className="w-full gap-2 sm:w-auto">
           Back to Today <ArrowRight size={16} />
         </Button>
       </Link>
-      <Button variant="secondary" className="gap-2 whitespace-nowrap" onClick={() => setSwitchOpen((prev) => !prev)}>
+      <Button
+        variant="secondary"
+        className="w-full gap-2 sm:w-auto"
+        onClick={() => setSwitchOpen((prev) => !prev)}
+      >
         {switchOpen ? "Close surah switcher" : "Switch surah"}
       </Button>
     </div>
@@ -1088,7 +1092,7 @@ export function SessionClient() {
             : stepSummary(currentStep)
         }
         right={
-          <div className="flex items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
             <Pill tone="neutral">{progressText}</Pill>
             {quickReviewMode ? <Pill tone="accent">Review-only</Pill> : null}
             {rightActions}

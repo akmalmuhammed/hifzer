@@ -114,7 +114,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
   const [platformOpen, setPlatformOpen] = useState(true);
 
   return (
-    <div className="min-h-dvh">
+    <div className="min-h-dvh overflow-x-clip">
       <StreakCornerBadge enabled={Boolean(props.streakEnabled)} />
       <div className="mx-auto w-full max-w-[1200px] px-4 py-6 md:flex md:gap-6">
         <aside className="hidden w-[240px] shrink-0 md:block">

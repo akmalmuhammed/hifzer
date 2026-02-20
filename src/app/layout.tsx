@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, IBM_Plex_Mono, Amiri } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { AppProviders } from "@/components/providers/app-providers";
+import { InstallAppBanner } from "@/components/pwa/install-app-banner";
 import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
 import { PublicBetaBanner } from "@/components/site/public-beta-banner";
 import { GoogleAnalytics } from "@/components/telemetry/google-analytics";
@@ -121,6 +122,7 @@ export default function RootLayout({
         ) : (
           <AppProviders>{children}</AppProviders>
         )}
+        <InstallAppBanner />
         <ServiceWorkerRegistration />
         <GoogleAnalytics />
       </body>

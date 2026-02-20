@@ -37,8 +37,9 @@ export default async function LoginPage() {
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
               This prototype page is scaffolded. To enable real auth, set Clerk env vars:
             </p>
-            <pre className="mt-4 rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-3 text-xs leading-6 text-[color:var(--kw-ink-2)]">
-              NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=...\nCLERK_SECRET_KEY=...
+            <pre className="mt-4 max-w-full overflow-x-auto whitespace-pre-wrap break-all rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-3 text-xs leading-6 text-[color:var(--kw-ink-2)]">
+              {`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=...
+CLERK_SECRET_KEY=...`}
             </pre>
             <div className="mt-6 flex flex-wrap gap-2">
               <Link href="/">

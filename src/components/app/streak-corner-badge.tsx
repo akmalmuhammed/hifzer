@@ -86,13 +86,13 @@ export function StreakCornerBadge(props: { enabled: boolean }) {
 
   return (
     <div
-      className="fixed z-50 flex items-center gap-2"
+      className="fixed z-50 flex max-w-[calc(100vw-1rem)] flex-wrap items-center justify-end gap-2"
       style={{
         top: "calc(env(safe-area-inset-top) + 0.75rem)",
         right: "calc(env(safe-area-inset-right) + 0.75rem)",
       }}
     >
-      <InstallAppButton className="md:hidden" />
+      <InstallAppButton className="max-w-full md:hidden" />
 
       {showThemeToggle ? (
         <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/85 p-1.5 text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] backdrop-blur">
@@ -106,7 +106,7 @@ export function StreakCornerBadge(props: { enabled: boolean }) {
           telemetryName="shell.streak.badge"
           aria-label={label}
           title={label}
-          className="rounded-full border border-[rgba(245,158,11,0.32)] bg-white/85 px-3 py-2 text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] backdrop-blur transition hover:bg-white"
+          className="max-w-full rounded-full border border-[rgba(245,158,11,0.32)] bg-white/85 px-3 py-2 text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] backdrop-blur transition hover:bg-white"
         >
           <span className="flex items-center gap-2">
             <span className="grid h-6 w-6 place-items-center rounded-full bg-[rgba(245,158,11,0.14)] text-[rgb(194,65,12)]">

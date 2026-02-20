@@ -200,6 +200,26 @@ html[data-mode="dark"] {
   --font-kw-quran: var(--font-quran-uthmani), "KFGQPC Uthmanic Script HAFS", "Scheherazade New", "Amiri", "Noto Naskh Arabic", "Traditional Arabic", serif;
 }
 
+html,
+body {
+  max-width: 100%;
+  overscroll-behavior-x: none;
+}
+
+@supports (overflow: clip) {
+  html,
+  body {
+    overflow-x: clip;
+  }
+}
+
+@supports not (overflow: clip) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+}
+
 body {
   background: var(--kw-bg);
   color: var(--kw-ink);
@@ -255,12 +275,15 @@ body {
 .kw-canvas {
   position: relative;
   isolation: isolate;
+  max-width: 100%;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
 }
 
 .kw-canvas::before {
   content: "";
   position: absolute;
-  inset: -2px;
+  inset: 0;
   z-index: -2;
   background:
     radial-gradient(
@@ -285,7 +308,7 @@ body {
 .kw-canvas::after {
   content: "";
   position: absolute;
-  inset: -2px;
+  inset: 0;
   z-index: -1;
   pointer-events: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.45'/%3E%3C/svg%3E");
@@ -363,6 +386,15 @@ html[data-mode="dark"] .kw-canvas::after {
     animation: none !important;
     width: 100%;
     justify-content: center;
+  }
+
+  .kw-beta-marquee-segment {
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-inline: 0.5rem;
+    text-align: center;
   }
 
   .kw-beta-marquee-segment[aria-hidden] {
@@ -450,7 +482,14 @@ html[data-mode="dark"] [class~="focus:bg-white"]:focus {
 }
 
 .kw-beta-marquee-track {
+  display: none;
   animation: kw-beta-marquee 24s linear infinite;
+}
+
+@media (min-width: 768px) {
+  .kw-beta-marquee-track {
+    display: flex;
+  }
 }
 
 .kw-beta-marquee-segment {
