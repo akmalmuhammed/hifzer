@@ -122,17 +122,17 @@ export function ReaderBookmarkControl(props: Props) {
         }}
         disabled={props.anonymous}
         className={clsx(
-          "group relative grid h-10 w-10 place-items-center rounded-2xl border shadow-[var(--kw-shadow-soft)] transition",
+          "group relative grid h-9 w-9 place-items-center rounded-2xl border shadow-[var(--kw-shadow-soft)] transition",
           props.anonymous
-            ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-white/60 text-[color:var(--kw-faint)]"
-            : "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[linear-gradient(145deg,rgba(var(--kw-accent-rgb),0.16),rgba(255,255,255,0.92))] text-[rgba(var(--kw-accent-rgb),1)] hover:scale-[1.03] hover:bg-[linear-gradient(145deg,rgba(var(--kw-accent-rgb),0.22),rgba(255,255,255,0.96))]",
+            ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]"
+            : "border-[rgba(43,75,255,0.22)] bg-[rgba(43,75,255,0.10)] text-[rgba(31,54,217,1)] hover:bg-[rgba(43,75,255,0.14)]",
         )}
         aria-label={props.anonymous ? "Bookmarks unavailable in anonymous mode" : "Save bookmark"}
         title={props.anonymous ? "Bookmarks unavailable in anonymous mode" : "Save bookmark"}
       >
-        {open ? <BookMarked size={17} /> : <BookmarkPlus size={17} />}
+        {open ? <BookMarked size={16} /> : <BookmarkPlus size={16} />}
         {pendingCount > 0 ? (
-          <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full border border-white bg-[rgba(var(--kw-accent-rgb),1)] px-1 text-[10px] font-bold leading-none text-white">
+          <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full border border-[color:var(--kw-surface-strong)] bg-[rgba(31,54,217,1)] px-1 text-[10px] font-bold leading-none text-white">
             {pendingCount > 9 ? "9+" : pendingCount}
           </span>
         ) : null}
@@ -145,7 +145,7 @@ export function ReaderBookmarkControl(props: Props) {
       ) : null}
 
       {open ? (
-        <div className="absolute right-0 top-12 z-30 w-[min(92vw,360px)] overflow-hidden rounded-[20px] border border-[rgba(var(--kw-accent-rgb),0.24)] bg-[linear-gradient(160deg,rgba(255,255,255,0.96),rgba(var(--kw-accent-rgb),0.08))] shadow-[0_18px_40px_rgba(8,20,42,0.18)] backdrop-blur-sm">
+        <div className="kw-glass-strong absolute right-0 top-12 z-30 w-[min(92vw,360px)] overflow-hidden rounded-[var(--kw-radius-xl)]">
           <div className="flex items-center justify-between border-b border-[color:var(--kw-border-2)] px-4 py-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">Bookmark ayah</p>
@@ -155,7 +155,7 @@ export function ReaderBookmarkControl(props: Props) {
             </div>
             <button
               type="button"
-              className="grid h-8 w-8 place-items-center rounded-xl border border-[color:var(--kw-border-2)] bg-white/80 text-[color:var(--kw-muted)] transition hover:bg-white hover:text-[color:var(--kw-ink)]"
+              className="grid h-9 w-9 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] text-[color:var(--kw-muted)] transition hover:bg-[color:var(--kw-hover-strong)] hover:text-[color:var(--kw-ink)]"
               onClick={() => setOpen(false)}
               aria-label="Close bookmark panel"
             >
@@ -170,7 +170,7 @@ export function ReaderBookmarkControl(props: Props) {
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 maxLength={120}
-                className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/85 px-3 text-sm text-[color:var(--kw-ink)]"
+                className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] placeholder:text-[color:var(--kw-faint)]"
               />
             </label>
 
@@ -183,7 +183,7 @@ export function ReaderBookmarkControl(props: Props) {
                   maxLength={2000}
                   rows={3}
                   placeholder="Add a private reminder for this ayah..."
-                  className="w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/85 px-3 py-2 pr-9 text-sm text-[color:var(--kw-ink)]"
+                  className="w-full rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-3 py-2 pr-9 text-sm text-[color:var(--kw-ink)] placeholder:text-[color:var(--kw-faint)]"
                 />
                 <MessageSquareText size={14} className="pointer-events-none absolute right-3 top-3 text-[color:var(--kw-faint)]" />
               </div>
@@ -194,7 +194,7 @@ export function ReaderBookmarkControl(props: Props) {
               <select
                 value={categoryId}
                 onChange={(event) => setCategoryId(event.target.value)}
-                className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/85 px-3 text-sm text-[color:var(--kw-ink)]"
+                className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)]"
               >
                 <option value="">No category</option>
                 {categories.map((category) => (
@@ -206,7 +206,7 @@ export function ReaderBookmarkControl(props: Props) {
             <div className="flex items-center justify-between gap-2 pt-1">
               <Link
                 href="/quran/bookmarks"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-[color:var(--kw-muted)] transition hover:text-[color:var(--kw-ink)]"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-[color:var(--kw-muted)] transition hover:text-[rgba(var(--kw-accent-rgb),1)]"
               >
                 All bookmarks
                 <ArrowUpRight size={12} />
