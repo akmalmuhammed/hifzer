@@ -145,25 +145,44 @@ function toSnapshot(row: UserProfile): ProfileSnapshot {
   };
 }
 
+function looksLikeMissingCoreSchema(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    message.includes("quranActiveSurahNumber") ||
+    message.includes("quranCursorAyahId") ||
+    message.includes("planJson") ||
+    message.includes("P2022") ||
+    /column .* does not exist/i.test(message)
+  );
+}
+
 export async function getOrCreateUserProfile(clerkUserId: string): Promise<UserProfile | null> {
   if (!dbConfigured()) {
     return null;
   }
 
-  // Runtime schema patching is opt-in only. In managed production databases
-  // the app role often lacks DDL privileges, and unconditional ALTER TABLE
-  // attempts can fail every request.
-  if (process.env.HIFZER_RUNTIME_SCHEMA_PATCH === "1") {
-    await ensureCoreSchemaCompatibility();
-  }
-
   const prisma = db();
+  const upsertProfile = () =>
+    prisma.userProfile.upsert({
+      where: { clerkUserId },
+      create: defaultCreateData(clerkUserId),
+      update: {},
+    });
 
-  return prisma.userProfile.upsert({
-    where: { clerkUserId },
-    create: defaultCreateData(clerkUserId),
-    update: {},
-  });
+  try {
+    // Runtime schema patching stays opt-in by default, but we still support
+    // one-time automatic recovery when the DB is missing core columns.
+    if (process.env.HIFZER_RUNTIME_SCHEMA_PATCH === "1") {
+      await ensureCoreSchemaCompatibility();
+    }
+    return await upsertProfile();
+  } catch (error) {
+    if (!looksLikeMissingCoreSchema(error)) {
+      throw error;
+    }
+    await ensureCoreSchemaCompatibility();
+    return upsertProfile();
+  }
 }
 
 export async function getProfileSnapshot(clerkUserId: string): Promise<ProfileSnapshot | null> {
