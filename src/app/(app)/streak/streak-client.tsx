@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { ArrowRight, Flame, PlayCircle, RefreshCcw } from "lucide-react";
-import { HeatStrip } from "@/components/charts/heat-strip";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, Flame, PlayCircle, RefreshCcw } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
+import styles from "./streak-client.module.css";
 
 type StreakPayload = {
   onboardingEligible: boolean;
@@ -37,10 +37,95 @@ type StreakPayload = {
   }>;
 };
 
+type CalendarCell = {
+  key: string;
+  blank: boolean;
+  day: number;
+  date: string;
+  value: number;
+  qualified: boolean;
+  eligible: boolean;
+  isFuture: boolean;
+  qualifiedMinutes: number;
+  qualifiedSeconds: number;
+};
+
+function formatIsoDate(isoDate: string): string {
+  const [year, month, day] = isoDate.split("-").map((value) => Number(value));
+  if (!year || !month || !day) {
+    return isoDate;
+  }
+  return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+function monthStartFromIso(isoDate: string): Date {
+  const [year, month] = isoDate.split("-").map((value) => Number(value));
+  if (!year || !month) {
+    const now = new Date();
+    return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  }
+  return new Date(Date.UTC(year, month - 1, 1));
+}
+
+function addMonthsUtc(base: Date, offset: number): Date {
+  return new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth() + offset, 1));
+}
+
+function diffMonthsUtc(min: Date, max: Date): number {
+  return ((max.getUTCFullYear() - min.getUTCFullYear()) * 12) + (max.getUTCMonth() - min.getUTCMonth());
+}
+
+function daysInMonthUtc(base: Date): number {
+  return new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth() + 1, 0)).getUTCDate();
+}
+
+function isoDateUtc(year: number, monthIndex: number, day: number): string {
+  return new Date(Date.UTC(year, monthIndex, day)).toISOString().slice(0, 10);
+}
+
+function activityColor(value: number, max: number, eligible: boolean, isFuture: boolean): string {
+  if (isFuture) {
+    return "rgba(11,18,32,0.05)";
+  }
+  if (!eligible) {
+    return "rgba(11,18,32,0.04)";
+  }
+  if (value <= 0) {
+    return "rgba(16,185,129,0.10)";
+  }
+  const pct = value / Math.max(1, max);
+  if (pct < 0.2) {
+    return "rgba(16,185,129,0.28)";
+  }
+  if (pct < 0.45) {
+    return "rgba(16,185,129,0.45)";
+  }
+  if (pct < 0.7) {
+    return "rgba(16,185,129,0.64)";
+  }
+  return "rgba(16,185,129,0.84)";
+}
+
+function ringShadow(value: number, max: number, qualified: boolean): string {
+  if (!qualified || value <= 0) {
+    return "inset 0 0 0 1px rgba(11,18,32,0.12)";
+  }
+  const pct = value / Math.max(1, max);
+  const glow = 0.2 + (pct * 0.35);
+  return `inset 0 0 0 1px rgba(255,255,255,0.62), 0 0 0 1px rgba(16,185,129,${glow.toFixed(2)})`;
+}
+
 export function StreakClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<StreakPayload | null>(null);
+  const [monthCursor, setMonthCursor] = useState(0);
+  const [hoverDate, setHoverDate] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -63,12 +148,105 @@ export function StreakClient() {
     void load();
   }, []);
 
+  const calendarByDate = useMemo(() => {
+    return new Map(data?.calendar84d.map((day) => [day.date, day]) ?? []);
+  }, [data]);
+
+  const latestDate = data?.calendar84d[data.calendar84d.length - 1]?.date ?? new Date().toISOString().slice(0, 10);
+  const earliestDate = data?.calendar84d[0]?.date ?? latestDate;
+  const minMonthStart = useMemo(() => monthStartFromIso(earliestDate), [earliestDate]);
+  const maxMonthStart = useMemo(() => monthStartFromIso(latestDate), [latestDate]);
+  const minCursor = useMemo(() => -diffMonthsUtc(minMonthStart, maxMonthStart), [minMonthStart, maxMonthStart]);
+  const clampedCursor = Math.max(minCursor, Math.min(0, monthCursor));
+  const selectedMonthStart = useMemo(() => addMonthsUtc(maxMonthStart, clampedCursor), [maxMonthStart, clampedCursor]);
+  const canGoPreviousMonth = clampedCursor > minCursor;
+  const canGoNextMonth = clampedCursor < 0;
+
+  const calendarCells = useMemo(() => {
+    const firstWeekdaySun0 = selectedMonthStart.getUTCDay();
+    const firstWeekdayMon0 = (firstWeekdaySun0 + 6) % 7;
+    const monthDays = daysInMonthUtc(selectedMonthStart);
+    const totalSlots = Math.ceil((firstWeekdayMon0 + monthDays) / 7) * 7;
+    const year = selectedMonthStart.getUTCFullYear();
+    const monthIndex = selectedMonthStart.getUTCMonth();
+
+    return Array.from({ length: totalSlots }, (_, slot): CalendarCell => {
+      if (slot < firstWeekdayMon0) {
+        return {
+          key: `blank-start-${slot}`,
+          blank: true,
+          day: 0,
+          date: "",
+          value: 0,
+          qualified: false,
+          eligible: false,
+          isFuture: false,
+          qualifiedMinutes: 0,
+          qualifiedSeconds: 0,
+        };
+      }
+
+      const day = slot - firstWeekdayMon0 + 1;
+      if (day > monthDays) {
+        return {
+          key: `blank-end-${slot}`,
+          blank: true,
+          day: 0,
+          date: "",
+          value: 0,
+          qualified: false,
+          eligible: false,
+          isFuture: false,
+          qualifiedMinutes: 0,
+          qualifiedSeconds: 0,
+        };
+      }
+
+      const date = isoDateUtc(year, monthIndex, day);
+      const row = calendarByDate.get(date);
+      const isFuture = date > latestDate;
+      return {
+        key: date,
+        blank: false,
+        day,
+        date,
+        value: row?.qualifiedAyahCount ?? 0,
+        qualified: row?.qualified ?? false,
+        eligible: row?.eligible ?? false,
+        isFuture,
+        qualifiedMinutes: row?.qualifiedMinutes ?? 0,
+        qualifiedSeconds: row?.qualifiedSeconds ?? 0,
+      };
+    });
+  }, [selectedMonthStart, calendarByDate, latestDate]);
+
+  const calendarMax = useMemo(() => {
+    const values = calendarCells
+      .filter((cell) => !cell.blank && cell.eligible && !cell.isFuture)
+      .map((cell) => cell.value);
+    return Math.max(1, ...values);
+  }, [calendarCells]);
+
+  const detailCell = useMemo(() => {
+    if (hoverDate) {
+      const hovered = calendarCells.find((cell) => !cell.blank && cell.date === hoverDate) ?? null;
+      if (hovered) {
+        return hovered;
+      }
+    }
+    const today = data?.calendar84d[data.calendar84d.length - 1];
+    if (!today) {
+      return null;
+    }
+    return calendarCells.find((cell) => !cell.blank && cell.date === today.date) ?? null;
+  }, [calendarCells, data, hoverDate]);
+
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow="Streak"
         title="Streak"
-        subtitle="Consecutive day momentum based on reciting at least one ayah/day."
+        subtitle="Calendar-style momentum tracking from your daily recitation activity."
         right={
           <div className="flex items-center gap-2">
             <Link href="/session">
@@ -115,81 +293,168 @@ export function StreakClient() {
         </Card>
       ) : (
         <>
+          <Card className={`${styles.heroShell} relative overflow-hidden`}>
+            <div className={styles.heroOrb} />
+            <div className={styles.heroOrbAlt} />
+            <div className="relative flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <Pill tone="accent">Streak engine</Pill>
+                <h2 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-4xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-5xl">
+                  Keep your streak alive one day at a time.
+                </h2>
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
+                  GitHub-style activity intensity based on daily unique ayahs. Hover any day to inspect how much you
+                  recited.
+                </p>
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <Pill tone="neutral">Min {data.rule.minQualifiedAyahsPerDay} ayah/day</Pill>
+                  <Pill tone="warn">1-day grace supported</Pill>
+                  {data.streak.graceInUseToday ? <Pill tone="warn">Grace in use today</Pill> : <Pill tone="success">Streak active</Pill>}
+                </div>
+              </div>
+              <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/75 p-4 shadow-[var(--kw-shadow-soft)]">
+                <div className="flex items-center gap-3">
+                  <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[rgba(245,158,11,0.3)] bg-[rgba(245,158,11,0.14)] text-[color:var(--kw-ember-600)]">
+                    <Flame size={18} />
+                  </span>
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">Current streak</p>
+                    <p className="text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                      {data.streak.currentStreakDays}d
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                Current streak
-              </p>
-              <div className="mt-3 flex items-center gap-2">
-                <span className="grid h-9 w-9 place-items-center rounded-2xl border border-[rgba(245,158,11,0.25)] bg-[rgba(245,158,11,0.12)] text-[color:var(--kw-ember-600)]">
-                  <Flame size={16} />
-                </span>
-                <p className="text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                  {data.streak.currentStreakDays}
-                </p>
-              </div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Current streak</p>
+              <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{data.streak.currentStreakDays}</p>
             </Card>
-
             <Card>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                Best streak
-              </p>
-              <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                {data.streak.bestStreakDays}
-              </p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Best streak</p>
+              <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{data.streak.bestStreakDays}</p>
             </Card>
-
             <Card>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                Today qualified
-              </p>
-              <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Today qualified</p>
+              <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
                 {data.streak.todayQualifiedAyahs} ayah{data.streak.todayQualifiedAyahs === 1 ? "" : "s"}
               </p>
             </Card>
           </div>
 
           <Card>
-            <div className="flex flex-wrap items-center gap-2">
-              <Pill tone="neutral">Rules</Pill>
-              <Pill tone="accent">Min {data.rule.minQualifiedAyahsPerDay} recited ayah/day</Pill>
-              <Pill tone="warn">1-day gaps allowed</Pill>
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <CalendarDays size={16} className="text-[color:var(--kw-faint)]" />
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+                    Circular commit calendar
+                  </p>
+                </div>
+                <p className="mt-1 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                  {selectedMonthStart.toLocaleDateString(undefined, { month: "long", year: "numeric", timeZone: "UTC" })}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="gap-1"
+                  onClick={() => setMonthCursor((prev) => Math.max(minCursor, prev - 1))}
+                  disabled={!canGoPreviousMonth}
+                >
+                  <ChevronLeft size={14} />
+                  Prev
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="gap-1"
+                  onClick={() => setMonthCursor((prev) => Math.min(0, prev + 1))}
+                  disabled={!canGoNextMonth}
+                >
+                  Next
+                  <ChevronRight size={14} />
+                </Button>
+              </div>
             </div>
-            <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-              A day counts when you recite at least one ayah from Session or Qur&apos;an browse. Your streak continues
-              across single missed days, but breaks after two missed days.
-            </p>
-            <div className="mt-3">
-              {data.streak.graceInUseToday ? (
-                <Pill tone="warn">Grace in use today</Pill>
-              ) : data.streak.currentStreakDays > 0 ? (
-                <Pill tone="accent">Streak active</Pill>
-              ) : (
-                <Pill tone="neutral">No active streak</Pill>
-              )}
-            </div>
-            <p className="mt-3 text-xs text-[color:var(--kw-faint)]">
-              Last qualified day: {data.streak.lastQualifiedDate ?? "n/a"}
-            </p>
-          </Card>
 
-          <Card>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-              Last 84 days
-            </p>
-            <div className="mt-4">
-              <HeatStrip
-                days={data.calendar84d.map((day) => ({
-                  date: day.date,
-                  value: day.qualifiedAyahCount,
-                }))}
-                tone="brand"
-                ariaLabel="Streak heatmap"
-              />
+            <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_240px]">
+              <div className={styles.calendarFrame}>
+                <div className={styles.calendarWeekdays}>
+                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((weekday) => (
+                    <span key={weekday}>{weekday}</span>
+                  ))}
+                </div>
+                <div className={styles.calendarGrid} aria-label="Streak monthly calendar">
+                  {calendarCells.map((cell) =>
+                    cell.blank ? (
+                      <span key={cell.key} className={styles.calendarBlank} />
+                    ) : (
+                      <button
+                        key={cell.key}
+                        type="button"
+                        title={`${formatIsoDate(cell.date)}: ${cell.value} ayahs`}
+                        className={styles.calendarCell}
+                        data-qualified={cell.qualified ? "1" : "0"}
+                        data-future={cell.isFuture ? "1" : "0"}
+                        onMouseEnter={() => setHoverDate(cell.date)}
+                        onFocus={() => setHoverDate(cell.date)}
+                        style={{
+                          backgroundColor: activityColor(cell.value, calendarMax, cell.eligible, cell.isFuture),
+                          boxShadow: ringShadow(cell.value, calendarMax, cell.qualified),
+                        }}
+                      >
+                        {cell.day}
+                      </button>
+                    ),
+                  )}
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[color:var(--kw-faint)]">
+                  <span>Low</span>
+                  <span className={styles.legendDot} style={{ backgroundColor: activityColor(0, calendarMax, true, false) }} />
+                  <span className={styles.legendDot} style={{ backgroundColor: activityColor(Math.ceil(calendarMax * 0.2), calendarMax, true, false) }} />
+                  <span className={styles.legendDot} style={{ backgroundColor: activityColor(Math.ceil(calendarMax * 0.5), calendarMax, true, false) }} />
+                  <span className={styles.legendDot} style={{ backgroundColor: activityColor(calendarMax, calendarMax, true, false) }} />
+                  <span>High</span>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Day details</p>
+                {detailCell ? (
+                  <>
+                    <p className="mt-2 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                      {formatIsoDate(detailCell.date)}
+                    </p>
+                    <div className="mt-3 space-y-2 text-sm text-[color:var(--kw-muted)]">
+                      <p>Qualified ayahs: {detailCell.value}</p>
+                      <p>Qualified minutes: {detailCell.qualifiedMinutes}</p>
+                      <p>Qualified seconds: {detailCell.qualifiedSeconds}</p>
+                    </div>
+                    <div className="mt-3">
+                      {detailCell.qualified ? (
+                        <Pill tone="success">Qualified day</Pill>
+                      ) : detailCell.isFuture ? (
+                        <Pill tone="neutral">Future day</Pill>
+                      ) : detailCell.eligible ? (
+                        <Pill tone="warn">No qualifying recitation</Pill>
+                      ) : (
+                        <Pill tone="neutral">Not eligible</Pill>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Hover a day to inspect details.</p>
+                )}
+                <p className="mt-4 text-xs text-[color:var(--kw-faint)]">
+                  Last qualified day: {data.streak.lastQualifiedDate ? formatIsoDate(data.streak.lastQualifiedDate) : "n/a"}
+                </p>
+              </div>
             </div>
-            <p className="mt-3 text-xs text-[color:var(--kw-faint)]">
-              Darker cells indicate more qualified recited ayahs.
-            </p>
           </Card>
         </>
       )}

@@ -1,0 +1,138 @@
+.heroShell {
+  isolation: isolate;
+}
+
+.heroOrb,
+.heroOrbAlt {
+  pointer-events: none;
+  position: absolute;
+  border-radius: 999px;
+  z-index: 0;
+}
+
+.heroOrb {
+  width: 320px;
+  height: 320px;
+  left: -150px;
+  top: -170px;
+  background: radial-gradient(circle at 30% 30%, rgba(16, 185, 129, 0.24), rgba(16, 185, 129, 0));
+  animation: streak-orb-drift 12s ease-in-out infinite;
+}
+
+.heroOrbAlt {
+  width: 300px;
+  height: 300px;
+  right: -130px;
+  bottom: -170px;
+  background: radial-gradient(circle at 70% 70%, rgba(14, 165, 233, 0.2), rgba(14, 165, 233, 0));
+  animation: streak-orb-drift 15s ease-in-out infinite reverse;
+}
+
+.calendarFrame {
+  border: 1px solid var(--kw-border-2);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0)),
+    rgba(255, 255, 255, 0.7);
+  padding: 14px;
+}
+
+.calendarWeekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--kw-faint);
+}
+
+.calendarWeekdays span {
+  text-align: center;
+}
+
+.calendarGrid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.calendarCell,
+.calendarBlank {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--kw-border-2);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.calendarCell {
+  color: rgba(11, 18, 32, 0.86);
+  transition: transform 140ms ease, filter 140ms ease;
+}
+
+.calendarCell[data-qualified="1"] {
+  color: rgba(11, 18, 32, 0.95);
+}
+
+.calendarCell[data-future="1"] {
+  opacity: 0.46;
+}
+
+.calendarCell:hover,
+.calendarCell:focus-visible {
+  transform: translateY(-1px) scale(1.03);
+  filter: saturate(1.12);
+  outline: none;
+}
+
+.calendarBlank {
+  border-color: transparent;
+  background: transparent;
+  color: transparent;
+}
+
+.legendDot {
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  border: 1px solid var(--kw-border-2);
+  display: inline-block;
+}
+
+@keyframes streak-orb-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0) scale(1.06);
+  }
+}
+
+@media (max-width: 767px) {
+  .calendarWeekdays {
+    font-size: 0.55rem;
+    gap: 6px;
+  }
+
+  .calendarGrid {
+    gap: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroOrb,
+  .heroOrbAlt {
+    animation: none;
+  }
+
+  .calendarCell {
+    transition: none;
+  }
+}
