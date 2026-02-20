@@ -108,7 +108,7 @@ export default function NotFoundPage() {
             The route does not exist or has moved. We logged this event to improve routing reliability.
           </p>
           <div className="pt-2">
-            <Link href="/welcome">
+            <Link href="/">
               <Button>Go to Home</Button>
             </Link>
           </div>

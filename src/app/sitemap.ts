@@ -5,7 +5,6 @@ const siteUrl = getSiteUrl();
 
 const STATIC_ROUTES = [
   "/",
-  "/welcome",
   "/compare",
   "/quran-preview",
   "/legal",

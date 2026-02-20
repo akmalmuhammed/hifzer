@@ -41,9 +41,9 @@ export default async function LoginPage() {
               NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=...\nCLERK_SECRET_KEY=...
             </pre>
             <div className="mt-6 flex flex-wrap gap-2">
-              <Link href="/welcome">
+              <Link href="/">
                 <Button variant="secondary" className="gap-2">
-                  Back to welcome <ArrowRight size={16} />
+                  Back to landing <ArrowRight size={16} />
                 </Button>
               </Link>
             </div>

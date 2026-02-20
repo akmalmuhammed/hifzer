@@ -60,7 +60,7 @@ export default async function UnsubscribePage(props: {
         </div>
         <div className="mt-5 flex flex-wrap items-center gap-2">
           <Link
-            href="/welcome"
+            href="/"
             className="inline-flex items-center gap-2 rounded-2xl border border-[color:var(--kw-border)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-white"
           >
             <BellOff size={16} />

@@ -23,7 +23,7 @@ import { TrackedLink } from "@/components/telemetry/tracked-link";
 type NavItem = { href: string; label: string; icon: typeof House };
 
 const PRIMARY: NavItem[] = [
-  { href: "/welcome", label: "Home", icon: House },
+  { href: "/", label: "Home", icon: House },
   { href: "/today", label: "Today", icon: CalendarDays },
   { href: "/session", label: "Session", icon: PlayCircle },
   { href: "/quran", label: "Qur'an", icon: BookOpenText },
@@ -41,7 +41,7 @@ const PLATFORM: NavItem[] = [
 ];
 
 const MOBILE_NAV: NavItem[] = [
-  { href: "/welcome", label: "Home", icon: House },
+  { href: "/", label: "Home", icon: House },
   { href: "/today", label: "Today", icon: CalendarDays },
   { href: "/session", label: "Session", icon: PlayCircle },
   { href: "/quran", label: "Qur'an", icon: BookOpenText },
@@ -50,8 +50,8 @@ const MOBILE_NAV: NavItem[] = [
 ];
 
 function isActive(pathname: string, href: string): boolean {
-  if (href === "/welcome") {
-    return pathname === "/welcome";
+  if (href === "/") {
+    return pathname === "/";
   }
   if (href === "/today") {
     return pathname === "/" || pathname === "/today";

@@ -43,9 +43,9 @@ export default async function SignupPage() {
                   Go to login <ArrowRight size={16} />
                 </Button>
               </Link>
-              <Link href="/welcome">
+              <Link href="/">
                 <Button variant="secondary" className="gap-2">
-                  Back to welcome <ArrowRight size={16} />
+                  Back to landing <ArrowRight size={16} />
                 </Button>
               </Link>
             </div>

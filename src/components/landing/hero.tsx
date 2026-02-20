@@ -94,8 +94,8 @@ export function Hero() {
               </PublicAuthLink>
             </Button>
             <PublicAuthLink
-              signedInHref="/welcome"
-              signedOutHref="/welcome"
+              signedInHref="/"
+              signedOutHref="/"
               className="text-sm font-medium text-[color:var(--kw-muted)] underline-offset-2 hover:text-[color:var(--kw-ink)] hover:underline"
             >
               Learn how it works

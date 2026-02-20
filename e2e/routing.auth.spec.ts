@@ -17,7 +17,7 @@ test.describe("authenticated routing", () => {
   test("public auth CTAs route signed-in users to /today", async ({ page }) => {
     await signInAsClerkTestUser(page);
 
-    for (const route of ["/", "/welcome", "/pricing"] as const) {
+    for (const route of ["/", "/pricing"] as const) {
       await page.goto(route);
       await page.locator('a[href="/today"]').first().click();
 

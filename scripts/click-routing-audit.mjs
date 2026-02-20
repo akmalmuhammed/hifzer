@@ -12,7 +12,6 @@ const ROUTES_ARG = process.env.AUDIT_ROUTES;
 
 const DEFAULT_SEED_ROUTES = [
   "/",
-  "/welcome",
   "/pricing",
   "/legal",
   "/legal/terms",

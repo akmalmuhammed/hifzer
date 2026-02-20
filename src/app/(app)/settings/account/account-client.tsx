@@ -56,7 +56,7 @@ export function AccountSettingsClient() {
         </div>
 
         <div className="shrink-0">
-          <UserButton afterSignOutUrl="/welcome" />
+          <UserButton afterSignOutUrl="/" />
         </div>
       </div>
     </Card>

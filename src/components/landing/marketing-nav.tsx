@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const LINKS = [
-  { href: "/welcome", label: "How it works" },
+  { href: "/", label: "How it works" },
   { href: "/compare", label: "Compare" },
 ] as const;
 
@@ -61,7 +61,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                   </TrackedLink>
                 </Button>
                 <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] shadow-[var(--kw-shadow-soft)]">
-                  <UserButton afterSignOutUrl="/welcome" />
+                  <UserButton afterSignOutUrl="/" />
                 </div>
               </>
             ) : (
@@ -126,7 +126,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                     Open app
                   </TrackedLink>
                   <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] shadow-[var(--kw-shadow-soft)]">
-                    <UserButton afterSignOutUrl="/welcome" />
+                    <UserButton afterSignOutUrl="/" />
                   </div>
                 </>
               ) : (

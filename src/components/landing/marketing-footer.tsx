@@ -29,7 +29,7 @@ export function MarketingFooter() {
             Product
           </p>
           <TrackedLink
-            href="/welcome"
+            href="/"
             telemetryName="footer.how-it-works"
             className="font-semibold text-[color:var(--kw-ink)] hover:underline"
           >

@@ -31,8 +31,8 @@ export default function QuranPreviewPage() {
           </Link>
         </Button>
         <Button asChild variant="secondary" className="gap-2">
-          <Link href="/welcome">
-            Back to welcome <ArrowRight size={16} />
+          <Link href="/">
+            Back to landing <ArrowRight size={16} />
           </Link>
         </Button>
       </div>

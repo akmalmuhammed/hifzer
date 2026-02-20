@@ -14,7 +14,6 @@ Front-heavy Next.js prototype for a Qur'an hifz system: marketing + Qur'an brows
 Public:
 
 - `/` landing
-- `/welcome`
 - `/pricing`
 - `/legal`
 - `/legal/terms`

@@ -1,8 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 import { capturePageErrors } from "./helpers/page-errors";
 
-const CTA_ROUTES = ["/", "/welcome", "/pricing"] as const;
-const CORS_CHECK_ROUTES = ["/", "/welcome", "/pricing", "/quran-preview"] as const;
+const CTA_ROUTES = ["/", "/pricing"] as const;
+const CORS_CHECK_ROUTES = ["/", "/pricing", "/quran-preview"] as const;
 
 const PROTECTED_PREFIXES = [
   "/today",
