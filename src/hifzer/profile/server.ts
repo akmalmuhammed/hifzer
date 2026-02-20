@@ -328,12 +328,20 @@ export async function saveQuranStartPoint(clerkUserId: string, quranActiveSurahN
   if (!dbConfigured()) {
     return null;
   }
+
+  if (runtimeSchemaPatchEnabled()) {
+    try {
+      await ensureCoreSchemaCompatibility();
+    } catch {
+      // Continue in compatibility mode.
+    }
+  }
+
   const row = await upsertProfileCompat({
     clerkUserId,
+    refreshCapabilities: true,
     buildCreate: (hasQuranLaneColumns) => ({
       ...defaultCreateData(clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
-      activeSurahNumber: quranActiveSurahNumber,
-      cursorAyahId: quranCursorAyahId,
       ...(hasQuranLaneColumns
         ? { quranActiveSurahNumber, quranCursorAyahId }
         : {}),
@@ -341,7 +349,7 @@ export async function saveQuranStartPoint(clerkUserId: string, quranActiveSurahN
     buildUpdate: (hasQuranLaneColumns) =>
       hasQuranLaneColumns
         ? { quranActiveSurahNumber, quranCursorAyahId }
-        : { activeSurahNumber: quranActiveSurahNumber, cursorAyahId: quranCursorAyahId },
+        : {},
   });
   return toSnapshot(row);
 }

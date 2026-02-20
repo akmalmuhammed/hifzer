@@ -28,27 +28,9 @@ function looksLikeMissingCoreSchema(error: unknown): boolean {
 
 async function fallbackUpdateStartPoint(input: {
   profileId: string;
-  quranSource: boolean;
   surahNumber: number;
   expectedAyahId: number;
 }): Promise<void> {
-  if (input.quranSource) {
-    try {
-      await db().userProfile.updateMany({
-        where: { id: input.profileId },
-        data: {
-          quranActiveSurahNumber: input.surahNumber,
-          quranCursorAyahId: input.expectedAyahId,
-        },
-      });
-      return;
-    } catch (error) {
-      if (!looksLikeMissingCoreSchema(error)) {
-        throw error;
-      }
-    }
-  }
-
   await db().userProfile.updateMany({
     where: { id: input.profileId },
     data: {
@@ -121,13 +103,17 @@ export async function POST(req: Request) {
       if (!looksLikeMissingCoreSchema(error)) {
         throw error;
       }
-      await fallbackUpdateStartPoint({
-        profileId: fullProfile.id,
-        quranSource,
-        surahNumber,
-        expectedAyahId,
-      });
-      profile = await getOrCreateUserProfile(userId);
+      if (quranSource) {
+        // Do not mutate Hifz lane as a fallback for Qur'an lane writes.
+        profile = fullProfile;
+      } else {
+        await fallbackUpdateStartPoint({
+          profileId: fullProfile.id,
+          surahNumber,
+          expectedAyahId,
+        });
+        profile = await getOrCreateUserProfile(userId);
+      }
     }
 
     let abandonedOpenSessions = 0;

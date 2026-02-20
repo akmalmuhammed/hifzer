@@ -28,7 +28,7 @@ async function fallbackUpdateQuranStartPoint(input: {
   profileId: string;
   quranActiveSurahNumber: number;
   updatedCursorAyahId: number;
-}): Promise<void> {
+}): Promise<boolean> {
   try {
     await db().userProfile.updateMany({
       where: { id: input.profileId },
@@ -37,20 +37,13 @@ async function fallbackUpdateQuranStartPoint(input: {
         quranCursorAyahId: input.updatedCursorAyahId,
       },
     });
-    return;
+    return true;
   } catch (error) {
     if (!looksLikeMissingCoreSchema(error)) {
       throw error;
     }
   }
-
-  await db().userProfile.updateMany({
-    where: { id: input.profileId },
-    data: {
-      activeSurahNumber: input.quranActiveSurahNumber,
-      cursorAyahId: input.updatedCursorAyahId,
-    },
-  });
+  return false;
 }
 
 function parsePositiveInt(value: unknown): number | null {
@@ -137,13 +130,14 @@ export async function POST(req: Request) {
     const quranActiveSurahNumber = updatedAyah?.surahNumber ?? profile.quranActiveSurahNumber;
 
     let updatedProfile;
+    let quranLanePersisted = true;
     try {
       updatedProfile = await saveQuranStartPoint(userId, quranActiveSurahNumber, updatedCursorAyahId);
     } catch (error) {
       if (!looksLikeMissingCoreSchema(error)) {
         throw error;
       }
-      await fallbackUpdateQuranStartPoint({
+      quranLanePersisted = await fallbackUpdateQuranStartPoint({
         profileId: profile.id,
         quranActiveSurahNumber,
         updatedCursorAyahId,
@@ -162,6 +156,7 @@ export async function POST(req: Request) {
         alreadyTrackedAyahCount: tracking.alreadyTrackedAyahCount,
         totalAyahCount: ayahIds.length,
         unavailable: trackingUnavailable,
+        quranLanePersisted,
       },
       range: {
         surahNumber,
