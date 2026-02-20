@@ -318,6 +318,63 @@ html[data-mode="dark"] .kw-canvas::after {
   mix-blend-mode: overlay;
 }
 
+@media (max-width: 768px) {
+  .kw-canvas::before {
+    background:
+      radial-gradient(
+        580px 360px at 12% 16%,
+        rgba(10, 138, 119, 0.16),
+        transparent 62%
+      ),
+      radial-gradient(
+        520px 320px at 88% 14%,
+        rgba(var(--kw-accent-rgb), 0.12),
+        transparent 60%
+      ),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(246, 247, 249, 1));
+  }
+
+  html[data-mode="dark"] .kw-canvas::before {
+    background:
+      radial-gradient(
+        580px 360px at 10% 12%,
+        rgba(10, 138, 119, 0.18),
+        transparent 62%
+      ),
+      radial-gradient(
+        520px 320px at 90% 12%,
+        rgba(var(--kw-accent-rgb), 0.14),
+        transparent 62%
+      ),
+      linear-gradient(180deg, rgba(5, 10, 18, 0.96), rgba(11, 18, 32, 1));
+  }
+
+  .kw-canvas::after {
+    display: none;
+  }
+
+  .kw-beta-marquee-track {
+    animation-duration: 36s;
+  }
+}
+
+@media (max-width: 640px) {
+  .kw-beta-marquee-track {
+    animation: none !important;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .kw-beta-marquee-segment[aria-hidden] {
+    display: none;
+  }
+
+  .kw-glass,
+  .kw-glass-strong {
+    backdrop-filter: none;
+  }
+}
+
 /*
   Dark-mode compatibility bridge:
   many surfaces still use light utility classes (bg-white/*, hover:bg-white, bg-black/*).

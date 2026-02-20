@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Flame } from "lucide-react";
+import { InstallAppButton } from "@/components/pwa/install-app-button";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
@@ -48,8 +49,26 @@ export function StreakCornerBadge(props: { enabled: boolean }) {
     };
 
     void load();
+
+    const mobileViewport = window.matchMedia("(max-width: 767px)").matches;
+    if (!mobileViewport) {
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        void load();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    const interval = window.setInterval(onVisible, 5 * 60 * 1000);
+
     return () => {
       cancelled = true;
+      document.removeEventListener("visibilitychange", onVisible);
+      window.clearInterval(interval);
     };
   }, [pathname, props.enabled]);
 
@@ -73,6 +92,8 @@ export function StreakCornerBadge(props: { enabled: boolean }) {
         right: "calc(env(safe-area-inset-right) + 0.75rem)",
       }}
     >
+      <InstallAppButton className="md:hidden" />
+
       {showThemeToggle ? (
         <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/85 p-1.5 text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] backdrop-blur">
           <ThemeToggle />

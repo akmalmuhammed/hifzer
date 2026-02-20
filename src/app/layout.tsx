@@ -1,8 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, IBM_Plex_Mono, Amiri } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { AppProviders } from "@/components/providers/app-providers";
+import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
 import { PublicBetaBanner } from "@/components/site/public-beta-banner";
+import { GoogleAnalytics } from "@/components/telemetry/google-analytics";
 import { clerkAuthRoutes } from "@/lib/auth-redirects";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { getSiteUrl } from "@/lib/site-url";
@@ -37,10 +39,23 @@ export const metadata: Metadata = {
   description:
     "Hifzer is the operating system for Qur'an memorization: quality gates, spaced repetition, and a daily plan that enforces retention.",
   applicationName: "Hifzer",
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: [{ url: "/icon.png", type: "image/png" }],
     shortcut: [{ url: "/icon.png" }],
     apple: [{ url: "/apple-icon.png" }],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Hifzer",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-capable": "yes",
   },
   openGraph: {
     type: "website",
@@ -60,6 +75,16 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f6f7f9" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b1220" },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -74,18 +99,6 @@ export default function RootLayout({
       data-accent="teal"
       className={`${inter.variable} ${mono.variable} ${amiri.variable}`}
     >
-      <head>
-        {/* Google tag (gtag.js) */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-C145MM3CEX" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', 'G-C145MM3CEX');`,
-          }}
-        />
-      </head>
       <body className="kw-canvas min-h-dvh bg-[color:var(--kw-bg)] text-[color:var(--kw-ink)] antialiased">
         <a
           href="#main-content"
@@ -108,6 +121,8 @@ gtag('config', 'G-C145MM3CEX');`,
         ) : (
           <AppProviders>{children}</AppProviders>
         )}
+        <ServiceWorkerRegistration />
+        <GoogleAnalytics />
       </body>
     </html>
   );

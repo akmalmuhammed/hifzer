@@ -185,6 +185,9 @@ const cspFrameSrc = unique([
 
 const nextConfig: NextConfig = {
   typedRoutes: false,
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
+  },
   async redirects() {
     return [
       {
