@@ -13,6 +13,16 @@ type Payload = {
   resetOpenSession?: unknown;
 };
 
+function looksLikeMissingCoreSchema(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    message.includes("P2021") ||
+    message.includes("P2022") ||
+    /column .* does not exist/i.test(message) ||
+    /relation .* does not exist/i.test(message)
+  );
+}
+
 export async function POST(req: Request) {
   const { userId } = await auth();
   if (!userId) {
@@ -72,26 +82,39 @@ export async function POST(req: Request) {
   let abandonedOpenSessions = 0;
 
   if (!quranSource && resetOpenSession) {
-    const abandoned = await db().session.updateMany({
-      where: {
-        userId: fullProfile.id,
-        status: "OPEN",
-      },
-      data: {
-        status: "ABANDONED",
-        endedAt: new Date(),
-      },
-    });
-    abandonedOpenSessions = abandoned.count;
+    try {
+      const abandoned = await db().session.updateMany({
+        where: {
+          userId: fullProfile.id,
+          status: "OPEN",
+        },
+        data: {
+          status: "ABANDONED",
+          endedAt: new Date(),
+        },
+      });
+      abandonedOpenSessions = abandoned.count;
+    } catch (error) {
+      if (!looksLikeMissingCoreSchema(error)) {
+        throw error;
+      }
+      abandonedOpenSessions = 0;
+    }
   }
 
   if (source === "quran_read") {
-    await recordQuranBrowseAyahRead({
-      profileId: fullProfile.id,
-      mode: fullProfile.mode,
-      timezone: fullProfile.timezone,
-      ayahId: expectedAyahId,
-    });
+    try {
+      await recordQuranBrowseAyahRead({
+        profileId: fullProfile.id,
+        mode: fullProfile.mode,
+        timezone: fullProfile.timezone,
+        ayahId: expectedAyahId,
+      });
+    } catch (error) {
+      if (!looksLikeMissingCoreSchema(error)) {
+        throw error;
+      }
+    }
   }
 
   return NextResponse.json({

@@ -12,6 +12,16 @@ type Payload = {
   toAyahNumber?: unknown;
 };
 
+function looksLikeMissingCoreSchema(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    message.includes("P2021") ||
+    message.includes("P2022") ||
+    /column .* does not exist/i.test(message) ||
+    /relation .* does not exist/i.test(message)
+  );
+}
+
 function parsePositiveInt(value: unknown): number | null {
   const n = Math.floor(Number(value));
   if (!Number.isFinite(n) || n < 1) {
@@ -69,12 +79,25 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Database not configured." }, { status: 503 });
   }
 
-  const tracking = await recordQuranBrowseAyahRangeRead({
-    profileId: profile.id,
-    mode: profile.mode,
-    timezone: profile.timezone,
-    ayahIds,
-  });
+  let tracking = {
+    recordedAyahCount: 0,
+    alreadyTrackedAyahCount: 0,
+    localDate: null as string | null,
+  };
+  let trackingUnavailable = false;
+  try {
+    tracking = await recordQuranBrowseAyahRangeRead({
+      profileId: profile.id,
+      mode: profile.mode,
+      timezone: profile.timezone,
+      ayahIds,
+    });
+  } catch (error) {
+    if (!looksLikeMissingCoreSchema(error)) {
+      throw error;
+    }
+    trackingUnavailable = true;
+  }
 
   const previousCursorAyahId = profile.quranCursorAyahId;
   const updatedCursorAyahId = Math.max(previousCursorAyahId, rangeEndAyahId);
@@ -93,6 +116,7 @@ export async function POST(req: Request) {
       recordedAyahCount: tracking.recordedAyahCount,
       alreadyTrackedAyahCount: tracking.alreadyTrackedAyahCount,
       totalAyahCount: ayahIds.length,
+      unavailable: trackingUnavailable,
     },
     range: {
       surahNumber,
