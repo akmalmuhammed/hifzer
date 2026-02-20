@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import {
   applyBookmarkSyncMutations,
   BookmarkError,
+  type BookmarkSyncMutationResult,
   type BookmarkSyncMutation,
   isBookmarkError,
 } from "@/hifzer/bookmarks/server";
@@ -172,6 +173,61 @@ function parseMutation(row: unknown): BookmarkSyncMutation {
   throw new BookmarkError(`Unknown mutation type: ${type}`, 400, "invalid_mutations");
 }
 
+function parseRowFailure(row: unknown, error: unknown): BookmarkSyncMutationResult {
+  let clientMutationId = "";
+  let type: BookmarkSyncMutationResult["type"] = "UNKNOWN";
+
+  if (isRecord(row)) {
+    if (typeof row.clientMutationId === "string") {
+      clientMutationId = row.clientMutationId;
+    }
+    if (typeof row.type === "string") {
+      const normalized = row.type.trim().toUpperCase();
+      if (
+        normalized === "CREATE" ||
+        normalized === "UPDATE" ||
+        normalized === "DELETE" ||
+        normalized === "RESTORE" ||
+        normalized === "CATEGORY_CREATE" ||
+        normalized === "CATEGORY_UPDATE" ||
+        normalized === "CATEGORY_DELETE"
+      ) {
+        type = normalized;
+      }
+    }
+  }
+
+  if (isBookmarkError(error)) {
+    return {
+      clientMutationId,
+      type,
+      ok: false,
+      error: error.message,
+      code: error.code,
+      retryable: error.status >= 500,
+    };
+  }
+  if (error instanceof BookmarkError) {
+    return {
+      clientMutationId,
+      type,
+      ok: false,
+      error: error.message,
+      code: error.code,
+      retryable: error.status >= 500,
+    };
+  }
+
+  return {
+    clientMutationId,
+    type,
+    ok: false,
+    error: "Invalid mutation.",
+    code: "invalid_mutations",
+    retryable: false,
+  };
+}
+
 function handleError(error: unknown) {
   if (isBookmarkError(error)) {
     return NextResponse.json({ error: error.message, code: error.code }, { status: error.status });
@@ -197,11 +253,21 @@ export async function POST(req: Request) {
 
   const rows = Array.isArray(payload.mutations) ? payload.mutations : [];
   try {
-    const mutations = rows.map(parseMutation);
+    const mutations: BookmarkSyncMutation[] = [];
+    const parseFailures: BookmarkSyncMutationResult[] = [];
+    for (const row of rows) {
+      try {
+        mutations.push(parseMutation(row));
+      } catch (error) {
+        parseFailures.push(parseRowFailure(row, error));
+      }
+    }
+
     const result = await applyBookmarkSyncMutations(userId, mutations);
+    const mergedResults = [...parseFailures, ...result.results];
     return NextResponse.json({
-      ok: result.results.every((r) => r.ok),
-      results: result.results,
+      ok: mergedResults.every((r) => r.ok),
+      results: mergedResults,
       state: result.state,
     });
   } catch (error) {

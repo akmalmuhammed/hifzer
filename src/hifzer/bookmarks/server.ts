@@ -139,10 +139,12 @@ export type BookmarkSyncMutation =
 
 export type BookmarkSyncMutationResult = {
   clientMutationId: string;
-  type: BookmarkSyncMutation["type"];
+  type: BookmarkSyncMutation["type"] | "UNKNOWN";
   ok: boolean;
   deduped?: boolean;
   error?: string;
+  code?: string;
+  retryable?: boolean;
 };
 
 export class BookmarkError extends Error {
@@ -872,6 +874,8 @@ export async function applyBookmarkSyncMutations(
         type: mutation.type,
         ok: false,
         error: "Missing clientMutationId.",
+        code: "invalid_mutations",
+        retryable: false,
       });
       continue;
     }
@@ -940,6 +944,8 @@ export async function applyBookmarkSyncMutations(
         type: mutation.type,
         ok: false,
         error: message,
+        code: isBookmarkError(error) ? error.code : "sync_mutation_error",
+        retryable: isBookmarkError(error) ? error.status >= 500 : true,
       });
     }
   }

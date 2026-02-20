@@ -26,6 +26,8 @@ type BookmarkSyncResponse = {
     ok?: boolean;
     deduped?: boolean;
     error?: string;
+    code?: string;
+    retryable?: boolean;
   }>;
   state?: BookmarkStateSnapshot;
 };
@@ -156,13 +158,16 @@ export async function flushPendingBookmarkMutations(): Promise<{
     cacheState(payload.state);
   }
 
-  const resultByMutationId = new Map<string, { ok: boolean }>();
+  const resultByMutationId = new Map<string, { ok: boolean; retryable: boolean }>();
   for (const row of payload?.results ?? []) {
     const id = typeof row.clientMutationId === "string" ? row.clientMutationId : null;
     if (!id) {
       continue;
     }
-    resultByMutationId.set(id, { ok: row.ok === true });
+    resultByMutationId.set(id, {
+      ok: row.ok === true,
+      retryable: row.retryable !== false,
+    });
   }
 
   const remainingMutations = pending.filter((mutation) => {
@@ -170,7 +175,10 @@ export async function flushPendingBookmarkMutations(): Promise<{
     if (!result) {
       return true;
     }
-    return !result.ok;
+    if (result.ok) {
+      return false;
+    }
+    return result.retryable;
   });
   replacePendingBookmarkSyncMutations(remainingMutations);
 
