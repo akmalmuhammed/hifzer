@@ -429,10 +429,10 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
     ? Math.round((weightedGradeScore / (gradedEventCount * 3)) * 100)
     : 0;
 
-  const quranCursorAyahId = clamp(quranReadProgress.lastReadAyahId ?? 1, 1, TOTAL_AYAHS);
+  const quranCursorAyahId = clamp(quranReadProgress.lastReadAyahId ?? profile.quranCursorAyahId, 1, TOTAL_AYAHS);
   const cursorAyah = getAyahById(quranCursorAyahId) ?? getAyahById(1);
   const cursorRef = cursorAyah ? `${cursorAyah.surahNumber}:${cursorAyah.ayahNumber}` : "1:1";
-  const currentSurah = getSurahInfo(cursorAyah?.surahNumber ?? profile.activeSurahNumber);
+  const currentSurah = getSurahInfo(cursorAyah?.surahNumber ?? profile.quranActiveSurahNumber);
   const currentSurahProgressPct = currentSurah && cursorAyah
     ? Math.round((cursorAyah.ayahNumber / Math.max(1, currentSurah.ayahCount)) * 100)
     : 0;

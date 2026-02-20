@@ -79,7 +79,7 @@ export function SessionWalkthrough() {
             <div className="flex h-full flex-col">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">First session target</p>
+                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">First Hifz target</p>
                   <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
                     Most users complete this in around 10 minutes.
                   </p>
@@ -96,8 +96,8 @@ export function SessionWalkthrough() {
 
               <div className="mt-6 md:mt-auto">
                 <Button asChild size="lg" className="w-full gap-2">
-                  <PublicAuthLink signedInHref="/session" signedOutHref="/signup">
-                    Start your first session <ArrowRight size={16} />
+                  <PublicAuthLink signedInHref="/hifz" signedOutHref="/signup">
+                    Start your first Hifz run <ArrowRight size={16} />
                   </PublicAuthLink>
                 </Button>
               </div>

@@ -226,9 +226,9 @@ export function ProgressClient() {
         subtitle="Simple per-user Hifz and Qur'an metrics synced from your sessions and reading."
         right={
           <div className="flex items-center gap-2">
-            <Link href="/session">
+            <Link href="/hifz">
               <Button className="gap-2">
-                Start session <PlayCircle size={16} />
+                Start Hifz <PlayCircle size={16} />
               </Button>
             </Link>
             <Button variant="secondary" className="gap-2" onClick={() => void load()}>
@@ -523,7 +523,7 @@ export function ProgressClient() {
               </div>
             ) : (
               <p className="mt-3 text-sm text-[color:var(--kw-muted)]">
-                No completed sessions yet. Start a session and your metrics will appear here.
+                No completed Hifz runs yet. Start Hifz and your metrics will appear here.
               </p>
             )}
           </Card>

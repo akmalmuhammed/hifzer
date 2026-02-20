@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { setActiveSurahCursor } from "@/hifzer/local/store";
 
 export function ReadProgressSync(props: {
   enabled: boolean;
@@ -21,8 +20,6 @@ export function ReadProgressSync(props: {
       return;
     }
     lastKeyRef.current = key;
-
-    setActiveSurahCursor(props.surahNumber, props.ayahId);
 
     void fetch("/api/profile/start-point", {
       method: "POST",

@@ -249,9 +249,9 @@ export function StreakClient() {
         subtitle="Calendar-style momentum tracking from your daily recitation activity."
         right={
           <div className="flex items-center gap-2">
-            <Link href="/session">
+            <Link href="/hifz">
               <Button className="gap-2">
-                Start session <PlayCircle size={16} />
+                Start Hifz <PlayCircle size={16} />
               </Button>
             </Link>
             <Button variant="secondary" className="gap-2" onClick={() => void load()}>

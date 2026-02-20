@@ -6,6 +6,7 @@ const CORS_CHECK_ROUTES = ["/", "/pricing", "/quran-preview"] as const;
 
 const PROTECTED_PREFIXES = [
   "/today",
+  "/hifz",
   "/session",
   "/quran",
   "/progress",
@@ -135,7 +136,7 @@ test("sitemap has no double-slash URLs and no gated routes", async ({ request })
     "Sitemap contains malformed // URLs",
   ).toEqual([]);
 
-  const gatedPrefixes = ["/quran/", "/today", "/session", "/progress", "/settings", "/history", "/billing"];
+  const gatedPrefixes = ["/quran/", "/today", "/hifz", "/session", "/progress", "/settings", "/history", "/billing"];
   const gatedLocs = locs.filter((loc) => {
     try {
       const path = new URL(loc).pathname;

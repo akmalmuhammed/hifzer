@@ -253,7 +253,7 @@ export function TodayClient() {
         abandonedOpenSessions?: number;
       };
       if (!res.ok) {
-        throw new Error(payload.error || "Failed to switch session surah.");
+        throw new Error(payload.error || "Failed to switch Hifz surah.");
       }
 
       const nextSurah = Number(payload.profile?.activeSurahNumber);
@@ -267,18 +267,18 @@ export function TodayClient() {
 
       const abandonedCount = Number(payload.abandonedOpenSessions ?? 0);
       pushToast({
-        title: "Session surah updated",
+        title: "Hifz surah updated",
         message: abandonedCount > 0
           ? hasExistingProgress
-            ? `Switched to Surah ${surah}. Resuming from ayah ${ayah}. ${abandonedCount} open session${abandonedCount === 1 ? "" : "s"} paused.`
-            : `Switched to Surah ${surah}. Starting from ayah 1. ${abandonedCount} open session${abandonedCount === 1 ? "" : "s"} paused.`
+            ? `Switched to Surah ${surah}. Resuming from ayah ${ayah}. ${abandonedCount} open Hifz run${abandonedCount === 1 ? "" : "s"} paused.`
+            : `Switched to Surah ${surah}. Starting from ayah 1. ${abandonedCount} open Hifz run${abandonedCount === 1 ? "" : "s"} paused.`
           : hasExistingProgress
             ? `Switched to Surah ${surah}. Resuming from ayah ${ayah}.`
             : `Switched to Surah ${surah}. Starting from ayah 1.`,
         tone: "success",
       });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to switch session surah.";
+      const message = err instanceof Error ? err.message : "Failed to switch Hifz surah.";
       pushToast({
         title: "Switch failed",
         message,
@@ -330,7 +330,7 @@ export function TodayClient() {
       <PageHeader
         eyebrow="Home"
         title="Today"
-        subtitle="Your daily memorization session, powered by spaced repetition."
+        subtitle="Your daily Hifz run, powered by spaced repetition."
         right={
           <div className="flex items-center gap-2">
             <Link href="/quran">
@@ -378,7 +378,7 @@ export function TodayClient() {
       ) : error ? (
         /* ---------- Error state ---------- */
         <Card>
-          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Unable to load session</p>
+          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Unable to load Hifz</p>
           <p className="mt-1 text-sm text-[color:var(--kw-muted)]">{error}</p>
           <div className="mt-4">
             <Button variant="secondary" className="gap-2" onClick={() => void load()}>
@@ -399,7 +399,7 @@ export function TodayClient() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h2 className="font-[family-name:var(--font-kw-display)] text-2xl tracking-tight text-[color:var(--kw-ink)] sm:text-3xl">
-                    Your session is ready
+                    Your Hifz run is ready
                   </h2>
                   <p className="mt-1.5 text-sm text-[color:var(--kw-muted)]">
                     {totalQueueItems === 0
@@ -430,13 +430,13 @@ export function TodayClient() {
 
               {/* Action buttons */}
               <div className="mt-5 flex flex-wrap items-center gap-3">
-                <Link href="/session">
+                <Link href="/hifz">
                   <Button size="lg" className="gap-2">
-                    Start session <PlayCircle size={18} />
+                    Start Hifz <PlayCircle size={18} />
                   </Button>
                 </Link>
                 {hasReviewPressure ? (
-                  <Link href="/session?focus=review">
+                  <Link href="/hifz?focus=review">
                     <Button variant="secondary" className="gap-2">
                       Quick review <ArrowRight size={16} />
                     </Button>
@@ -446,13 +446,13 @@ export function TodayClient() {
                   Reload <RefreshCcw size={16} />
                 </Button>
                 <Button variant="secondary" className="gap-2" onClick={() => setSwitchOpen((v) => !v)}>
-                  {switchOpen ? "Close surah switcher" : "Switch session surah"}
+                  {switchOpen ? "Close surah switcher" : "Switch Hifz surah"}
                 </Button>
               </div>
 
               {switchOpen ? (
                 <div className="mt-5 rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 p-4">
-                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Select session surah</p>
+                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Select Hifz surah</p>
                   <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
                     If you already practiced this surah, we continue from your last paused ayah. Otherwise it starts from ayah 1.
                   </p>
@@ -547,7 +547,7 @@ export function TodayClient() {
                         Next due: {data.state.nextDueAt ? new Date(data.state.nextDueAt).toLocaleString() : "No upcoming review"}
                       </p>
                     </div>
-                    <Link href="/session?focus=review">
+                    <Link href="/hifz?focus=review">
                       <Button variant="secondary" className="gap-2">
                         Start quick review <PlayCircle size={16} />
                       </Button>

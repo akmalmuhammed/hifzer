@@ -117,6 +117,8 @@ model UserProfile {
 
   activeSurahNumber     Int
   cursorAyahId          Int
+  quranActiveSurahNumber Int @default(1)
+  quranCursorAyahId     Int @default(1)
   mode                  SrsMode  @default(NORMAL)
   hasTeacher            Boolean @default(false)
 
@@ -253,6 +255,7 @@ model Session {
   reviewAyahIds   Int[]
   newStartAyahId  Int?
   newEndAyahId    Int?
+  planJson        Json?
 
   user            UserProfile   @relation(fields: [userId], references: [id], onDelete: Cascade)
   attempts        AyahAttempt[]

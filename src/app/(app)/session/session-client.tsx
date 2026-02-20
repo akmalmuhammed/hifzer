@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
 import { useSearchParams } from "next/navigation";
 import { ArrowRight, CheckCircle2, CornerDownLeft, Link2, PlayCircle, RotateCcw } from "lucide-react";
 import clsx from "clsx";
@@ -85,7 +86,7 @@ const SESSION_COACH_KEYS = {
   grades: "hifzer_tip_session_grades_v1",
   weeklyGate: "hifzer_tip_weekly_gate_v1",
 } as const;
-const SESSION_PROGRESS_KEY = "hifzer_open_session_progress_v1";
+const SESSION_PROGRESS_KEY_LEGACY = "hifzer_open_session_progress_v1";
 
 type CoachKey = keyof typeof SESSION_COACH_KEYS;
 type StoredSessionProgress = {
@@ -117,12 +118,36 @@ function applyStepFilters(steps: Step[], quickReviewMode: boolean, reviewOnlyLoc
   return nextSteps;
 }
 
-function readStoredSessionProgress(): StoredSessionProgress | null {
+function sessionProgressStorageKey(userId: string | null | undefined): string {
+  return userId ? `${SESSION_PROGRESS_KEY_LEGACY}:${userId}` : SESSION_PROGRESS_KEY_LEGACY;
+}
+
+function migrateLegacySessionProgress(storageKey: string): void {
+  if (typeof window === "undefined" || storageKey === SESSION_PROGRESS_KEY_LEGACY) {
+    return;
+  }
+  try {
+    const scoped = window.localStorage.getItem(storageKey);
+    if (scoped) {
+      return;
+    }
+    const legacy = window.localStorage.getItem(SESSION_PROGRESS_KEY_LEGACY);
+    if (!legacy) {
+      return;
+    }
+    window.localStorage.setItem(storageKey, legacy);
+    window.localStorage.removeItem(SESSION_PROGRESS_KEY_LEGACY);
+  } catch {
+    // Ignore storage errors (private mode / quota).
+  }
+}
+
+function readStoredSessionProgress(storageKey: string): StoredSessionProgress | null {
   if (typeof window === "undefined") {
     return null;
   }
   try {
-    const raw = window.localStorage.getItem(SESSION_PROGRESS_KEY);
+    const raw = window.localStorage.getItem(storageKey);
     if (!raw) {
       return null;
     }
@@ -154,23 +179,23 @@ function readStoredSessionProgress(): StoredSessionProgress | null {
   }
 }
 
-function writeStoredSessionProgress(progress: StoredSessionProgress): void {
+function writeStoredSessionProgress(storageKey: string, progress: StoredSessionProgress): void {
   if (typeof window === "undefined") {
     return;
   }
   try {
-    window.localStorage.setItem(SESSION_PROGRESS_KEY, JSON.stringify(progress));
+    window.localStorage.setItem(storageKey, JSON.stringify(progress));
   } catch {
     // Ignore storage errors (private mode / quota).
   }
 }
 
-function clearStoredSessionProgress(): void {
+function clearStoredSessionProgress(storageKey: string): void {
   if (typeof window === "undefined") {
     return;
   }
   try {
-    window.localStorage.removeItem(SESSION_PROGRESS_KEY);
+    window.localStorage.removeItem(storageKey);
   } catch {
     // Ignore storage errors.
   }
@@ -318,6 +343,8 @@ function toEvent(step: Step, input: {
 
 export function SessionClient() {
   const searchParams = useSearchParams();
+  const { userId } = useAuth();
+  const progressStorageKey = useMemo(() => sessionProgressStorageKey(userId), [userId]);
   const quickReviewMode = searchParams.get("focus") === "review";
   const { pushToast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -359,6 +386,10 @@ export function SessionClient() {
     return lane?.ayahNumber && lane.ayahNumber > 0 ? lane.ayahNumber : 1;
   }, [learningLanes]);
 
+  useEffect(() => {
+    migrateLegacySessionProgress(progressStorageKey);
+  }, [progressStorageKey]);
+
   const flushPendingSync = useCallback(async () => {
     const pending = getPendingSessionSyncPayloads();
     if (!pending.length) {
@@ -392,7 +423,7 @@ export function SessionClient() {
       const payload = (await res.json()) as { lanes?: LearningLane[] };
       setLearningLanes(Array.isArray(payload.lanes) ? payload.lanes : []);
     } catch {
-      // non-blocking: session can still run
+      // non-blocking: Hifz can still run
     }
   }, []);
 
@@ -407,10 +438,10 @@ export function SessionClient() {
       ]);
       const payload = (await res.json()) as SessionStartPayload & { error?: string };
       if (!res.ok) {
-        throw new Error(payload.error || "Failed to start session.");
+        throw new Error(payload.error || "Failed to start Hifz.");
       }
 
-      const restored = readStoredSessionProgress();
+      const restored = readStoredSessionProgress(progressStorageKey);
       const resumeState = restored &&
           restored.sessionId === payload.sessionId &&
           restored.localDate === payload.localDate &&
@@ -428,7 +459,7 @@ export function SessionClient() {
         ? Math.max(0, Math.min(rawStepIndex, filteredLength))
         : 0;
       if (!resumeState) {
-        clearStoredSessionProgress();
+        clearStoredSessionProgress(progressStorageKey);
       }
 
       setRun(payload);
@@ -440,11 +471,11 @@ export function SessionClient() {
       setReviewOnlyLock(nextReviewOnlyLock);
       setSwitchOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load session.");
+      setError(err instanceof Error ? err.message : "Failed to load Hifz.");
     } finally {
       setLoading(false);
     }
-  }, [flushPendingSync, loadLearningLanes, quickReviewMode]);
+  }, [flushPendingSync, loadLearningLanes, progressStorageKey, quickReviewMode]);
 
   useEffect(() => {
     void loadRun();
@@ -535,13 +566,13 @@ export function SessionClient() {
       if (!res.ok) {
         throw new Error(body.error || "Complete failed.");
       }
-      pushToast({ tone: "success", title: "Session saved", message: "Progress synced." });
+      pushToast({ tone: "success", title: "Hifz saved", message: "Progress synced." });
     } catch {
       pushPendingSessionSyncPayload(payload);
       pushToast({
         tone: "warning",
         title: "Saved offline",
-        message: "Session buffered locally and will sync when online.",
+        message: "Hifz run buffered locally and will sync when online.",
       });
     }
   }, [events, pushToast, run]);
@@ -601,7 +632,7 @@ export function SessionClient() {
         abandonedOpenSessions?: number;
       };
       if (!res.ok) {
-        throw new Error(payload.error || "Failed to switch session surah.");
+        throw new Error(payload.error || "Failed to switch Hifz surah.");
       }
 
       const nextSurah = Number(payload.profile?.activeSurahNumber);
@@ -610,7 +641,7 @@ export function SessionClient() {
         setActiveSurahCursor(nextSurah, nextCursor);
       }
       setOpenSession(null);
-      clearStoredSessionProgress();
+      clearStoredSessionProgress(progressStorageKey);
       setSwitchOpen(false);
       await loadRun();
 
@@ -620,8 +651,8 @@ export function SessionClient() {
         title: "Surah switched",
         message: abandonedCount > 0
           ? hasExistingProgress
-            ? `Moved to Surah ${surah}. Resuming from ayah ${ayah}. ${abandonedCount} open session${abandonedCount === 1 ? "" : "s"} paused.`
-            : `Moved to Surah ${surah}. Starting from ayah 1. ${abandonedCount} open session${abandonedCount === 1 ? "" : "s"} paused.`
+            ? `Moved to Surah ${surah}. Resuming from ayah ${ayah}. ${abandonedCount} open Hifz run${abandonedCount === 1 ? "" : "s"} paused.`
+            : `Moved to Surah ${surah}. Starting from ayah 1. ${abandonedCount} open Hifz run${abandonedCount === 1 ? "" : "s"} paused.`
           : hasExistingProgress
             ? `Moved to Surah ${surah}. Resuming from ayah ${ayah}.`
             : `Moved to Surah ${surah}. Starting from ayah 1.`,
@@ -636,7 +667,7 @@ export function SessionClient() {
     } finally {
       setSwitchingSurah(false);
     }
-  }, [learningLanes, loadRun, pushToast, resumeAyahForSurah, targetSurahNumber]);
+  }, [learningLanes, loadRun, progressStorageKey, pushToast, resumeAyahForSurah, targetSurahNumber]);
 
   const advance = useCallback(async (grade?: "AGAIN" | "HARD" | "GOOD" | "EASY") => {
     if (!currentStep) {
@@ -749,7 +780,7 @@ export function SessionClient() {
     if (!run || done) {
       return;
     }
-    writeStoredSessionProgress({
+    writeStoredSessionProgress(progressStorageKey, {
       sessionId: run.sessionId,
       localDate: run.localDate,
       quickReviewMode,
@@ -762,6 +793,7 @@ export function SessionClient() {
   }, [
     done,
     events,
+    progressStorageKey,
     quickReviewMode,
     reviewOnlyLock,
     run,
@@ -774,8 +806,8 @@ export function SessionClient() {
     if (!done) {
       return;
     }
-    clearStoredSessionProgress();
-  }, [done]);
+    clearStoredSessionProgress(progressStorageKey);
+  }, [done, progressStorageKey]);
 
   const rightActions = (
     <div className="flex w-full flex-wrap items-stretch gap-2 sm:w-auto sm:items-center">
@@ -869,11 +901,11 @@ export function SessionClient() {
   if (error || !run) {
     return (
       <div className="space-y-6">
-        <PageHeader eyebrow="Practice" title="Session" subtitle="Unable to load session." right={rightActions} />
+        <PageHeader eyebrow="Practice" title="Hifz" subtitle="Unable to load Hifz." right={rightActions} />
         <Card>
           <EmptyState
-            title="Session unavailable"
-            message={error ?? "Could not start session."}
+            title="Hifz unavailable"
+            message={error ?? "Could not start Hifz."}
             icon={<CornerDownLeft size={18} />}
             action={
               <Button className="gap-2" onClick={() => void loadRun()}>
@@ -929,7 +961,7 @@ export function SessionClient() {
     const positiveRatio = totalGraded > 0 ? (gradeCounts.GOOD + gradeCounts.EASY) / totalGraded : 1;
     const encouragement =
       positiveRatio >= 0.8
-        ? "Strong session! Your recall is solid."
+        ? "Strong Hifz run. Your recall is solid."
         : positiveRatio >= 0.5
           ? "Good effort. Consistency builds mastery."
           : "Keep pushing! Every repetition strengthens memory.";
@@ -949,7 +981,7 @@ export function SessionClient() {
 
     return (
       <div className="space-y-6">
-        <PageHeader eyebrow="Practice" title="Session complete" subtitle="Your progress has been saved." right={rightActions} />
+        <PageHeader eyebrow="Practice" title="Hifz complete" subtitle="Your progress has been saved." right={rightActions} />
         <Card>
           <div className="flex flex-col items-center text-center space-y-6 py-4">
             {/* Success icon with glow */}
@@ -962,7 +994,7 @@ export function SessionClient() {
 
             {/* Title and encouragement */}
             <div className="space-y-1">
-              <h2 className="text-xl font-semibold text-[color:var(--kw-ink)]">Session complete</h2>
+              <h2 className="text-xl font-semibold text-[color:var(--kw-ink)]">Hifz complete</h2>
               <p className="text-sm text-[color:var(--kw-muted)]">{encouragement}</p>
             </div>
 
@@ -1025,7 +1057,7 @@ export function SessionClient() {
       <div className="space-y-6">
         <PageHeader
           eyebrow="Practice"
-          title="Session"
+          title="Hifz"
           subtitle={quickReviewMode ? "No review items are due right now." : "No steps queued today."}
           right={rightActions}
         />
@@ -1104,7 +1136,7 @@ export function SessionClient() {
 
       {switchOpen ? (
         <Card>
-          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Select session surah</p>
+          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Select Hifz surah</p>
           <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
             If you already practiced this surah, we continue from your last paused ayah. Otherwise it starts from ayah 1.
           </p>

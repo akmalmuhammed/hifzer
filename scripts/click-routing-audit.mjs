@@ -20,6 +20,7 @@ const DEFAULT_SEED_ROUTES = [
   "/legal/sources",
   "/changelog",
   "/today",
+  "/hifz",
   "/session",
   "/quran",
   "/legacy/app",

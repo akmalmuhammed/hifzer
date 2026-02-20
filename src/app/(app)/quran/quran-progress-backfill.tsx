@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { CheckCircle2, CloudOff, Import } from "lucide-react";
 import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
-import { getActiveSurahNumber, getCursorAyahId, setActiveSurahCursor } from "@/hifzer/local/store";
 
 type SurahRangeOption = {
   surahNumber: number;
@@ -57,7 +56,6 @@ export function QuranProgressBackfill(props: Props) {
     }
 
     setSaving(true);
-    const localCursorAyahId = rangeEndAyahId;
 
     try {
       const res = await fetch("/api/profile/backfill-range", {
@@ -73,8 +71,6 @@ export function QuranProgressBackfill(props: Props) {
       const payload = (await res.json().catch(() => ({}))) as {
         error?: string;
         movedCursor?: boolean;
-        updatedCursorAyahId?: number;
-        activeSurahNumber?: number;
         tracking?: {
           recordedAyahCount?: number;
           alreadyTrackedAyahCount?: number;
@@ -84,30 +80,14 @@ export function QuranProgressBackfill(props: Props) {
 
       if (!res.ok) {
         if (res.status === 503) {
-          const localCurrentCursor = getCursorAyahId() ?? 1;
-          const localCurrentSurah = getActiveSurahNumber() ?? selected.surahNumber;
-          if (localCursorAyahId > localCurrentCursor) {
-            setActiveSurahCursor(selected.surahNumber, localCursorAyahId);
-          } else {
-            setActiveSurahCursor(localCurrentSurah, localCurrentCursor);
-          }
           pushToast({
-            title: "Saved locally",
-            message: `Marked ${selected.surahNumber}:${safeFrom}-${safeTo} locally. Sign in with database sync to persist this online.`,
+            title: "Database unavailable",
+            message: `Could not sync Surah ${selected.surahNumber}:${safeFrom}-${safeTo}. Try again when database access is restored.`,
             tone: "warning",
           });
-          router.refresh();
           return;
         }
         throw new Error(payload.error || "Failed to import progress range.");
-      }
-
-      const updatedCursorAyahId = Number(payload.updatedCursorAyahId);
-      const activeSurahNumber = Number(payload.activeSurahNumber);
-      if (Number.isFinite(updatedCursorAyahId) && Number.isFinite(activeSurahNumber)) {
-        setActiveSurahCursor(activeSurahNumber, updatedCursorAyahId);
-      } else {
-        setActiveSurahCursor(selected.surahNumber, localCursorAyahId);
       }
 
       pushToast({

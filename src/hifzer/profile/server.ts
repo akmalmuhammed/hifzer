@@ -41,6 +41,8 @@ export type ProfileSnapshot = {
   rebalanceUntil: string | null;
   activeSurahNumber: number;
   cursorAyahId: number;
+  quranActiveSurahNumber: number;
+  quranCursorAyahId: number;
   plan: SubscriptionPlan;
   paddleCustomerId: string | null;
   paddleSubscriptionId: string | null;
@@ -87,6 +89,8 @@ function defaultCreateData(clerkUserId: string) {
     emailSuppressedAt: null,
     activeSurahNumber,
     cursorAyahId,
+    quranActiveSurahNumber: activeSurahNumber,
+    quranCursorAyahId: cursorAyahId,
     hasTeacher: false,
     avgReviewSeconds: 45,
     avgNewSeconds: 90,
@@ -126,6 +130,8 @@ function toSnapshot(row: UserProfile): ProfileSnapshot {
     rebalanceUntil: row.rebalanceUntil ? row.rebalanceUntil.toISOString() : null,
     activeSurahNumber: row.activeSurahNumber,
     cursorAyahId: row.cursorAyahId,
+    quranActiveSurahNumber: row.quranActiveSurahNumber,
+    quranCursorAyahId: row.quranCursorAyahId,
     plan: row.plan,
     paddleCustomerId: row.paddleCustomerId,
     paddleSubscriptionId: row.paddleSubscriptionId,
@@ -170,6 +176,23 @@ export async function saveStartPoint(clerkUserId: string, activeSurahNumber: num
       cursorAyahId,
     },
     update: { activeSurahNumber, cursorAyahId },
+  });
+  return toSnapshot(row);
+}
+
+export async function saveQuranStartPoint(clerkUserId: string, quranActiveSurahNumber: number, quranCursorAyahId: number) {
+  if (!dbConfigured()) {
+    return null;
+  }
+  const prisma = db();
+  const row = await prisma.userProfile.upsert({
+    where: { clerkUserId },
+    create: {
+      ...defaultCreateData(clerkUserId),
+      quranActiveSurahNumber,
+      quranCursorAyahId,
+    },
+    update: { quranActiveSurahNumber, quranCursorAyahId },
   });
   return toSnapshot(row);
 }

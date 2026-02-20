@@ -115,7 +115,7 @@ test("quran reader supports view toggle, filters, and compact navigation", async
   await expect(page.getByText(/Anonymous window is active/i)).toBeVisible();
 });
 
-test("session advances and updates local cursor", async ({ page }) => {
+test("hifz advances and updates local cursor", async ({ page }) => {
   test.skip(!hasClerkAuthE2EConfig(), "Requires Clerk auth E2E env vars");
   await signInAsClerkTestUser(page);
   await seedLocalStartPoint(page);
@@ -126,8 +126,9 @@ test("session advances and updates local cursor", async ({ page }) => {
     window.localStorage.removeItem("hifzer_srs_reviews_v1");
   });
 
-  await page.goto("/session");
-  await expect(page.getByRole("heading", { name: /Session/i })).toBeVisible();
+  await page.goto("/hifz");
+  await expect(page).toHaveURL(/\/hifz(?:\?|$)/);
+  await expect(page.getByRole("button", { name: /Back to Today/i })).toBeVisible();
 
   let cursor = 1;
   for (let i = 0; i < 6; i += 1) {

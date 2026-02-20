@@ -36,7 +36,7 @@ test.describe("authenticated routing", () => {
 
     const sideNavMatrix = [
       { href: "/today", expected: /\/today(?:\?|$)/ },
-      { href: "/session", expected: /\/session(?:\?|$)/ },
+      { href: "/hifz", expected: /\/hifz(?:\?|$)/ },
       { href: "/quran", expected: /\/quran(?:\?|$)/ },
       { href: "/progress", expected: /\/progress(?:\/|$|\?)/ },
       { href: "/history/sessions", expected: /\/history(?:\/|$|\?)/ },
@@ -50,7 +50,7 @@ test.describe("authenticated routing", () => {
     }
 
     const inPageCtaMatrix = [
-      { href: "/session", expected: /\/session(?:\?|$)/ },
+      { href: "/hifz", expected: /\/hifz(?:\?|$)/ },
       { href: "/quran", expected: /\/quran(?:\?|$)/ },
       { href: "/settings/display", expected: /\/settings\/display(?:\?|$)/ },
       { href: "/onboarding/start-point", expected: /\/onboarding\/start-point(?:\?|$)/ },

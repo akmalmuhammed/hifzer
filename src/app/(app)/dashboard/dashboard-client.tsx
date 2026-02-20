@@ -96,7 +96,7 @@ function statusPill(status: DashboardOverview["today"]["status"]): { tone: "neut
     return { tone: "success", label: "Today completed" };
   }
   if (status === "in_progress") {
-    return { tone: "accent", label: "Session in progress" };
+    return { tone: "accent", label: "Hifz in progress" };
   }
   return { tone: "neutral", label: "Not started today" };
 }
@@ -378,9 +378,9 @@ export function DashboardClient() {
             <Button variant="secondary" className="gap-2" onClick={() => void load()}>
               Refresh <RefreshCcw size={16} />
             </Button>
-            <Link href="/session">
+            <Link href="/hifz">
               <Button className="gap-2">
-                Start session <PlayCircle size={16} />
+                Start Hifz <PlayCircle size={16} />
               </Button>
             </Link>
           </div>

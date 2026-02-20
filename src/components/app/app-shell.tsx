@@ -25,7 +25,7 @@ type NavItem = { href: string; label: string; icon: typeof House };
 const PRIMARY: NavItem[] = [
   { href: "/", label: "Home", icon: House },
   { href: "/today", label: "Today", icon: CalendarDays },
-  { href: "/session", label: "Session", icon: PlayCircle },
+  { href: "/hifz", label: "Hifz", icon: PlayCircle },
   { href: "/quran", label: "Qur'an", icon: BookOpenText },
 ];
 
@@ -43,7 +43,7 @@ const PLATFORM: NavItem[] = [
 const MOBILE_NAV: NavItem[] = [
   { href: "/", label: "Home", icon: House },
   { href: "/today", label: "Today", icon: CalendarDays },
-  { href: "/session", label: "Session", icon: PlayCircle },
+  { href: "/hifz", label: "Hifz", icon: PlayCircle },
   { href: "/quran", label: "Qur'an", icon: BookOpenText },
   { href: "/progress", label: "Progress", icon: TrendingUp },
   { href: "/settings", label: "Settings", icon: Settings },
@@ -73,6 +73,9 @@ function isActive(pathname: string, href: string): boolean {
   }
   if (href === "/quran/glossary") {
     return pathname === "/quran/glossary";
+  }
+  if (href === "/hifz") {
+    return pathname === "/hifz" || pathname.startsWith("/hifz/") || pathname === "/session" || pathname.startsWith("/session/");
   }
   if (href === "/quran") {
     return pathname === "/quran" || pathname.startsWith("/quran/");

@@ -24,6 +24,7 @@ const ROUTES = [
   { route: "/signup", surface: "auth" },
   { route: "/forgot-password", surface: "auth" },
   { route: "/today", surface: "app" },
+  { route: "/hifz", surface: "app" },
   { route: "/session", surface: "app" },
   { route: "/quran", surface: "app" },
   { route: "/quran/bookmarks", surface: "app" },
@@ -195,7 +196,7 @@ function toMarkdown(entries, generatedAt, baseUrl) {
   lines.push("## Reproduction Steps");
   lines.push("");
   lines.push("1. Open app on mobile browser (Safari iOS / Chrome Android).");
-  lines.push("2. Navigate to `/session`, `/today`, `/quran`, and `/quran/bookmarks`.");
+  lines.push("2. Navigate to `/hifz`, `/today`, `/quran`, and `/quran/bookmarks`.");
   lines.push("3. Swipe horizontally left/right while near top and mid-page.");
   lines.push("4. Verify no blank canvas is revealed outside page content.");
   lines.push("5. Verify install CTA behavior:");

@@ -65,10 +65,10 @@ export function SessionFlowTutorial(props: SessionFlowTutorialProps) {
   }
 
   const heading = props.surface === "today"
-    ? "Session tutorial"
+    ? "Hifz tutorial"
     : "Practice tutorial";
   const subtitle = props.surface === "today"
-    ? "This is the flow you will run inside Session."
+    ? "This is the flow you will run inside Hifz."
     : "Use this flow while you practice.";
 
   return (

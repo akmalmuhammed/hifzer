@@ -230,7 +230,7 @@ export async function GET() {
     const lastReadAyah = quranReadProgress.lastReadAyahId
       ? getAyahById(quranReadProgress.lastReadAyahId)
       : null;
-    const currentSurahNumber = lastReadAyah?.surahNumber ?? profile.activeSurahNumber;
+    const currentSurahNumber = lastReadAyah?.surahNumber ?? profile.quranActiveSurahNumber;
     const currentSurah = getSurahInfo(currentSurahNumber);
     const currentSurahRecitedAyahs = quranDistinctAyahs.filter(
       (row) => row.surahNumber === currentSurahNumber,

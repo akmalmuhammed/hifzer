@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getSurahInfo } from "@/hifzer/quran/lookup";
-import { getOrCreateUserProfile, saveStartPoint } from "@/hifzer/profile/server";
+import { getOrCreateUserProfile, saveQuranStartPoint, saveStartPoint } from "@/hifzer/profile/server";
 import { recordQuranBrowseAyahRead } from "@/hifzer/quran/read-progress.server";
 import { db } from "@/lib/db";
 
@@ -32,6 +32,7 @@ export async function POST(req: Request) {
   const cursorAyahId = cursorAyahIdRaw == null ? null : Number(cursorAyahIdRaw);
   const source = typeof payload.source === "string" ? payload.source : null;
   const resetOpenSession = payload.resetOpenSession === true;
+  const quranSource = source === "quran_read";
 
   if (!Number.isFinite(surahNumber) || !Number.isFinite(ayahNumber)) {
     return NextResponse.json({ error: "surahNumber and ayahNumber are required" }, { status: 400 });
@@ -62,20 +63,15 @@ export async function POST(req: Request) {
 
   const previousSurahNumber = fullProfile.activeSurahNumber;
   const previousCursorAyahId = fullProfile.cursorAyahId;
+  const previousQuranSurahNumber = fullProfile.quranActiveSurahNumber;
+  const previousQuranCursorAyahId = fullProfile.quranCursorAyahId;
 
-  if (source === "session_switch" || resetOpenSession) {
-    await recordQuranBrowseAyahRead({
-      profileId: fullProfile.id,
-      mode: fullProfile.mode,
-      timezone: fullProfile.timezone,
-      ayahId: previousCursorAyahId,
-    });
-  }
-
-  const profile = await saveStartPoint(userId, surahNumber, expectedAyahId);
+  const profile = quranSource
+    ? await saveQuranStartPoint(userId, surahNumber, expectedAyahId)
+    : await saveStartPoint(userId, surahNumber, expectedAyahId);
   let abandonedOpenSessions = 0;
 
-  if (resetOpenSession) {
+  if (!quranSource && resetOpenSession) {
     const abandoned = await db().session.updateMany({
       where: {
         userId: fullProfile.id,
@@ -102,9 +98,13 @@ export async function POST(req: Request) {
     ok: true,
     profile,
     abandonedOpenSessions,
-    previousLane: {
+    previousHifzLane: {
       surahNumber: previousSurahNumber,
       cursorAyahId: previousCursorAyahId,
+    },
+    previousQuranLane: {
+      surahNumber: previousQuranSurahNumber,
+      cursorAyahId: previousQuranCursorAyahId,
     },
   });
 }

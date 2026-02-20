@@ -21,7 +21,7 @@ import {
 } from "@/hifzer/engine/monthly-audit";
 import { isTransitionSuccess, isWeakTransition } from "@/hifzer/engine/transitions";
 import { updateLearnedAverages } from "@/hifzer/engine/debt";
-import type { SessionEventInput, SessionStep, TodayEngineResult } from "@/hifzer/engine/types";
+import type { SessionEventInput, SessionStep, TodayEngineResult, TodayQueuePlan } from "@/hifzer/engine/types";
 import { applyGrade, defaultReviewState } from "@/hifzer/srs/update";
 import { getAyahById, verseRefFromAyahId } from "@/hifzer/quran/lookup.server";
 import { listSahihTranslationsForAyahIds } from "@/hifzer/quran/translation.server";
@@ -115,6 +115,199 @@ function buildSteps(queue: TodayEngineResult["queue"]): SessionStep[] {
   }
 
   return steps;
+}
+
+const SESSION_PLAN_VERSION = 1;
+
+type SessionPlanSnapshot = {
+  version: number;
+  localDate: string;
+  mode: TodayEngineResult["mode"];
+  warmupRequired: boolean;
+  weeklyGateRequired: boolean;
+  monthlyTestRequired: boolean;
+  newUnlocked: boolean;
+  steps: SessionStep[];
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function parseSessionStep(raw: unknown): SessionStep | null {
+  if (!isRecord(raw)) {
+    return null;
+  }
+
+  const kind = raw.kind;
+  if (kind === "AYAH") {
+    const stage = raw.stage;
+    const phase = raw.phase;
+    const ayahId = Number(raw.ayahId);
+    const reviewTierRaw = raw.reviewTier;
+    const reviewTier = reviewTierRaw === "SABQI" || reviewTierRaw === "MANZIL" ? reviewTierRaw : undefined;
+    if (
+      (stage !== "WARMUP" && stage !== "REVIEW" && stage !== "NEW" && stage !== "WEEKLY_TEST" && stage !== "LINK_REPAIR") ||
+      (phase !== "STANDARD" && phase !== "NEW_EXPOSE" && phase !== "NEW_GUIDED" && phase !== "NEW_BLIND" && phase !== "WEEKLY_TEST" && phase !== "LINK_REPAIR") ||
+      !Number.isFinite(ayahId) ||
+      ayahId < 1
+    ) {
+      return null;
+    }
+    return {
+      kind: "AYAH",
+      stage,
+      phase,
+      ayahId: Math.floor(ayahId),
+      reviewTier,
+    };
+  }
+
+  if (kind === "LINK") {
+    const stage = raw.stage;
+    const phase = raw.phase;
+    const fromAyahId = Number(raw.fromAyahId);
+    const toAyahId = Number(raw.toAyahId);
+    if (
+      (stage !== "LINK" && stage !== "LINK_REPAIR") ||
+      (phase !== "STANDARD" && phase !== "LINK_REPAIR") ||
+      !Number.isFinite(fromAyahId) ||
+      !Number.isFinite(toAyahId) ||
+      fromAyahId < 1 ||
+      toAyahId < 1
+    ) {
+      return null;
+    }
+    return {
+      kind: "LINK",
+      stage,
+      phase,
+      fromAyahId: Math.floor(fromAyahId),
+      toAyahId: Math.floor(toAyahId),
+    };
+  }
+
+  return null;
+}
+
+function parseSessionPlanSnapshot(raw: Prisma.JsonValue | null | undefined): SessionPlanSnapshot | null {
+  if (!isRecord(raw)) {
+    return null;
+  }
+  const version = Number(raw.version);
+  const localDate = typeof raw.localDate === "string" ? raw.localDate : "";
+  const mode = raw.mode;
+  const warmupRequired = raw.warmupRequired;
+  const weeklyGateRequired = raw.weeklyGateRequired;
+  const monthlyTestRequired = raw.monthlyTestRequired;
+  const newUnlocked = raw.newUnlocked;
+  const rawSteps = raw.steps;
+
+  if (
+    version !== SESSION_PLAN_VERSION ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(localDate) ||
+    (mode !== "NORMAL" && mode !== "CONSOLIDATION" && mode !== "CATCH_UP") ||
+    typeof warmupRequired !== "boolean" ||
+    typeof weeklyGateRequired !== "boolean" ||
+    typeof monthlyTestRequired !== "boolean" ||
+    typeof newUnlocked !== "boolean" ||
+    !Array.isArray(rawSteps)
+  ) {
+    return null;
+  }
+
+  const steps: SessionStep[] = [];
+  for (const item of rawSteps) {
+    const step = parseSessionStep(item);
+    if (!step) {
+      return null;
+    }
+    steps.push(step);
+  }
+
+  return {
+    version,
+    localDate,
+    mode,
+    warmupRequired,
+    weeklyGateRequired,
+    monthlyTestRequired,
+    newUnlocked,
+    steps,
+  };
+}
+
+function buildSessionPlanSnapshot(localDate: string, state: TodayEngineResult, steps: SessionStep[]): Prisma.JsonObject {
+  return {
+    version: SESSION_PLAN_VERSION,
+    localDate,
+    mode: state.mode,
+    warmupRequired: state.warmupRequired,
+    weeklyGateRequired: state.weeklyGateRequired,
+    monthlyTestRequired: state.monthlyTestRequired,
+    newUnlocked: state.newUnlocked,
+    steps,
+  } satisfies Prisma.JsonObject;
+}
+
+function queueFromSteps(steps: SessionStep[]): TodayQueuePlan {
+  const newAyahIdsSet = new Set<number>();
+  const queue: TodayQueuePlan = {
+    warmupAyahIds: [],
+    weeklyGateAyahIds: [],
+    sabqiReviewAyahIds: [],
+    manzilReviewAyahIds: [],
+    repairLinks: [],
+    newAyahIds: [],
+  };
+
+  for (const step of steps) {
+    if (step.kind === "LINK") {
+      if (step.stage === "LINK_REPAIR") {
+        queue.repairLinks.push({ fromAyahId: step.fromAyahId, toAyahId: step.toAyahId });
+      }
+      continue;
+    }
+
+    if (step.stage === "WARMUP") {
+      queue.warmupAyahIds.push(step.ayahId);
+      continue;
+    }
+
+    if (step.stage === "WEEKLY_TEST") {
+      queue.weeklyGateAyahIds.push(step.ayahId);
+      continue;
+    }
+
+    if (step.stage === "REVIEW") {
+      if (step.reviewTier === "SABQI") {
+        queue.sabqiReviewAyahIds.push(step.ayahId);
+      } else if (step.reviewTier === "MANZIL") {
+        queue.manzilReviewAyahIds.push(step.ayahId);
+      }
+      continue;
+    }
+
+    if (step.stage === "NEW") {
+      newAyahIdsSet.add(step.ayahId);
+    }
+  }
+
+  queue.newAyahIds = Array.from(newAyahIdsSet).sort((a, b) => a - b);
+  return queue;
+}
+
+function stateWithSessionPlan(baseState: TodayEngineResult, plan: SessionPlanSnapshot): TodayEngineResult {
+  return {
+    ...baseState,
+    localDate: plan.localDate,
+    mode: plan.mode,
+    warmupRequired: plan.warmupRequired,
+    weeklyGateRequired: plan.weeklyGateRequired,
+    monthlyTestRequired: plan.monthlyTestRequired,
+    newUnlocked: plan.newUnlocked,
+    queue: queueFromSteps(plan.steps),
+  };
 }
 
 function toAttemptStage(stage: SessionEventInput["stage"]): AttemptStage {
@@ -235,7 +428,11 @@ export async function loadTodayState(clerkUserId: string): Promise<{
   return { profile, state, steps: buildSteps(state.queue) };
 }
 
-async function ensureOpenSession(profile: UserProfile, state: TodayEngineResult): Promise<Session> {
+async function ensureOpenSession(
+  profile: UserProfile,
+  state: TodayEngineResult,
+  steps: SessionStep[],
+): Promise<{ session: Session; state: TodayEngineResult; steps: SessionStep[] }> {
   const prisma = db();
   const existing = await prisma.session.findFirst({
     where: {
@@ -246,7 +443,21 @@ async function ensureOpenSession(profile: UserProfile, state: TodayEngineResult)
     orderBy: { startedAt: "desc" },
   });
   if (existing) {
-    return existing;
+    const plan = parseSessionPlanSnapshot(existing.planJson);
+    if (plan && plan.localDate === existing.localDate) {
+      return {
+        session: existing,
+        state: stateWithSessionPlan(state, plan),
+        steps: plan.steps,
+      };
+    }
+    const updated = await prisma.session.update({
+      where: { id: existing.id },
+      data: {
+        planJson: buildSessionPlanSnapshot(existing.localDate, state, steps),
+      },
+    });
+    return { session: updated, state, steps };
   }
 
   const reviewAyahIds = [
@@ -255,7 +466,7 @@ async function ensureOpenSession(profile: UserProfile, state: TodayEngineResult)
     ...state.queue.manzilReviewAyahIds,
   ];
 
-  return prisma.session.create({
+  const session = await prisma.session.create({
     data: {
       userId: profile.id,
       status: "OPEN",
@@ -273,15 +484,20 @@ async function ensureOpenSession(profile: UserProfile, state: TodayEngineResult)
       newEndAyahId: state.queue.newAyahIds.length
         ? state.queue.newAyahIds[state.queue.newAyahIds.length - 1]
         : null,
+      planJson: buildSessionPlanSnapshot(state.localDate, state, steps),
     },
   });
+  return { session, state, steps };
 }
 
 export async function startTodaySession(clerkUserId: string) {
   const { profile, state, steps } = await loadTodayState(clerkUserId);
-  const session = await ensureOpenSession(profile, state);
+  const openSession = await ensureOpenSession(profile, state, steps);
+  const session = openSession.session;
+  const sessionState = openSession.state;
+  const sessionSteps = openSession.steps;
   const ayahIdSet = new Set<number>();
-  for (const step of steps) {
+  for (const step of sessionSteps) {
     if (step.kind === "AYAH") {
       ayahIdSet.add(step.ayahId);
     }
@@ -299,9 +515,9 @@ export async function startTodaySession(clerkUserId: string) {
   return {
     sessionId: session.id,
     startedAt: session.startedAt.toISOString(),
-    localDate: state.localDate,
-    state,
-    steps,
+    localDate: session.localDate,
+    state: sessionState,
+    steps: sessionSteps,
     translations: {
       provider: "tanzil.en.sahih" as const,
       byAyahId: translationsByAyahId,

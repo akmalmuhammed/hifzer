@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getAyahById, getSurahInfo } from "@/hifzer/quran/lookup";
-import { getOrCreateUserProfile, saveStartPoint } from "@/hifzer/profile/server";
+import { getOrCreateUserProfile, saveQuranStartPoint } from "@/hifzer/profile/server";
 import { recordQuranBrowseAyahRangeRead } from "@/hifzer/quran/read-progress.server";
 
 export const runtime = "nodejs";
@@ -76,19 +76,19 @@ export async function POST(req: Request) {
     ayahIds,
   });
 
-  const previousCursorAyahId = profile.cursorAyahId;
+  const previousCursorAyahId = profile.quranCursorAyahId;
   const updatedCursorAyahId = Math.max(previousCursorAyahId, rangeEndAyahId);
   const updatedAyah = getAyahById(updatedCursorAyahId);
-  const activeSurahNumber = updatedAyah?.surahNumber ?? profile.activeSurahNumber;
+  const quranActiveSurahNumber = updatedAyah?.surahNumber ?? profile.quranActiveSurahNumber;
 
-  const updatedProfile = await saveStartPoint(userId, activeSurahNumber, updatedCursorAyahId);
+  const updatedProfile = await saveQuranStartPoint(userId, quranActiveSurahNumber, updatedCursorAyahId);
 
   return NextResponse.json({
     ok: true,
     movedCursor: updatedCursorAyahId > previousCursorAyahId,
     previousCursorAyahId,
     updatedCursorAyahId,
-    activeSurahNumber,
+    quranActiveSurahNumber,
     tracking: {
       recordedAyahCount: tracking.recordedAyahCount,
       alreadyTrackedAyahCount: tracking.alreadyTrackedAyahCount,
