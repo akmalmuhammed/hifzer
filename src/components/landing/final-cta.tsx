@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { Download, Share } from "lucide-react";
+import { IphoneInstallGuide } from "@/components/landing/iphone-install-guide";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
@@ -93,19 +94,14 @@ export function FinalCta() {
           </p>
         </div>
 
-        <div className="mx-auto mt-8 grid max-w-[820px] gap-3 sm:grid-cols-2">
+        <div className="mx-auto mt-8 grid max-w-[920px] gap-3 sm:grid-cols-2">
           <div className="rounded-2xl border border-[color:var(--kw-border-2)] bg-white/75 p-4 text-left">
             <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Android</p>
             <p className="mt-2 text-sm leading-6 text-[color:var(--kw-ink-2)]">
               Open Chrome or Edge menu, then choose Add to Home screen or Install app.
             </p>
           </div>
-          <div className="rounded-2xl border border-[color:var(--kw-border-2)] bg-white/75 p-4 text-left">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">iPhone</p>
-            <p className="mt-2 text-sm leading-6 text-[color:var(--kw-ink-2)]">
-              Open in Safari, tap Share, choose Add to Home Screen, then tap Add.
-            </p>
-          </div>
+          <IphoneInstallGuide />
         </div>
       </motion.div>
     </section>
