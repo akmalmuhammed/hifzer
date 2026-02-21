@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { Download, Share } from "lucide-react";
 import { IphoneInstallGuide } from "@/components/landing/iphone-install-guide";
+import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
@@ -11,6 +12,7 @@ import { trackGaEvent } from "@/lib/ga/client";
 
 export function FinalCta() {
   const reduceMotion = useReducedMotion();
+  const { isSignedIn } = usePublicAuth();
   const install = useInstallApp();
   const { pushToast } = useToast();
   const InstallIcon = install.canPrompt ? Download : Share;
@@ -60,7 +62,7 @@ export function FinalCta() {
           <p className="text-xs font-semibold uppercase tracking-wide text-[rgba(var(--kw-accent-rgb),1)]">
             Install and begin
           </p>
-          <h2 className="mt-3 text-balance font-[family-name:var(--font-kw-display)] text-4xl leading-[1.02] tracking-tight text-[color:var(--kw-ink)] sm:text-5xl">
+          <h2 className="kw-marketing-display kw-gradient-headline mt-3 text-balance text-4xl leading-[1.02] sm:text-5xl">
             Add Hifzer to your home screen and start today.
           </h2>
           <p className="mx-auto mt-4 max-w-[56ch] text-base leading-7 text-[color:var(--kw-muted)]">
@@ -89,7 +91,7 @@ export function FinalCta() {
               }}
               className="text-sm font-semibold text-[color:var(--kw-muted)] underline underline-offset-2 transition hover:text-[color:var(--kw-ink)]"
             >
-              Start free in browser
+              {isSignedIn ? "Open app" : "Start free in browser"}
             </PublicAuthLink>
           </p>
         </div>

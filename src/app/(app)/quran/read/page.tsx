@@ -145,6 +145,98 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
       anonymous,
     })}#${COMPACT_READER_ANCHOR}`
     : null;
+  const renderFilterControls = () => (
+    <Card>
+      <div className="flex flex-wrap items-center gap-2">
+        <Link
+          href={trackedHref}
+          className={`rounded-full border px-3 py-2 text-sm font-semibold ${
+            !anonymous
+              ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+              : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
+          }`}
+        >
+          Tracking on
+        </Link>
+        <Link
+          href={anonymousHref}
+          className={`rounded-full border px-3 py-2 text-sm font-semibold ${
+            anonymous
+              ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+              : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
+          }`}
+        >
+          Anonymous window
+        </Link>
+        <Link
+          href={listHref}
+          className={`rounded-full border px-3 py-2 text-sm font-semibold ${
+            view === "list"
+              ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+              : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
+          }`}
+        >
+          List view
+        </Link>
+        <Link
+          href={compactHref}
+          className={`rounded-full border px-3 py-2 text-sm font-semibold ${
+            view === "compact"
+              ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+              : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
+          }`}
+        >
+          Compact view
+        </Link>
+      </div>
+
+      <form className="mt-4 grid gap-3 md:grid-cols-3" method="get" action="/quran/read">
+        <input type="hidden" name="view" value={view} />
+        {anonymous ? <input type="hidden" name="anon" value="1" /> : null}
+        <label className="text-sm text-[color:var(--kw-muted)]">
+          Surah
+          <select
+            name="surah"
+            defaultValue={surahNumber != null ? String(surahNumber) : ""}
+            className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
+          >
+            <option value="">All surahs</option>
+            {surahs.map((surah) => (
+              <option key={surah.surahNumber} value={surah.surahNumber}>
+                {surah.surahNumber} - {surah.nameTransliteration}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="text-sm text-[color:var(--kw-muted)]">
+          Ayah (global id)
+          <input
+            type="number"
+            name="ayah"
+            min={1}
+            max={6236}
+            defaultValue={ayahId != null ? String(ayahId) : ""}
+            placeholder="1 - 6236"
+            className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
+          />
+        </label>
+        <div className="flex items-end gap-2">
+          <button
+            type="submit"
+            className="h-10 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+          >
+            Apply filters
+          </button>
+          <Link
+            href={clearHref}
+            className="h-10 rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
+          >
+            Clear
+          </Link>
+        </div>
+      </form>
+    </Card>
+  );
 
   return (
     <div className="pb-12 pt-10 md:pb-16 md:pt-14">
@@ -180,96 +272,22 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
         </p>
       </div>
 
-      <Card className="mt-8">
-        <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href={trackedHref}
-            className={`rounded-full border px-3 py-2 text-sm font-semibold ${
-              !anonymous
-                ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-                : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
-            }`}
-          >
-            Tracking on
-          </Link>
-          <Link
-            href={anonymousHref}
-            className={`rounded-full border px-3 py-2 text-sm font-semibold ${
-              anonymous
-                ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-                : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
-            }`}
-          >
-            Anonymous window
-          </Link>
-          <Link
-            href={listHref}
-            className={`rounded-full border px-3 py-2 text-sm font-semibold ${
-              view === "list"
-                ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-                : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
-            }`}
-          >
-            List view
-          </Link>
-          <Link
-            href={compactHref}
-            className={`rounded-full border px-3 py-2 text-sm font-semibold ${
-              view === "compact"
-                ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-                : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
-            }`}
-          >
-            Compact view
-          </Link>
-        </div>
+      <div className="mt-8 md:hidden">
+        <details className="group rounded-[24px] border border-[color:var(--kw-border-2)] bg-white/65 p-3 shadow-[var(--kw-shadow-soft)]">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/75 px-3 py-2.5 text-sm font-semibold text-[color:var(--kw-ink)]">
+            <span>Reader filters</span>
+            <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/80 px-2 py-0.5 text-xs text-[color:var(--kw-muted)] group-open:hidden">
+              Show
+            </span>
+            <span className="hidden rounded-full border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.1)] px-2 py-0.5 text-xs text-[rgba(var(--kw-accent-rgb),1)] group-open:inline-flex">
+              Hide
+            </span>
+          </summary>
+          <div className="pt-3">{renderFilterControls()}</div>
+        </details>
+      </div>
 
-        <form className="mt-4 grid gap-3 md:grid-cols-3" method="get" action="/quran/read">
-          <input type="hidden" name="view" value={view} />
-          {anonymous ? <input type="hidden" name="anon" value="1" /> : null}
-          <label className="text-sm text-[color:var(--kw-muted)]">
-            Surah
-            <select
-              name="surah"
-              defaultValue={surahNumber != null ? String(surahNumber) : ""}
-              className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
-            >
-              <option value="">All surahs</option>
-              {surahs.map((surah) => (
-                <option key={surah.surahNumber} value={surah.surahNumber}>
-                  {surah.surahNumber} - {surah.nameTransliteration}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="text-sm text-[color:var(--kw-muted)]">
-            Ayah (global id)
-            <input
-              type="number"
-              name="ayah"
-              min={1}
-              max={6236}
-              defaultValue={ayahId != null ? String(ayahId) : ""}
-              placeholder="1 - 6236"
-              className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
-            />
-          </label>
-          <div className="flex items-end gap-2">
-            <button
-              type="submit"
-              className="h-10 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
-            >
-              Apply filters
-            </button>
-            <Link
-              href={clearHref}
-              className="h-10 rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
-            >
-              Clear
-            </Link>
-          </div>
-        </form>
-      </Card>
+      <div className="mt-8 hidden md:block">{renderFilterControls()}</div>
 
       <div className="mt-6 flex flex-wrap items-center gap-2">
         <Pill tone="neutral">{ayahs.length} ayahs matched</Pill>

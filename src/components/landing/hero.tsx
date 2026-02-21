@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Download, Share, Sparkles } from "lucide-react";
 import { WindLines } from "@/components/brand/wind-lines";
+import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
@@ -17,6 +18,7 @@ const fadeUp = {
 export function Hero(props: { primaryIntent?: "install" | "signup" }) {
   const primaryIntent = props.primaryIntent ?? "install";
   const reduceMotion = useReducedMotion();
+  const { isSignedIn } = usePublicAuth();
   const install = useInstallApp();
   const { pushToast } = useToast();
   const InstallIcon = install.canPrompt ? Download : Share;
@@ -55,8 +57,8 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
 
   return (
     <section className="relative overflow-hidden py-14 md:py-20">
-      <div className="pointer-events-none absolute inset-x-0 -top-16 h-[340px] opacity-90">
-        <WindLines className="opacity-70" animated />
+      <div className="pointer-events-none absolute inset-x-0 -top-16 h-[340px] opacity-70">
+        <WindLines className="opacity-50 md:opacity-58" animated />
       </div>
 
       <motion.div
@@ -75,7 +77,7 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
 
         <motion.h1
           variants={fadeUp}
-          className="mx-auto max-w-[11ch] text-balance font-[family-name:var(--font-kw-display)] text-[clamp(2.5rem,7vw,4.5rem)] leading-[0.92] tracking-tight text-[color:var(--kw-ink)]"
+          className="kw-marketing-display kw-gradient-headline mx-auto max-w-[11ch] text-balance text-[clamp(2.5rem,7vw,4.5rem)] leading-[0.9]"
         >
           Keep your Hifz stable every day.
         </motion.h1>
@@ -113,6 +115,20 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
               Add to Home Screen now
             </Button>
           )}
+          <Button asChild size="lg" variant="secondary">
+            <PublicAuthLink
+              signedInHref="/today"
+              signedOutHref="/signup"
+              onClick={() => {
+                trackGaEvent("landing.secondary_start_free_click", {
+                  placement: "hero-auth-cta",
+                  state: isSignedIn ? "signed_in" : "signed_out",
+                });
+              }}
+            >
+              {isSignedIn ? "Open app" : "Start free in browser"} <ArrowRight size={18} />
+            </PublicAuthLink>
+          </Button>
         </motion.div>
 
         <motion.div variants={fadeUp}>
@@ -124,7 +140,7 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
             }}
             className="text-sm font-semibold text-[color:var(--kw-muted)] underline underline-offset-2 transition hover:text-[color:var(--kw-ink)]"
           >
-            Start free in browser
+            {isSignedIn ? "Open app now" : "Start free in browser"}
           </PublicAuthLink>
         </motion.div>
 

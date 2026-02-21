@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, IBM_Plex_Mono, Amiri } from "next/font/google";
+import { Inter, IBM_Plex_Mono, Amiri, Space_Grotesk } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { AppProviders } from "@/components/providers/app-providers";
 import { InstallAppBanner } from "@/components/pwa/install-app-banner";
@@ -26,6 +26,12 @@ const amiri = Amiri({
   variable: "--font-quran-uthmani",
   subsets: ["arabic"],
   weight: ["400", "700"],
+});
+
+const marketingDisplay = Space_Grotesk({
+  variable: "--font-kw-marketing",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
 });
 
 const siteUrl = getSiteUrl();
@@ -92,13 +98,13 @@ export default function RootLayout({
 }>) {
   const authEnabled = clerkEnabled();
   return (
-    <html
-      lang="en"
-      data-mode="light"
-      data-theme="standard"
-      data-accent="teal"
-      className={`${inter.variable} ${mono.variable} ${amiri.variable}`}
-    >
+      <html
+        lang="en"
+        data-mode="light"
+        data-theme="standard"
+        data-accent="teal"
+        className={`${inter.variable} ${mono.variable} ${amiri.variable} ${marketingDisplay.variable}`}
+      >
       <body className="kw-canvas min-h-dvh bg-[color:var(--kw-bg)] text-[color:var(--kw-ink)] antialiased">
         <a
           href="#main-content"

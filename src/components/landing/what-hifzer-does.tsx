@@ -29,7 +29,7 @@ export function WhatHifzerDoes() {
         <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
           How Hifzer works
         </p>
-        <h2 className="mt-3 text-balance font-[family-name:var(--font-kw-display)] text-3xl leading-tight tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
+        <h2 className="kw-marketing-display kw-gradient-headline mt-3 text-balance text-3xl leading-tight sm:text-4xl">
           Three steps. One daily rhythm.
         </h2>
       </div>

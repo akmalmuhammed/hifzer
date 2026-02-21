@@ -32,8 +32,8 @@ export function WindLines({
 
         {/* Glow filter: light mode — layered soft glow */}
         <filter id="kw_wind_glow" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="wideBlur" />
-          <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="tightBlur" />
+          <feGaussianBlur in="SourceGraphic" stdDeviation="3.2" result="wideBlur" />
+          <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="tightBlur" />
           <feMerge>
             <feMergeNode in="wideBlur" />
             <feMergeNode in="tightBlur" />
@@ -43,9 +43,9 @@ export function WindLines({
 
         {/* Glow filter: dark mode — vivid neon triple-layer */}
         <filter id="kw_wind_glow_dark" x="-35%" y="-35%" width="170%" height="170%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="outerBlur" />
-          <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="midBlur" />
-          <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="innerBlur" />
+          <feGaussianBlur in="SourceGraphic" stdDeviation="5.5" result="outerBlur" />
+          <feGaussianBlur in="SourceGraphic" stdDeviation="2.2" result="midBlur" />
+          <feGaussianBlur in="SourceGraphic" stdDeviation="0.8" result="innerBlur" />
           <feMerge>
             <feMergeNode in="outerBlur" />
             <feMergeNode in="midBlur" />
@@ -61,14 +61,14 @@ export function WindLines({
             key={d}
             d={d}
             stroke="url(#kw_wind)"
-            strokeWidth={idx === 0 ? 3 : 2.2}
+            strokeWidth={idx === 0 ? 2.25 : 1.75}
             strokeLinecap="round"
-            opacity={idx === 0 ? 1 : 0.72}
+            opacity={idx === 0 ? 0.66 : 0.5}
             strokeDasharray={animated ? "1200" : undefined}
             style={
               animated
                 ? {
-                    animation: `kw-wind-flow ${12 + idx * 2}s linear infinite, kw-wind-pulse ${6 + idx}s ease-in-out infinite`,
+                    animation: `kw-wind-flow ${18 + idx * 3}s linear infinite, kw-wind-pulse ${8 + idx * 2}s ease-in-out infinite`,
                     animationDelay: `${idx * 0.8}s`,
                   }
                 : undefined
