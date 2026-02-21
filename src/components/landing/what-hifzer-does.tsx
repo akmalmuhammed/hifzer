@@ -1,56 +1,54 @@
-import { BookOpenText, Headphones, Search } from "lucide-react";
+﻿import { ArrowRight, CheckCircle2, Clock3 } from "lucide-react";
 import { CardSoft } from "@/components/ui/card";
-import { Pill } from "@/components/ui/pill";
 
-const BLOCKS = [
+const STEPS = [
   {
-    title: "Hifz plan that protects retention",
-    copy:
-      "Hifzer gives you a clear daily order: review first, then new ayahs only when recall is strong. This protects what you already memorized.",
-    icon: <BookOpenText size={18} />,
-    pill: "Hifz",
+    step: "01",
+    title: "Warm-up and verify recall",
+    copy: "Start with what you already memorized so stability comes first.",
+    icon: <CheckCircle2 size={18} />,
   },
   {
-    title: "Qur'an recitation with progress",
-    copy:
-      "Read and recite directly inside the app with tracked position and completion progress so you can continue exactly where you stopped.",
-    icon: <Headphones size={18} />,
-    pill: "Recitation",
+    step: "02",
+    title: "Review due ayahs and weak links",
+    copy: "Hifzer prioritizes what is fading so debt does not build silently.",
+    icon: <Clock3 size={18} />,
   },
   {
-    title: "Built-in Qur'anic glossary",
-    copy:
-      "Search key Qur'anic terms quickly while reading, so understanding and memorization improve together in one flow.",
-    icon: <Search size={18} />,
-    pill: "Glossary",
+    step: "03",
+    title: "Unlock a small new chunk",
+    copy: "New memorization opens only after review quality is in a safe range.",
+    icon: <ArrowRight size={18} />,
   },
 ] as const;
 
 export function WhatHifzerDoes() {
   return (
     <section className="py-10 md:py-14">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-            What it does
-          </p>
-          <h2 className="mt-3 max-w-3xl text-balance font-[family-name:var(--font-kw-display)] text-3xl leading-tight tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
-            One system for Hifz practice, Qur&apos;an recitation, and glossary support.
-          </h2>
-        </div>
+      <div className="mx-auto max-w-[860px] text-center">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+          How Hifzer works
+        </p>
+        <h2 className="mt-3 text-balance font-[family-name:var(--font-kw-display)] text-3xl leading-tight tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
+          Three steps. One daily rhythm.
+        </h2>
       </div>
 
       <div className="mt-8 grid gap-4 md:grid-cols-3">
-        {BLOCKS.map((block) => (
-          <CardSoft key={block.title} className="h-full">
-            <div className="flex items-start justify-between gap-4">
-              <Pill tone="neutral">{block.pill}</Pill>
-              <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)]">
-                {block.icon}
+        {STEPS.map((item) => (
+          <CardSoft key={item.title} className="h-full">
+            <div className="flex items-center justify-between gap-3">
+              <p className="font-[family-name:var(--font-kw-display)] text-2xl font-semibold tracking-tight text-[rgba(var(--kw-accent-rgb),1)]">
+                {item.step}
+              </p>
+              <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/75 text-[color:var(--kw-ink-2)]">
+                {item.icon}
               </span>
             </div>
-            <p className="mt-3 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">{block.title}</p>
-            <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">{block.copy}</p>
+            <p className="mt-4 text-lg font-semibold leading-7 tracking-tight text-[color:var(--kw-ink)]">
+              {item.title}
+            </p>
+            <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">{item.copy}</p>
           </CardSoft>
         ))}
       </div>

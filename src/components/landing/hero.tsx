@@ -1,52 +1,32 @@
-"use client";
+﻿"use client";
 
-import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import clsx from "clsx";
-import { ArrowRight, Download, Share, Sparkles, Star } from "lucide-react";
-import { PublicAuthLink } from "@/components/landing/public-auth-link";
+import { ArrowRight, Download, Share, Sparkles } from "lucide-react";
 import { WindLines } from "@/components/brand/wind-lines";
-import { useInstallApp } from "@/components/pwa/use-install-app";
+import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardKpi, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast";
-import { DonutProgress } from "@/components/charts/donut-progress";
-import { HeatStrip } from "@/components/charts/heat-strip";
+import { useInstallApp } from "@/components/pwa/use-install-app";
+import { trackGaEvent } from "@/lib/ga/client";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
   show: { opacity: 1, y: 0 },
 };
 
-const HERO_BULLETS = [
-  "10-minute guided sessions",
-  "Adaptive review timing",
-] as const;
-
-export function Hero() {
+export function Hero(props: { primaryIntent?: "install" | "signup" }) {
+  const primaryIntent = props.primaryIntent ?? "install";
   const reduceMotion = useReducedMotion();
   const install = useInstallApp();
   const { pushToast } = useToast();
-  const [donutReady, setDonutReady] = useState(false);
-
-  useEffect(() => {
-    const id = setTimeout(() => setDonutReady(true), 600);
-    return () => clearTimeout(id);
-  }, []);
-
-  const streakDays = Array.from({ length: 28 }, (_, idx) => {
-    const base = new Date();
-    base.setDate(base.getDate() - (27 - idx));
-    const values = [0.6, 0.9, 0.2, 0.8, 1, 0.7, 0.95, 0.4, 0.9, 0.85, 1, 0.2];
-    const v = values[idx % values.length] ?? 0;
-    return { date: base.toISOString(), value: Math.round(v * 10) };
-  });
-
   const InstallIcon = install.canPrompt ? Download : Share;
 
   const onInstallNow = async () => {
+    trackGaEvent("landing.install_primary_click", { placement: "hero" });
     const result = await install.requestInstall();
+
     if (result === "accepted") {
+      trackGaEvent("landing.install_result.accepted", { placement: "hero" });
       pushToast({
         tone: "success",
         title: "Installed",
@@ -54,6 +34,9 @@ export function Hero() {
       });
       return;
     }
+
+    trackGaEvent("landing.install_result.dismissed", { placement: "hero", reason: result });
+
     if (result === "ios_instructions") {
       pushToast({
         tone: "warning",
@@ -62,232 +45,95 @@ export function Hero() {
       });
       return;
     }
-    if (result === "unavailable") {
-      pushToast({
-        tone: "warning",
-        title: "Install prompt not ready",
-        message: "Use the Android/iPhone links below for manual steps.",
-      });
-    }
+
+    pushToast({
+      tone: "warning",
+      title: "Install prompt not ready",
+      message: "Use the install steps below to add Hifzer to your home screen.",
+    });
   };
 
   return (
-    <section className="relative overflow-hidden pb-10 pt-10 md:pb-16 md:pt-14">
-      <div className="pointer-events-none absolute inset-x-0 -top-10 h-[360px] overflow-visible opacity-95">
-        <WindLines className="opacity-90" animated />
+    <section className="relative overflow-hidden py-14 md:py-20">
+      <div className="pointer-events-none absolute inset-x-0 -top-16 h-[340px] opacity-90">
+        <WindLines className="opacity-70" animated />
       </div>
 
-      <div className="grid items-center gap-10 md:grid-cols-[1.25fr_0.75fr]">
-        <motion.div
-          initial="hidden"
-          animate="show"
-          variants={{ show: { transition: { staggerChildren: 0.07 } } }}
+      <motion.div
+        className="relative mx-auto grid max-w-[920px] gap-6 text-center"
+        initial="hidden"
+        animate="show"
+        variants={{ show: { transition: { staggerChildren: 0.08 } } }}
+      >
+        <motion.p
+          variants={fadeUp}
+          className="mx-auto inline-flex items-center gap-2 rounded-full border border-[rgba(var(--kw-accent-rgb),0.2)] bg-white/65 px-3 py-1 text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)]"
         >
-          <motion.p
-            variants={fadeUp}
-            className="inline-flex items-center gap-2 rounded-full border border-[rgba(var(--kw-accent-rgb),0.18)] bg-white/60 px-3 py-1 text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] backdrop-blur"
-          >
-            <Sparkles size={14} />
-            For students and busy professionals preserving Qur&apos;an memorization
-          </motion.p>
+          <Sparkles size={14} />
+          Install-first Hifz workflow for busy learners
+        </motion.p>
 
-          <motion.h1
-            variants={fadeUp}
-            className="mt-5 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl"
-          >
-            Preserve the Qur&apos;an Allah placed in your heart.
-            <span className="block text-[rgba(var(--kw-accent-rgb),1)]">
-              A learning system made to preserve your Hifz, even with a busy life.
-            </span>
-          </motion.h1>
+        <motion.h1
+          variants={fadeUp}
+          className="mx-auto max-w-[11ch] text-balance font-[family-name:var(--font-kw-display)] text-[clamp(2.5rem,7vw,4.5rem)] leading-[0.92] tracking-tight text-[color:var(--kw-ink)]"
+        >
+          Keep your Hifz stable every day.
+        </motion.h1>
 
-          <motion.p
-            variants={fadeUp}
-            className="mt-5 max-w-xl text-pretty text-base leading-7 text-[color:var(--kw-muted)]"
-          >
-            Keep a stable daily loop: review first, unlock new ayahs only with strong recall, and continue
-            recitation with built-in Qur&apos;an tools.
-          </motion.p>
+        <motion.p
+          variants={fadeUp}
+          className="mx-auto max-w-[56ch] text-pretty text-base leading-7 text-[color:var(--kw-muted)] md:text-lg"
+        >
+          Hifzer gives you one clear daily flow: review first, unlock new only when recall is strong,
+          and keep recitation progress in sync.
+        </motion.p>
 
-          <motion.div variants={fadeUp} className="mt-5 grid max-w-xl gap-2 sm:grid-cols-2">
-            {HERO_BULLETS.map((tab) => (
-              <span
-                key={tab}
-                className="rounded-2xl border border-[color:var(--kw-border-2)] bg-white/75 px-3 py-2 text-center text-xs font-semibold text-[color:var(--kw-ink-2)]"
-              >
-                {tab}
-              </span>
-            ))}
-          </motion.div>
-
-          <motion.div variants={fadeUp} className="mt-7 flex flex-wrap items-center gap-3">
+        <motion.div variants={fadeUp} className="mt-1 flex flex-wrap items-center justify-center gap-3">
+          {primaryIntent === "signup" ? (
             <Button asChild size="lg">
-              <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
-                Start your first session <ArrowRight size={18} />
+              <PublicAuthLink
+                signedInHref="/today"
+                signedOutHref="/signup"
+                onClick={() => {
+                  trackGaEvent("landing.secondary_start_free_click", { placement: "hero-primary" });
+                }}
+              >
+                Start free in browser <ArrowRight size={18} />
               </PublicAuthLink>
             </Button>
+          ) : (
             <Button
               type="button"
               size="lg"
-              variant="secondary"
               onClick={() => {
                 void onInstallNow();
               }}
-              className="w-full !whitespace-normal sm:w-auto"
             >
               <InstallIcon size={18} />
               Add to Home Screen now
             </Button>
-          </motion.div>
-
-          <motion.div variants={fadeUp} className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-            <a
-              href="#install-guide-android"
-              className="font-medium text-[color:var(--kw-muted)] underline underline-offset-2 hover:text-[color:var(--kw-ink)]"
-            >
-              How to add on Android
-            </a>
-            <a
-              href="#install-guide-iphone"
-              className="font-medium text-[color:var(--kw-muted)] underline underline-offset-2 hover:text-[color:var(--kw-ink)]"
-            >
-              How to add on iPhone
-            </a>
-          </motion.div>
-
-          <motion.div
-            variants={fadeUp}
-            className="mt-3 grid max-w-xl gap-2 sm:grid-cols-2"
-          >
-            <div
-              id="install-guide-android"
-              className="rounded-2xl border border-[color:var(--kw-border-2)] bg-white/75 p-3 text-xs leading-6 text-[color:var(--kw-ink-2)]"
-            >
-              <p className="font-semibold text-[color:var(--kw-ink)]">Android</p>
-              <p>Open Chrome/Edge menu (three dots), then tap Add to Home screen or Install app.</p>
-            </div>
-            <div
-              id="install-guide-iphone"
-              className="rounded-2xl border border-[color:var(--kw-border-2)] bg-white/75 p-3 text-xs leading-6 text-[color:var(--kw-ink-2)]"
-            >
-              <p className="font-semibold text-[color:var(--kw-ink)]">iPhone (Safari)</p>
-              <p>Tap Share, choose Add to Home Screen, then tap Add in the top-right.</p>
-            </div>
-          </motion.div>
-
-          <motion.div
-            variants={fadeUp}
-            className="mt-5 max-w-xl rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.08)] p-3"
-          >
-            <p className="flex items-center gap-2 text-sm font-semibold text-[color:var(--kw-ink)]">
-              <Star size={14} className="text-[rgba(var(--kw-accent-rgb),1)]" />
-              &ldquo;The daily flow removed guesswork and fixed my revision consistency in two weeks.&rdquo;
-            </p>
-            <p className="mt-1 text-xs text-[color:var(--kw-muted)]">Usman A. • Part-time learner</p>
-          </motion.div>
+          )}
         </motion.div>
 
-        <div className="relative md:translate-y-2">
-          <div className="absolute -inset-6 -z-10 rounded-[32px] bg-[radial-gradient(closest-side,rgba(var(--kw-accent-rgb),0.1),transparent_68%)] blur-2xl" />
-          <Card className="relative overflow-hidden border border-[color:var(--kw-border-2)] bg-white/85 shadow-[var(--kw-shadow-soft)]">
-            <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-[rgba(10,138,119,0.1)] blur-3xl kw-float" />
-            <div className="pointer-events-none absolute -bottom-12 -left-10 h-56 w-56 rounded-full bg-[rgba(234,88,12,0.08)] blur-3xl kw-float" />
+        <motion.div variants={fadeUp}>
+          <PublicAuthLink
+            signedInHref="/today"
+            signedOutHref="/signup"
+            onClick={() => {
+              trackGaEvent("landing.secondary_start_free_click", { placement: "hero-secondary" });
+            }}
+            className="text-sm font-semibold text-[color:var(--kw-muted)] underline underline-offset-2 transition hover:text-[color:var(--kw-ink)]"
+          >
+            Start free in browser
+          </PublicAuthLink>
+        </motion.div>
 
-            <CardHeader>
-              <div>
-                <CardTitle>Today&apos;s plan</CardTitle>
-                <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
-                  Balanced practice - 18 minutes
-                </p>
-              </div>
-              <span className="rounded-full border border-[rgba(10,138,119,0.26)] bg-[rgba(10,138,119,0.10)] px-2.5 py-1 text-xs font-semibold text-[color:var(--kw-teal-800)]">
-                Ready
-              </span>
-            </CardHeader>
-
-            <div className="mt-4 grid gap-3">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                    Retention
-                  </p>
-                  <CardKpi>
-                    <p className="font-[family-name:var(--font-kw-display)] text-3xl tracking-tight text-[color:var(--kw-ink)]">
-                      82%
-                    </p>
-                    <DonutProgress
-                      value={donutReady ? 0.82 : 0}
-                      size={44}
-                      className="kw-donut-animate"
-                    />
-                  </CardKpi>
-                </div>
-                <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                    Streak
-                  </p>
-                  <CardKpi>
-                    <p className="font-[family-name:var(--font-kw-display)] text-3xl tracking-tight text-[color:var(--kw-ink)]">
-                      9
-                    </p>
-                    <div className="w-28">
-                      <HeatStrip
-                        days={streakDays}
-                        tone="brand"
-                        ariaLabel="Practice streak"
-                        animate
-                      />
-                    </div>
-                  </CardKpi>
-                </div>
-              </div>
-
-              <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                  Flow
-                </p>
-                <ul className="mt-2 space-y-2 text-sm">
-                  {[
-                    { t: "New", c: "brand", title: "New memorization", meta: "Small guided ayah set" },
-                    { t: "Recent", c: "accent", title: "Recent review", meta: "Due first in every session" },
-                    { t: "Long-term", c: "warn", title: "Long-term review", meta: "Rotating retention queue" },
-                    { t: "Repair", c: "neutral", title: "Weak links", meta: "Fix transition trouble spots" },
-                  ].map((s, i) => (
-                    <motion.li
-                      key={s.title}
-                      initial={reduceMotion ? { opacity: 1, x: 0 } : { opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: reduceMotion ? 0 : 0.4, delay: reduceMotion ? 0 : 1.2 + i * 0.15 }}
-                      className="flex items-start justify-between gap-3 rounded-2xl border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-2"
-                    >
-                      <div>
-                        <p className="font-semibold text-[color:var(--kw-ink)]">{s.title}</p>
-                        <p className="mt-0.5 text-xs text-[color:var(--kw-muted)]">{s.meta}</p>
-                      </div>
-                      <span
-                        className={clsx(
-                          "shrink-0 rounded-full border px-2 py-1 text-xs font-semibold",
-                          s.c === "brand"
-                            ? "border-[rgba(10,138,119,0.26)] bg-[rgba(10,138,119,0.12)] text-[color:var(--kw-teal-800)]"
-                            : s.c === "accent"
-                              ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-                              : s.c === "warn"
-                                ? "border-[rgba(234,88,12,0.26)] bg-[rgba(234,88,12,0.12)] text-[color:var(--kw-ember-600)]"
-                                : "border-[color:var(--kw-border-2)] bg-white/75 text-[color:var(--kw-ink-2)]",
-                        )}
-                      >
-                        {s.t}
-                      </span>
-                    </motion.li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </Card>
-        </div>
-      </div>
-
-      <div className="pointer-events-none absolute -bottom-24 left-1/2 h-[260px] w-[720px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(10,138,119,0.18),transparent_68%)] blur-3xl" />
+        {!reduceMotion ? (
+          <motion.p variants={fadeUp} className="text-xs text-[color:var(--kw-faint)]">
+            Works on Android and iPhone with home-screen install.
+          </motion.p>
+        ) : null}
+      </motion.div>
     </section>
   );
 }

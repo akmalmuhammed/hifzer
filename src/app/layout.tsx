@@ -4,7 +4,6 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { AppProviders } from "@/components/providers/app-providers";
 import { InstallAppBanner } from "@/components/pwa/install-app-banner";
 import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
-import { PublicBetaBanner } from "@/components/site/public-beta-banner";
 import { GoogleAnalytics } from "@/components/telemetry/google-analytics";
 import { clerkAuthRoutes } from "@/lib/auth-redirects";
 import { clerkEnabled } from "@/lib/clerk-config";
@@ -107,7 +106,6 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        <PublicBetaBanner />
         {authEnabled ? (
           <ClerkProvider
             signInUrl={clerkAuthRoutes.signInUrl}

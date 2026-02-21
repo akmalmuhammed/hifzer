@@ -22,7 +22,7 @@ export function WhyItWorks() {
             See how we compare
           </TrackedLink>
           <TrackedLink
-            href="/"
+            href="/legal/sources"
             telemetryName="landing.why.science"
             className="font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline"
           >

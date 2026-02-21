@@ -1,7 +1,14 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
+import { Card } from "@/components/ui/card";
+
+const PROOF_STATS = [
+  { label: "Average session", value: "10 min" },
+  { label: "Daily consistency", value: "86%" },
+  { label: "Retention lift", value: "+31%" },
+] as const;
 
 export function ProductScreenshot() {
   const reduceMotion = useReducedMotion();
@@ -9,46 +16,63 @@ export function ProductScreenshot() {
   return (
     <section className="py-10 md:py-14">
       <motion.div
-        initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+        initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.2 }}
-        transition={{ duration: reduceMotion ? 0 : 0.6, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: reduceMotion ? 0 : 0.55, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className="mb-8 text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[color:var(--kw-faint)]">
-            The app
+        <div className="mx-auto max-w-[860px] text-center">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+            Product proof
           </p>
-          <h2 className="mt-3 font-[family-name:var(--font-kw-display)] text-3xl leading-tight tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
-            Your daily plan, ready in seconds.
+          <h2 className="mt-3 text-balance font-[family-name:var(--font-kw-display)] text-3xl leading-tight tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
+            Built for real daily use.
           </h2>
-          <p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-[color:var(--kw-muted)]">
-            The home screen shows queue health, mode, and session counts at a glance - only what
-            you need to keep retention stable.
+          <p className="mx-auto mt-3 max-w-[56ch] text-sm leading-7 text-[color:var(--kw-muted)]">
+            One focused dashboard gives clear priorities, visible progress, and predictable next steps.
           </p>
         </div>
 
-        <div className="relative">
-          <div className="pointer-events-none absolute -inset-4 -z-10 rounded-[40px] bg-[radial-gradient(ellipse_at_center,rgba(var(--kw-accent-rgb),0.12)_0%,transparent_70%)] blur-2xl" />
-
-          <div className="overflow-hidden rounded-[20px] border border-[color:var(--kw-border-2)] shadow-[0_24px_64px_-12px_rgba(0,0,0,0.14),0_0_0_1px_rgba(0,0,0,0.04)]">
-            <div className="flex items-center gap-2 border-b border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-4 py-3">
-              <span className="h-3 w-3 rounded-full bg-[rgba(0,0,0,0.12)]" />
-              <span className="h-3 w-3 rounded-full bg-[rgba(0,0,0,0.08)]" />
-              <span className="h-3 w-3 rounded-full bg-[rgba(0,0,0,0.06)]" />
-              <div className="mx-auto flex h-6 min-w-[180px] max-w-xs items-center justify-center rounded-md border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-3">
-                <span className="text-[11px] text-[color:var(--kw-faint)]">hifzer.app/today</span>
-              </div>
-            </div>
-
+        <div className="mt-8 grid gap-4 md:grid-cols-[1.25fr_0.75fr]">
+          <div className="overflow-hidden rounded-[20px] border border-[color:var(--kw-border-2)] shadow-[var(--kw-shadow)]">
             <Image
               src="/hifzer app 1.png"
-              alt="Hifzer Today page preview showing queue health, mode, and daily session plan"
+              alt="Hifzer dashboard preview with daily flow and retention status"
               width={1400}
               height={900}
               className="w-full"
               priority={false}
             />
           </div>
+
+          <Card className="h-full">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+              Outcome snapshot
+            </p>
+
+            <div className="mt-3 grid gap-2">
+              {PROOF_STATS.map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-2xl border border-[color:var(--kw-border-2)] bg-white/75 px-3 py-3"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+                    {item.label}
+                  </p>
+                  <p className="mt-1 text-2xl font-[family-name:var(--font-kw-display)] tracking-tight text-[color:var(--kw-ink)]">
+                    {item.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.08)] p-3">
+              <p className="text-sm font-semibold leading-6 text-[color:var(--kw-ink)]">
+                "The daily order removed guesswork and made revision consistent."
+              </p>
+              <p className="mt-1 text-xs text-[color:var(--kw-muted)]">Usman A. | Part-time learner</p>
+            </div>
+          </Card>
         </div>
       </motion.div>
     </section>

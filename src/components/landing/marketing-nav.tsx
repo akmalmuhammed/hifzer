@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const LINKS = [
-  { href: "/", label: "How it works" },
   { href: "/compare", label: "Compare" },
 ] as const;
 
