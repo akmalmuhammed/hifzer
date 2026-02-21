@@ -245,8 +245,8 @@ export function StreakClient() {
     <div className="space-y-6">
       <PageHeader
         eyebrow="Streak"
-        title="Streak"
-        subtitle="Calendar-style momentum tracking from your daily recitation activity."
+        title="Small daily deeds. Lasting reward."
+        subtitle="Protect your chain with consistency, not intensity."
         right={
           <div className="flex items-center gap-2">
             <Link href="/hifz">
@@ -260,6 +260,9 @@ export function StreakClient() {
           </div>
         }
       />
+      <p className="inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-1 text-xs font-semibold text-[color:var(--kw-faint)]">
+        Source: Sahih al-Bukhari 6464
+      </p>
 
       {loading ? (
         <Card>

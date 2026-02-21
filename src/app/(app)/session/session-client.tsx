@@ -1115,12 +1115,8 @@ export function SessionClient() {
             <span className="text-[color:var(--kw-muted)]">{run.state.mode}</span>
           </span>
         }
-        title={stepTitle(currentStep)}
-        subtitle={
-          quickReviewMode
-            ? "Quick review-only run for due items."
-            : stepSummary(currentStep)
-        }
+        title="Show up. Recite. Retain."
+        subtitle="Every ayah you hold raises your rank."
         right={
           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
             <Pill tone="neutral">{progressText}</Pill>
@@ -1129,6 +1125,12 @@ export function SessionClient() {
           </div>
         }
       />
+      <p className="inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-1 text-xs font-semibold text-[color:var(--kw-faint)]">
+        Source: Sunan Abi Dawud 1464
+      </p>
+      <p className="text-sm text-[color:var(--kw-muted)]">
+        {quickReviewMode ? "Quick review-only run for due items." : stepSummary(currentStep)}
+      </p>
 
       <SessionFlowTutorial surface="session" />
 

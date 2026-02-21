@@ -21,11 +21,13 @@ export default function QuranGlossaryPage() {
       <div className="mt-6">
         <Pill tone="neutral">Qur&apos;an Library</Pill>
         <h1 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
-          Qur&apos;anic glossary + semantic search.
+          Seek meaning. Walk the path of knowledge.
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
-          Search where words, ideas, and themes appear in the Qur&apos;an. Results include ayah references, Arabic text,
-          and translation.
+          Every term you learn is a step Allah rewards.
+        </p>
+        <p className="mt-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-1 text-xs font-semibold text-[color:var(--kw-faint)]">
+          Source: Sahih Muslim 2699a
         </p>
         <div className="mt-4">
           <QuranGlossaryHeaderHint />

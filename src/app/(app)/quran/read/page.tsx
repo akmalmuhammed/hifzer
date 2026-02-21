@@ -263,12 +263,13 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
       <div className="mt-6">
         <Pill tone="neutral">Qur&apos;an Reader</Pill>
         <h1 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
-          Read with filters + view modes.
+          Recite the Qur&apos;an. It will intercede for you.
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
-          {anonymous
-            ? "Anonymous window is active. Progress and streak events are not tracked."
-            : "Tracking mode is active. Your compact reading position updates from what you read."}
+          Return daily, and let every ayah become your witness.
+        </p>
+        <p className="mt-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-1 text-xs font-semibold text-[color:var(--kw-faint)]">
+          Source: Sahih Muslim 804a
         </p>
       </div>
 
