@@ -431,11 +431,9 @@ export function SessionClient() {
     setLoading(true);
     setError(null);
     try {
-      await flushPendingSync();
-      const [res] = await Promise.all([
-        fetch("/api/session/start", { method: "POST" }),
-        loadLearningLanes(),
-      ]);
+      void flushPendingSync();
+      const res = await fetch("/api/session/start", { method: "POST" });
+      void loadLearningLanes();
       const payload = (await res.json()) as SessionStartPayload & { error?: string };
       if (!res.ok) {
         throw new Error(payload.error || "Failed to start Hifz.");

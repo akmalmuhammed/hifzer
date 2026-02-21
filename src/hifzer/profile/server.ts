@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import type {
   PlanBias,
   Prisma,
@@ -303,9 +304,13 @@ export async function getOrCreateUserProfile(clerkUserId: string): Promise<UserP
   }
 }
 
-export async function getProfileSnapshot(clerkUserId: string): Promise<ProfileSnapshot | null> {
+const getProfileSnapshotCached = cache(async (clerkUserId: string): Promise<ProfileSnapshot | null> => {
   const row = await getOrCreateUserProfile(clerkUserId);
   return row ? toSnapshot(row) : null;
+});
+
+export async function getProfileSnapshot(clerkUserId: string): Promise<ProfileSnapshot | null> {
+  return getProfileSnapshotCached(clerkUserId);
 }
 
 export async function saveStartPoint(clerkUserId: string, activeSurahNumber: number, cursorAyahId: number) {
