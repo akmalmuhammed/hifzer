@@ -72,22 +72,25 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
           className="mx-auto inline-flex items-center gap-2 rounded-full border border-[rgba(var(--kw-accent-rgb),0.2)] bg-white/65 px-3 py-1 text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)]"
         >
           <Sparkles size={14} />
-          Install-first Hifz workflow for busy learners
+          Daily Qur&apos;an rhythm for steady hearts
         </motion.p>
 
         <motion.h1
           variants={fadeUp}
           className="kw-marketing-display kw-gradient-headline mx-auto max-w-[11ch] text-balance text-[clamp(2.5rem,7vw,4.5rem)] leading-[0.9]"
         >
-          Keep your Hifz stable every day.
+          Recite the Qur&apos;an. It will intercede for you.
         </motion.h1>
 
         <motion.p
           variants={fadeUp}
           className="mx-auto max-w-[56ch] text-pretty text-base leading-7 text-[color:var(--kw-muted)] md:text-lg"
         >
-          Hifzer gives you one clear daily flow: review first, unlock new only when recall is strong,
-          and keep recitation progress in sync.
+          Build a clear daily Hifz flow that protects what you memorized and keeps your recitation
+          consistent, even in a busy schedule.
+          <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
+            Sahih Muslim 804a
+          </span>
         </motion.p>
 
         <motion.div variants={fadeUp} className="mt-1 flex flex-wrap items-center justify-center gap-3">

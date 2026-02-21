@@ -26,10 +26,14 @@ export function ProductScreenshot() {
             Product proof
           </p>
           <h2 className="kw-marketing-display kw-gradient-headline mt-3 text-balance text-3xl leading-tight sm:text-4xl">
-            Built for real daily use.
+            Your effort is never wasted.
           </h2>
           <p className="mx-auto mt-3 max-w-[56ch] text-sm leading-7 text-[color:var(--kw-muted)]">
-            One focused dashboard gives clear priorities, visible progress, and predictable next steps.
+            Even difficult recitation is rewarded. Hifzer gives one focused dashboard to keep your
+            daily effort consistent.
+            <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
+              Sahih Muslim 798a
+            </span>
           </p>
         </div>
 
@@ -68,9 +72,9 @@ export function ProductScreenshot() {
 
             <div className="mt-4 rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.08)] p-3">
               <p className="text-sm font-semibold leading-6 text-[color:var(--kw-ink)]">
-                "The daily order removed guesswork and made revision consistent."
+                &ldquo;The one who recites and finds difficulty has two rewards.&rdquo;
               </p>
-              <p className="mt-1 text-xs text-[color:var(--kw-muted)]">Usman A. | Part-time learner</p>
+              <p className="mt-1 text-xs text-[color:var(--kw-muted)]">Sahih Muslim 798a</p>
             </div>
           </Card>
         </div>

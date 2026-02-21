@@ -25,9 +25,9 @@ export default function QuranGlossaryPage() {
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
           Every term you learn is a step Allah rewards.
-        </p>
-        <p className="mt-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-1 text-xs font-semibold text-[color:var(--kw-faint)]">
-          Source: Sahih Muslim 2699a
+          <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
+            Sahih Muslim 2699a
+          </span>
         </p>
         <div className="mt-4">
           <QuranGlossaryHeaderHint />

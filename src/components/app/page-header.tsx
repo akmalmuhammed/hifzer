@@ -4,7 +4,7 @@ import clsx from "clsx";
 export function PageHeader(props: {
   eyebrow?: ReactNode;
   title: string;
-  subtitle?: string;
+  subtitle?: ReactNode;
   right?: ReactNode;
   className?: string;
 }) {

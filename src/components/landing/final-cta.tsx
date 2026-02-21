@@ -63,10 +63,13 @@ export function FinalCta() {
             Install and begin
           </p>
           <h2 className="kw-marketing-display kw-gradient-headline mt-3 text-balance text-4xl leading-[1.02] sm:text-5xl">
-            Add Hifzer to your home screen and start today.
+            Small daily deeds. Lasting reward.
           </h2>
           <p className="mx-auto mt-4 max-w-[56ch] text-base leading-7 text-[color:var(--kw-muted)]">
-            Keep your daily Hifz flow one tap away. No clutter, just a consistent rhythm.
+            Make Hifz one tap away and protect your consistency every day.
+            <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
+              Sahih al-Bukhari 6464
+            </span>
           </p>
 
           <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">

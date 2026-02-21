@@ -64,11 +64,14 @@ export default async function QuranIndexPage() {
       <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
-            Read the Qur&apos;an with focus.
-            <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Resume instantly or open an anonymous window.</span>
+            Recite the Qur&apos;an. It will intercede for you.
+            <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Keep one clean path for daily recitation.</span>
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
-            Keep your reading flow clean: one primary resume path, one private path, smart bookmarks, and quick jump controls.
+            Resume exactly where you stopped, use private mode when needed, and keep your read progress consistent.
+            <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
+              Sahih Muslim 804a
+            </span>
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Link

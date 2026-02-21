@@ -1116,7 +1116,14 @@ export function SessionClient() {
           </span>
         }
         title="Show up. Recite. Retain."
-        subtitle="Every ayah you hold raises your rank."
+        subtitle={
+          <>
+            Every ayah you hold raises your rank.
+            <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
+              Sunan Abi Dawud 1464
+            </span>
+          </>
+        }
         right={
           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
             <Pill tone="neutral">{progressText}</Pill>
@@ -1125,9 +1132,6 @@ export function SessionClient() {
           </div>
         }
       />
-      <p className="inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-1 text-xs font-semibold text-[color:var(--kw-faint)]">
-        Source: Sunan Abi Dawud 1464
-      </p>
       <p className="text-sm text-[color:var(--kw-muted)]">
         {quickReviewMode ? "Quick review-only run for due items." : stepSummary(currentStep)}
       </p>

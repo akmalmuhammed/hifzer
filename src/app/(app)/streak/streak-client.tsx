@@ -246,7 +246,14 @@ export function StreakClient() {
       <PageHeader
         eyebrow="Streak"
         title="Small daily deeds. Lasting reward."
-        subtitle="Protect your chain with consistency, not intensity."
+        subtitle={
+          <>
+            Protect your chain with consistency, not intensity.
+            <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
+              Sahih al-Bukhari 6464
+            </span>
+          </>
+        }
         right={
           <div className="flex items-center gap-2">
             <Link href="/hifz">
@@ -260,9 +267,6 @@ export function StreakClient() {
           </div>
         }
       />
-      <p className="inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-1 text-xs font-semibold text-[color:var(--kw-faint)]">
-        Source: Sahih al-Bukhari 6464
-      </p>
 
       {loading ? (
         <Card>
