@@ -407,6 +407,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
                   ayahId={compact.current.id}
                   className="w-full sm:w-auto"
                   streakTrackSource={anonymous ? undefined : "quran_browse"}
+                  autoPlayPrefKey={anonymous ? undefined : "hifzer_quran_autoplay_v1"}
                   trailingControl={
                     <ReaderBookmarkControl
                       ayahId={compact.current.id}

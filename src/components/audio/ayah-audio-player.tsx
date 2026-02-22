@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import clsx from "clsx";
-import { Pause, Play, Repeat2, Zap } from "lucide-react";
+import { Forward, Pause, Play, Repeat2, Zap } from "lucide-react";
 import { audioUrl } from "@/hifzer/audio/config";
 import { claimSinglePlayback, releaseSinglePlayback } from "@/components/audio/single-playback";
 
@@ -24,6 +24,7 @@ export function AyahAudioPlayer(props: {
   className?: string;
   streakTrackSource?: "quran_browse";
   trailingControl?: ReactNode;
+  autoPlayPrefKey?: string;
 }) {
   const src = useMemo(
     () => audioUrl(props.reciterId ?? "default", props.ayahId),
@@ -34,12 +35,24 @@ export function AyahAudioPlayer(props: {
   const repeatLeftRef = useRef(0);
   const streakMarkedRef = useRef(false);
   const isScrubbingRef = useRef(false);
+  const speedRef = useRef(1);
+  const repeatCountRef = useRef(1);
 
   const [playing, setPlaying] = useState(false);
   const [repeatCount, setRepeatCount] = useState(1);
   const [speedIndex, setSpeedIndex] = useState(1);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [autoPlayEnabled, setAutoPlayEnabled] = useState(() => {
+    if (typeof window === "undefined" || !props.autoPlayPrefKey) {
+      return false;
+    }
+    try {
+      return window.localStorage.getItem(props.autoPlayPrefKey) === "1";
+    } catch {
+      return false;
+    }
+  });
 
   const speed = SPEEDS[speedIndex] ?? 1;
   const progress01 = duration > 0 ? Math.max(0, Math.min(1, currentTime / duration)) : 0;
@@ -128,6 +141,34 @@ export function AyahAudioPlayer(props: {
     audio.playbackRate = speed;
   }, [speed]);
 
+  useEffect(() => {
+    speedRef.current = speed;
+  }, [speed]);
+
+  useEffect(() => {
+    repeatCountRef.current = repeatCount;
+  }, [repeatCount]);
+
+  useEffect(() => {
+    if (!props.autoPlayPrefKey || !autoPlayEnabled || !src) {
+      return;
+    }
+    const audio = audioRef.current;
+    if (!audio) {
+      return;
+    }
+
+    claimSinglePlayback(audio);
+    repeatLeftRef.current = Math.max(0, repeatCountRef.current - 1);
+    audio.playbackRate = speedRef.current;
+    audio.currentTime = 0;
+    void audio.play().then(() => {
+      void markStreakRecitation();
+    }).catch(() => {
+      setPlaying(false);
+    });
+  }, [autoPlayEnabled, markStreakRecitation, props.autoPlayPrefKey, src]);
+
   async function onTogglePlayback() {
     const audio = audioRef.current;
     if (!audio || !src) {
@@ -170,23 +211,39 @@ export function AyahAudioPlayer(props: {
 
   const disabled = !src;
 
+  function toggleAutoPlay() {
+    const prefKey = props.autoPlayPrefKey;
+    if (!prefKey) {
+      return;
+    }
+    setAutoPlayEnabled((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem(prefKey, next ? "1" : "0");
+      } catch {
+        // ignore storage write failures
+      }
+      return next;
+    });
+  }
+
   return (
     <div
       className={clsx(
-        "rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 shadow-[var(--kw-shadow-soft)]",
+        "rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-2 shadow-[var(--kw-shadow-soft)] sm:px-3",
         props.className,
       )}
     >
       <audio ref={audioRef} src={src ?? undefined} preload="none" />
 
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:justify-between">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           <button
             type="button"
             onClick={() => void onTogglePlayback()}
             disabled={disabled}
             className={clsx(
-              "grid h-9 w-9 place-items-center rounded-2xl border shadow-[var(--kw-shadow-soft)] transition",
+              "grid h-8 w-8 place-items-center rounded-2xl border shadow-[var(--kw-shadow-soft)] transition sm:h-9 sm:w-9",
               disabled
                 ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]"
                 : "border-[rgba(43,75,255,0.22)] bg-[rgba(43,75,255,0.10)] text-[rgba(31,54,217,1)] hover:bg-[rgba(43,75,255,0.14)]",
@@ -210,7 +267,7 @@ export function AyahAudioPlayer(props: {
                 </span>
               )}
             </div>
-            <div className="relative mt-1 w-44">
+            <div className="relative mt-1 w-28 sm:w-44">
               <div className="h-1.5 overflow-hidden rounded-full bg-black/[0.06]">
                 <div
                   className="h-full rounded-full bg-[rgba(31,54,217,0.75)] transition-[width]"
@@ -243,13 +300,13 @@ export function AyahAudioPlayer(props: {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center justify-end gap-1.5 sm:w-auto sm:gap-2">
           <button
             type="button"
             disabled={disabled}
             onClick={() => setRepeatCount((v) => (v >= 10 ? 1 : v + 1))}
             className={clsx(
-              "inline-flex items-center gap-2 rounded-2xl border px-2.5 py-2 text-xs font-semibold shadow-[var(--kw-shadow-soft)] transition",
+              "inline-flex items-center gap-1.5 rounded-2xl border px-2 py-1.5 text-[11px] font-semibold shadow-[var(--kw-shadow-soft)] transition sm:gap-2 sm:px-2.5 sm:py-2 sm:text-xs",
               disabled
                 ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]"
                 : "border-[color:var(--kw-border-2)] bg-white/80 text-[color:var(--kw-ink)] hover:bg-white",
@@ -266,7 +323,7 @@ export function AyahAudioPlayer(props: {
             disabled={disabled}
             onClick={() => setSpeedIndex((v) => (v + 1) % SPEEDS.length)}
             className={clsx(
-              "inline-flex items-center gap-2 rounded-2xl border px-2.5 py-2 text-xs font-semibold shadow-[var(--kw-shadow-soft)] transition",
+              "inline-flex items-center gap-1.5 rounded-2xl border px-2 py-1.5 text-[11px] font-semibold shadow-[var(--kw-shadow-soft)] transition sm:gap-2 sm:px-2.5 sm:py-2 sm:text-xs",
               disabled
                 ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]"
                 : "border-[color:var(--kw-border-2)] bg-white/80 text-[color:var(--kw-ink)] hover:bg-white",
@@ -277,6 +334,27 @@ export function AyahAudioPlayer(props: {
             <Zap size={14} />
             <span>{speed}x</span>
           </button>
+
+          {props.autoPlayPrefKey ? (
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={toggleAutoPlay}
+              className={clsx(
+                "inline-flex items-center gap-1.5 rounded-2xl border px-2 py-1.5 text-[11px] font-semibold shadow-[var(--kw-shadow-soft)] transition sm:gap-2 sm:px-2.5 sm:py-2 sm:text-xs",
+                disabled
+                  ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]"
+                  : autoPlayEnabled
+                    ? "border-[rgba(var(--kw-accent-rgb),0.30)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)] hover:bg-[rgba(var(--kw-accent-rgb),0.18)]"
+                    : "border-[color:var(--kw-border-2)] bg-white/80 text-[color:var(--kw-ink)] hover:bg-white",
+              )}
+              aria-label={autoPlayEnabled ? "Auto play next is on" : "Auto play next is off"}
+              title={autoPlayEnabled ? "Auto play next is on" : "Auto play next is off"}
+            >
+              <Forward size={14} />
+              <span>{autoPlayEnabled ? "Auto on" : "Auto off"}</span>
+            </button>
+          ) : null}
 
           {props.trailingControl ? <div className="shrink-0">{props.trailingControl}</div> : null}
         </div>
