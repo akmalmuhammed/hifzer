@@ -72,7 +72,7 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
           className="mx-auto inline-flex items-center gap-2 rounded-full border border-[rgba(var(--kw-accent-rgb),0.2)] bg-white/65 px-3 py-1 text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)]"
         >
           <Sparkles size={14} />
-          Daily Qur&apos;an rhythm for steady hearts
+          Authentic daily rhythm for recitation and retention
         </motion.p>
 
         <motion.h1
@@ -86,10 +86,13 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
           variants={fadeUp}
           className="mx-auto max-w-[56ch] text-pretty text-base leading-7 text-[color:var(--kw-muted)] md:text-lg"
         >
-          Build a clear daily Hifz flow that protects what you memorized and keeps your recitation
-          consistent, even in a busy schedule.
+          Return to the Book every day. In the remembrance of Allah, hearts find rest, and
+          consistent recitation keeps your Hifz steady.
           <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
             Sahih Muslim 804a
+          </span>
+          <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
+            Qur&apos;an 13:28
           </span>
         </motion.p>
 

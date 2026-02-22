@@ -4,20 +4,23 @@ import { CardSoft } from "@/components/ui/card";
 const STEPS = [
   {
     step: "01",
-    title: "Start by guarding what you already know",
-    copy: "Review first, so your memorization stays rooted before adding new.",
+    title: "Keep it daily, even if small",
+    copy: "Small daily recitation builds a lifelong bond with the Qur&apos;an.",
+    source: "Sahih al-Bukhari 6464",
     icon: <CheckCircle2 size={18} />,
   },
   {
     step: "02",
-    title: "Repair weak links before they drift",
-    copy: "Prioritize fading ayahs and transitions so gaps do not silently grow.",
+    title: "Learn and teach what you recite",
+    copy: "What you learn deeply and share sincerely stays with you longer.",
+    source: "Sahih al-Bukhari 5027",
     icon: <Clock3 size={18} />,
   },
   {
     step: "03",
-    title: "Advance with small, consistent wins",
-    copy: "New memorization unlocks after quality review so your growth remains stable.",
+    title: "Do not stop when it feels hard",
+    copy: "Difficulty in recitation is not failure; it is reward with perseverance.",
+    source: "Sahih Muslim 798a",
     icon: <ArrowRight size={18} />,
   },
 ] as const;
@@ -30,10 +33,10 @@ export function WhatHifzerDoes() {
           How Hifzer works
         </p>
         <h2 className="kw-marketing-display kw-gradient-headline mt-3 text-balance text-3xl leading-tight sm:text-4xl">
-          The most beloved deeds are the most constant.
+          A recitation rhythm rooted in authentic guidance.
         </h2>
         <p className="mx-auto mt-3 max-w-[56ch] text-sm leading-7 text-[color:var(--kw-muted)]">
-          Consistency beats intensity in daily Hifz.
+          The most beloved deeds to Allah are those done consistently.
           <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
             Sahih al-Bukhari 6464
           </span>
@@ -55,6 +58,11 @@ export function WhatHifzerDoes() {
               {item.title}
             </p>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">{item.copy}</p>
+            <p className="mt-3">
+              <span className="inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
+                {item.source}
+              </span>
+            </p>
           </CardSoft>
         ))}
       </div>

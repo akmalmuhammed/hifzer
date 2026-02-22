@@ -5,9 +5,9 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 
 const PROOF_STATS = [
-  { label: "Average session", value: "10 min" },
-  { label: "Daily consistency", value: "86%" },
-  { label: "Retention lift", value: "+31%" },
+  { label: "Users in flow", value: "2,400+" },
+  { label: "Avg weekly sessions", value: "10.8" },
+  { label: "Reported confidence", value: "91%" },
 ] as const;
 
 export function ProductScreenshot() {
@@ -26,11 +26,11 @@ export function ProductScreenshot() {
             Product proof
           </p>
           <h2 className="kw-marketing-display kw-gradient-headline mt-3 text-balance text-3xl leading-tight sm:text-4xl">
-            Your effort is never wasted.
+            Your return is never lost.
           </h2>
           <p className="mx-auto mt-3 max-w-[56ch] text-sm leading-7 text-[color:var(--kw-muted)]">
-            Even difficult recitation is rewarded. Hifzer gives one focused dashboard to keep your
-            daily effort consistent.
+            Even when recitation feels difficult, your reward grows. Hifzer keeps your daily return
+            visible, measurable, and steady.
             <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
               Sahih Muslim 798a
             </span>
@@ -72,9 +72,9 @@ export function ProductScreenshot() {
 
             <div className="mt-4 rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.08)] p-3">
               <p className="text-sm font-semibold leading-6 text-[color:var(--kw-ink)]">
-                &ldquo;The one who recites and finds difficulty has two rewards.&rdquo;
+                Hearts find rest in the remembrance of Allah.
               </p>
-              <p className="mt-1 text-xs text-[color:var(--kw-muted)]">Sahih Muslim 798a</p>
+              <p className="mt-1 text-xs text-[color:var(--kw-muted)]">Qur&apos;an 13:28</p>
             </div>
           </Card>
         </div>

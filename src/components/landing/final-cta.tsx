@@ -63,10 +63,11 @@ export function FinalCta() {
             Install and begin
           </p>
           <h2 className="kw-marketing-display kw-gradient-headline mt-3 text-balance text-4xl leading-[1.02] sm:text-5xl">
-            Small daily deeds. Lasting reward.
+            Begin with one recitation today.
           </h2>
           <p className="mx-auto mt-4 max-w-[56ch] text-base leading-7 text-[color:var(--kw-muted)]">
-            Make Hifz one tap away and protect your consistency every day.
+            The most beloved deeds are consistent, even when small. Install Hifzer and keep your
+            daily return protected.
             <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
               Sahih al-Bukhari 6464
             </span>
