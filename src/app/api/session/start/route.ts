@@ -15,6 +15,10 @@ export async function POST() {
     const result = await startTodaySession(userId);
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message === "Database not configured.") {
+      return NextResponse.json({ error: "onboarding_required" }, { status: 403 });
+    }
     Sentry.captureException(error, {
       tags: { route: "/api/session/start", method: "POST" },
       user: { id: userId },

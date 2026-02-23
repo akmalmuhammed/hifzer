@@ -28,6 +28,12 @@ export async function GET() {
         : null,
     });
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    // Profile could not be loaded (DB not configured or new user whose profile creation failed).
+    // Signal the client to go to onboarding instead of showing a generic error.
+    if (message === "Database not configured.") {
+      return NextResponse.json({ error: "onboarding_required" }, { status: 403 });
+    }
     Sentry.captureException(error, {
       tags: { route: "/api/session/today", method: "GET" },
       user: { id: userId },

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, CheckCircle2, CornerDownLeft, Link2, PlayCircle, RotateCcw } from "lucide-react";
 import clsx from "clsx";
 import { PageHeader } from "@/components/app/page-header";
@@ -342,6 +342,7 @@ function toEvent(step: Step, input: {
 }
 
 export function SessionClient() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const { userId } = useAuth();
   const progressStorageKey = useMemo(() => sessionProgressStorageKey(userId), [userId]);
@@ -435,6 +436,10 @@ export function SessionClient() {
       const res = await fetch("/api/session/start", { method: "POST" });
       void loadLearningLanes();
       const payload = (await res.json()) as SessionStartPayload & { error?: string };
+      if (res.status === 403 && payload.error === "onboarding_required") {
+        router.replace("/onboarding/welcome");
+        return;
+      }
       if (!res.ok) {
         throw new Error(payload.error || "Failed to start Hifz.");
       }

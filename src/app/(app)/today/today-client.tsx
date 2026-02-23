@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowRight, BookOpenText, ChevronDown, PlayCircle, RefreshCcw } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { SessionFlowTutorial } from "@/components/app/session-flow-tutorial";
@@ -145,6 +146,7 @@ function DetailsSkeleton() {
 /* ---------- Main component ---------- */
 
 export function TodayClient() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<TodayPayload | null>(null);
@@ -170,6 +172,10 @@ export function TodayClient() {
         fetch("/api/profile/learning-lanes", { cache: "no-store" }),
       ]);
       const payload = (await todayRes.json()) as TodayPayload & { error?: string };
+      if (todayRes.status === 403 && payload.error === "onboarding_required") {
+        router.replace("/onboarding/welcome");
+        return;
+      }
       if (!todayRes.ok) {
         throw new Error(payload.error || "Failed to load today state.");
       }

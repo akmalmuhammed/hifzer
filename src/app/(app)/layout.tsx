@@ -27,7 +27,10 @@ export default async function AppGroupLayout({ children }: { children: React.Rea
       profile = null;
     }
 
-    if (dbConfigured() && profile && !profile.onboardingCompleted) {
+    // Redirect to onboarding when:
+    // 1. Profile is null (creation failed or new user with DB error) - safer than rendering broken app
+    // 2. Profile exists but onboarding was never completed
+    if (dbConfigured() && (!profile || !profile.onboardingCompleted)) {
       redirect("/onboarding/welcome");
     }
   }
