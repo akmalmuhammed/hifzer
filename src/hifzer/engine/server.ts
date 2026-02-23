@@ -621,6 +621,47 @@ async function ensureOpenSession(
 
   if (hasSessionModernColumns) {
     if (hasSessionPlanJson) {
+      try {
+        const session = await prisma.session.create({
+          data: {
+            userId: profile.id,
+            status: "OPEN",
+            localDate: state.localDate,
+            mode: state.mode,
+            reviewDebtMinutesAtStart: Math.round(state.reviewDebtMinutes),
+            warmupPassed: state.warmupRequired ? null : true,
+            warmupRetryUsed: false,
+            weeklyGateRequired: state.weeklyGateRequired,
+            weeklyGatePassed: state.weeklyGateRequired ? null : true,
+            newUnlocked: state.newUnlocked,
+            warmupAyahIds: state.queue.warmupAyahIds,
+            reviewAyahIds,
+            newStartAyahId: state.queue.newAyahIds[0] ?? null,
+            newEndAyahId: state.queue.newAyahIds.length
+              ? state.queue.newAyahIds[state.queue.newAyahIds.length - 1]
+              : null,
+            planJson: buildSessionPlanSnapshot(state.localDate, state, steps),
+          },
+          select: {
+            id: true,
+            startedAt: true,
+            localDate: true,
+            mode: true,
+            weeklyGateRequired: true,
+            newUnlocked: true,
+            planJson: true,
+          },
+        });
+        return { session: toOpenSessionRecord(session), state, steps };
+      } catch (error) {
+        if (!looksLikeMissingCoreSchema(error)) {
+          throw error;
+        }
+        // Fallback to legacy session shape below.
+      }
+    }
+
+    try {
       const session = await prisma.session.create({
         data: {
           userId: profile.id,
@@ -639,7 +680,6 @@ async function ensureOpenSession(
           newEndAyahId: state.queue.newAyahIds.length
             ? state.queue.newAyahIds[state.queue.newAyahIds.length - 1]
             : null,
-          planJson: buildSessionPlanSnapshot(state.localDate, state, steps),
         },
         select: {
           id: true,
@@ -648,41 +688,15 @@ async function ensureOpenSession(
           mode: true,
           weeklyGateRequired: true,
           newUnlocked: true,
-          planJson: true,
         },
       });
       return { session: toOpenSessionRecord(session), state, steps };
+    } catch (error) {
+      if (!looksLikeMissingCoreSchema(error)) {
+        throw error;
+      }
+      // Fallback to legacy session shape below.
     }
-
-    const session = await prisma.session.create({
-      data: {
-        userId: profile.id,
-        status: "OPEN",
-        localDate: state.localDate,
-        mode: state.mode,
-        reviewDebtMinutesAtStart: Math.round(state.reviewDebtMinutes),
-        warmupPassed: state.warmupRequired ? null : true,
-        warmupRetryUsed: false,
-        weeklyGateRequired: state.weeklyGateRequired,
-        weeklyGatePassed: state.weeklyGateRequired ? null : true,
-        newUnlocked: state.newUnlocked,
-        warmupAyahIds: state.queue.warmupAyahIds,
-        reviewAyahIds,
-        newStartAyahId: state.queue.newAyahIds[0] ?? null,
-        newEndAyahId: state.queue.newAyahIds.length
-          ? state.queue.newAyahIds[state.queue.newAyahIds.length - 1]
-          : null,
-      },
-      select: {
-        id: true,
-        startedAt: true,
-        localDate: true,
-        mode: true,
-        weeklyGateRequired: true,
-        newUnlocked: true,
-      },
-    });
-    return { session: toOpenSessionRecord(session), state, steps };
   }
 
   const legacySession = await prisma.session.create({

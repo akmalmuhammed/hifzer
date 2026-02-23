@@ -229,11 +229,18 @@ async function upsertProfileCompat(input: {
   const prisma = db();
 
   if (hasQuranLaneColumns) {
-    return prisma.userProfile.upsert({
-      where: { clerkUserId: input.clerkUserId },
-      create: input.buildCreate(true),
-      update: input.buildUpdate(true),
-    });
+    try {
+      return await prisma.userProfile.upsert({
+        where: { clerkUserId: input.clerkUserId },
+        create: input.buildCreate(true),
+        update: input.buildUpdate(true),
+      });
+    } catch (error) {
+      if (!looksLikeMissingCoreSchema(error)) {
+        throw error;
+      }
+      // Drift-safe fallback: use legacy-safe profile shape for first-time users.
+    }
   }
 
   const row = await prisma.userProfile.upsert({
