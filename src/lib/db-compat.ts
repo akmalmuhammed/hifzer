@@ -42,7 +42,15 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
       FROM information_schema.columns
       WHERE table_schema = ${schema}
         AND (
-          (LOWER(table_name) = LOWER('UserProfile') AND LOWER(column_name) IN (LOWER('quranActiveSurahNumber'), LOWER('quranCursorAyahId')))
+          (
+            LOWER(table_name) = LOWER('UserProfile')
+            AND LOWER(column_name) IN (
+              LOWER('quranActiveSurahNumber'),
+              LOWER('quranCursorAyahId'),
+              LOWER('quranTranslationId'),
+              LOWER('quranShowDetails')
+            )
+          )
           OR (
             LOWER(table_name) = LOWER('Session')
             AND LOWER(column_name) IN (
@@ -72,7 +80,10 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
 
     return {
       hasQuranLaneColumns:
-        profileColumns.has("quranactivesurahnumber") && profileColumns.has("qurancursorayahid"),
+        profileColumns.has("quranactivesurahnumber") &&
+        profileColumns.has("qurancursorayahid") &&
+        profileColumns.has("qurantranslationid") &&
+        profileColumns.has("quranshowdetails"),
       hasSessionModernColumns:
         sessionColumns.has("mode") &&
         sessionColumns.has("newunlocked") &&
@@ -188,7 +199,9 @@ export async function ensureCoreSchemaCompatibility(): Promise<void> {
         ADD COLUMN IF NOT EXISTS "plan" "SubscriptionPlan" NOT NULL DEFAULT 'FREE',
         ADD COLUMN IF NOT EXISTS "subscriptionStatus" "SubscriptionStatus",
         ADD COLUMN IF NOT EXISTS "quranActiveSurahNumber" INTEGER,
-        ADD COLUMN IF NOT EXISTS "quranCursorAyahId" INTEGER;
+        ADD COLUMN IF NOT EXISTS "quranCursorAyahId" INTEGER,
+        ADD COLUMN IF NOT EXISTS "quranTranslationId" TEXT NOT NULL DEFAULT 'en.sahih',
+        ADD COLUMN IF NOT EXISTS "quranShowDetails" BOOLEAN NOT NULL DEFAULT true;
       `);
       await prisma.$executeRawUnsafe(`
         UPDATE "UserProfile"

@@ -2,6 +2,10 @@ import { auth } from "@clerk/nextjs/server";
 import * as Sentry from "@sentry/nextjs";
 import type { PlanBias } from "@prisma/client";
 import { NextResponse } from "next/server";
+import {
+  isSupportedQuranTranslationId,
+  type QuranTranslationId,
+} from "@/hifzer/quran/translation-prefs";
 import { saveAssessment } from "@/hifzer/profile/server";
 
 type Payload = {
@@ -10,6 +14,7 @@ type Payload = {
   planBias?: unknown;
   hasTeacher?: unknown;
   timezone?: unknown;
+  quranTranslationId?: unknown;
 };
 
 const VALID_PLAN_BIAS = new Set<PlanBias>(["BALANCED", "RETENTION", "SPEED"]);
@@ -32,6 +37,8 @@ export async function POST(req: Request) {
   const planBias = String(payload.planBias ?? "BALANCED") as PlanBias;
   const hasTeacher = Boolean(payload.hasTeacher);
   const timezone = String(payload.timezone ?? "UTC");
+  const quranTranslationIdRaw = payload.quranTranslationId;
+  let quranTranslationId: QuranTranslationId | undefined;
 
   if (!Number.isFinite(dailyMinutes) || dailyMinutes < 5) {
     return NextResponse.json({ error: "dailyMinutes must be a number >= 5." }, { status: 400 });
@@ -42,6 +49,12 @@ export async function POST(req: Request) {
   if (!VALID_PLAN_BIAS.has(planBias)) {
     return NextResponse.json({ error: "Invalid planBias." }, { status: 400 });
   }
+  if (quranTranslationIdRaw != null) {
+    if (typeof quranTranslationIdRaw !== "string" || !isSupportedQuranTranslationId(quranTranslationIdRaw)) {
+      return NextResponse.json({ error: "Invalid quranTranslationId." }, { status: 400 });
+    }
+    quranTranslationId = quranTranslationIdRaw;
+  }
 
   try {
     const profile = await saveAssessment({
@@ -51,6 +64,7 @@ export async function POST(req: Request) {
       planBias,
       hasTeacher,
       timezone,
+      quranTranslationId,
     });
     return NextResponse.json({ ok: true, profile });
   } catch (error) {

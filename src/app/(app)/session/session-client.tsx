@@ -45,6 +45,10 @@ type SessionStartPayload = {
   sessionId: string;
   startedAt: string;
   localDate: string;
+  preferences?: {
+    quranTranslationId: string;
+    quranShowDetails: boolean;
+  };
   state: {
     mode: "NORMAL" | "CONSOLIDATION" | "CATCH_UP";
     warmupRequired: boolean;
@@ -54,7 +58,7 @@ type SessionStartPayload = {
   };
   steps: Step[];
   translations: {
-    provider: "tanzil.en.sahih";
+    provider: string;
     byAyahId: Record<string, string>;
   };
   ayahTextByAyahId: Record<string, string>;
@@ -466,6 +470,7 @@ export function SessionClient() {
       }
 
       setRun(payload);
+      setShowTranslation(payload.preferences?.quranShowDetails ?? true);
       setStepIndex(nextStepIndex);
       setEvents(nextEvents);
       setStepStartedAt(Date.now());
@@ -478,7 +483,7 @@ export function SessionClient() {
     } finally {
       setLoading(false);
     }
-  }, [flushPendingSync, loadLearningLanes, progressStorageKey, quickReviewMode]);
+  }, [flushPendingSync, loadLearningLanes, progressStorageKey, quickReviewMode, router]);
 
   useEffect(() => {
     void loadRun();
@@ -848,7 +853,19 @@ export function SessionClient() {
         <Button
           type="button"
           variant="secondary"
-          onClick={() => setShowTranslation((v) => !v)}
+          onClick={() =>
+            setShowTranslation((current) => {
+              const next = !current;
+              void fetch("/api/profile/quran-reader-prefs", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ quranShowDetails: next }),
+              }).catch(() => {
+                // Non-blocking: keep in-session toggle even if persistence fails.
+              });
+              return next;
+            })
+          }
           disabled={!showText}
           className="w-full gap-2 sm:w-auto"
         >
@@ -1321,4 +1338,3 @@ export function SessionClient() {
     </div>
   );
 }
-

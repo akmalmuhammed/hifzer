@@ -11,6 +11,7 @@ import type {
 } from "@prisma/client";
 import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
 import { getSurahInfo } from "@/hifzer/quran/lookup.server";
+import { DEFAULT_QURAN_TRANSLATION_ID, type QuranTranslationId } from "@/hifzer/quran/translation-prefs";
 import { ensureCoreSchemaCompatibility, getCoreSchemaCapabilities } from "@/lib/db-compat";
 import { db, dbConfigured } from "@/lib/db";
 
@@ -20,6 +21,7 @@ const DEFAULT_DAILY_MINUTES = 40;
 const DEFAULT_THEME = "standard";
 const DEFAULT_ACCENT = "teal";
 const DEFAULT_RECITER = "default";
+const DEFAULT_QURAN_SHOW_DETAILS = true;
 
 export type ProfileSnapshot = {
   clerkUserId: string;
@@ -46,6 +48,8 @@ export type ProfileSnapshot = {
   cursorAyahId: number;
   quranActiveSurahNumber: number;
   quranCursorAyahId: number;
+  quranTranslationId: string;
+  quranShowDetails: boolean;
   plan: SubscriptionPlan;
   paddleCustomerId: string | null;
   paddleSubscriptionId: string | null;
@@ -112,6 +116,8 @@ function defaultCreateData(clerkUserId: string, input?: { includeQuranLane?: boo
     plan: "FREE" as const,
     quranActiveSurahNumber: activeSurahNumber,
     quranCursorAyahId: cursorAyahId,
+    quranTranslationId: DEFAULT_QURAN_TRANSLATION_ID,
+    quranShowDetails: DEFAULT_QURAN_SHOW_DETAILS,
   };
 }
 
@@ -141,6 +147,8 @@ function toSnapshot(row: UserProfile): ProfileSnapshot {
     cursorAyahId: row.cursorAyahId,
     quranActiveSurahNumber: row.quranActiveSurahNumber,
     quranCursorAyahId: row.quranCursorAyahId,
+    quranTranslationId: row.quranTranslationId,
+    quranShowDetails: row.quranShowDetails,
     plan: row.plan,
     paddleCustomerId: row.paddleCustomerId,
     paddleSubscriptionId: row.paddleSubscriptionId,
@@ -210,6 +218,8 @@ function withCompatDefaults(row: MinimalUserProfileRow): UserProfile {
     rebalanceUntil: null,
     quranActiveSurahNumber: row.activeSurahNumber,
     quranCursorAyahId: row.cursorAyahId,
+    quranTranslationId: DEFAULT_QURAN_TRANSLATION_ID,
+    quranShowDetails: DEFAULT_QURAN_SHOW_DETAILS,
     plan: "FREE",
     paddleCustomerId: null,
     paddleSubscriptionId: null,
@@ -257,6 +267,8 @@ function looksLikeMissingCoreSchema(error: unknown): boolean {
   return (
     message.includes("quranActiveSurahNumber") ||
     message.includes("quranCursorAyahId") ||
+    message.includes("quranTranslationId") ||
+    message.includes("quranShowDetails") ||
     message.includes("planJson") ||
     message.includes("P2021") ||
     message.includes("P2022") ||
@@ -373,6 +385,7 @@ export async function saveAssessment(input: {
   planBias: PlanBias;
   hasTeacher: boolean;
   timezone: string;
+  quranTranslationId?: QuranTranslationId;
 }) {
   if (!dbConfigured()) {
     return null;
@@ -390,6 +403,9 @@ export async function saveAssessment(input: {
       practiceDays,
       planBias: input.planBias,
       ...(hasQuranLaneColumns ? { hasTeacher: input.hasTeacher } : {}),
+      ...(hasQuranLaneColumns && input.quranTranslationId
+        ? { quranTranslationId: input.quranTranslationId }
+        : {}),
       timezone: input.timezone || "UTC",
     }),
     buildUpdate: (hasQuranLaneColumns) => ({
@@ -397,6 +413,9 @@ export async function saveAssessment(input: {
       practiceDays,
       planBias: input.planBias,
       ...(hasQuranLaneColumns ? { hasTeacher: input.hasTeacher } : {}),
+      ...(hasQuranLaneColumns && input.quranTranslationId
+        ? { quranTranslationId: input.quranTranslationId }
+        : {}),
       timezone: input.timezone || "UTC",
     }),
   });
@@ -475,6 +494,48 @@ export async function saveDisplayPrefs(input: {
       themePreset: input.themePreset,
       accentPreset: input.accentPreset,
     }),
+  });
+  return toSnapshot(row);
+}
+
+export async function saveLanguagePrefs(input: {
+  clerkUserId: string;
+  quranTranslationId: QuranTranslationId;
+}) {
+  if (!dbConfigured()) {
+    return null;
+  }
+  const row = await upsertProfileCompat({
+    clerkUserId: input.clerkUserId,
+    buildCreate: (hasQuranLaneColumns) => ({
+      ...defaultCreateData(input.clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
+      ...(hasQuranLaneColumns ? { quranTranslationId: input.quranTranslationId } : {}),
+    }),
+    buildUpdate: (hasQuranLaneColumns) =>
+      hasQuranLaneColumns
+        ? { quranTranslationId: input.quranTranslationId }
+        : {},
+  });
+  return toSnapshot(row);
+}
+
+export async function saveQuranReaderPrefs(input: {
+  clerkUserId: string;
+  quranShowDetails: boolean;
+}) {
+  if (!dbConfigured()) {
+    return null;
+  }
+  const row = await upsertProfileCompat({
+    clerkUserId: input.clerkUserId,
+    buildCreate: (hasQuranLaneColumns) => ({
+      ...defaultCreateData(input.clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
+      ...(hasQuranLaneColumns ? { quranShowDetails: input.quranShowDetails } : {}),
+    }),
+    buildUpdate: (hasQuranLaneColumns) =>
+      hasQuranLaneColumns
+        ? { quranShowDetails: input.quranShowDetails }
+        : {},
   });
   return toSnapshot(row);
 }

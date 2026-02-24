@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
+import { QURAN_TRANSLATION_OPTIONS, type QuranTranslationId } from "@/hifzer/quran/translation-prefs";
 
 type AssessmentDraft = {
   dailyMinutes: number;
@@ -17,6 +18,7 @@ type AssessmentDraft = {
   planBias: "BALANCED" | "RETENTION" | "SPEED";
   hasTeacher: boolean;
   timezone: string;
+  quranTranslationId: QuranTranslationId;
 };
 
 const TIMEZONE_PLACEHOLDER = "Detecting timezone...";
@@ -31,6 +33,7 @@ export default function OnboardingAssessmentPage() {
     planBias: "BALANCED",
     hasTeacher: false,
     timezone: TIMEZONE_PLACEHOLDER,
+    quranTranslationId: "en.sahih",
   });
 
   useEffect(() => {
@@ -172,6 +175,31 @@ export default function OnboardingAssessmentPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3 md:col-span-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+              Translation language
+            </p>
+            <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+              This becomes your default across Qur&apos;an reading and session translation views.
+            </p>
+            <label className="mt-3 block text-sm text-[color:var(--kw-muted)]">
+              Language
+              <select
+                value={draft.quranTranslationId}
+                onChange={(e) =>
+                  setDraft((d) => ({ ...d, quranTranslationId: e.target.value as QuranTranslationId }))
+                }
+                className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)] md:max-w-[520px]"
+              >
+                {QURAN_TRANSLATION_OPTIONS.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
         </div>
 

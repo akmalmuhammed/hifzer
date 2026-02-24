@@ -746,10 +746,14 @@ export async function startTodaySession(clerkUserId: string) {
     sessionId: session.id,
     startedAt: session.startedAt.toISOString(),
     localDate: session.localDate,
+    preferences: {
+      quranTranslationId: profile.quranTranslationId,
+      quranShowDetails: profile.quranShowDetails,
+    },
     state: sessionState,
     steps: sessionSteps,
     translations: {
-      provider: "tanzil.en.sahih" as const,
+      provider: `tanzil.${profile.quranTranslationId}`,
       byAyahId: translationsByAyahId,
     },
     ayahTextByAyahId,

@@ -119,6 +119,8 @@ model UserProfile {
   cursorAyahId          Int
   quranActiveSurahNumber Int @default(1)
   quranCursorAyahId     Int @default(1)
+  quranTranslationId    String @default("en.sahih")
+  quranShowDetails      Boolean @default(true)
   mode                  SrsMode  @default(NORMAL)
   hasTeacher            Boolean @default(false)
 

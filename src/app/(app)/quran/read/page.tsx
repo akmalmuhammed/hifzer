@@ -1,8 +1,10 @@
+import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
+import { getProfileSnapshot } from "@/hifzer/profile/server";
 import {
   filterAyahs,
   getSurahInfo,
@@ -10,9 +12,12 @@ import {
   resolveCompactCursorAyah,
   type AyahFilters,
 } from "@/hifzer/quran/lookup.server";
+import { DEFAULT_QURAN_TRANSLATION_ID, normalizeQuranTranslationId } from "@/hifzer/quran/translation-prefs";
 import { getSahihTranslationByAyahId } from "@/hifzer/quran/translation.server";
+import { clerkEnabled } from "@/lib/clerk-config";
 import { ReaderBookmarkControl } from "@/components/bookmarks/reader-bookmark-control";
 import { CompactReaderScroll } from "./compact-reader-scroll";
+import { ReaderPreferencesControls } from "./reader-preferences-controls";
 import { ReadProgressSync } from "./read-progress-sync";
 
 type ReaderView = "list" | "compact";
@@ -91,12 +96,17 @@ export const metadata = {
 
 export default async function QuranReaderPage(props: { searchParams: Promise<SearchParamShape> }) {
   const searchParams = await props.searchParams;
+  const authEnabled = clerkEnabled();
+  const userId = authEnabled ? (await auth()).userId : null;
+  const profile = userId ? await getProfileSnapshot(userId) : null;
   const view = parseView(searchParams.view);
   const surahNumber = parseBoundedInt(searchParams.surah, 1, 114);
   const ayahId = parseBoundedInt(searchParams.ayah, 1, 6236);
   const cursorAyahId = parseBoundedInt(searchParams.cursor, 1, 6236);
   const requestedPage = parseBoundedInt(searchParams.page, 1, 500) ?? 1;
   const anonymous = readSingle(searchParams.anon) === "1";
+  const quranTranslationId = normalizeQuranTranslationId(profile?.quranTranslationId ?? DEFAULT_QURAN_TRANSLATION_ID);
+  const quranShowDetails = profile?.quranShowDetails ?? true;
 
   const filters: AyahFilters = { surahNumber, ayahId };
   const ayahs = filterAyahs(filters);
@@ -147,7 +157,13 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
     : null;
   const renderFilterControls = () => (
     <Card>
-      <div className="flex flex-wrap items-center gap-2">
+      <ReaderPreferencesControls
+        initialTranslationId={quranTranslationId}
+        initialShowDetails={quranShowDetails}
+        persistEnabled={Boolean(authEnabled && userId)}
+      />
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
         <Link
           href={trackedHref}
           className={`rounded-full border px-3 py-2 text-sm font-semibold ${
@@ -293,6 +309,10 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
       <div className="mt-6 flex flex-wrap items-center gap-2">
         <Pill tone="neutral">{ayahs.length} ayahs matched</Pill>
         <Pill tone={anonymous ? "warn" : "accent"}>{anonymous ? "Anonymous mode" : "Tracking mode"}</Pill>
+        <Pill tone="neutral">Language: {quranTranslationId}</Pill>
+        <Pill tone={quranShowDetails ? "accent" : "warn"}>
+          {quranShowDetails ? "Details visible" : "Details hidden"}
+        </Pill>
         {view === "list" && ayahs.length > 0 ? (
           <Pill tone="neutral">
             Showing {listStart}-{listEnd}
@@ -335,9 +355,15 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
               <div dir="rtl" className="mt-4 text-right text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
                 {ayah.textUthmani}
               </div>
-              <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-                {getSahihTranslationByAyahId(ayah.id) ?? "Translation unavailable"}
-              </p>
+              {quranShowDetails ? (
+                <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
+                  {getSahihTranslationByAyahId(ayah.id) ?? "Translation unavailable"}
+                </p>
+              ) : (
+                <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-faint)]">
+                  Reader details are hidden for your account.
+                </p>
+              )}
             </Card>
           ))}
 
@@ -424,9 +450,15 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
             <div dir="rtl" className="mt-4 text-right text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
               {compact.current.textUthmani}
             </div>
-            <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-              {getSahihTranslationByAyahId(compact.current.id) ?? "Translation unavailable"}
-            </p>
+            {quranShowDetails ? (
+              <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
+                {getSahihTranslationByAyahId(compact.current.id) ?? "Translation unavailable"}
+              </p>
+            ) : (
+              <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-faint)]">
+                Reader details are hidden for your account.
+              </p>
+            )}
 
             <div className="mt-6 flex items-center gap-2">
               {compact.prevAyahId ? (

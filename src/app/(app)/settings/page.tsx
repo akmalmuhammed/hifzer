@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell, Eye, GraduationCap, LifeBuoy, Map, Palette, SlidersHorizontal, Target, UserRound, Volume2 } from "lucide-react";
+import { Bell, Eye, GraduationCap, Languages, LifeBuoy, Map, Palette, SlidersHorizontal, Target, UserRound, Volume2 } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
@@ -21,6 +21,13 @@ const ITEMS = [
     title: "Display",
     desc: "Dark mode, theme preset, and accent.",
     icon: <Palette size={18} />,
+    tone: "accent" as const,
+  },
+  {
+    href: "/settings/language",
+    title: "Language",
+    desc: "Default translation language and reader detail preferences.",
+    icon: <Languages size={18} />,
     tone: "accent" as const,
   },
   {
