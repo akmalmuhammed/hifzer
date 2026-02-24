@@ -191,13 +191,13 @@ const cspFrameSrc = unique([
 
 const nextConfig: NextConfig = {
   typedRoutes: false,
+  // Ensure translation JSON files are bundled with the serverless deployment
+  // so readFileSync in translation.server.ts can access them at runtime.
+  outputFileTracingIncludes: {
+    "/**": ["./src/hifzer/quran/data/translations/*.json"],
+  },
   experimental: {
     optimizePackageImports: ["lucide-react"],
-    // Ensure translation JSON files are bundled with the serverless deployment
-    // so readFileSync in translation.server.ts can access them at runtime.
-    outputFileTracingIncludes: {
-      "/**": ["./src/hifzer/quran/data/translations/*.json"],
-    },
   },
   async redirects() {
     return [
