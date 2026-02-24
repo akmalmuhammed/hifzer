@@ -123,7 +123,7 @@ export function ReaderPreferencesControls(props: ReaderPreferencesControlsProps)
           </button>
         </div>
         <span className="mt-1 block text-xs text-[color:var(--kw-faint)]">
-          Controls translation visibility in this reader.
+          Controls translation and phonetic visibility in this reader.
         </span>
         {!props.persistEnabled ? (
           <span className="mt-1 block text-xs text-[color:var(--kw-faint)]">

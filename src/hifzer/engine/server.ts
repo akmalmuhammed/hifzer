@@ -25,7 +25,8 @@ import { updateLearnedAverages } from "@/hifzer/engine/debt";
 import type { SessionEventInput, SessionStep, TodayEngineResult, TodayQueuePlan } from "@/hifzer/engine/types";
 import { applyGrade, defaultReviewState } from "@/hifzer/srs/update";
 import { getAyahById, verseRefFromAyahId } from "@/hifzer/quran/lookup.server";
-import { listSahihTranslationsForAyahIds } from "@/hifzer/quran/translation.server";
+import { listPhoneticsForAyahIds, listQuranTranslationsForAyahIds } from "@/hifzer/quran/translation.server";
+import { normalizeQuranTranslationId } from "@/hifzer/quran/translation-prefs";
 import { getCoreSchemaCapabilities } from "@/lib/db-compat";
 
 function shiftIsoDate(iso: string, days: number): string {
@@ -733,7 +734,9 @@ export async function startTodaySession(clerkUserId: string) {
     }
   }
   const stepAyahIds = Array.from(ayahIdSet);
-  const translationsByAyahId = listSahihTranslationsForAyahIds(stepAyahIds);
+  const translationId = normalizeQuranTranslationId(profile.quranTranslationId);
+  const translationsByAyahId = listQuranTranslationsForAyahIds(stepAyahIds, translationId);
+  const phoneticsByAyahId = listPhoneticsForAyahIds(stepAyahIds);
   const ayahTextByAyahId: Record<number, string> = {};
   for (const ayahId of stepAyahIds) {
     const ayah = getAyahById(ayahId);
@@ -747,14 +750,18 @@ export async function startTodaySession(clerkUserId: string) {
     startedAt: session.startedAt.toISOString(),
     localDate: session.localDate,
     preferences: {
-      quranTranslationId: profile.quranTranslationId,
+      quranTranslationId: translationId,
       quranShowDetails: profile.quranShowDetails,
     },
     state: sessionState,
     steps: sessionSteps,
     translations: {
-      provider: `tanzil.${profile.quranTranslationId}`,
+      provider: `tanzil.${translationId}`,
       byAyahId: translationsByAyahId,
+    },
+    phonetics: {
+      provider: "tanzil.en.transliteration",
+      byAyahId: phoneticsByAyahId,
     },
     ayahTextByAyahId,
   };

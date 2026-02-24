@@ -23,6 +23,7 @@ import {
   setOpenSession,
   type PendingSessionSyncPayload,
 } from "@/hifzer/local/store";
+import { QURAN_TRANSLATION_OPTIONS } from "@/hifzer/quran/translation-prefs";
 import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
 
 type Step =
@@ -58,6 +59,10 @@ type SessionStartPayload = {
   };
   steps: Step[];
   translations: {
+    provider: string;
+    byAyahId: Record<string, string>;
+  };
+  phonetics?: {
     provider: string;
     byAyahId: Record<string, string>;
   };
@@ -1103,7 +1108,13 @@ export function SessionClient() {
   const ayahId = currentStep.kind === "AYAH" ? currentStep.ayahId : currentStep.toAyahId;
   const ref = verseRefFromAyahId(ayahId);
   const translation = run.translations.byAyahId[String(ayahId)] ?? null;
+  const phonetic = run.phonetics?.byAyahId[String(ayahId)] ?? null;
   const ayahText = run.ayahTextByAyahId[String(ayahId)] ?? null;
+  const selectedTranslation = QURAN_TRANSLATION_OPTIONS.find(
+    (option) => option.id === run.preferences?.quranTranslationId,
+  );
+  const translationDir = selectedTranslation?.rtl ? "rtl" : "ltr";
+  const translationAlignClass = selectedTranslation?.rtl ? "text-right" : "text-left";
   const weeklyGateBoundary = warmupCount + weeklyGateCount;
   const weeklyGateWindowActive = run.state.weeklyGateRequired && weeklyGateCount > 0 && stepIndex < weeklyGateBoundary;
   const shouldShowWeeklyGateIntro = weeklyGateWindowActive && !coachSeen.weeklyGate;
@@ -1267,9 +1278,14 @@ export function SessionClient() {
                       {ayahText ?? "Ayah text unavailable"}
                     </div>
                     {showTranslation ? (
-                      <p dir="ltr" className="text-left text-sm leading-7 text-[color:var(--kw-muted)]">
-                        {translation ?? "Translation unavailable"}
-                      </p>
+                      <div className="space-y-2">
+                        <p dir="ltr" className="text-left text-sm leading-7 text-[color:var(--kw-faint)]">
+                          {phonetic ?? "Phonetic unavailable"}
+                        </p>
+                        <p dir={translationDir} className={`text-sm leading-7 text-[color:var(--kw-muted)] ${translationAlignClass}`}>
+                          {translation ?? "Translation unavailable"}
+                        </p>
+                      </div>
                     ) : (
                       <p dir="ltr" className="text-left text-sm leading-7 text-[color:var(--kw-faint)]">
                         Translation hidden.

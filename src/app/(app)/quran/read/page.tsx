@@ -12,8 +12,12 @@ import {
   resolveCompactCursorAyah,
   type AyahFilters,
 } from "@/hifzer/quran/lookup.server";
-import { DEFAULT_QURAN_TRANSLATION_ID, normalizeQuranTranslationId } from "@/hifzer/quran/translation-prefs";
-import { getSahihTranslationByAyahId } from "@/hifzer/quran/translation.server";
+import {
+  DEFAULT_QURAN_TRANSLATION_ID,
+  QURAN_TRANSLATION_OPTIONS,
+  normalizeQuranTranslationId,
+} from "@/hifzer/quran/translation-prefs";
+import { getPhoneticByAyahId, getQuranTranslationByAyahId } from "@/hifzer/quran/translation.server";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { ReaderBookmarkControl } from "@/components/bookmarks/reader-bookmark-control";
 import { CompactReaderScroll } from "./compact-reader-scroll";
@@ -107,6 +111,9 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   const anonymous = readSingle(searchParams.anon) === "1";
   const quranTranslationId = normalizeQuranTranslationId(profile?.quranTranslationId ?? DEFAULT_QURAN_TRANSLATION_ID);
   const quranShowDetails = profile?.quranShowDetails ?? true;
+  const selectedTranslation = QURAN_TRANSLATION_OPTIONS.find((option) => option.id === quranTranslationId);
+  const translationDir = selectedTranslation?.rtl ? "rtl" : "ltr";
+  const translationAlignClass = selectedTranslation?.rtl ? "text-right" : "text-left";
 
   const filters: AyahFilters = { surahNumber, ayahId };
   const ayahs = filterAyahs(filters);
@@ -356,9 +363,15 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
                 {ayah.textUthmani}
               </div>
               {quranShowDetails ? (
-                <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-                  {getSahihTranslationByAyahId(ayah.id) ?? "Translation unavailable"}
-                </p>
+                <div className="mt-3 space-y-2">
+                  <p dir="ltr" className="text-sm leading-7 text-[color:var(--kw-faint)]">
+                    {getPhoneticByAyahId(ayah.id) ?? "Phonetic unavailable"}
+                  </p>
+                  <p dir={translationDir} className={`text-sm leading-7 text-[color:var(--kw-muted)] ${translationAlignClass}`}>
+                    {getQuranTranslationByAyahId(ayah.id, quranTranslationId) ??
+                      `Translation unavailable (${quranTranslationId})`}
+                  </p>
+                </div>
               ) : (
                 <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-faint)]">
                   Reader details are hidden for your account.
@@ -451,9 +464,15 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
               {compact.current.textUthmani}
             </div>
             {quranShowDetails ? (
-              <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-                {getSahihTranslationByAyahId(compact.current.id) ?? "Translation unavailable"}
-              </p>
+              <div className="mt-3 space-y-2">
+                <p dir="ltr" className="text-sm leading-7 text-[color:var(--kw-faint)]">
+                  {getPhoneticByAyahId(compact.current.id) ?? "Phonetic unavailable"}
+                </p>
+                <p dir={translationDir} className={`text-sm leading-7 text-[color:var(--kw-muted)] ${translationAlignClass}`}>
+                  {getQuranTranslationByAyahId(compact.current.id, quranTranslationId) ??
+                    `Translation unavailable (${quranTranslationId})`}
+                </p>
+              </div>
             ) : (
               <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-faint)]">
                 Reader details are hidden for your account.
