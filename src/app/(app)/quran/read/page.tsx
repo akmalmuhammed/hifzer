@@ -19,10 +19,9 @@ import {
 } from "@/hifzer/quran/translation-prefs";
 import { getPhoneticByAyahId, getQuranTranslationByAyahId } from "@/hifzer/quran/translation.server";
 import { clerkEnabled } from "@/lib/clerk-config";
-import { ReaderBookmarkControl } from "@/components/bookmarks/reader-bookmark-control";
 import { CompactReaderScroll } from "./compact-reader-scroll";
+import { CompactReaderClient } from "./compact-reader-client";
 import { ReaderPreferencesControls } from "./reader-preferences-controls";
-import { ReadProgressSync } from "./read-progress-sync";
 
 type ReaderView = "list" | "compact";
 const COMPACT_READER_ANCHOR = "compact-reader";
@@ -126,6 +125,23 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   const listEnd = listStartOffset + listAyahs.length;
   const surahs = listSurahs();
 
+  // For compact view: pre-load the current surah's ayahs with translations so the
+  // client component can navigate prev/next entirely in JS — no server round-trip per ayah.
+  const compactSurahNumber = compact.current?.surahNumber ?? surahNumber ?? 1;
+  const compactSurahAyahs = view === "compact"
+    ? filterAyahs({ surahNumber: compactSurahNumber })
+    : [];
+  const compactAyahsData = view === "compact"
+    ? compactSurahAyahs.map((ayah) => ({
+        id: ayah.id,
+        surahNumber: ayah.surahNumber,
+        ayahNumber: ayah.ayahNumber,
+        textUthmani: ayah.textUthmani,
+        phonetic: getPhoneticByAyahId(ayah.id),
+        translation: getQuranTranslationByAyahId(ayah.id, quranTranslationId),
+      }))
+    : [];
+
   const baseQuery = { surahNumber, ayahId };
   const cursorForLinks = compact.current?.id ?? cursorAyahId;
   const listHref = buildHref({ ...baseQuery, view: "list", page: view === "list" ? listPage : 1, anonymous });
@@ -147,7 +163,6 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
     anonymous: true,
   });
   const clearHref = anonymous ? "/quran/read?anon=1" : "/quran/read";
-  const syncAyah = !anonymous && view === "compact" ? compact.current : null;
   const currentSurahInfo = compact.current ? getSurahInfo(compact.current.surahNumber) : null;
   const nextSurahNumber = currentSurahInfo &&
       compact.current &&
@@ -263,14 +278,6 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
 
   return (
     <div className="pb-12 pt-10 md:pb-16 md:pt-14">
-      {syncAyah ? (
-        <ReadProgressSync
-          enabled
-          surahNumber={syncAyah.surahNumber}
-          ayahNumber={syncAyah.ayahNumber}
-          ayahId={syncAyah.id}
-        />
-      ) : null}
       {view === "compact" && compact.current ? (
         <CompactReaderScroll targetId={COMPACT_READER_ANCHOR} ayahId={compact.current.id} />
       ) : null}
@@ -429,105 +436,19 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
       ) : null}
 
       {ayahs.length > 0 && view === "compact" && compact.current ? (
-        <div id={COMPACT_READER_ANCHOR} className="mt-8">
-          <Card className="py-3">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1 text-xs font-semibold text-[color:var(--kw-muted)]">
-                  {compact.current.surahNumber}:{compact.current.ayahNumber}
-                </span>
-                <span className="text-xs text-[color:var(--kw-faint)]">#{compact.current.id}</span>
-                <span className="text-xs text-[color:var(--kw-faint)]">
-                  {compact.index + 1} / {ayahs.length}
-                </span>
-              </div>
-              <div className="w-full sm:w-auto">
-                <AyahAudioPlayer
-                  ayahId={compact.current.id}
-                  className="w-full sm:w-auto"
-                  streakTrackSource={anonymous ? undefined : "quran_browse"}
-                  autoPlayPrefKey={anonymous ? undefined : "hifzer_quran_autoplay_v1"}
-                  trailingControl={
-                    <ReaderBookmarkControl
-                      ayahId={compact.current.id}
-                      surahNumber={compact.current.surahNumber}
-                      ayahNumber={compact.current.ayahNumber}
-                      anonymous={anonymous}
-                      variant="inline"
-                    />
-                  }
-                />
-              </div>
-            </div>
-
-            <div dir="rtl" className="mt-4 text-right text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
-              {compact.current.textUthmani}
-            </div>
-            {quranShowDetails ? (
-              <div className="mt-3 space-y-2">
-                <p dir="ltr" className="text-sm leading-7 text-[color:var(--kw-faint)]">
-                  {getPhoneticByAyahId(compact.current.id) ?? "Phonetic unavailable"}
-                </p>
-                <p dir={translationDir} className={`text-sm leading-7 text-[color:var(--kw-muted)] ${translationAlignClass}`}>
-                  {getQuranTranslationByAyahId(compact.current.id, quranTranslationId) ??
-                    `Translation unavailable (${quranTranslationId})`}
-                </p>
-              </div>
-            ) : (
-              <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-faint)]">
-                Reader details are hidden for your account.
-              </p>
-            )}
-
-            <div className="mt-6 flex items-center gap-2">
-              {compact.prevAyahId ? (
-                <Link
-                  href={`${buildHref({
-                    ...baseQuery,
-                    view: "compact",
-                    cursor: compact.prevAyahId,
-                    anonymous,
-                  })}#${COMPACT_READER_ANCHOR}`}
-                  scroll={false}
-                  className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
-                >
-                  Previous
-                </Link>
-              ) : (
-                <span className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/50 px-3 py-2 text-sm font-semibold text-[color:var(--kw-faint)]">
-                  Previous
-                </span>
-              )}
-
-              {compact.nextAyahId ? (
-                <Link
-                  href={`${buildHref({
-                    ...baseQuery,
-                    view: "compact",
-                    cursor: compact.nextAyahId,
-                    anonymous,
-                  })}#${COMPACT_READER_ANCHOR}`}
-                  scroll={false}
-                  className="rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
-                >
-                  Next
-                </Link>
-              ) : nextSurahHref ? (
-                <Link
-                  href={nextSurahHref}
-                  scroll={false}
-                  className="rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
-                >
-                  Next Surah
-                </Link>
-              ) : (
-                <span className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/50 px-3 py-2 text-sm font-semibold text-[color:var(--kw-faint)]">
-                  Next
-                </span>
-              )}
-            </div>
-          </Card>
-        </div>
+        <CompactReaderClient
+          ayahs={compactAyahsData}
+          initialAyahId={compact.current.id}
+          totalInSet={ayahs.length}
+          indexInSet={compact.index}
+          nextSurahHref={nextSurahHref}
+          anonymous={anonymous}
+          showDetails={quranShowDetails}
+          translationDir={translationDir}
+          translationAlignClass={translationAlignClass}
+          compactReaderAnchor={COMPACT_READER_ANCHOR}
+          syncEnabled={Boolean(!anonymous && authEnabled && userId)}
+        />
       ) : null}
     </div>
   );

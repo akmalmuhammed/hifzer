@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, ClipboardCopy, Mail, MessageSquareText, ShieldCheck } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
@@ -29,7 +28,6 @@ function encodeMailto(text: string): string {
 
 export function SupportClient() {
   const { pushToast } = useToast();
-  const reduceMotion = useReducedMotion();
   const [category, setCategory] = useState<Category>("bug");
   const [subject, setSubject] = useState(CATEGORY_SUBJECT.bug);
   const [message, setMessage] = useState(
@@ -76,11 +74,6 @@ export function SupportClient() {
     }
   }
 
-  const transition = {
-    duration: reduceMotion ? 0 : 0.45,
-    ease: [0.22, 1, 0.36, 1] as const,
-  };
-
   return (
     <div className="space-y-6">
       <PageHeader
@@ -103,12 +96,7 @@ export function SupportClient() {
         )}
       />
 
-      <motion.section
-        initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-        animate={reduceMotion ? {} : { opacity: 1, y: 0 }}
-        transition={transition}
-        className={`${styles.hero} px-5 py-5 sm:px-6`}
-      >
+      <section className={`kw-fade-in ${styles.hero} px-5 py-5 sm:px-6`}>
         <div className="relative grid gap-3 sm:grid-cols-3">
           <div>
             <Pill tone="accent">Direct support</Pill>
@@ -132,14 +120,10 @@ export function SupportClient() {
             </button>
           </div>
         </div>
-      </motion.section>
+      </section>
 
       <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <motion.div
-          initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-          animate={reduceMotion ? {} : { opacity: 1, y: 0 }}
-          transition={{ ...transition, delay: 0.05 }}
-        >
+        <div className="kw-fade-in" style={{ animationDelay: "50ms" }}>
           <Card className={`${styles.panel} px-4 py-4`}>
             <div className="flex items-center gap-2">
               <MessageSquareText size={16} className="text-[color:var(--kw-ink-2)]" />
@@ -196,14 +180,9 @@ export function SupportClient() {
               </Button>
             </div>
           </Card>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-          animate={reduceMotion ? {} : { opacity: 1, y: 0 }}
-          transition={{ ...transition, delay: 0.1 }}
-          className="space-y-4"
-        >
+        <div className="kw-fade-in space-y-4" style={{ animationDelay: "100ms" }}>
           <Card className={`${styles.panel} px-4 py-4`}>
             <p className="text-sm font-semibold text-[color:var(--kw-ink)]">What helps us solve fast</p>
             <ul className="mt-3 space-y-2 text-sm leading-7 text-[color:var(--kw-muted)]">
@@ -241,7 +220,7 @@ export function SupportClient() {
               </div>
             </div>
           </Card>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

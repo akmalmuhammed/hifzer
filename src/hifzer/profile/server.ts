@@ -547,18 +547,25 @@ export async function listLearningLanes(clerkUserId: string, limit = 8): Promise
   }
   const activeSurahNumber = profile.activeSurahNumber;
 
+  // Use a single SQL query (ROW_NUMBER OVER PARTITION BY) instead of fetching
+  // up to 4000 rows and reducing in JS. Returns at most 114 rows (one per surah).
   let rows: Array<{ surahNumber: number; ayahId: number; createdAt: Date }> = [];
   try {
-    rows = await db().reviewEvent.findMany({
-      where: { userId: profile.id },
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      take: 4000,
-      select: {
-        surahNumber: true,
-        ayahId: true,
-        createdAt: true,
-      },
-    });
+    rows = await db().$queryRaw<Array<{ surahNumber: number; ayahId: number; createdAt: Date }>>`
+      SELECT "surahNumber", "ayahId", "createdAt"
+      FROM (
+        SELECT "surahNumber", "ayahId", "createdAt",
+               ROW_NUMBER() OVER (
+                 PARTITION BY "surahNumber"
+                 ORDER BY "createdAt" DESC, "id" DESC
+               ) AS rn
+        FROM "ReviewEvent"
+        WHERE "userId" = ${profile.id}
+      ) sub
+      WHERE rn = 1
+      ORDER BY "createdAt" DESC
+      LIMIT ${limit}
+    `;
   } catch (error) {
     if (!looksLikeMissingCoreSchema(error)) {
       throw error;

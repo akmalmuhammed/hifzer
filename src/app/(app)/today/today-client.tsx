@@ -13,53 +13,7 @@ import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
 import { setActiveSurahCursor, setOpenSession } from "@/hifzer/local/store";
 import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
-
-type TodayPayload = {
-  localDate: string;
-  profile: {
-    activeSurahNumber: number;
-    cursorAyahId: number;
-    dailyMinutes: number;
-  };
-  state: {
-    mode: "NORMAL" | "CONSOLIDATION" | "CATCH_UP";
-    reviewDebtMinutes: number;
-    debtRatio: number;
-    reviewFloorPct: number;
-    retention3dAvg: number;
-    weeklyGateRequired: boolean;
-    monthlyTestRequired: boolean;
-    warmupRequired: boolean;
-    newUnlocked: boolean;
-    dueNowCount: number;
-    dueSoonCount: number;
-    nextDueAt: string | null;
-    queue: {
-      warmupAyahIds: number[];
-      weeklyGateAyahIds: number[];
-      sabqiReviewAyahIds: number[];
-      manzilReviewAyahIds: number[];
-      repairLinks: Array<{ fromAyahId: number; toAyahId: number }>;
-      newAyahIds: number[];
-    };
-    meta: {
-      missedDays: number;
-      weekOne: boolean;
-      reviewPoolSize: number;
-    };
-  };
-  monthlyAdjustmentMessage?: string | null;
-};
-
-type LearningLane = {
-  surahNumber: number;
-  surahLabel: string;
-  ayahNumber: number;
-  ayahId: number;
-  progressPct: number;
-  lastTouchedAt: string | null;
-  isActive: boolean;
-};
+import type { TodayPayload, LearningLane } from "./today-types";
 
 function modeExplain(state: TodayPayload["state"]): { title: string; body: string; tone: "neutral" | "warn" | "accent" } {
   const debtPct = Math.round(state.debtRatio);
@@ -145,16 +99,24 @@ function DetailsSkeleton() {
 
 /* ---------- Main component ---------- */
 
-export function TodayClient() {
+export function TodayClient({
+  initialData,
+  initialLanes,
+}: {
+  initialData?: TodayPayload | null;
+  initialLanes?: LearningLane[];
+}) {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  // When initialData is provided by the server component, start in a loaded state
+  // so the skeleton is never shown to the user.
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<TodayPayload | null>(null);
+  const [data, setData] = useState<TodayPayload | null>(initialData ?? null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [switchOpen, setSwitchOpen] = useState(false);
   const [switchingSurah, setSwitchingSurah] = useState(false);
   const [targetSurahNumber, setTargetSurahNumber] = useState(1);
-  const [learningLanes, setLearningLanes] = useState<LearningLane[]>([]);
+  const [learningLanes, setLearningLanes] = useState<LearningLane[]>(initialLanes ?? []);
   const { pushToast } = useToast();
   const [modeShiftNotice, setModeShiftNotice] = useState<{
     from: TodayPayload["state"]["mode"];
@@ -192,8 +154,12 @@ export function TodayClient() {
     }
   }
 
+  // Only fetch on mount when server didn't provide initial data.
   useEffect(() => {
-    void load();
+    if (!initialData) {
+      void load();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

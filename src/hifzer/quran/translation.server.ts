@@ -1,28 +1,52 @@
 import "server-only";
 
+import { readFileSync } from "fs";
+import { join } from "path";
 import type { QuranTranslationId } from "@/hifzer/quran/translation-prefs";
 import { DEFAULT_QURAN_TRANSLATION_ID } from "@/hifzer/quran/translation-prefs";
-import enSahihJson from "@/hifzer/quran/data/translations/en.sahih.by-ayah-id.json";
-import urJunagarhiJson from "@/hifzer/quran/data/translations/ur.junagarhi.by-ayah-id.json";
-import idIndonesianJson from "@/hifzer/quran/data/translations/id.indonesian.by-ayah-id.json";
-import trYildirimJson from "@/hifzer/quran/data/translations/tr.yildirim.by-ayah-id.json";
-import faFooladvandJson from "@/hifzer/quran/data/translations/fa.fooladvand.by-ayah-id.json";
-import bnBengaliJson from "@/hifzer/quran/data/translations/bn.bengali.by-ayah-id.json";
-import mlAbdulhameedJson from "@/hifzer/quran/data/translations/ml.abdulhameed.by-ayah-id.json";
-import enTransliterationJson from "@/hifzer/quran/data/translations/en.transliteration.by-ayah-id.json";
 
-const TRANSLATION_DATA_BY_ID: Record<QuranTranslationId, string[]> = {
-  "en.sahih": enSahihJson as unknown as string[],
-  "ur.junagarhi": urJunagarhiJson as unknown as string[],
-  "id.indonesian": idIndonesianJson as unknown as string[],
-  "tr.yildirim": trYildirimJson as unknown as string[],
-  "fa.fooladvand": faFooladvandJson as unknown as string[],
-  "bn.bengali": bnBengaliJson as unknown as string[],
-  "ml.abdulhameed": mlAbdulhameedJson as unknown as string[],
+// ---------------------------------------------------------------------------
+// Lazy-load translation JSON files on first access per process.
+// Only the translation(s) that a user actually needs are ever loaded into
+// memory, reducing cold-start time and server RAM from ~12 MB to ~1-2 MB.
+// Files are included in the deployment bundle via outputFileTracingIncludes
+// configured in next.config.ts.
+// ---------------------------------------------------------------------------
+
+const TRANSLATION_DIR = join(process.cwd(), "src/hifzer/quran/data/translations");
+
+const TRANSLATION_FILENAMES: Record<QuranTranslationId, string> = {
+  "en.sahih": "en.sahih.by-ayah-id.json",
+  "ur.junagarhi": "ur.junagarhi.by-ayah-id.json",
+  "id.indonesian": "id.indonesian.by-ayah-id.json",
+  "tr.yildirim": "tr.yildirim.by-ayah-id.json",
+  "fa.fooladvand": "fa.fooladvand.by-ayah-id.json",
+  "bn.bengali": "bn.bengali.by-ayah-id.json",
+  "ml.abdulhameed": "ml.abdulhameed.by-ayah-id.json",
 };
 
-const PHONETIC_TRANSLITERATION_BY_AYAH_ID = enTransliterationJson as unknown as string[];
+const PHONETIC_FILENAME = "en.transliteration.by-ayah-id.json";
 const STRIP_HTML_TAGS_REGEX = /<\/?[^>]+>/gi;
+
+// Module-level caches — populated lazily per translation, shared across requests.
+const translationCache = new Map<QuranTranslationId, string[]>();
+let phoneticCache: string[] | null = null;
+
+function loadTranslationData(id: QuranTranslationId): string[] {
+  const cached = translationCache.get(id);
+  if (cached) return cached;
+  const filePath = join(TRANSLATION_DIR, TRANSLATION_FILENAMES[id]);
+  const data = JSON.parse(readFileSync(filePath, "utf-8")) as string[];
+  translationCache.set(id, data);
+  return data;
+}
+
+function loadPhoneticData(): string[] {
+  if (phoneticCache) return phoneticCache;
+  const filePath = join(TRANSLATION_DIR, PHONETIC_FILENAME);
+  phoneticCache = JSON.parse(readFileSync(filePath, "utf-8")) as string[];
+  return phoneticCache;
+}
 
 function normalizeAyahId(ayahId: number): number | null {
   const id = Math.floor(Number(ayahId));
@@ -50,7 +74,7 @@ export function getQuranTranslationByAyahId(
   ayahId: number,
   translationId: QuranTranslationId = DEFAULT_QURAN_TRANSLATION_ID,
 ): string | null {
-  return getTranslationRow(ayahId, TRANSLATION_DATA_BY_ID[translationId]);
+  return getTranslationRow(ayahId, loadTranslationData(translationId));
 }
 
 export function listQuranTranslationsForAyahIds(
@@ -59,7 +83,7 @@ export function listQuranTranslationsForAyahIds(
 ): Record<number, string> {
   const out: Record<number, string> = {};
   const seen = new Set<number>();
-  const rows = TRANSLATION_DATA_BY_ID[translationId];
+  const rows = loadTranslationData(translationId);
 
   for (const raw of ayahIds) {
     const ayahId = normalizeAyahId(raw);
@@ -78,7 +102,7 @@ export function listQuranTranslationsForAyahIds(
 }
 
 export function getPhoneticByAyahId(ayahId: number): string | null {
-  const raw = getTranslationRow(ayahId, PHONETIC_TRANSLITERATION_BY_AYAH_ID);
+  const raw = getTranslationRow(ayahId, loadPhoneticData());
   if (!raw) {
     return null;
   }

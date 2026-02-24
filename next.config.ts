@@ -1,5 +1,11 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
+import bundleAnalyzer from "@next/bundle-analyzer";
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+  openAnalyzer: false,
+});
 
 function unique(values: Array<string | null | undefined>): string[] {
   const out = new Set<string>();
@@ -187,6 +193,11 @@ const nextConfig: NextConfig = {
   typedRoutes: false,
   experimental: {
     optimizePackageImports: ["lucide-react"],
+    // Ensure translation JSON files are bundled with the serverless deployment
+    // so readFileSync in translation.server.ts can access them at runtime.
+    outputFileTracingIncludes: {
+      "/**": ["./src/hifzer/quran/data/translations/*.json"],
+    },
   },
   async redirects() {
     return [
@@ -257,11 +268,11 @@ const nextConfig: NextConfig = {
   ],
 };
 
-export default withSentryConfig(nextConfig, {
+export default withBundleAnalyzer(withSentryConfig(nextConfig, {
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
   silent: true,
   sourcemaps: {
     disable: true,
   },
-});
+}));

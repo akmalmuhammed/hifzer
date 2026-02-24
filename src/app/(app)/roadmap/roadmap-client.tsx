@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Cpu, Rocket, ShieldCheck, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
@@ -99,12 +98,6 @@ function statusPill(status: Milestone["status"]): { tone: "accent" | "neutral"; 
 }
 
 export function RoadmapClient() {
-  const reduceMotion = useReducedMotion();
-  const transition = {
-    duration: reduceMotion ? 0 : 0.45,
-    ease: [0.22, 1, 0.36, 1] as const,
-  };
-
   return (
     <div className="space-y-6">
       <PageHeader
@@ -127,12 +120,7 @@ export function RoadmapClient() {
         )}
       />
 
-      <motion.section
-        initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-        animate={reduceMotion ? {} : { opacity: 1, y: 0 }}
-        transition={transition}
-        className={`${styles.hero} px-5 py-5 sm:px-6`}
-      >
+      <section className={`kw-fade-in ${styles.hero} px-5 py-5 sm:px-6`}>
         <div className={styles.orbA} />
         <div className={styles.orbB} />
         <div className="relative grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-end">
@@ -174,15 +162,14 @@ export function RoadmapClient() {
             </div>
           </div>
         </div>
-      </motion.section>
+      </section>
 
       <div className="grid gap-4 xl:grid-cols-3">
         {LANES.map((lane, laneIndex) => (
-          <motion.div
+          <div
             key={lane.label}
-            initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-            animate={reduceMotion ? {} : { opacity: 1, y: 0 }}
-            transition={{ ...transition, delay: laneIndex * 0.05 }}
+            className="kw-fade-in"
+            style={{ animationDelay: `${laneIndex * 50}ms` }}
           >
             <Card className={`${styles.lane} px-4 py-4`}>
               <div className="flex items-center justify-between gap-3">
@@ -208,7 +195,7 @@ export function RoadmapClient() {
                 })}
               </div>
             </Card>
-          </motion.div>
+          </div>
         ))}
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+
 import {
   ArrowRight,
   BookMarked,
@@ -208,8 +208,6 @@ export function DashboardClient() {
   const [error, setError] = useState<string | null>(null);
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
   const [monthCursor, setMonthCursor] = useState(0);
-  const reduceMotion = useReducedMotion();
-
   async function load() {
     setLoading(true);
     setError(null);
@@ -362,11 +360,6 @@ export function DashboardClient() {
 
   const status = overview ? statusPill(overview.today.status) : null;
 
-  const cardTransition = {
-    duration: reduceMotion ? 0 : 0.45,
-    ease: [0.22, 1, 0.36, 1] as const,
-  };
-
   return (
     <div className="space-y-6">
       <PageHeader
@@ -405,12 +398,7 @@ export function DashboardClient() {
 
       {!loading && !error && overview ? (
         <div className="space-y-4">
-          <motion.section
-            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-            animate={reduceMotion ? {} : { opacity: 1, y: 0 }}
-            transition={cardTransition}
-            className={`${styles.commandDeck} px-5 py-5 sm:px-6`}
-          >
+          <section className={`kw-fade-in ${styles.commandDeck} px-5 py-5 sm:px-6`}>
             <div className={styles.pulseOrb} />
             <div className={styles.driftOrb} />
             <div className="relative grid gap-5 lg:grid-cols-[minmax(0,1fr)_220px]">
@@ -485,10 +473,10 @@ export function DashboardClient() {
                 </div>
               </div>
             </div>
-          </motion.section>
+          </section>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <motion.div className="h-full" initial={reduceMotion ? false : { opacity: 0, y: 8 }} animate={reduceMotion ? {} : { opacity: 1, y: 0 }} transition={{ ...cardTransition, delay: 0.04 }}>
+            <div className="kw-fade-in h-full" style={{ animationDelay: "40ms" }}>
               <Card className={`${styles.metricCard} h-full`}>
                 <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Practice minutes (7d)</p>
                 <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
@@ -499,9 +487,9 @@ export function DashboardClient() {
                 </p>
                 <Sparkline values={overview.sessionTrend14d.map((d) => d.minutes)} tone="accent" className={styles.metricFoot} />
               </Card>
-            </motion.div>
+            </div>
 
-            <motion.div className="h-full" initial={reduceMotion ? false : { opacity: 0, y: 8 }} animate={reduceMotion ? {} : { opacity: 1, y: 0 }} transition={{ ...cardTransition, delay: 0.08 }}>
+            <div className="kw-fade-in h-full" style={{ animationDelay: "80ms" }}>
               <Card className={`${styles.metricCard} h-full`}>
                 <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Retention score</p>
                 <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
@@ -510,9 +498,9 @@ export function DashboardClient() {
                 <p className={`${styles.metricBody} mt-1 text-xs text-[color:var(--kw-muted)]`}>Based on Again/Hard/Good/Easy over 14 days</p>
                 <Sparkline values={trendRecall} tone="brand" className={styles.metricFoot} />
               </Card>
-            </motion.div>
+            </div>
 
-            <motion.div className="h-full" initial={reduceMotion ? false : { opacity: 0, y: 8 }} animate={reduceMotion ? {} : { opacity: 1, y: 0 }} transition={{ ...cardTransition, delay: 0.12 }}>
+            <div className="kw-fade-in h-full" style={{ animationDelay: "120ms" }}>
               <Card className={`${styles.metricCard} h-full`}>
                 <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Review pressure</p>
                 <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{overview.reviewHealth.dueNow}</p>
@@ -523,9 +511,9 @@ export function DashboardClient() {
                   {formatMaybeDateTime(overview.reviewHealth.nextDueAt)}
                 </p>
               </Card>
-            </motion.div>
+            </div>
 
-            <motion.div className="h-full" initial={reduceMotion ? false : { opacity: 0, y: 8 }} animate={reduceMotion ? {} : { opacity: 1, y: 0 }} transition={{ ...cardTransition, delay: 0.16 }}>
+            <div className="kw-fade-in h-full" style={{ animationDelay: "160ms" }}>
               <Card className={`${styles.metricCard} h-full`}>
                 <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Streak</p>
                 <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
@@ -538,16 +526,11 @@ export function DashboardClient() {
                   <Pill tone="neutral">Today ayahs: {overview.streak.todayQualifiedAyahs}</Pill>
                 </div>
               </Card>
-            </motion.div>
+            </div>
           </div>
 
           <div className="grid gap-4 xl:grid-cols-2">
-            <motion.div
-              className="h-full"
-              initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-              animate={reduceMotion ? {} : { opacity: 1, y: 0 }}
-              transition={{ ...cardTransition, delay: 0.2 }}
-            >
+            <div className="kw-fade-in h-full" style={{ animationDelay: "200ms" }}>
               <Card className="h-full">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
@@ -576,14 +559,9 @@ export function DashboardClient() {
                   </div>
                 </div>
               </Card>
-            </motion.div>
+            </div>
 
-            <motion.div
-              className="h-full"
-              initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-              animate={reduceMotion ? {} : { opacity: 1, y: 0 }}
-              transition={{ ...cardTransition, delay: 0.24 }}
-            >
+            <div className="kw-fade-in h-full" style={{ animationDelay: "240ms" }}>
               <Card className="h-full">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
@@ -641,16 +619,11 @@ export function DashboardClient() {
                   </div>
                 </div>
               </Card>
-            </motion.div>
+            </div>
           </div>
 
           <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-            <motion.div
-              className="h-full"
-              initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-              animate={reduceMotion ? {} : { opacity: 1, y: 0 }}
-              transition={{ ...cardTransition, delay: 0.28 }}
-            >
+            <div className="kw-fade-in h-full" style={{ animationDelay: "280ms" }}>
               <Card className="h-full">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
@@ -697,14 +670,9 @@ export function DashboardClient() {
                   </Link>
                 </div>
               </Card>
-            </motion.div>
+            </div>
 
-            <motion.div
-              className="h-full"
-              initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-              animate={reduceMotion ? {} : { opacity: 1, y: 0 }}
-              transition={{ ...cardTransition, delay: 0.32 }}
-            >
+            <div className="kw-fade-in h-full" style={{ animationDelay: "320ms" }}>
               <Card className="h-full">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -770,7 +738,7 @@ export function DashboardClient() {
                   </div>
                 </div>
               </Card>
-            </motion.div>
+            </div>
           </div>
         </div>
       ) : null}
