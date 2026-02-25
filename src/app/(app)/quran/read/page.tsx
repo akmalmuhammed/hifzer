@@ -34,6 +34,8 @@ type SearchParamShape = {
   cursor?: string | string[];
   page?: string | string[];
   anon?: string | string[];
+  phonetic?: string | string[];
+  translation?: string | string[];
 };
 
 function readSingle(raw: string | string[] | undefined): string | null {
@@ -63,11 +65,24 @@ function parseView(raw: string | string[] | undefined): ReaderView {
   return value === "compact" ? "compact" : "list";
 }
 
+function parseVisibility(raw: string | string[] | undefined, fallback: boolean): boolean {
+  const value = readSingle(raw);
+  if (value === "1") {
+    return true;
+  }
+  if (value === "0") {
+    return false;
+  }
+  return fallback;
+}
+
 function buildHref(filters: AyahFilters & {
   view?: ReaderView;
   cursor?: number;
   page?: number;
   anonymous?: boolean;
+  showPhonetic?: boolean;
+  showTranslation?: boolean;
 }): string {
   const params = new URLSearchParams();
   if (filters.view) {
@@ -87,6 +102,12 @@ function buildHref(filters: AyahFilters & {
   }
   if (filters.anonymous) {
     params.set("anon", "1");
+  }
+  if (typeof filters.showPhonetic === "boolean") {
+    params.set("phonetic", filters.showPhonetic ? "1" : "0");
+  }
+  if (typeof filters.showTranslation === "boolean") {
+    params.set("translation", filters.showTranslation ? "1" : "0");
   }
 
   const query = params.toString();
@@ -110,6 +131,9 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   const anonymous = readSingle(searchParams.anon) === "1";
   const quranTranslationId = normalizeQuranTranslationId(profile?.quranTranslationId ?? DEFAULT_QURAN_TRANSLATION_ID);
   const quranShowDetails = profile?.quranShowDetails ?? true;
+  const showPhonetic = parseVisibility(searchParams.phonetic, quranShowDetails);
+  const showTranslation = parseVisibility(searchParams.translation, quranShowDetails);
+  const showAnyDetails = showPhonetic || showTranslation;
   const selectedTranslation = QURAN_TRANSLATION_OPTIONS.find((option) => option.id === quranTranslationId);
   const translationDir = selectedTranslation?.rtl ? "rtl" : "ltr";
   const translationAlignClass = selectedTranslation?.rtl ? "text-right" : "text-left";
@@ -143,13 +167,21 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
     : [];
 
   const baseQuery = { surahNumber, ayahId };
+  const detailQuery = { showPhonetic, showTranslation };
   const cursorForLinks = compact.current?.id ?? cursorAyahId;
-  const listHref = buildHref({ ...baseQuery, view: "list", page: view === "list" ? listPage : 1, anonymous });
+  const listHref = buildHref({
+    ...baseQuery,
+    ...detailQuery,
+    view: "list",
+    page: view === "list" ? listPage : 1,
+    anonymous,
+  });
   const compactHref = `${
-    buildHref({ ...baseQuery, view: "compact", cursor: cursorForLinks, anonymous })
+    buildHref({ ...baseQuery, ...detailQuery, view: "compact", cursor: cursorForLinks, anonymous })
   }#${COMPACT_READER_ANCHOR}`;
   const trackedHref = buildHref({
     ...baseQuery,
+    ...detailQuery,
     view,
     cursor: cursorForLinks,
     page: view === "list" ? listPage : undefined,
@@ -157,10 +189,29 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   });
   const anonymousHref = buildHref({
     ...baseQuery,
+    ...detailQuery,
     view,
     cursor: cursorForLinks,
     page: view === "list" ? listPage : undefined,
     anonymous: true,
+  });
+  const phoneticToggleHref = buildHref({
+    ...baseQuery,
+    showPhonetic: !showPhonetic,
+    showTranslation,
+    view,
+    cursor: view === "compact" ? cursorForLinks : undefined,
+    page: view === "list" ? listPage : undefined,
+    anonymous,
+  });
+  const translationToggleHref = buildHref({
+    ...baseQuery,
+    showPhonetic,
+    showTranslation: !showTranslation,
+    view,
+    cursor: view === "compact" ? cursorForLinks : undefined,
+    page: view === "list" ? listPage : undefined,
+    anonymous,
   });
   const clearHref = anonymous ? "/quran/read?anon=1" : "/quran/read";
   const currentSurahInfo = compact.current ? getSurahInfo(compact.current.surahNumber) : null;
@@ -175,6 +226,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
       view: "compact",
       surahNumber: nextSurahNumber,
       anonymous,
+      ...detailQuery,
     })}#${COMPACT_READER_ANCHOR}`
     : null;
   const renderFilterControls = () => (
@@ -228,9 +280,34 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
         </Link>
       </div>
 
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <Link
+          href={phoneticToggleHref}
+          className={`rounded-full border px-3 py-2 text-sm font-semibold ${
+            showPhonetic
+              ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+              : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
+          }`}
+        >
+          {showPhonetic ? "Disable phonetics" : "Enable phonetics"}
+        </Link>
+        <Link
+          href={translationToggleHref}
+          className={`rounded-full border px-3 py-2 text-sm font-semibold ${
+            showTranslation
+              ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+              : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
+          }`}
+        >
+          {showTranslation ? "Disable translation" : "Enable translation"}
+        </Link>
+      </div>
+
       <form className="mt-4 grid gap-3 md:grid-cols-3" method="get" action="/quran/read">
         <input type="hidden" name="view" value={view} />
         {anonymous ? <input type="hidden" name="anon" value="1" /> : null}
+        <input type="hidden" name="phonetic" value={showPhonetic ? "1" : "0"} />
+        <input type="hidden" name="translation" value={showTranslation ? "1" : "0"} />
         <label className="text-sm text-[color:var(--kw-muted)]">
           Surah
           <select
@@ -324,8 +401,9 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
         <Pill tone="neutral">{ayahs.length} ayahs matched</Pill>
         <Pill tone={anonymous ? "warn" : "accent"}>{anonymous ? "Anonymous mode" : "Tracking mode"}</Pill>
         <Pill tone="neutral">Language: {quranTranslationId}</Pill>
-        <Pill tone={quranShowDetails ? "accent" : "warn"}>
-          {quranShowDetails ? "Details visible" : "Details hidden"}
+        <Pill tone={showPhonetic ? "accent" : "warn"}>{showPhonetic ? "Phonetics on" : "Phonetics off"}</Pill>
+        <Pill tone={showTranslation ? "accent" : "warn"}>
+          {showTranslation ? "Translation on" : "Translation off"}
         </Pill>
         {view === "list" && ayahs.length > 0 ? (
           <Pill tone="neutral">
@@ -369,19 +447,26 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
               <div dir="rtl" className="mt-4 text-right text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
                 {ayah.textUthmani}
               </div>
-              {quranShowDetails ? (
+              {showAnyDetails ? (
                 <div className="mt-3 space-y-2">
-                  <p dir="ltr" className="text-sm leading-7 text-[color:var(--kw-faint)]">
-                    {getPhoneticByAyahId(ayah.id) ?? "Phonetic unavailable"}
-                  </p>
-                  <p dir={translationDir} className={`text-sm leading-7 text-[color:var(--kw-muted)] ${translationAlignClass}`}>
-                    {getQuranTranslationByAyahId(ayah.id, quranTranslationId) ??
-                      `Translation unavailable (${quranTranslationId})`}
-                  </p>
+                  {showPhonetic ? (
+                    <p dir="ltr" className="text-sm leading-7 text-[color:var(--kw-faint)]">
+                      {getPhoneticByAyahId(ayah.id) ?? "Phonetic unavailable"}
+                    </p>
+                  ) : null}
+                  {showTranslation ? (
+                    <p
+                      dir={translationDir}
+                      className={`text-sm leading-7 text-[color:var(--kw-muted)] ${translationAlignClass}`}
+                    >
+                      {getQuranTranslationByAyahId(ayah.id, quranTranslationId) ??
+                        `Translation unavailable (${quranTranslationId})`}
+                    </p>
+                  ) : null}
                 </div>
               ) : (
                 <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-faint)]">
-                  Reader details are hidden for your account.
+                  Phonetics and translation are hidden in reader filters.
                 </p>
               )}
             </Card>
@@ -394,6 +479,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
                   <Link
                     href={buildHref({
                       ...baseQuery,
+                      ...detailQuery,
                       view: "list",
                       page: listPage - 1,
                       anonymous,
@@ -416,6 +502,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
                   <Link
                     href={buildHref({
                       ...baseQuery,
+                      ...detailQuery,
                       view: "list",
                       page: listPage + 1,
                       anonymous,
@@ -443,7 +530,8 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
           indexInSet={compact.index}
           nextSurahHref={nextSurahHref}
           anonymous={anonymous}
-          showDetails={quranShowDetails}
+          showPhonetic={showPhonetic}
+          showTranslation={showTranslation}
           translationDir={translationDir}
           translationAlignClass={translationAlignClass}
           compactReaderAnchor={COMPACT_READER_ANCHOR}

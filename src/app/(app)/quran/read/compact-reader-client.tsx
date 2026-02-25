@@ -23,7 +23,8 @@ type Props = {
   indexInSet: number; // 0-based index of initialAyahId within the full filtered set
   nextSurahHref: string | null;
   anonymous: boolean;
-  showDetails: boolean;
+  showPhonetic: boolean;
+  showTranslation: boolean;
   translationDir: "ltr" | "rtl";
   translationAlignClass: string;
   compactReaderAnchor: string;
@@ -37,7 +38,8 @@ export function CompactReaderClient({
   indexInSet,
   nextSurahHref,
   anonymous,
-  showDetails,
+  showPhonetic,
+  showTranslation,
   translationDir,
   translationAlignClass,
   compactReaderAnchor,
@@ -55,14 +57,15 @@ export function CompactReaderClient({
   const current = ayahs[cursorIndex];
   const prevAyah = cursorIndex > 0 ? ayahs[cursorIndex - 1] : null;
   const nextAyah = cursorIndex < ayahs.length - 1 ? ayahs[cursorIndex + 1] : null;
+  const currentId = current?.id;
 
   // Sync the URL cursor param without triggering a navigation / re-render.
   useEffect(() => {
-    if (!current) return;
+    if (currentId == null) return;
     const url = new URL(window.location.href);
-    url.searchParams.set("cursor", String(current.id));
+    url.searchParams.set("cursor", String(currentId));
     window.history.replaceState(null, "", url.toString());
-  }, [current?.id]);
+  }, [currentId]);
 
   if (!current) return null;
 
@@ -92,6 +95,7 @@ export function CompactReaderClient({
     `${btnBase} border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]`;
   const btnSecondary =
     `${btnBase} border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]`;
+  const showAnyDetails = showPhonetic || showTranslation;
 
   return (
     <div id={compactReaderAnchor} className="mt-8">
@@ -140,21 +144,25 @@ export function CompactReaderClient({
         </div>
 
         {/* Details */}
-        {showDetails ? (
+        {showAnyDetails ? (
           <div className="mt-3 space-y-2">
-            <p dir="ltr" className="text-sm leading-7 text-[color:var(--kw-faint)]">
-              {current.phonetic ?? "Phonetic unavailable"}
-            </p>
-            <p
-              dir={translationDir}
-              className={`text-sm leading-7 text-[color:var(--kw-muted)] ${translationAlignClass}`}
-            >
-              {current.translation ?? "Translation unavailable"}
-            </p>
+            {showPhonetic ? (
+              <p dir="ltr" className="text-sm leading-7 text-[color:var(--kw-faint)]">
+                {current.phonetic ?? "Phonetic unavailable"}
+              </p>
+            ) : null}
+            {showTranslation ? (
+              <p
+                dir={translationDir}
+                className={`text-sm leading-7 text-[color:var(--kw-muted)] ${translationAlignClass}`}
+              >
+                {current.translation ?? "Translation unavailable"}
+              </p>
+            ) : null}
           </div>
         ) : (
           <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-faint)]">
-            Reader details are hidden for your account.
+            Phonetics and translation are hidden in reader filters.
           </p>
         )}
 

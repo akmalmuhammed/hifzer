@@ -84,7 +84,7 @@ export function ReaderPreferencesControls(props: ReaderPreferencesControlsProps)
       </label>
 
       <div className="text-sm text-[color:var(--kw-muted)]">
-        Reader details
+        Default details
         <div className="mt-1 flex h-10 items-center justify-between rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3">
           <span className="text-sm text-[color:var(--kw-ink)]">{showDetails ? "Visible" : "Hidden"}</span>
           <button
@@ -123,7 +123,7 @@ export function ReaderPreferencesControls(props: ReaderPreferencesControlsProps)
           </button>
         </div>
         <span className="mt-1 block text-xs text-[color:var(--kw-faint)]">
-          Controls translation and phonetic visibility in this reader.
+          Sets the default for phonetics and translation. Reader filter toggles can override this view.
         </span>
         {!props.persistEnabled ? (
           <span className="mt-1 block text-xs text-[color:var(--kw-faint)]">
