@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { isSupportedQuranTranslationId } from "@/hifzer/quran/translation-prefs";
 import { saveLanguagePrefs } from "@/hifzer/profile/server";
-import { getCoreSchemaCapabilities } from "@/lib/db-compat";
+import { ensureCoreSchemaCompatibility, getCoreSchemaCapabilities } from "@/lib/db-compat";
 import { dbConfigured } from "@/lib/db";
 
 type Payload = {
@@ -32,10 +32,22 @@ export async function POST(req: Request) {
     }, { status: 503 });
   }
 
-  const capabilities = await getCoreSchemaCapabilities({ refresh: true });
+  let capabilities = await getCoreSchemaCapabilities({ refresh: true });
+  if (!capabilities.hasQuranLaneColumns) {
+    try {
+      await ensureCoreSchemaCompatibility();
+    } catch {
+      // If patching fails (permissions/managed DB restrictions), fall through and
+      // return a clear persistence error below.
+    }
+    capabilities = await getCoreSchemaCapabilities({ refresh: true });
+  }
+
   if (!capabilities.hasQuranLaneColumns) {
     return NextResponse.json({
-      error: "Persistence unavailable: profile translation columns are missing in the configured database schema.",
+      error:
+        "Persistence unavailable: profile translation columns are missing in the configured database schema. " +
+        "Run DB migrations (or enable runtime schema patching) and retry.",
     }, { status: 503 });
   }
 
