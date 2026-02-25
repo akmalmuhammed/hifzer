@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { SessionFlowTutorial } from "@/components/app/session-flow-tutorial";
 import { SurahSearchSelect } from "@/components/app/surah-search-select";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
+import { useDistractionFree } from "@/components/providers/distraction-free-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -354,6 +355,7 @@ export function SessionClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { userId } = useAuth();
+  const { enabled: distractionFree } = useDistractionFree();
   const progressStorageKey = useMemo(() => sessionProgressStorageKey(userId), [userId]);
   const quickReviewMode = searchParams.get("focus") === "review";
   const { pushToast } = useToast();
@@ -475,7 +477,7 @@ export function SessionClient() {
       }
 
       setRun(payload);
-      setShowTranslation(payload.preferences?.quranShowDetails ?? true);
+      setShowTranslation(distractionFree ? false : (payload.preferences?.quranShowDetails ?? true));
       setStepIndex(nextStepIndex);
       setEvents(nextEvents);
       setStepStartedAt(Date.now());
@@ -488,7 +490,7 @@ export function SessionClient() {
     } finally {
       setLoading(false);
     }
-  }, [flushPendingSync, loadLearningLanes, progressStorageKey, quickReviewMode, router]);
+  }, [distractionFree, flushPendingSync, loadLearningLanes, progressStorageKey, quickReviewMode, router]);
 
   useEffect(() => {
     void loadRun();
@@ -534,6 +536,12 @@ export function SessionClient() {
     setAssistedThisStep(false);
     setRevealUntilMs(null);
   }, [currentStep, stepIndex]);
+
+  useEffect(() => {
+    if (distractionFree) {
+      setShowTranslation(false);
+    }
+  }, [distractionFree]);
 
   useEffect(() => {
     const activeLane = learningLanes.find((lane) => lane.isActive) ?? learningLanes[0];
@@ -854,7 +862,7 @@ export function SessionClient() {
           {showText ? "Hide text" : "Show text"}
         </Button>
       ) : null}
-      {currentStep?.kind === "AYAH" ? (
+      {currentStep?.kind === "AYAH" && !distractionFree ? (
         <Button
           type="button"
           variant="secondary"
@@ -882,13 +890,15 @@ export function SessionClient() {
           Back to Today <ArrowRight size={16} />
         </Button>
       </Link>
-      <Button
-        variant="secondary"
-        className="w-full gap-2 sm:w-auto"
-        onClick={() => setSwitchOpen((prev) => !prev)}
-      >
-        {switchOpen ? "Close surah switcher" : "Switch surah"}
-      </Button>
+      {!distractionFree ? (
+        <Button
+          variant="secondary"
+          className="w-full gap-2 sm:w-auto"
+          onClick={() => setSwitchOpen((prev) => !prev)}
+        >
+          {switchOpen ? "Close surah switcher" : "Switch surah"}
+        </Button>
+      ) : null}
     </div>
   );
 
@@ -1148,15 +1158,17 @@ export function SessionClient() {
             <span className="text-[color:var(--kw-muted)]">{run.state.mode}</span>
           </span>
         }
-        title="Show up. Recite. Retain."
-        subtitle={
-          <>
-            Every ayah you hold raises your rank.
-            <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
-              Sunan Abi Dawud 1464
-            </span>
-          </>
-        }
+        title={distractionFree ? "Recite with focus" : "Show up. Recite. Retain."}
+        subtitle={distractionFree
+          ? undefined
+          : (
+            <>
+              Every ayah you hold raises your rank.
+              <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
+                Sunan Abi Dawud 1464
+              </span>
+            </>
+          )}
         right={
           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
             <Pill tone="neutral">{progressText}</Pill>
@@ -1165,13 +1177,17 @@ export function SessionClient() {
           </div>
         }
       />
-      <p className="text-sm text-[color:var(--kw-muted)]">
-        {quickReviewMode ? "Quick review-only run for due items." : stepSummary(currentStep)}
-      </p>
+      {!distractionFree ? (
+        <>
+          <p className="text-sm text-[color:var(--kw-muted)]">
+            {quickReviewMode ? "Quick review-only run for due items." : stepSummary(currentStep)}
+          </p>
 
-      <SessionFlowTutorial surface="session" />
+          <SessionFlowTutorial surface="session" />
+        </>
+      ) : null}
 
-      {switchOpen ? (
+      {switchOpen && !distractionFree ? (
         <Card>
           <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Select Hifz surah</p>
           <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
@@ -1199,7 +1215,7 @@ export function SessionClient() {
         </Card>
       ) : null}
 
-      {shouldShowWeeklyGateIntro ? (
+      {shouldShowWeeklyGateIntro && !distractionFree ? (
         <Card className="border-[rgba(234,88,12,0.28)] bg-[rgba(234,88,12,0.10)]">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -1215,7 +1231,7 @@ export function SessionClient() {
         </Card>
       ) : null}
 
-      {coachTip ? (
+      {coachTip && !distractionFree ? (
         <Card className="border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)]">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -1277,7 +1293,7 @@ export function SessionClient() {
                     <div dir="rtl" className="text-right font-[family-name:var(--font-kw-quran)] text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
                       {ayahText ?? "Ayah text unavailable"}
                     </div>
-                    {showTranslation ? (
+                    {showTranslation && !distractionFree ? (
                       <div className="space-y-2">
                         <p dir="ltr" className="text-left text-sm leading-7 text-[color:var(--kw-faint)]">
                           {phonetic ?? "Phonetic unavailable"}
@@ -1286,11 +1302,11 @@ export function SessionClient() {
                           {translation ?? "Translation unavailable"}
                         </p>
                       </div>
-                    ) : (
+                    ) : !distractionFree ? (
                       <p dir="ltr" className="text-left text-sm leading-7 text-[color:var(--kw-faint)]">
                         Translation hidden.
                       </p>
-                    )}
+                    ) : null}
                   </div>
                 ) : (
                   <div className="mt-3 rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-3 py-3">

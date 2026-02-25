@@ -6,6 +6,7 @@ import { AppProviders } from "@/components/providers/app-providers";
 import { InstallAppBanner } from "@/components/pwa/install-app-banner";
 import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
 import { GoogleAnalytics } from "@/components/telemetry/google-analytics";
+import { DISTRACTION_FREE_COOKIE, normalizeDistractionFree } from "@/hifzer/focus/distraction-free";
 import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
 import { normalizeUiLanguage, UI_LANGUAGE_COOKIE, uiLanguageToHtmlLang } from "@/hifzer/i18n/ui-language";
 import { clerkAuthRoutes } from "@/lib/auth-redirects";
@@ -102,6 +103,7 @@ export default async function RootLayout({
   const authEnabled = clerkEnabled();
   const cookieStore = await cookies();
   const uiLanguage = normalizeUiLanguage(cookieStore.get(UI_LANGUAGE_COOKIE)?.value);
+  const distractionFree = normalizeDistractionFree(cookieStore.get(DISTRACTION_FREE_COOKIE)?.value);
   const ui = getAppUiCopy(uiLanguage);
   return (
       <html
@@ -109,6 +111,7 @@ export default async function RootLayout({
         data-mode="light"
         data-theme="standard"
         data-accent="teal"
+        data-distraction-free={distractionFree ? "1" : "0"}
         className={`${inter.variable} ${mono.variable} ${amiri.variable} ${marketingDisplay.variable}`}
       >
       <body className="kw-canvas min-h-dvh bg-[color:var(--kw-bg)] text-[color:var(--kw-ink)] antialiased">
@@ -127,10 +130,10 @@ export default async function RootLayout({
             signUpForceRedirectUrl={clerkAuthRoutes.signUpForceRedirectUrl}
             signUpFallbackRedirectUrl={clerkAuthRoutes.signUpFallbackRedirectUrl}
           >
-            <AppProviders initialUiLanguage={uiLanguage}>{children}</AppProviders>
+            <AppProviders initialUiLanguage={uiLanguage} initialDistractionFree={distractionFree}>{children}</AppProviders>
           </ClerkProvider>
         ) : (
-          <AppProviders initialUiLanguage={uiLanguage}>{children}</AppProviders>
+          <AppProviders initialUiLanguage={uiLanguage} initialDistractionFree={distractionFree}>{children}</AppProviders>
         )}
         <InstallAppBanner />
         <ServiceWorkerRegistration />

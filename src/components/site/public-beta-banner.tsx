@@ -11,9 +11,11 @@ export async function PublicBetaBanner(props: { variant?: "warning" | "soft" }) 
   return (
     <div
       className={
-        isWarning
-          ? "border-b border-[color:var(--kw-border-2)] bg-[linear-gradient(90deg,rgba(var(--kw-accent-rgb),0.12),rgba(10,138,119,0.10),rgba(234,88,12,0.11))]"
-          : "border-b border-[color:var(--kw-border-2)] bg-[linear-gradient(90deg,rgba(var(--kw-accent-rgb),0.08),rgba(10,138,119,0.06),rgba(234,88,12,0.06))]"
+        `kw-public-beta-banner ${
+          isWarning
+            ? "border-b border-[color:var(--kw-border-2)] bg-[linear-gradient(90deg,rgba(var(--kw-accent-rgb),0.12),rgba(10,138,119,0.10),rgba(234,88,12,0.11))]"
+            : "border-b border-[color:var(--kw-border-2)] bg-[linear-gradient(90deg,rgba(var(--kw-accent-rgb),0.08),rgba(10,138,119,0.06),rgba(234,88,12,0.06))]"
+        }`
       }
     >
       <div className="overflow-hidden py-1.5 [contain:layout_paint]" role="status" aria-label={copy.betaBanner.ariaLabel}>

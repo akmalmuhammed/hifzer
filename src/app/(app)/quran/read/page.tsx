@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
+import { getDistractionFreeServer } from "@/hifzer/focus/server";
 import { getProfileSnapshot } from "@/hifzer/profile/server";
 import {
   filterAyahs,
@@ -123,8 +124,10 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   const searchParams = await props.searchParams;
   const authEnabled = clerkEnabled();
   const userId = authEnabled ? (await auth()).userId : null;
+  const distractionFree = await getDistractionFreeServer();
   const profile = userId ? await getProfileSnapshot(userId) : null;
-  const view = parseView(searchParams.view);
+  const requestedView = parseView(searchParams.view);
+  const view = distractionFree ? "compact" : requestedView;
   const surahNumber = parseBoundedInt(searchParams.surah, 1, 114);
   const ayahId = parseBoundedInt(searchParams.ayah, 1, 6236);
   const cursorAyahId = parseBoundedInt(searchParams.cursor, 1, 6236);
@@ -132,8 +135,8 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   const anonymous = readSingle(searchParams.anon) === "1";
   const quranTranslationId = normalizeQuranTranslationId(profile?.quranTranslationId ?? DEFAULT_QURAN_TRANSLATION_ID);
   const quranShowDetails = profile?.quranShowDetails ?? true;
-  const showPhonetic = parseVisibility(searchParams.phonetic, quranShowDetails);
-  const showTranslation = parseVisibility(searchParams.translation, quranShowDetails);
+  const showPhonetic = distractionFree ? false : parseVisibility(searchParams.phonetic, quranShowDetails);
+  const showTranslation = distractionFree ? false : parseVisibility(searchParams.translation, quranShowDetails);
   const showAnyDetails = showPhonetic || showTranslation;
   const ui = getReaderUiCopy(quranTranslationId);
   const selectedTranslation = QURAN_TRANSLATION_OPTIONS.find((option) => option.id === quranTranslationId);
@@ -362,60 +365,64 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
         <CompactReaderScroll targetId={COMPACT_READER_ANCHOR} ayahId={compact.current.id} />
       ) : null}
 
-      <Link
-        href="/quran"
-        className="inline-flex items-center gap-2 rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-white"
-      >
-        <ArrowLeft size={16} />
-        {ui.back}
-      </Link>
+      {!distractionFree ? (
+        <>
+          <Link
+            href="/quran"
+            className="inline-flex items-center gap-2 rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-white"
+          >
+            <ArrowLeft size={16} />
+            {ui.back}
+          </Link>
 
-      <div className="mt-6">
-        <Pill tone="neutral">{ui.quranReaderPill}</Pill>
-        <h1 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
-          {ui.heroTitle}
-        </h1>
-        <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
-          {ui.heroSubtitle}
-          <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
-            Sahih Muslim 804a
-          </span>
-        </p>
-      </div>
+          <div className="mt-6">
+            <Pill tone="neutral">{ui.quranReaderPill}</Pill>
+            <h1 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
+              {ui.heroTitle}
+            </h1>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
+              {ui.heroSubtitle}
+              <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
+                Sahih Muslim 804a
+              </span>
+            </p>
+          </div>
 
-      <div className="mt-8 md:hidden">
-        <details className="group rounded-[24px] border border-[color:var(--kw-border-2)] bg-white/65 p-3 shadow-[var(--kw-shadow-soft)]">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/75 px-3 py-2.5 text-sm font-semibold text-[color:var(--kw-ink)]">
-            <span>{ui.readerFilters}</span>
-            <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/80 px-2 py-0.5 text-xs text-[color:var(--kw-muted)] group-open:hidden">
-              {ui.show}
-            </span>
-            <span className="hidden rounded-full border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.1)] px-2 py-0.5 text-xs text-[rgba(var(--kw-accent-rgb),1)] group-open:inline-flex">
-              {ui.hide}
-            </span>
-          </summary>
-          <div className="pt-3">{renderFilterControls()}</div>
-        </details>
-      </div>
+          <div className="mt-8 md:hidden">
+            <details className="group rounded-[24px] border border-[color:var(--kw-border-2)] bg-white/65 p-3 shadow-[var(--kw-shadow-soft)]">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/75 px-3 py-2.5 text-sm font-semibold text-[color:var(--kw-ink)]">
+                <span>{ui.readerFilters}</span>
+                <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/80 px-2 py-0.5 text-xs text-[color:var(--kw-muted)] group-open:hidden">
+                  {ui.show}
+                </span>
+                <span className="hidden rounded-full border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.1)] px-2 py-0.5 text-xs text-[rgba(var(--kw-accent-rgb),1)] group-open:inline-flex">
+                  {ui.hide}
+                </span>
+              </summary>
+              <div className="pt-3">{renderFilterControls()}</div>
+            </details>
+          </div>
 
-      <div className="mt-8 hidden md:block">{renderFilterControls()}</div>
+          <div className="mt-8 hidden md:block">{renderFilterControls()}</div>
 
-      <div className="mt-6 flex flex-wrap items-center gap-2">
-        <Pill tone="neutral">{ayahs.length} {ui.ayahsMatchedSuffix}</Pill>
-        <Pill tone={anonymous ? "warn" : "accent"}>{anonymous ? ui.anonymousMode : ui.trackingMode}</Pill>
-        <Pill tone="neutral">{ui.language}: {quranTranslationId}</Pill>
-        <Pill tone={showPhonetic ? "accent" : "warn"}>{showPhonetic ? ui.phoneticsOn : ui.phoneticsOff}</Pill>
-        <Pill tone={showTranslation ? "accent" : "warn"}>
-          {showTranslation ? ui.translationOn : ui.translationOff}
-        </Pill>
-        {view === "list" && ayahs.length > 0 ? (
-          <Pill tone="neutral">
-            {ui.showing} {listStart}-{listEnd}
-          </Pill>
-        ) : null}
-        {surahNumber != null ? <Pill tone="accent">{ui.surahLabel} {surahNumber}</Pill> : null}
-        {ayahId != null ? <Pill tone="accent">{ui.ayahLabel} #{ayahId}</Pill> : null}
-      </div>
+          <div className="mt-6 flex flex-wrap items-center gap-2">
+            <Pill tone="neutral">{ayahs.length} {ui.ayahsMatchedSuffix}</Pill>
+            <Pill tone={anonymous ? "warn" : "accent"}>{anonymous ? ui.anonymousMode : ui.trackingMode}</Pill>
+            <Pill tone="neutral">{ui.language}: {quranTranslationId}</Pill>
+            <Pill tone={showPhonetic ? "accent" : "warn"}>{showPhonetic ? ui.phoneticsOn : ui.phoneticsOff}</Pill>
+            <Pill tone={showTranslation ? "accent" : "warn"}>
+              {showTranslation ? ui.translationOn : ui.translationOff}
+            </Pill>
+            {view === "list" && ayahs.length > 0 ? (
+              <Pill tone="neutral">
+                {ui.showing} {listStart}-{listEnd}
+              </Pill>
+            ) : null}
+            {surahNumber != null ? <Pill tone="accent">{ui.surahLabel} {surahNumber}</Pill> : null}
+            {ayahId != null ? <Pill tone="accent">{ui.ayahLabel} #{ayahId}</Pill> : null}
+          </div>
+        </>
+      ) : null}
 
       {ayahs.length < 1 ? (
         <Card className="mt-8">
