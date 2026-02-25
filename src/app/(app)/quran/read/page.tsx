@@ -17,6 +17,7 @@ import {
   QURAN_TRANSLATION_OPTIONS,
   normalizeQuranTranslationId,
 } from "@/hifzer/quran/translation-prefs";
+import { getReaderUiCopy } from "@/hifzer/quran/reader-ui-copy";
 import { getPhoneticByAyahId, getQuranTranslationByAyahId } from "@/hifzer/quran/translation.server";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { CompactReaderScroll } from "./compact-reader-scroll";
@@ -134,6 +135,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   const showPhonetic = parseVisibility(searchParams.phonetic, quranShowDetails);
   const showTranslation = parseVisibility(searchParams.translation, quranShowDetails);
   const showAnyDetails = showPhonetic || showTranslation;
+  const ui = getReaderUiCopy(quranTranslationId);
   const selectedTranslation = QURAN_TRANSLATION_OPTIONS.find((option) => option.id === quranTranslationId);
   const translationDir = selectedTranslation?.rtl ? "rtl" : "ltr";
   const translationAlignClass = selectedTranslation?.rtl ? "text-right" : "text-left";
@@ -235,6 +237,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
         initialTranslationId={quranTranslationId}
         initialShowDetails={quranShowDetails}
         persistEnabled={Boolean(authEnabled && userId)}
+        ui={ui}
       />
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -246,7 +249,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
               : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
           }`}
         >
-          Tracking on
+          {ui.trackingOn}
         </Link>
         <Link
           href={anonymousHref}
@@ -256,7 +259,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
               : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
           }`}
         >
-          Anonymous window
+          {ui.anonymousWindow}
         </Link>
         <Link
           href={listHref}
@@ -266,7 +269,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
               : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
           }`}
         >
-          List view
+          {ui.listView}
         </Link>
         <Link
           href={compactHref}
@@ -276,7 +279,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
               : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
           }`}
         >
-          Compact view
+          {ui.compactView}
         </Link>
       </div>
 
@@ -289,7 +292,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
               : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
           }`}
         >
-          {showPhonetic ? "Disable phonetics" : "Enable phonetics"}
+          {showPhonetic ? ui.disablePhonetics : ui.enablePhonetics}
         </Link>
         <Link
           href={translationToggleHref}
@@ -299,7 +302,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
               : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
           }`}
         >
-          {showTranslation ? "Disable translation" : "Enable translation"}
+          {showTranslation ? ui.disableTranslation : ui.enableTranslation}
         </Link>
       </div>
 
@@ -309,13 +312,13 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
         <input type="hidden" name="phonetic" value={showPhonetic ? "1" : "0"} />
         <input type="hidden" name="translation" value={showTranslation ? "1" : "0"} />
         <label className="text-sm text-[color:var(--kw-muted)]">
-          Surah
+          {ui.surah}
           <select
             name="surah"
             defaultValue={surahNumber != null ? String(surahNumber) : ""}
             className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
           >
-            <option value="">All surahs</option>
+            <option value="">{ui.allSurahs}</option>
             {surahs.map((surah) => (
               <option key={surah.surahNumber} value={surah.surahNumber}>
                 {surah.surahNumber} - {surah.nameTransliteration}
@@ -324,14 +327,14 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
           </select>
         </label>
         <label className="text-sm text-[color:var(--kw-muted)]">
-          Ayah (global id)
+          {ui.ayahGlobalId}
           <input
             type="number"
             name="ayah"
             min={1}
             max={6236}
             defaultValue={ayahId != null ? String(ayahId) : ""}
-            placeholder="1 - 6236"
+            placeholder={ui.ayahPlaceholder}
             className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
           />
         </label>
@@ -340,13 +343,13 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
             type="submit"
             className="h-10 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
           >
-            Apply filters
+            {ui.applyFilters}
           </button>
           <Link
             href={clearHref}
             className="h-10 rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
           >
-            Clear
+            {ui.clear}
           </Link>
         </div>
       </form>
@@ -364,16 +367,16 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
         className="inline-flex items-center gap-2 rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-white"
       >
         <ArrowLeft size={16} />
-        Back
+        {ui.back}
       </Link>
 
       <div className="mt-6">
-        <Pill tone="neutral">Qur&apos;an Reader</Pill>
+        <Pill tone="neutral">{ui.quranReaderPill}</Pill>
         <h1 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
-          Recite the Qur&apos;an. It will intercede for you.
+          {ui.heroTitle}
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
-          Return daily, and let every ayah become your witness.
+          {ui.heroSubtitle}
           <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
             Sahih Muslim 804a
           </span>
@@ -383,12 +386,12 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
       <div className="mt-8 md:hidden">
         <details className="group rounded-[24px] border border-[color:var(--kw-border-2)] bg-white/65 p-3 shadow-[var(--kw-shadow-soft)]">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/75 px-3 py-2.5 text-sm font-semibold text-[color:var(--kw-ink)]">
-            <span>Reader filters</span>
+            <span>{ui.readerFilters}</span>
             <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/80 px-2 py-0.5 text-xs text-[color:var(--kw-muted)] group-open:hidden">
-              Show
+              {ui.show}
             </span>
             <span className="hidden rounded-full border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.1)] px-2 py-0.5 text-xs text-[rgba(var(--kw-accent-rgb),1)] group-open:inline-flex">
-              Hide
+              {ui.hide}
             </span>
           </summary>
           <div className="pt-3">{renderFilterControls()}</div>
@@ -398,31 +401,31 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
       <div className="mt-8 hidden md:block">{renderFilterControls()}</div>
 
       <div className="mt-6 flex flex-wrap items-center gap-2">
-        <Pill tone="neutral">{ayahs.length} ayahs matched</Pill>
-        <Pill tone={anonymous ? "warn" : "accent"}>{anonymous ? "Anonymous mode" : "Tracking mode"}</Pill>
-        <Pill tone="neutral">Language: {quranTranslationId}</Pill>
-        <Pill tone={showPhonetic ? "accent" : "warn"}>{showPhonetic ? "Phonetics on" : "Phonetics off"}</Pill>
+        <Pill tone="neutral">{ayahs.length} {ui.ayahsMatchedSuffix}</Pill>
+        <Pill tone={anonymous ? "warn" : "accent"}>{anonymous ? ui.anonymousMode : ui.trackingMode}</Pill>
+        <Pill tone="neutral">{ui.language}: {quranTranslationId}</Pill>
+        <Pill tone={showPhonetic ? "accent" : "warn"}>{showPhonetic ? ui.phoneticsOn : ui.phoneticsOff}</Pill>
         <Pill tone={showTranslation ? "accent" : "warn"}>
-          {showTranslation ? "Translation on" : "Translation off"}
+          {showTranslation ? ui.translationOn : ui.translationOff}
         </Pill>
         {view === "list" && ayahs.length > 0 ? (
           <Pill tone="neutral">
-            Showing {listStart}-{listEnd}
+            {ui.showing} {listStart}-{listEnd}
           </Pill>
         ) : null}
-        {surahNumber != null ? <Pill tone="accent">Surah {surahNumber}</Pill> : null}
-        {ayahId != null ? <Pill tone="accent">Ayah #{ayahId}</Pill> : null}
+        {surahNumber != null ? <Pill tone="accent">{ui.surahLabel} {surahNumber}</Pill> : null}
+        {ayahId != null ? <Pill tone="accent">{ui.ayahLabel} #{ayahId}</Pill> : null}
       </div>
 
       {ayahs.length < 1 ? (
         <Card className="mt-8">
-          <Pill tone="warn">No results</Pill>
+          <Pill tone="warn">{ui.noResults}</Pill>
           <p className="mt-3 text-sm text-[color:var(--kw-muted)]">
-            No ayahs matched this filter combination. Try clearing one or more filters.
+            {ui.noResultsMessage}
           </p>
           <div className="mt-4">
             <Link href={clearHref} className="text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">
-              Clear all filters
+              {ui.clearAllFilters}
             </Link>
           </div>
         </Card>
@@ -451,7 +454,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
                 <div className="mt-3 space-y-2">
                   {showPhonetic ? (
                     <p dir="ltr" className="text-sm leading-7 text-[color:var(--kw-faint)]">
-                      {getPhoneticByAyahId(ayah.id) ?? "Phonetic unavailable"}
+                      {getPhoneticByAyahId(ayah.id) ?? ui.phoneticUnavailable}
                     </p>
                   ) : null}
                   {showTranslation ? (
@@ -460,13 +463,13 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
                       className={`text-sm leading-7 text-[color:var(--kw-muted)] ${translationAlignClass}`}
                     >
                       {getQuranTranslationByAyahId(ayah.id, quranTranslationId) ??
-                        `Translation unavailable (${quranTranslationId})`}
+                        `${ui.translationUnavailable} (${quranTranslationId})`}
                     </p>
                   ) : null}
                 </div>
               ) : (
-                <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-faint)]">
-                  Phonetics and translation are hidden in reader filters.
+                <p dir={translationDir} className="mt-3 text-sm leading-7 text-[color:var(--kw-faint)]">
+                  {ui.detailsHiddenInFilters}
                 </p>
               )}
             </Card>
@@ -486,16 +489,16 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
                     })}
                     className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 font-semibold text-[color:var(--kw-ink)]"
                   >
-                    Previous page
+                    {ui.previousPage}
                   </Link>
                 ) : (
                   <span className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/50 px-3 py-2 font-semibold text-[color:var(--kw-faint)]">
-                    Previous page
+                    {ui.previousPage}
                   </span>
                 )}
 
                 <span className="text-[color:var(--kw-muted)]">
-                  Page {listPage} of {totalListPages}
+                  {ui.page} {listPage} {ui.of} {totalListPages}
                 </span>
 
                 {listPage < totalListPages ? (
@@ -509,11 +512,11 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
                     })}
                     className="rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
                   >
-                    Next page
+                    {ui.nextPage}
                   </Link>
                 ) : (
                   <span className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/50 px-3 py-2 font-semibold text-[color:var(--kw-faint)]">
-                    Next page
+                    {ui.nextPage}
                   </span>
                 )}
               </div>
@@ -532,6 +535,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
           anonymous={anonymous}
           showPhonetic={showPhonetic}
           showTranslation={showTranslation}
+          ui={ui}
           translationDir={translationDir}
           translationAlignClass={translationAlignClass}
           compactReaderAnchor={COMPACT_READER_ANCHOR}

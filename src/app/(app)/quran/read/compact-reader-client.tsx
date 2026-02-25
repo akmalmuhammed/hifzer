@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
 import { ReaderBookmarkControl } from "@/components/bookmarks/reader-bookmark-control";
 import { Card } from "@/components/ui/card";
+import type { ReaderUiCopy } from "@/hifzer/quran/reader-ui-copy";
 import { ReadProgressSync } from "./read-progress-sync";
 
 export type CompactAyahData = {
@@ -25,6 +26,7 @@ type Props = {
   anonymous: boolean;
   showPhonetic: boolean;
   showTranslation: boolean;
+  ui: ReaderUiCopy;
   translationDir: "ltr" | "rtl";
   translationAlignClass: string;
   compactReaderAnchor: string;
@@ -40,6 +42,7 @@ export function CompactReaderClient({
   anonymous,
   showPhonetic,
   showTranslation,
+  ui,
   translationDir,
   translationAlignClass,
   compactReaderAnchor,
@@ -148,7 +151,7 @@ export function CompactReaderClient({
           <div className="mt-3 space-y-2">
             {showPhonetic ? (
               <p dir="ltr" className="text-sm leading-7 text-[color:var(--kw-faint)]">
-                {current.phonetic ?? "Phonetic unavailable"}
+                {current.phonetic ?? ui.phoneticUnavailable}
               </p>
             ) : null}
             {showTranslation ? (
@@ -156,13 +159,13 @@ export function CompactReaderClient({
                 dir={translationDir}
                 className={`text-sm leading-7 text-[color:var(--kw-muted)] ${translationAlignClass}`}
               >
-                {current.translation ?? "Translation unavailable"}
+                {current.translation ?? ui.translationUnavailable}
               </p>
             ) : null}
           </div>
         ) : (
-          <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-faint)]">
-            Phonetics and translation are hidden in reader filters.
+          <p dir={translationDir} className="mt-3 text-sm leading-7 text-[color:var(--kw-faint)]">
+            {ui.detailsHiddenInFilters}
           </p>
         )}
 
@@ -170,22 +173,22 @@ export function CompactReaderClient({
         <div className="mt-6 flex items-center gap-2">
           {prevAyah ? (
             <button type="button" onClick={handlePrev} className={btnSecondary}>
-              Previous
+              {ui.previous}
             </button>
           ) : (
-            <span className={btnDisabled}>Previous</span>
+            <span className={btnDisabled}>{ui.previous}</span>
           )}
 
           {nextAyah ? (
             <button type="button" onClick={handleNext} className={btnActive}>
-              Next
+              {ui.next}
             </button>
           ) : nextSurahHref ? (
             <Link href={nextSurahHref} scroll={false} className={btnActive}>
-              Next Surah
+              {ui.nextSurah}
             </Link>
           ) : (
-            <span className={btnDisabled}>Next</span>
+            <span className={btnDisabled}>{ui.next}</span>
           )}
         </div>
       </Card>
