@@ -20,9 +20,11 @@ export function LanguageSettingsClient(props: LanguageSettingsClientProps) {
   const { pushToast } = useToast();
   const [quranTranslationId, setQuranTranslationId] = useState<QuranTranslationId>(props.initial.quranTranslationId);
   const [saving, setSaving] = useState(false);
+  const [saveWarning, setSaveWarning] = useState<string | null>(null);
 
   async function save() {
     setSaving(true);
+    setSaveWarning(null);
     try {
       const res = await fetch("/api/profile/language", {
         method: "POST",
@@ -33,12 +35,15 @@ export function LanguageSettingsClient(props: LanguageSettingsClientProps) {
       if (!res.ok) {
         throw new Error(payload.error || "Failed to save language settings.");
       }
+      setSaveWarning(null);
       pushToast({ tone: "success", title: "Saved", message: "Language preference updated." });
     } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to save language settings.";
+      setSaveWarning(message);
       pushToast({
         tone: "warning",
         title: "Save failed",
-        message: error instanceof Error ? error.message : "Failed to save language settings.",
+        message,
       });
     } finally {
       setSaving(false);
@@ -88,6 +93,14 @@ export function LanguageSettingsClient(props: LanguageSettingsClientProps) {
           <p className="mt-2 text-xs text-[color:var(--kw-faint)]">
             Sign in with Clerk to persist this setting per user.
           </p>
+        ) : null}
+        {saveWarning ? (
+          <div className="mt-3 rounded-xl border border-[rgba(234,88,12,0.3)] bg-[rgba(234,88,12,0.08)] px-3 py-2">
+            <p className="text-xs font-semibold text-[rgba(234,88,12,0.95)]">
+              {saveWarning.startsWith("Persistence unavailable:") ? "Persistence unavailable" : "Save issue"}
+            </p>
+            <p className="mt-1 text-xs text-[color:var(--kw-muted)]">{saveWarning}</p>
+          </div>
         ) : null}
 
         <div className="mt-6 flex justify-end">

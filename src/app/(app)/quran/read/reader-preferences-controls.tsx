@@ -17,6 +17,7 @@ export function ReaderPreferencesControls(props: ReaderPreferencesControlsProps)
   const [isPending, startTransition] = useTransition();
   const [translationId, setTranslationId] = useState<QuranTranslationId>(props.initialTranslationId);
   const [showDetails, setShowDetails] = useState(props.initialShowDetails);
+  const [languageWarning, setLanguageWarning] = useState<string | null>(null);
 
   async function saveLanguage(next: QuranTranslationId) {
     const res = await fetch("/api/profile/language", {
@@ -57,15 +58,18 @@ export function ReaderPreferencesControls(props: ReaderPreferencesControlsProps)
             startTransition(() => {
               void saveLanguage(next)
                 .then(() => {
+                  setLanguageWarning(null);
                   pushToast({ tone: "success", title: "Saved", message: "Translation language updated." });
                   router.refresh();
                 })
                 .catch((error) => {
+                  const message = error instanceof Error ? error.message : "Failed to save language preference.";
+                  setLanguageWarning(message);
                   setTranslationId(translationId);
                   pushToast({
                     tone: "warning",
                     title: "Save failed",
-                    message: error instanceof Error ? error.message : "Failed to save language preference.",
+                    message,
                   });
                 });
             });
@@ -81,6 +85,14 @@ export function ReaderPreferencesControls(props: ReaderPreferencesControlsProps)
         <span className="mt-1 block text-xs text-[color:var(--kw-faint)]">
           Active: {selected?.label ?? translationId}
         </span>
+        {languageWarning ? (
+          <span className="mt-1 block rounded-xl border border-[rgba(234,88,12,0.3)] bg-[rgba(234,88,12,0.08)] px-3 py-2 text-xs leading-5 text-[color:var(--kw-muted)]">
+            <span className="block font-semibold text-[rgba(234,88,12,0.95)]">
+              {languageWarning.startsWith("Persistence unavailable:") ? "Persistence unavailable" : "Save issue"}
+            </span>
+            <span className="block">{languageWarning}</span>
+          </span>
+        ) : null}
       </label>
 
       <div className="text-sm text-[color:var(--kw-muted)]">
