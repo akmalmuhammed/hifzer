@@ -4,20 +4,25 @@ import { useState } from "react";
 import clsx from "clsx";
 import { Menu, X } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
+import { UiLanguageSwitcher } from "@/components/app/ui-language-switcher";
 import { HifzerMark } from "@/components/brand/hifzer-mark";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
+import { useUiLanguage } from "@/components/providers/ui-language-provider";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
 
 const LINKS = [
-  { href: "/compare", label: "Compare" },
+  { href: "/compare", key: "compare" as const },
 ] as const;
 
 export function MarketingNav(props: { authEnabled: boolean }) {
   const [open, setOpen] = useState(false);
   const { isSignedIn } = usePublicAuth();
+  const { language } = useUiLanguage();
+  const copy = getAppUiCopy(language);
   const showSignedIn = props.authEnabled && isSignedIn;
 
   return (
@@ -33,7 +38,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                 Hifzer
               </span>
               <span className="block text-xs text-[color:var(--kw-muted)]">
-                Hifz operating system
+                {copy.brandTagline}
               </span>
             </span>
           </TrackedLink>
@@ -43,10 +48,10 @@ export function MarketingNav(props: { authEnabled: boolean }) {
               <TrackedLink
                 key={l.href}
                 href={l.href}
-                telemetryName={`marketing.nav.${l.label.toLowerCase().replace(/\s+/g, "-")}`}
+                telemetryName={`marketing.nav.${l.key}`}
                 className="text-sm font-semibold text-[color:var(--kw-muted)] transition hover:text-[color:var(--kw-ink)]"
               >
-                {l.label}
+                {copy.marketing.compare}
               </TrackedLink>
             ))}
           </nav>
@@ -56,7 +61,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
               <>
                 <Button asChild size="md">
                   <TrackedLink href="/today" telemetryName="marketing.open-app">
-                    Open app
+                    {copy.marketing.openApp}
                   </TrackedLink>
                 </Button>
                 <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] shadow-[var(--kw-shadow-soft)]">
@@ -70,16 +75,17 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                   signedOutHref="/login"
                   className="rounded-2xl px-3 py-2 text-sm font-semibold text-[color:var(--kw-muted)] transition hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)]"
                 >
-                  Sign in
+                  {copy.marketing.signIn}
                 </PublicAuthLink>
                 <Button asChild size="md">
                   <PublicAuthLink signedInHref="/today" signedOutHref="/login">
-                    Get started
+                    {copy.marketing.getStarted}
                   </PublicAuthLink>
                 </Button>
               </>
             )}
 
+            <UiLanguageSwitcher compact className="w-[132px]" />
             <ThemeToggle className="ml-1" />
           </div>
 
@@ -87,7 +93,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
             type="button"
             onClick={() => setOpen((v) => !v)}
             className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)] backdrop-blur transition hover:bg-[color:var(--kw-hover-strong)] md:hidden"
-            aria-label="Toggle menu"
+            aria-label={copy.marketing.toggleMenu}
           >
             {open ? <X size={18} /> : <Menu size={18} />}
           </button>
@@ -106,11 +112,11 @@ export function MarketingNav(props: { authEnabled: boolean }) {
               <TrackedLink
                 key={l.href}
                 href={l.href}
-                telemetryName={`marketing.mobile-nav.${l.label.toLowerCase().replace(/\s+/g, "-")}`}
+                telemetryName={`marketing.mobile-nav.${l.key}`}
                 onClick={() => setOpen(false)}
                 className="block rounded-2xl px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-soft)]"
               >
-                {l.label}
+                {copy.marketing.compare}
               </TrackedLink>
             ))}
             <div className="flex gap-2 pt-1">
@@ -122,7 +128,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                     onClick={() => setOpen(false)}
                     className="flex-1 rounded-2xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 py-2 text-center text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]"
                   >
-                    Open app
+                    {copy.marketing.openApp}
                   </TrackedLink>
                   <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] shadow-[var(--kw-shadow-soft)]">
                     <UserButton afterSignOutUrl="/" />
@@ -136,15 +142,18 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                     onClick={() => setOpen(false)}
                     className="flex-1 rounded-2xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 py-2 text-center text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]"
                   >
-                    Sign in
+                    {copy.marketing.signIn}
                   </PublicAuthLink>
                   <Button asChild className="w-full">
                     <PublicAuthLink signedInHref="/today" signedOutHref="/login" onClick={() => setOpen(false)} className="flex-1">
-                      Get started
+                      {copy.marketing.getStarted}
                     </PublicAuthLink>
                   </Button>
                 </>
               )}
+            </div>
+            <div className="pt-1">
+              <UiLanguageSwitcher compact onChanged={() => setOpen(false)} />
             </div>
             <div className="mt-3 flex justify-center">
               <ThemeToggle />

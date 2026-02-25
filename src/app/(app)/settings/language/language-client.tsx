@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
+import { UiLanguageSwitcher } from "@/components/app/ui-language-switcher";
+import { useUiLanguage } from "@/components/providers/ui-language-provider";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
+import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
 import { QURAN_TRANSLATION_OPTIONS, type QuranTranslationId } from "@/hifzer/quran/translation-prefs";
 
 type LanguageSettingsClientProps = {
@@ -17,6 +20,8 @@ type LanguageSettingsClientProps = {
 };
 
 export function LanguageSettingsClient(props: LanguageSettingsClientProps) {
+  const { language } = useUiLanguage();
+  const copy = getAppUiCopy(language);
   const { pushToast } = useToast();
   const [quranTranslationId, setQuranTranslationId] = useState<QuranTranslationId>(props.initial.quranTranslationId);
   const [saving, setSaving] = useState(false);
@@ -33,16 +38,20 @@ export function LanguageSettingsClient(props: LanguageSettingsClientProps) {
       });
       const payload = (await res.json()) as { error?: string };
       if (!res.ok) {
-        throw new Error(payload.error || "Failed to save language settings.");
+        throw new Error(payload.error || copy.languageSettings.failedToSaveLanguage);
       }
       setSaveWarning(null);
-      pushToast({ tone: "success", title: "Saved", message: "Language preference updated." });
+      pushToast({
+        tone: "success",
+        title: copy.languageSettings.savedTitle,
+        message: copy.languageSettings.languagePreferenceUpdated,
+      });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to save language settings.";
+      const message = error instanceof Error ? error.message : copy.languageSettings.failedToSaveLanguage;
       setSaveWarning(message);
       pushToast({
         tone: "warning",
-        title: "Save failed",
+        title: copy.languageSettings.saveFailedTitle,
         message,
       });
     } finally {
@@ -55,27 +64,42 @@ export function LanguageSettingsClient(props: LanguageSettingsClientProps) {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Settings"
-        title="Language"
-        subtitle="Choose your default translation language for Qur'an reading and session translation UI."
+        eyebrow={copy.languageSettings.eyebrow}
+        title={copy.languageSettings.title}
+        subtitle={copy.languageSettings.subtitle}
       />
 
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Default translation</p>
+            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{copy.languageSettings.interfaceLanguageTitle}</p>
             <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">
-              This preference is saved to your account and follows you across devices.
+              {copy.languageSettings.interfaceLanguageSubtitle}
+            </p>
+          </div>
+        </div>
+        <UiLanguageSwitcher
+          className="mt-5 block text-sm text-[color:var(--kw-muted)]"
+          label={copy.languageSettings.interfaceLanguageLabel}
+        />
+      </Card>
+
+      <Card>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{copy.languageSettings.defaultTranslationTitle}</p>
+            <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">
+              {copy.languageSettings.defaultTranslationSubtitle}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <Pill tone="accent">{selected?.label ?? "Unknown language"}</Pill>
-              <Pill tone="neutral">{selected?.rtl ? "RTL script" : "LTR script"}</Pill>
+              <Pill tone="accent">{selected?.label ?? copy.languageSettings.unknownLanguage}</Pill>
+              <Pill tone="neutral">{selected?.rtl ? copy.languageSettings.rtlScript : copy.languageSettings.ltrScript}</Pill>
             </div>
           </div>
         </div>
 
         <label className="mt-5 block text-sm text-[color:var(--kw-muted)]">
-          Language
+          {copy.languageSettings.defaultTranslationLabel}
           <select
             value={quranTranslationId}
             disabled={saving || props.persistEnabled === false}
@@ -91,13 +115,15 @@ export function LanguageSettingsClient(props: LanguageSettingsClientProps) {
         </label>
         {props.persistEnabled === false ? (
           <p className="mt-2 text-xs text-[color:var(--kw-faint)]">
-            Sign in with Clerk to persist this setting per user.
+            {copy.languageSettings.signInToPersist}
           </p>
         ) : null}
         {saveWarning ? (
           <div className="mt-3 rounded-xl border border-[rgba(234,88,12,0.3)] bg-[rgba(234,88,12,0.08)] px-3 py-2">
             <p className="text-xs font-semibold text-[rgba(234,88,12,0.95)]">
-              {saveWarning.startsWith("Persistence unavailable:") ? "Persistence unavailable" : "Save issue"}
+              {saveWarning.startsWith("Persistence unavailable:")
+                ? copy.languageSettings.persistenceUnavailable
+                : copy.languageSettings.saveIssue}
             </p>
             <p className="mt-1 text-xs text-[color:var(--kw-muted)]">{saveWarning}</p>
           </div>
@@ -110,7 +136,7 @@ export function LanguageSettingsClient(props: LanguageSettingsClientProps) {
             disabled={props.persistEnabled === false}
             onClick={save}
           >
-            Save language <ArrowRight size={16} />
+            {copy.languageSettings.saveLanguage} <ArrowRight size={16} />
           </Button>
         </div>
       </Card>

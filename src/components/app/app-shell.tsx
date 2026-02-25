@@ -17,36 +17,51 @@ import {
   Flame,
 } from "lucide-react";
 import { HifzerMark } from "@/components/brand/hifzer-mark";
+import { UiLanguageSwitcher } from "@/components/app/ui-language-switcher";
 import { StreakCornerBadge } from "@/components/app/streak-corner-badge";
+import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
+import { useUiLanguage } from "@/components/providers/ui-language-provider";
 
-type NavItem = { href: string; label: string; icon: typeof House };
+type NavKey =
+  | "home"
+  | "today"
+  | "hifz"
+  | "quran"
+  | "progress"
+  | "streak"
+  | "glossary"
+  | "roadmap"
+  | "support"
+  | "settings";
+
+type NavItem = { href: string; key: NavKey; icon: typeof House };
 
 const PRIMARY: NavItem[] = [
-  { href: "/", label: "Home", icon: House },
-  { href: "/today", label: "Today", icon: CalendarDays },
-  { href: "/hifz", label: "Hifz", icon: PlayCircle },
-  { href: "/quran", label: "Qur'an", icon: BookOpenText },
+  { href: "/", key: "home", icon: House },
+  { href: "/today", key: "today", icon: CalendarDays },
+  { href: "/hifz", key: "hifz", icon: PlayCircle },
+  { href: "/quran", key: "quran", icon: BookOpenText },
 ];
 
 const INSIGHTS: NavItem[] = [
-  { href: "/progress", label: "Progress", icon: TrendingUp },
-  { href: "/streak", label: "Streak", icon: Flame },
-  { href: "/quran/glossary", label: "Glossary", icon: LibraryBig },
+  { href: "/progress", key: "progress", icon: TrendingUp },
+  { href: "/streak", key: "streak", icon: Flame },
+  { href: "/quran/glossary", key: "glossary", icon: LibraryBig },
 ];
 
 const PLATFORM: NavItem[] = [
-  { href: "/roadmap", label: "Roadmap", icon: Map },
-  { href: "/support", label: "Support", icon: LifeBuoy },
+  { href: "/roadmap", key: "roadmap", icon: Map },
+  { href: "/support", key: "support", icon: LifeBuoy },
 ];
 
 const MOBILE_NAV: NavItem[] = [
-  { href: "/", label: "Home", icon: House },
-  { href: "/today", label: "Today", icon: CalendarDays },
-  { href: "/hifz", label: "Hifz", icon: PlayCircle },
-  { href: "/quran", label: "Qur'an", icon: BookOpenText },
-  { href: "/progress", label: "Progress", icon: TrendingUp },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/", key: "home", icon: House },
+  { href: "/today", key: "today", icon: CalendarDays },
+  { href: "/hifz", key: "hifz", icon: PlayCircle },
+  { href: "/quran", key: "quran", icon: BookOpenText },
+  { href: "/progress", key: "progress", icon: TrendingUp },
+  { href: "/settings", key: "settings", icon: Settings },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -83,14 +98,15 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href;
 }
 
-function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
+function NavLink(props: { item: NavItem; pathname: string; copy: ReturnType<typeof getAppUiCopy> }) {
+  const { item, pathname, copy } = props;
   const active = isActive(pathname, item.href);
   const Icon = item.icon;
   return (
     <TrackedLink
       key={item.href}
       href={item.href}
-      telemetryName={`shell.nav.${item.label.toLowerCase()}`}
+      telemetryName={`shell.nav.${item.key}`}
       className={clsx(
         "flex items-center gap-3 rounded-[18px] border px-3 py-2 text-sm font-semibold shadow-[var(--kw-shadow-soft)] transition",
         active
@@ -106,7 +122,7 @@ function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
       >
         <Icon size={18} />
       </span>
-      <span className="truncate">{item.label}</span>
+      <span className="truncate">{copy.nav[item.key]}</span>
     </TrackedLink>
   );
 }
@@ -115,6 +131,8 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
   const pathname = usePathname();
   const [insightsOpen, setInsightsOpen] = useState(true);
   const [platformOpen, setPlatformOpen] = useState(true);
+  const { language } = useUiLanguage();
+  const copy = getAppUiCopy(language);
 
   return (
     <div className="min-h-dvh overflow-x-clip">
@@ -128,13 +146,13 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
               </span>
               <div className="leading-tight">
                 <p className="text-sm font-semibold tracking-tight text-[color:var(--kw-ink)]">Hifzer</p>
-                <p className="text-xs text-[color:var(--kw-muted)]">Hifz operating system</p>
+                <p className="text-xs text-[color:var(--kw-muted)]">{copy.brandTagline}</p>
               </div>
             </TrackedLink>
 
             <nav className="space-y-1">
               {PRIMARY.map((item) => (
-                <NavLink key={item.href} item={item} pathname={pathname} />
+                <NavLink key={item.href} item={item} pathname={pathname} copy={copy} />
               ))}
             </nav>
 
@@ -144,7 +162,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
                 onClick={() => setInsightsOpen((v) => !v)}
                 className="flex w-full items-center justify-between rounded-[14px] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[color:var(--kw-faint)] transition hover:text-[color:var(--kw-muted)]"
               >
-                <span>Insights</span>
+                <span>{copy.sectionInsights}</span>
                 <ChevronDown
                   size={14}
                   className={clsx("transition-transform", insightsOpen && "rotate-180")}
@@ -153,7 +171,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
               {insightsOpen ? (
                 <div className="space-y-1">
                   {INSIGHTS.map((item) => (
-                    <NavLink key={item.href} item={item} pathname={pathname} />
+                    <NavLink key={item.href} item={item} pathname={pathname} copy={copy} />
                   ))}
                 </div>
               ) : null}
@@ -165,7 +183,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
                 onClick={() => setPlatformOpen((v) => !v)}
                 className="flex w-full items-center justify-between rounded-[14px] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[color:var(--kw-faint)] transition hover:text-[color:var(--kw-muted)]"
               >
-                <span>Product</span>
+                <span>{copy.sectionProduct}</span>
                 <ChevronDown
                   size={14}
                   className={clsx("transition-transform", platformOpen && "rotate-180")}
@@ -174,7 +192,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
               {platformOpen ? (
                 <div className="space-y-1">
                   {PLATFORM.map((item) => (
-                    <NavLink key={item.href} item={item} pathname={pathname} />
+                    <NavLink key={item.href} item={item} pathname={pathname} copy={copy} />
                   ))}
                 </div>
               ) : null}
@@ -182,10 +200,15 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
 
             <nav className="space-y-1">
               <NavLink
-                item={{ href: "/settings", label: "Settings", icon: Settings }}
+                item={{ href: "/settings", key: "settings", icon: Settings }}
                 pathname={pathname}
+                copy={copy}
               />
             </nav>
+
+            <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] p-2">
+              <UiLanguageSwitcher compact />
+            </div>
 
           </div>
         </aside>
@@ -204,7 +227,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
               <TrackedLink
                 key={item.href}
                 href={item.href}
-                telemetryName={`shell.mobile-nav.${item.label.toLowerCase()}`}
+                telemetryName={`shell.mobile-nav.${item.key}`}
                 className={clsx(
                   "flex flex-col items-center justify-center gap-1 rounded-[18px] px-2 py-2 text-[11px] font-semibold transition",
                   active
@@ -213,7 +236,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
                 )}
               >
                 <Icon size={18} />
-                <span className="truncate">{item.label}</span>
+                <span className="truncate">{copy.nav[item.key]}</span>
               </TrackedLink>
             );
           })}

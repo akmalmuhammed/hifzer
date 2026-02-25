@@ -3,109 +3,117 @@ import { Bell, Eye, GraduationCap, Languages, LifeBuoy, Map, Palette, SlidersHor
 import { PageHeader } from "@/components/app/page-header";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
+import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
+import { getUiLanguageServer } from "@/hifzer/i18n/server";
 
 export const metadata = {
   title: "Settings",
 };
 
-const ITEMS = [
-  {
-    href: "/settings/plan",
-    title: "Plan",
-    desc: "Time budget, practice days, and recalibration.",
-    icon: <SlidersHorizontal size={18} />,
-    tone: "brand" as const,
-  },
-  {
-    href: "/settings/display",
-    title: "Display",
-    desc: "Dark mode, theme preset, and accent.",
-    icon: <Palette size={18} />,
-    tone: "accent" as const,
-  },
-  {
-    href: "/settings/language",
-    title: "Language",
-    desc: "Default translation language and reader detail preferences.",
-    icon: <Languages size={18} />,
-    tone: "accent" as const,
-  },
-  {
-    href: "/settings/account",
-    title: "Account",
-    desc: "Profile, password, and deletion.",
-    icon: <UserRound size={18} />,
-    tone: "neutral" as const,
-  },
-  {
-    href: "/settings/reminders",
-    title: "Reminders",
-    desc: "Email reminder timing and opt-in controls.",
-    icon: <Bell size={18} />,
-    tone: "warn" as const,
-  },
-  {
-    href: "/settings/privacy",
-    title: "Privacy",
-    desc: "Retention controls, export, and delete policies.",
-    icon: <Eye size={18} />,
-    tone: "neutral" as const,
-  },
-  {
-    href: "/settings/reciter",
-    title: "Reciter",
-    desc: "Audio voice profile and playback defaults.",
-    icon: <Volume2 size={18} />,
-    tone: "accent" as const,
-  },
-  {
-    href: "/settings/scoring",
-    title: "Scoring",
-    desc: "Grade labels and scoring behavior for session reviews.",
-    icon: <Target size={18} />,
-    tone: "brand" as const,
-  },
-  {
-    href: "/settings/teacher",
-    title: "Teacher",
-    desc: "Teacher collaboration placeholders and review controls.",
-    icon: <GraduationCap size={18} />,
-    tone: "neutral" as const,
-  },
-  {
-    href: "/settings/thresholds",
-    title: "Thresholds",
-    desc: "SRS thresholds and queue tuning placeholders.",
-    icon: <SlidersHorizontal size={18} />,
-    tone: "warn" as const,
-  },
-  {
-    href: "/roadmap",
-    title: "Roadmap",
-    desc: "Upcoming AI recitation, mobile apps, and infrastructure plans.",
-    icon: <Map size={18} />,
-    tone: "accent" as const,
-  },
-  {
-    href: "/support",
-    title: "Support",
-    desc: "Talk directly to the dev team and send structured feedback.",
-    icon: <LifeBuoy size={18} />,
-    tone: "brand" as const,
-  },
-] as const;
+function getItems(copy: ReturnType<typeof getAppUiCopy>) {
+  return [
+    {
+      href: "/settings/plan",
+      title: "Plan",
+      desc: "Time budget, practice days, and recalibration.",
+      icon: <SlidersHorizontal size={18} />,
+      tone: "brand" as const,
+    },
+    {
+      href: "/settings/display",
+      title: "Display",
+      desc: "Dark mode, theme preset, and accent.",
+      icon: <Palette size={18} />,
+      tone: "accent" as const,
+    },
+    {
+      href: "/settings/language",
+      title: copy.languageSettings.title,
+      desc: copy.languageSettings.subtitle,
+      icon: <Languages size={18} />,
+      tone: "accent" as const,
+    },
+    {
+      href: "/settings/account",
+      title: "Account",
+      desc: "Profile, password, and deletion.",
+      icon: <UserRound size={18} />,
+      tone: "neutral" as const,
+    },
+    {
+      href: "/settings/reminders",
+      title: "Reminders",
+      desc: "Email reminder timing and opt-in controls.",
+      icon: <Bell size={18} />,
+      tone: "warn" as const,
+    },
+    {
+      href: "/settings/privacy",
+      title: "Privacy",
+      desc: "Retention controls, export, and delete policies.",
+      icon: <Eye size={18} />,
+      tone: "neutral" as const,
+    },
+    {
+      href: "/settings/reciter",
+      title: "Reciter",
+      desc: "Audio voice profile and playback defaults.",
+      icon: <Volume2 size={18} />,
+      tone: "accent" as const,
+    },
+    {
+      href: "/settings/scoring",
+      title: "Scoring",
+      desc: "Grade labels and scoring behavior for session reviews.",
+      icon: <Target size={18} />,
+      tone: "brand" as const,
+    },
+    {
+      href: "/settings/teacher",
+      title: "Teacher",
+      desc: "Teacher collaboration placeholders and review controls.",
+      icon: <GraduationCap size={18} />,
+      tone: "neutral" as const,
+    },
+    {
+      href: "/settings/thresholds",
+      title: "Thresholds",
+      desc: "SRS thresholds and queue tuning placeholders.",
+      icon: <SlidersHorizontal size={18} />,
+      tone: "warn" as const,
+    },
+    {
+      href: "/roadmap",
+      title: copy.nav.roadmap,
+      desc: "Upcoming AI recitation, mobile apps, and infrastructure plans.",
+      icon: <Map size={18} />,
+      tone: "accent" as const,
+    },
+    {
+      href: "/support",
+      title: copy.nav.support,
+      desc: "Talk directly to the dev team and send structured feedback.",
+      icon: <LifeBuoy size={18} />,
+      tone: "brand" as const,
+    },
+  ] as const;
+}
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const language = await getUiLanguageServer();
+  const copy = getAppUiCopy(language);
+  const items = getItems(copy);
+
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Preferences"
-        title="Settings"
-        subtitle="Personalize Hifzer and tune your practice plan."
+        eyebrow={copy.settingsPage.eyebrow}
+        title={copy.settingsPage.title}
+        subtitle={copy.settingsPage.subtitle}
       />
 
       <div className="grid gap-4 md:grid-cols-2">
-        {ITEMS.map((item) => (
+        {items.map((item) => (
           <Link key={item.href} href={item.href}>
             <Card className="group transition hover:bg-white/60">
               <div className="flex items-start justify-between gap-4">

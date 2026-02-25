@@ -1,10 +1,12 @@
-const WARNING_MESSAGE = "PUBLIC BETA LIVE NOW - Expect bugs, slowdowns, or occasional crashes - Thanks for your patience";
-const SOFT_MESSAGE = "Public beta active - core flows are stable and improving weekly.";
+import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
+import { getUiLanguageServer } from "@/hifzer/i18n/server";
 
-export function PublicBetaBanner(props: { variant?: "warning" | "soft" }) {
+export async function PublicBetaBanner(props: { variant?: "warning" | "soft" }) {
+  const language = await getUiLanguageServer();
+  const copy = getAppUiCopy(language);
   const variant = props.variant ?? "warning";
   const isWarning = variant === "warning";
-  const message = isWarning ? WARNING_MESSAGE : SOFT_MESSAGE;
+  const message = isWarning ? copy.betaBanner.warning : copy.betaBanner.soft;
 
   return (
     <div
@@ -14,7 +16,7 @@ export function PublicBetaBanner(props: { variant?: "warning" | "soft" }) {
           : "border-b border-[color:var(--kw-border-2)] bg-[linear-gradient(90deg,rgba(var(--kw-accent-rgb),0.08),rgba(10,138,119,0.06),rgba(234,88,12,0.06))]"
       }
     >
-      <div className="overflow-hidden py-1.5 [contain:layout_paint]" role="status" aria-label="Public beta notice">
+      <div className="overflow-hidden py-1.5 [contain:layout_paint]" role="status" aria-label={copy.betaBanner.ariaLabel}>
         {isWarning ? (
           <>
             <p className="px-2 text-center text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--kw-ink-2)] md:hidden">

@@ -1,10 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, IBM_Plex_Mono, Amiri, Space_Grotesk } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { cookies } from "next/headers";
 import { AppProviders } from "@/components/providers/app-providers";
 import { InstallAppBanner } from "@/components/pwa/install-app-banner";
 import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
 import { GoogleAnalytics } from "@/components/telemetry/google-analytics";
+import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
+import { normalizeUiLanguage, UI_LANGUAGE_COOKIE, uiLanguageToHtmlLang } from "@/hifzer/i18n/ui-language";
 import { clerkAuthRoutes } from "@/lib/auth-redirects";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { getSiteUrl } from "@/lib/site-url";
@@ -91,15 +94,18 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const authEnabled = clerkEnabled();
+  const cookieStore = await cookies();
+  const uiLanguage = normalizeUiLanguage(cookieStore.get(UI_LANGUAGE_COOKIE)?.value);
+  const ui = getAppUiCopy(uiLanguage);
   return (
       <html
-        lang="en"
+        lang={uiLanguageToHtmlLang(uiLanguage)}
         data-mode="light"
         data-theme="standard"
         data-accent="teal"
@@ -110,7 +116,7 @@ export default function RootLayout({
           href="#main-content"
           className="sr-only rounded-md bg-[color:var(--kw-ink)] px-3 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[1000]"
         >
-          Skip to main content
+          {ui.skipToMain}
         </a>
         {authEnabled ? (
           <ClerkProvider
@@ -121,10 +127,10 @@ export default function RootLayout({
             signUpForceRedirectUrl={clerkAuthRoutes.signUpForceRedirectUrl}
             signUpFallbackRedirectUrl={clerkAuthRoutes.signUpFallbackRedirectUrl}
           >
-            <AppProviders>{children}</AppProviders>
+            <AppProviders initialUiLanguage={uiLanguage}>{children}</AppProviders>
           </ClerkProvider>
         ) : (
-          <AppProviders>{children}</AppProviders>
+          <AppProviders initialUiLanguage={uiLanguage}>{children}</AppProviders>
         )}
         <InstallAppBanner />
         <ServiceWorkerRegistration />
