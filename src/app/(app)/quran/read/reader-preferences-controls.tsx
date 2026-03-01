@@ -4,7 +4,11 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
 import type { ReaderUiCopy } from "@/hifzer/quran/reader-ui-copy";
-import { QURAN_TRANSLATION_OPTIONS, type QuranTranslationId } from "@/hifzer/quran/translation-prefs";
+import {
+  buildQuranTranslationCookieValue,
+  QURAN_TRANSLATION_OPTIONS,
+  type QuranTranslationId,
+} from "@/hifzer/quran/translation-prefs";
 
 type ReaderPreferencesControlsProps = {
   initialTranslationId: QuranTranslationId;
@@ -56,7 +60,9 @@ export function ReaderPreferencesControls(props: ReaderPreferencesControlsProps)
           disabled={isPending || !props.persistEnabled}
           onChange={(e) => {
             const next = e.target.value as QuranTranslationId;
+            const previous = translationId;
             setTranslationId(next);
+            document.cookie = buildQuranTranslationCookieValue(next);
             startTransition(() => {
               void saveLanguage(next)
                 .then(() => {
@@ -71,12 +77,17 @@ export function ReaderPreferencesControls(props: ReaderPreferencesControlsProps)
                 .catch((error) => {
                   const message = error instanceof Error ? error.message : props.ui.failedSaveLanguage;
                   setLanguageWarning(message);
-                  setTranslationId(translationId);
+                  if (!message.startsWith("Persistence unavailable:")) {
+                    setTranslationId(previous);
+                  }
                   pushToast({
                     tone: "warning",
                     title: props.ui.saveFailedTitle,
                     message,
                   });
+                  if (message.startsWith("Persistence unavailable:")) {
+                    router.refresh();
+                  }
                 });
             });
           }}

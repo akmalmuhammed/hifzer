@@ -1,4 +1,6 @@
 export const DEFAULT_QURAN_TRANSLATION_ID = "en.sahih" as const;
+export const QURAN_TRANSLATION_COOKIE = "hifzer_quran_translation";
+export const QURAN_TRANSLATION_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
 export const QURAN_TRANSLATION_OPTIONS = [
   { id: "en.sahih", label: "English - Saheeh International", rtl: false },
@@ -24,4 +26,8 @@ export function normalizeQuranTranslationId(value: unknown): QuranTranslationId 
     return raw;
   }
   return DEFAULT_QURAN_TRANSLATION_ID;
+}
+
+export function buildQuranTranslationCookieValue(translationId: QuranTranslationId): string {
+  return `${QURAN_TRANSLATION_COOKIE}=${translationId}; Path=/; Max-Age=${QURAN_TRANSLATION_COOKIE_MAX_AGE_SECONDS}; SameSite=Lax`;
 }

@@ -26,7 +26,7 @@ import type { SessionEventInput, SessionStep, TodayEngineResult, TodayQueuePlan 
 import { applyGrade, defaultReviewState } from "@/hifzer/srs/update";
 import { getAyahById, verseRefFromAyahId } from "@/hifzer/quran/lookup.server";
 import { listPhoneticsForAyahIds, listQuranTranslationsForAyahIds } from "@/hifzer/quran/translation.server";
-import { normalizeQuranTranslationId } from "@/hifzer/quran/translation-prefs";
+import { normalizeQuranTranslationId, type QuranTranslationId } from "@/hifzer/quran/translation-prefs";
 import { getCoreSchemaCapabilities } from "@/lib/db-compat";
 
 function shiftIsoDate(iso: string, days: number): string {
@@ -721,7 +721,7 @@ async function ensureOpenSession(
   return { session: toOpenSessionRecord(legacySession), state, steps };
 }
 
-export async function startTodaySession(clerkUserId: string) {
+export async function startTodaySession(clerkUserId: string, input?: { preferredTranslationId?: QuranTranslationId | string }) {
   const { profile, state, steps } = await loadTodayState(clerkUserId);
   const openSession = await ensureOpenSession(profile, state, steps);
   const session = openSession.session;
@@ -734,7 +734,7 @@ export async function startTodaySession(clerkUserId: string) {
     }
   }
   const stepAyahIds = Array.from(ayahIdSet);
-  const translationId = normalizeQuranTranslationId(profile.quranTranslationId);
+  const translationId = normalizeQuranTranslationId(input?.preferredTranslationId ?? profile.quranTranslationId);
   const translationsByAyahId = listQuranTranslationsForAyahIds(stepAyahIds, translationId);
   const phoneticsByAyahId = listPhoneticsForAyahIds(stepAyahIds);
   const ayahTextByAyahId: Record<number, string> = {};

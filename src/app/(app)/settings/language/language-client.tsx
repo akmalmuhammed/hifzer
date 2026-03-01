@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { UiLanguageSwitcher } from "@/components/app/ui-language-switcher";
 import { useUiLanguage } from "@/components/providers/ui-language-provider";
@@ -10,7 +11,11 @@ import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
 import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
-import { QURAN_TRANSLATION_OPTIONS, type QuranTranslationId } from "@/hifzer/quran/translation-prefs";
+import {
+  buildQuranTranslationCookieValue,
+  QURAN_TRANSLATION_OPTIONS,
+  type QuranTranslationId,
+} from "@/hifzer/quran/translation-prefs";
 
 type LanguageSettingsClientProps = {
   initial: {
@@ -20,6 +25,7 @@ type LanguageSettingsClientProps = {
 };
 
 export function LanguageSettingsClient(props: LanguageSettingsClientProps) {
+  const router = useRouter();
   const { language } = useUiLanguage();
   const copy = getAppUiCopy(language);
   const { pushToast } = useToast();
@@ -30,6 +36,7 @@ export function LanguageSettingsClient(props: LanguageSettingsClientProps) {
   async function save() {
     setSaving(true);
     setSaveWarning(null);
+    document.cookie = buildQuranTranslationCookieValue(quranTranslationId);
     try {
       const res = await fetch("/api/profile/language", {
         method: "POST",
@@ -46,6 +53,7 @@ export function LanguageSettingsClient(props: LanguageSettingsClientProps) {
         title: copy.languageSettings.savedTitle,
         message: copy.languageSettings.languagePreferenceUpdated,
       });
+      router.refresh();
     } catch (error) {
       const message = error instanceof Error ? error.message : copy.languageSettings.failedToSaveLanguage;
       setSaveWarning(message);
@@ -54,6 +62,9 @@ export function LanguageSettingsClient(props: LanguageSettingsClientProps) {
         title: copy.languageSettings.saveFailedTitle,
         message,
       });
+      if (message.startsWith("Persistence unavailable:")) {
+        router.refresh();
+      }
     } finally {
       setSaving(false);
     }

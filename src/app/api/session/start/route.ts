@@ -1,7 +1,9 @@
 import { auth } from "@clerk/nextjs/server";
+import { cookies } from "next/headers";
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { startTodaySession } from "@/hifzer/engine/server";
+import { QURAN_TRANSLATION_COOKIE } from "@/hifzer/quran/translation-prefs";
 
 export const runtime = "nodejs";
 
@@ -10,9 +12,11 @@ export async function POST() {
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const cookieStore = await cookies();
+  const preferredTranslationId = cookieStore.get(QURAN_TRANSLATION_COOKIE)?.value;
 
   try {
-    const result = await startTodaySession(userId);
+    const result = await startTodaySession(userId, { preferredTranslationId });
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

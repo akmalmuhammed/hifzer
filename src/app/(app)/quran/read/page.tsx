@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
@@ -17,6 +18,7 @@ import {
   DEFAULT_QURAN_TRANSLATION_ID,
   QURAN_TRANSLATION_OPTIONS,
   normalizeQuranTranslationId,
+  QURAN_TRANSLATION_COOKIE,
 } from "@/hifzer/quran/translation-prefs";
 import { getReaderUiCopy } from "@/hifzer/quran/reader-ui-copy";
 import { getPhoneticByAyahId, getQuranTranslationByAyahId } from "@/hifzer/quran/translation.server";
@@ -122,6 +124,7 @@ export const metadata = {
 
 export default async function QuranReaderPage(props: { searchParams: Promise<SearchParamShape> }) {
   const searchParams = await props.searchParams;
+  const cookieStore = await cookies();
   const authEnabled = clerkEnabled();
   const userId = authEnabled ? (await auth()).userId : null;
   const distractionFree = await getDistractionFreeServer();
@@ -133,7 +136,9 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   const cursorAyahId = parseBoundedInt(searchParams.cursor, 1, 6236);
   const requestedPage = parseBoundedInt(searchParams.page, 1, 500) ?? 1;
   const anonymous = readSingle(searchParams.anon) === "1";
-  const quranTranslationId = normalizeQuranTranslationId(profile?.quranTranslationId ?? DEFAULT_QURAN_TRANSLATION_ID);
+  const quranTranslationId = normalizeQuranTranslationId(
+    cookieStore.get(QURAN_TRANSLATION_COOKIE)?.value ?? profile?.quranTranslationId ?? DEFAULT_QURAN_TRANSLATION_ID,
+  );
   const quranShowDetails = profile?.quranShowDetails ?? true;
   const showPhonetic = distractionFree ? false : parseVisibility(searchParams.phonetic, quranShowDetails);
   const showTranslation = distractionFree ? false : parseVisibility(searchParams.translation, quranShowDetails);

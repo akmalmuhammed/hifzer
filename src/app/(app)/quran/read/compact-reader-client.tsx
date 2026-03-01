@@ -90,6 +90,23 @@ export function CompactReaderClient({
     }
   }
 
+  function buildNextSurahHrefFromCurrent(): string | null {
+    if (current.surahNumber >= 114) {
+      return null;
+    }
+    const params = new URLSearchParams();
+    params.set("view", "compact");
+    params.set("surah", String(current.surahNumber + 1));
+    params.set("phonetic", showPhonetic ? "1" : "0");
+    params.set("translation", showTranslation ? "1" : "0");
+    if (anonymous) {
+      params.set("anon", "1");
+    }
+    return `/quran/read?${params.toString()}#${compactReaderAnchor}`;
+  }
+
+  const resolvedNextSurahHref = buildNextSurahHrefFromCurrent() ?? nextSurahHref;
+
   const btnBase =
     "rounded-xl border px-3 py-2 text-sm font-semibold";
   const btnActive =
@@ -183,12 +200,12 @@ export function CompactReaderClient({
             <button type="button" onClick={handleNext} className={btnActive}>
               {ui.next}
             </button>
-          ) : nextSurahHref ? (
-            <Link href={nextSurahHref} scroll={false} className={btnActive}>
+          ) : resolvedNextSurahHref ? (
+            <Link href={resolvedNextSurahHref} scroll={false} className={btnActive}>
               {ui.nextSurah}
             </Link>
           ) : (
-            <span className={btnDisabled}>{ui.next}</span>
+            <span className={btnDisabled}>{ui.nextSurah}</span>
           )}
         </div>
       </Card>

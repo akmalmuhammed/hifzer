@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { isSupportedQuranTranslationId } from "@/hifzer/quran/translation-prefs";
+import { buildQuranTranslationCookieValue, isSupportedQuranTranslationId } from "@/hifzer/quran/translation-prefs";
 import { saveLanguagePrefs } from "@/hifzer/profile/server";
 import { ensureCoreSchemaCompatibility, getCoreSchemaCapabilities } from "@/lib/db-compat";
 import { dbConfigured } from "@/lib/db";
@@ -25,11 +25,17 @@ export async function POST(req: Request) {
   if (typeof payload.quranTranslationId !== "string" || !isSupportedQuranTranslationId(payload.quranTranslationId)) {
     return NextResponse.json({ error: "Invalid quranTranslationId." }, { status: 400 });
   }
+  const quranTranslationId = payload.quranTranslationId;
+
+  function withTranslationCookie(response: NextResponse): NextResponse {
+    response.headers.append("set-cookie", buildQuranTranslationCookieValue(quranTranslationId));
+    return response;
+  }
 
   if (!dbConfigured()) {
-    return NextResponse.json({
+    return withTranslationCookie(NextResponse.json({
       error: "Persistence unavailable: database is not configured. Language changes cannot be saved.",
-    }, { status: 503 });
+    }, { status: 503 }));
   }
 
   let capabilities = await getCoreSchemaCapabilities({ refresh: true });
@@ -44,29 +50,29 @@ export async function POST(req: Request) {
   }
 
   if (!capabilities.hasQuranLaneColumns) {
-    return NextResponse.json({
+    return withTranslationCookie(NextResponse.json({
       error:
         "Persistence unavailable: profile translation columns are missing in the configured database schema. " +
         "Run DB migrations (or enable runtime schema patching) and retry.",
-    }, { status: 503 });
+    }, { status: 503 }));
   }
 
   const profile = await saveLanguagePrefs({
     clerkUserId: userId,
-    quranTranslationId: payload.quranTranslationId,
+    quranTranslationId,
   });
 
   if (!profile) {
-    return NextResponse.json({
+    return withTranslationCookie(NextResponse.json({
       error: "Persistence unavailable: language preference was not saved.",
-    }, { status: 503 });
+    }, { status: 503 }));
   }
 
-  if (profile.quranTranslationId !== payload.quranTranslationId) {
-    return NextResponse.json({
+  if (profile.quranTranslationId !== quranTranslationId) {
+    return withTranslationCookie(NextResponse.json({
       error: "Persistence unavailable: saved translation does not match the requested value.",
-    }, { status: 503 });
+    }, { status: 503 }));
   }
 
-  return NextResponse.json({ ok: true, profile });
+  return withTranslationCookie(NextResponse.json({ ok: true, profile }));
 }
