@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
 import { ReaderBookmarkControl } from "@/components/bookmarks/reader-bookmark-control";
 import { Card } from "@/components/ui/card";
@@ -48,6 +49,7 @@ export function CompactReaderClient({
   compactReaderAnchor,
   syncEnabled,
 }: Props) {
+  const router = useRouter();
   const [cursorIndex, setCursorIndex] = useState(() => {
     const idx = ayahs.findIndex((a) => a.id === initialAyahId);
     return idx >= 0 ? idx : 0;
@@ -107,6 +109,16 @@ export function CompactReaderClient({
 
   const resolvedNextSurahHref = buildNextSurahHrefFromCurrent() ?? nextSurahHref;
 
+  function handleAutoAdvance() {
+    if (nextAyah) {
+      handleNext();
+      return;
+    }
+    if (resolvedNextSurahHref) {
+      router.push(resolvedNextSurahHref, { scroll: false });
+    }
+  }
+
   const btnBase =
     "rounded-xl border px-3 py-2 text-sm font-semibold";
   const btnActive =
@@ -144,7 +156,8 @@ export function CompactReaderClient({
               ayahId={current.id}
               className="w-full sm:w-auto"
               streakTrackSource={anonymous ? undefined : "quran_browse"}
-              autoPlayPrefKey={anonymous ? undefined : "hifzer_quran_autoplay_v1"}
+              autoPlayPrefKey="hifzer_quran_autoplay_v1"
+              onAutoAdvance={handleAutoAdvance}
               trailingControl={
                 <ReaderBookmarkControl
                   ayahId={current.id}

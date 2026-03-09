@@ -25,6 +25,7 @@ export function AyahAudioPlayer(props: {
   streakTrackSource?: "quran_browse";
   trailingControl?: ReactNode;
   autoPlayPrefKey?: string;
+  onAutoAdvance?: () => void;
 }) {
   const src = useMemo(
     () => audioUrl(props.reciterId ?? "default", props.ayahId),
@@ -56,6 +57,8 @@ export function AyahAudioPlayer(props: {
 
   const speed = SPEEDS[speedIndex] ?? 1;
   const progress01 = duration > 0 ? Math.max(0, Math.min(1, currentTime / duration)) : 0;
+  const autoAdvanceEnabledRef = useRef(autoPlayEnabled);
+  const onAutoAdvanceRef = useRef(props.onAutoAdvance);
 
   const markStreakRecitation = useCallback(async () => {
     if (props.streakTrackSource !== "quran_browse" || streakMarkedRef.current) {
@@ -118,6 +121,9 @@ export function AyahAudioPlayer(props: {
       }
       setPlaying(false);
       syncTime();
+      if (autoAdvanceEnabledRef.current) {
+        onAutoAdvanceRef.current?.();
+      }
     }
 
     audioEl.addEventListener("play", onPlay);
@@ -148,6 +154,18 @@ export function AyahAudioPlayer(props: {
   useEffect(() => {
     repeatCountRef.current = repeatCount;
   }, [repeatCount]);
+
+  useEffect(() => {
+    autoAdvanceEnabledRef.current = autoPlayEnabled;
+  }, [autoPlayEnabled]);
+
+  useEffect(() => {
+    onAutoAdvanceRef.current = props.onAutoAdvance;
+  }, [props.onAutoAdvance]);
+
+  useEffect(() => {
+    streakMarkedRef.current = false;
+  }, [props.ayahId, props.streakTrackSource]);
 
   useEffect(() => {
     if (!props.autoPlayPrefKey || !autoPlayEnabled || !src) {
@@ -348,8 +366,8 @@ export function AyahAudioPlayer(props: {
                     ? "border-[rgba(var(--kw-accent-rgb),0.30)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)] hover:bg-[rgba(var(--kw-accent-rgb),0.18)]"
                     : "border-[color:var(--kw-border-2)] bg-white/80 text-[color:var(--kw-ink)] hover:bg-white",
               )}
-              aria-label={autoPlayEnabled ? "Auto play next is on" : "Auto play next is off"}
-              title={autoPlayEnabled ? "Auto play next is on" : "Auto play next is off"}
+              aria-label={autoPlayEnabled ? "Auto play and advance is on" : "Auto play and advance is off"}
+              title={autoPlayEnabled ? "Auto play and advance is on" : "Auto play and advance is off"}
             >
               <Forward size={14} />
               <span>{autoPlayEnabled ? "Auto on" : "Auto off"}</span>
