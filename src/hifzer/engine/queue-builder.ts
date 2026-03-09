@@ -1,6 +1,6 @@
 import type { AyahReview, SrsMode, UserProfile, WeakTransition } from "@prisma/client";
 import { getSurahInfo } from "@/hifzer/quran/lookup.server";
-import { isoDateInTimeZone, missedDaysSince as missedDaysFromDates } from "@/hifzer/engine/date";
+import { isoDateInTimeZone, missedScheduledDaysSince } from "@/hifzer/engine/date";
 import { computeDebtRatioPct, computeReviewDebtMinutes } from "@/hifzer/engine/debt";
 import { resolveMode } from "@/hifzer/engine/mode-manager";
 import { resolveReviewFloorPct, isWeekOne } from "@/hifzer/engine/review-allocation";
@@ -49,7 +49,7 @@ export function buildTodayEngineQueue(input: {
   const now = input.now;
   const profile = input.profile;
   const localDate = isoDateInTimeZone(now, profile.timezone);
-  const missedDays = missedDaysFromDates(input.lastCompletedLocalDate, localDate);
+  const missedDays = missedScheduledDaysSince(input.lastCompletedLocalDate, localDate, profile.practiceDays);
   const weekOne = isWeekOne({ onboardingCompletedAt: profile.onboardingCompletedAt, now });
 
   const repairDue = dueRepairTransitions(input.weakTransitions, now);

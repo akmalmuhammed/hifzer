@@ -414,12 +414,15 @@ export function SessionClient() {
         body: JSON.stringify({ sessions: pending }),
       });
       const payload = (await res.json()) as {
-        results?: Array<{ ok: boolean }>;
+        results?: Array<{ ok: boolean; permanent?: boolean }>;
       };
       if (!res.ok || !payload.results) {
         throw new Error("Sync failed.");
       }
-      const kept = pending.filter((_, idx) => !payload.results?.[idx]?.ok);
+      const kept = pending.filter((_, idx) => {
+        const result = payload.results?.[idx];
+        return !result?.ok && !result?.permanent;
+      });
       replacePendingSessionSyncPayloads(kept);
     } catch {
       // keep pending payloads for next reconnect
@@ -583,8 +586,16 @@ export function SessionClient() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const body = (await res.json()) as { error?: string };
+      const body = (await res.json()) as { error?: string; permanent?: boolean };
       if (!res.ok) {
+        if (body.permanent) {
+          pushToast({
+            tone: "warning",
+            title: "Hifz save rejected",
+            message: body.error || "The run could not be accepted by the server.",
+          });
+          return;
+        }
         throw new Error(body.error || "Complete failed.");
       }
       pushToast({ tone: "success", title: "Hifz saved", message: "Progress synced." });

@@ -444,7 +444,7 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
     const attemptsScore = session._count.attempts > 0
       ? Math.max(1, Math.round(session._count.attempts * 0.55))
       : 0;
-    const eventsScore = session._count.reviewEvents > 0
+    const eventsScore = session._count.attempts > 0 && session._count.reviewEvents > 0
       ? Math.max(1, Math.min(8, Math.round(session._count.reviewEvents / 4)))
       : 0;
     const openSessionScore = session.status === "OPEN" ? 1 : 0;

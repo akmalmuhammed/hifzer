@@ -1,38 +1,37 @@
-import { auth } from "@clerk/nextjs/server";
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { runMonthlyAuditForUser } from "@/hifzer/engine/server";
-import { db } from "@/lib/db";
+import { isValidBearerToken } from "@/lib/timing-safe";
+
+type Payload = {
+  userId?: unknown;
+};
 
 export const runtime = "nodejs";
 
-export async function POST() {
-  const { userId } = await auth();
-  if (!userId) {
+function authorized(req: Request): boolean {
+  const secret = process.env.CRON_SECRET?.trim();
+  if (!secret) {
+    return false;
+  }
+  return isValidBearerToken(req.headers.get("authorization"), secret);
+}
+
+export async function POST(req: Request) {
+  if (!authorized(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // SECURITY: Rate-lock to once per calendar month to prevent SRS gaming
-  // (users repeatedly triggering the monthly rebalancer to manipulate their schedule).
-  const profile = await getOrCreateUserProfile(userId);
-  if (profile) {
-    const now = new Date();
-    const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-    const existingAudit = await db().qualityGateRun.findFirst({
-      where: {
-        userId: profile.id,
-        gateType: "MONTHLY",
-        createdAt: { gte: startOfMonth },
-      },
-      select: { createdAt: true },
-    });
-    if (existingAudit) {
-      return NextResponse.json(
-        { error: "Monthly audit has already been run this calendar month." },
-        { status: 429 },
-      );
-    }
+  let payload: Payload;
+  try {
+    payload = (await req.json()) as Payload;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+  }
+
+  const userId = typeof payload.userId === "string" ? payload.userId.trim() : "";
+  if (!userId) {
+    return NextResponse.json({ error: "userId is required." }, { status: 400 });
   }
 
   try {
@@ -46,4 +45,3 @@ export async function POST() {
     return NextResponse.json({ error: "Monthly audit failed." }, { status: 500 });
   }
 }
-

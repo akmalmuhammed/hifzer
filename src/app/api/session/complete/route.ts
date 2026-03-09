@@ -1,8 +1,12 @@
 import { auth } from "@clerk/nextjs/server";
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-import type { SessionEventInput } from "@/hifzer/engine/types";
 import { completeSession } from "@/hifzer/engine/server";
+import type { SessionEventInput } from "@/hifzer/engine/types";
+import {
+  isSessionGuardError,
+  parseSessionEventList,
+} from "@/hifzer/engine/session-guard";
 
 type Payload = {
   sessionId?: unknown;
@@ -11,56 +15,6 @@ type Payload = {
   localDate?: unknown;
   events?: unknown;
 };
-
-function toBool(input: unknown): boolean {
-  if (typeof input === "boolean") {
-    return input;
-  }
-  if (typeof input === "string") {
-    return input === "true" || input === "1";
-  }
-  if (typeof input === "number") {
-    return input === 1;
-  }
-  return false;
-}
-
-function normalizeEvents(input: unknown): SessionEventInput[] {
-  if (!Array.isArray(input)) {
-    return [];
-  }
-  const out: SessionEventInput[] = [];
-  for (const row of input) {
-    if (!row || typeof row !== "object") {
-      continue;
-    }
-    const raw = row as Record<string, unknown>;
-    const stepIndex = Number(raw.stepIndex);
-    const stage = String(raw.stage ?? "").trim() as SessionEventInput["stage"];
-    const phase = String(raw.phase ?? "").trim() as SessionEventInput["phase"];
-    const ayahId = Number(raw.ayahId);
-    const durationSec = Number(raw.durationSec);
-    const createdAt = String(raw.createdAt ?? "");
-    const gradeRaw = raw.grade == null ? null : String(raw.grade).trim();
-    if (!Number.isFinite(stepIndex) || !Number.isFinite(ayahId) || !createdAt) {
-      continue;
-    }
-    out.push({
-      stepIndex,
-      stage,
-      phase,
-      ayahId,
-      fromAyahId: Number(raw.fromAyahId),
-      toAyahId: Number(raw.toAyahId),
-      grade: gradeRaw as SessionEventInput["grade"],
-      durationSec: Number.isFinite(durationSec) ? durationSec : 0,
-      textVisible: toBool(raw.textVisible),
-      assisted: toBool(raw.assisted),
-      createdAt,
-    });
-  }
-  return out;
-}
 
 export const runtime = "nodejs";
 
@@ -81,9 +35,30 @@ export async function POST(req: Request) {
   const startedAt = String(payload.startedAt ?? "");
   const endedAt = String(payload.endedAt ?? "");
   const localDate = payload.localDate == null ? undefined : String(payload.localDate);
-  const events = normalizeEvents(payload.events);
+  let events: SessionEventInput[];
+  try {
+    events = parseSessionEventList(payload.events);
+  } catch (error) {
+    if (isSessionGuardError(error)) {
+      return NextResponse.json(
+        { error: error.message, code: error.code, permanent: true },
+        { status: error.status },
+      );
+    }
+    Sentry.captureException(error, {
+      tags: { route: "/api/session/complete", method: "POST", stage: "parse" },
+      user: { id: userId },
+    });
+    return NextResponse.json({ error: "Failed to parse session events." }, { status: 500 });
+  }
   if (!sessionId || !startedAt || !endedAt || events.length === 0) {
     return NextResponse.json({ error: "sessionId, startedAt, endedAt, and events are required." }, { status: 400 });
+  }
+  if (Number.isNaN(new Date(startedAt).getTime()) || Number.isNaN(new Date(endedAt).getTime())) {
+    return NextResponse.json({ error: "startedAt and endedAt must be valid timestamps." }, { status: 400 });
+  }
+  if (localDate && !/^\d{4}-\d{2}-\d{2}$/.test(localDate)) {
+    return NextResponse.json({ error: "localDate must be YYYY-MM-DD." }, { status: 400 });
   }
 
   try {
@@ -97,6 +72,12 @@ export async function POST(req: Request) {
     });
     return NextResponse.json(result);
   } catch (error) {
+    if (isSessionGuardError(error)) {
+      return NextResponse.json(
+        { error: error.message, code: error.code, permanent: true },
+        { status: error.status },
+      );
+    }
     Sentry.captureException(error, {
       tags: { route: "/api/session/complete", method: "POST" },
       user: { id: userId },

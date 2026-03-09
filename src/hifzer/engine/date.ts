@@ -40,3 +40,32 @@ export function missedDaysSince(lastCompletedLocalDate: string | null, todayLoca
   return Math.max(0, diffDays - 1);
 }
 
+export function missedScheduledDaysSince(
+  lastCompletedLocalDate: string | null,
+  todayLocalDate: string,
+  practiceDays: number[],
+): number {
+  const nowMs = isoToUtcMidnight(todayLocalDate);
+  const lastMs = lastCompletedLocalDate ? isoToUtcMidnight(lastCompletedLocalDate) : null;
+  if (!nowMs || !lastMs) {
+    return 0;
+  }
+
+  const scheduledDays = new Set(
+    practiceDays
+      .map((value) => Number(value))
+      .filter((value) => Number.isInteger(value) && value >= 0 && value <= 6),
+  );
+  if (scheduledDays.size < 1) {
+    return missedDaysSince(lastCompletedLocalDate, todayLocalDate);
+  }
+
+  let missed = 0;
+  for (let dayMs = lastMs + (24 * 60 * 60 * 1000); dayMs < nowMs; dayMs += (24 * 60 * 60 * 1000)) {
+    const weekday = new Date(dayMs).getUTCDay();
+    if (scheduledDays.has(weekday)) {
+      missed += 1;
+    }
+  }
+  return missed;
+}

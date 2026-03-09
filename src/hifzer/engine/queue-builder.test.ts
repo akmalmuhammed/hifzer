@@ -17,6 +17,10 @@ function profileFixture(overrides?: Partial<UserProfile>): UserProfile {
     planBias: "BALANCED",
     activeSurahNumber: 1,
     cursorAyahId: 1,
+    quranActiveSurahNumber: 1,
+    quranCursorAyahId: 1,
+    quranTranslationId: "en.sahih",
+    quranShowDetails: true,
     mode: "NORMAL",
     hasTeacher: false,
     avgReviewSeconds: 45,
@@ -100,5 +104,26 @@ describe("engine/queue-builder", () => {
 
     expect(state.mode).toBe("CATCH_UP");
     expect(state.newUnlocked).toBe(false);
+  });
+
+  it("does not count unscheduled rest days as missed days", () => {
+    const now = new Date("2026-02-16T09:00:00.000Z");
+    const state = buildTodayEngineQueue({
+      profile: profileFixture({
+        practiceDays: [1, 2, 3, 4, 5],
+      }),
+      now,
+      allReviews: [],
+      dueReviews: [],
+      weakTransitions: [] as WeakTransition[],
+      yesterdayNewAyahIds: [],
+      lastCompletedLocalDate: "2026-02-13",
+      weeklyGateDue: false,
+      retention3dAvg: 2.2,
+      monthlyTestRequired: false,
+    });
+
+    expect(state.meta.missedDays).toBe(0);
+    expect(state.mode).toBe("NORMAL");
   });
 });

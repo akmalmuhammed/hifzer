@@ -64,6 +64,5 @@ export function moderateRebalanceProfilePatch(now: Date) {
 }
 
 export function monthlyGateOutcome(input: { forceMonthlyTest: boolean }): GateOutcome {
-  return input.forceMonthlyTest ? "FAIL" : "REBALANCED";
+  return input.forceMonthlyTest ? "REBALANCED" : "PASS";
 }
-

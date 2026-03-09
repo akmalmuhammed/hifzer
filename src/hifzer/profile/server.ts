@@ -561,6 +561,7 @@ export async function listLearningLanes(clerkUserId: string, limit = 8): Promise
                ) AS rn
         FROM "ReviewEvent"
         WHERE "userId" = ${profile.id}
+          AND "grade" IS NOT NULL
       ) sub
       WHERE rn = 1
       ORDER BY "createdAt" DESC

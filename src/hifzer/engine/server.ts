@@ -13,7 +13,6 @@ import { db } from "@/lib/db";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { isoDateInTimeZone } from "@/hifzer/engine/date";
 import { buildTodayEngineQueue } from "@/hifzer/engine/queue-builder";
-import { isWarmupGatePassed } from "@/hifzer/engine/gates";
 import {
   monthlyGateOutcome,
   moderateRebalanceProfilePatch,
@@ -28,6 +27,10 @@ import { getAyahById, verseRefFromAyahId } from "@/hifzer/quran/lookup.server";
 import { listPhoneticsForAyahIds, listQuranTranslationsForAyahIds } from "@/hifzer/quran/translation.server";
 import { normalizeQuranTranslationId, type QuranTranslationId } from "@/hifzer/quran/translation-prefs";
 import { getCoreSchemaCapabilities } from "@/lib/db-compat";
+import {
+  SessionGuardError,
+  validateSessionCompletionAgainstPlan,
+} from "@/hifzer/engine/session-guard";
 
 function shiftIsoDate(iso: string, days: number): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
@@ -349,6 +352,8 @@ type OpenSessionRecord = {
   mode: UserProfile["mode"];
   weeklyGateRequired: boolean;
   newUnlocked: boolean;
+  newStartAyahId: number | null;
+  newEndAyahId: number | null;
   planJson: Prisma.JsonValue | null;
 };
 
@@ -359,6 +364,8 @@ function toOpenSessionRecord(input: {
   mode?: UserProfile["mode"] | null;
   weeklyGateRequired?: boolean | null;
   newUnlocked?: boolean | null;
+  newStartAyahId?: number | null;
+  newEndAyahId?: number | null;
   planJson?: Prisma.JsonValue | null;
 }): OpenSessionRecord {
   return {
@@ -368,6 +375,8 @@ function toOpenSessionRecord(input: {
     mode: input.mode ?? "NORMAL",
     weeklyGateRequired: input.weeklyGateRequired ?? false,
     newUnlocked: input.newUnlocked ?? true,
+    newStartAyahId: input.newStartAyahId ?? null,
+    newEndAyahId: input.newEndAyahId ?? null,
     planJson: input.planJson ?? null,
   };
 }
@@ -375,7 +384,15 @@ function toOpenSessionRecord(input: {
 async function findLastCompletedLocalDate(profileId: string): Promise<string | null> {
   const prisma = db();
   const row = await prisma.session.findFirst({
-    where: { userId: profileId, status: "COMPLETED" },
+    where: {
+      userId: profileId,
+      status: "COMPLETED",
+      reviewEvents: {
+        some: {
+          grade: { not: null },
+        },
+      },
+    },
     orderBy: { startedAt: "desc" },
     select: { localDate: true },
   });
@@ -386,7 +403,16 @@ async function yesterdayNewAyahIds(profileId: string, localDate: string): Promis
   const yesterday = shiftIsoDate(localDate, -1);
   const prisma = db();
   const row = await prisma.session.findFirst({
-    where: { userId: profileId, status: "COMPLETED", localDate: yesterday },
+    where: {
+      userId: profileId,
+      status: "COMPLETED",
+      localDate: yesterday,
+      reviewEvents: {
+        some: {
+          grade: { not: null },
+        },
+      },
+    },
     orderBy: { startedAt: "desc" },
     select: { newStartAyahId: true, newEndAyahId: true },
   });
@@ -398,6 +424,15 @@ async function yesterdayNewAyahIds(profileId: string, localDate: string): Promis
     out.push(ayahId);
   }
   return out;
+}
+
+async function acquireOpenSessionLock(
+  tx: Prisma.TransactionClient,
+  profileId: string,
+  localDate: string,
+): Promise<void> {
+  const lockKey = `hifz-open-session:${profileId}:${localDate}`;
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${lockKey}))`;
 }
 
 async function weeklyGateDue(profileId: string, now: Date): Promise<boolean> {
@@ -509,121 +544,174 @@ async function ensureOpenSession(
   const hasSessionModernColumns = capabilities.hasSessionModernColumns;
   const hasSessionPlanJson = hasSessionModernColumns && capabilities.hasSessionPlanJson;
 
-  let existing: OpenSessionRecord | null;
-  if (hasSessionModernColumns) {
-    if (hasSessionPlanJson) {
-      const row = await withMissingSchemaFallback(
-        () =>
-          prisma.session.findFirst({
-            where: {
-              userId: profile.id,
-              status: "OPEN",
-              localDate: state.localDate,
-            },
-            orderBy: { startedAt: "desc" },
-            select: {
-              id: true,
-              startedAt: true,
-              localDate: true,
-              mode: true,
-              weeklyGateRequired: true,
-              newUnlocked: true,
-              planJson: true,
-            },
-          }),
-        null,
-      );
-      existing = row ? toOpenSessionRecord(row) : null;
-    } else {
-      const row = await withMissingSchemaFallback(
-        () =>
-          prisma.session.findFirst({
-            where: {
-              userId: profile.id,
-              status: "OPEN",
-              localDate: state.localDate,
-            },
-            orderBy: { startedAt: "desc" },
-            select: {
-              id: true,
-              startedAt: true,
-              localDate: true,
-              mode: true,
-              weeklyGateRequired: true,
-              newUnlocked: true,
-            },
-          }),
-        null,
-      );
-      existing = row ? toOpenSessionRecord(row) : null;
-    }
-  } else {
-    const row = await withMissingSchemaFallback(
-      () =>
-        prisma.session.findFirst({
-          where: {
-            userId: profile.id,
-            status: "OPEN",
-            localDate: state.localDate,
-          },
-          orderBy: { startedAt: "desc" },
-          select: {
-            id: true,
-            startedAt: true,
-            localDate: true,
-          },
-        }),
-      null,
-    );
-    existing = row ? toOpenSessionRecord(row) : null;
-  }
-
-  if (existing) {
-    if (hasSessionPlanJson) {
-      const plan = parseSessionPlanSnapshot(existing.planJson);
-      if (plan && plan.localDate === existing.localDate) {
-        return {
-          session: existing,
-          state: stateWithSessionPlan(state, plan),
-          steps: plan.steps,
-        };
-      }
-      const updated = await withMissingSchemaFallback(
-        () =>
-          prisma.session.update({
-            where: { id: existing.id },
-            data: {
-              planJson: buildSessionPlanSnapshot(existing.localDate, state, steps),
-            },
-            select: {
-              id: true,
-              startedAt: true,
-              localDate: true,
-              mode: true,
-              weeklyGateRequired: true,
-              newUnlocked: true,
-              planJson: true,
-            },
-          }),
-        null,
-      );
-      if (updated) {
-        return { session: toOpenSessionRecord(updated), state, steps };
-      }
-    }
-    return { session: existing, state, steps };
-  }
-
   const reviewAyahIds = [
     ...state.queue.weeklyGateAyahIds,
     ...state.queue.sabqiReviewAyahIds,
     ...state.queue.manzilReviewAyahIds,
   ];
 
-  if (hasSessionModernColumns) {
-    if (hasSessionPlanJson) {
+  return prisma.$transaction(async (tx) => {
+    await acquireOpenSessionLock(tx, profile.id, state.localDate);
+
+    let existing: OpenSessionRecord | null;
+    if (hasSessionModernColumns) {
+      if (hasSessionPlanJson) {
+        const row = await withMissingSchemaFallback(
+          () =>
+            tx.session.findFirst({
+              where: {
+                userId: profile.id,
+                status: "OPEN",
+                localDate: state.localDate,
+              },
+              orderBy: { startedAt: "desc" },
+              select: {
+                id: true,
+                startedAt: true,
+                localDate: true,
+                mode: true,
+                weeklyGateRequired: true,
+                newUnlocked: true,
+                newStartAyahId: true,
+                newEndAyahId: true,
+                planJson: true,
+              },
+            }),
+          null,
+        );
+        existing = row ? toOpenSessionRecord(row) : null;
+      } else {
+        const row = await withMissingSchemaFallback(
+          () =>
+            tx.session.findFirst({
+              where: {
+                userId: profile.id,
+                status: "OPEN",
+                localDate: state.localDate,
+              },
+              orderBy: { startedAt: "desc" },
+              select: {
+                id: true,
+                startedAt: true,
+                localDate: true,
+                mode: true,
+                weeklyGateRequired: true,
+                newUnlocked: true,
+                newStartAyahId: true,
+                newEndAyahId: true,
+              },
+            }),
+          null,
+        );
+        existing = row ? toOpenSessionRecord(row) : null;
+      }
+    } else {
+      const row = await withMissingSchemaFallback(
+        () =>
+          tx.session.findFirst({
+            where: {
+              userId: profile.id,
+              status: "OPEN",
+              localDate: state.localDate,
+            },
+            orderBy: { startedAt: "desc" },
+            select: {
+              id: true,
+              startedAt: true,
+              localDate: true,
+              newStartAyahId: true,
+              newEndAyahId: true,
+            },
+          }),
+        null,
+      );
+      existing = row ? toOpenSessionRecord(row) : null;
+    }
+
+    if (existing) {
+      if (hasSessionPlanJson) {
+        const plan = parseSessionPlanSnapshot(existing.planJson);
+        if (plan && plan.localDate === existing.localDate) {
+          return {
+            session: existing,
+            state: stateWithSessionPlan(state, plan),
+            steps: plan.steps,
+          };
+        }
+        const updated = await withMissingSchemaFallback(
+          () =>
+            tx.session.update({
+              where: { id: existing.id },
+              data: {
+                planJson: buildSessionPlanSnapshot(existing.localDate, state, steps),
+              },
+              select: {
+                id: true,
+                startedAt: true,
+                localDate: true,
+                mode: true,
+                weeklyGateRequired: true,
+                newUnlocked: true,
+                newStartAyahId: true,
+                newEndAyahId: true,
+                planJson: true,
+              },
+            }),
+          null,
+        );
+        if (updated) {
+          return { session: toOpenSessionRecord(updated), state, steps };
+        }
+      }
+      return { session: existing, state, steps };
+    }
+
+    if (hasSessionModernColumns) {
+      if (hasSessionPlanJson) {
+        try {
+          const session = await tx.session.create({
+            data: {
+              userId: profile.id,
+              status: "OPEN",
+              localDate: state.localDate,
+              mode: state.mode,
+              reviewDebtMinutesAtStart: Math.round(state.reviewDebtMinutes),
+              warmupPassed: state.warmupRequired ? null : true,
+              warmupRetryUsed: false,
+              weeklyGateRequired: state.weeklyGateRequired,
+              weeklyGatePassed: state.weeklyGateRequired ? null : true,
+              newUnlocked: state.newUnlocked,
+              warmupAyahIds: state.queue.warmupAyahIds,
+              reviewAyahIds,
+              newStartAyahId: state.queue.newAyahIds[0] ?? null,
+              newEndAyahId: state.queue.newAyahIds.length
+                ? state.queue.newAyahIds[state.queue.newAyahIds.length - 1]
+                : null,
+              planJson: buildSessionPlanSnapshot(state.localDate, state, steps),
+            },
+            select: {
+              id: true,
+              startedAt: true,
+              localDate: true,
+              mode: true,
+              weeklyGateRequired: true,
+              newUnlocked: true,
+              newStartAyahId: true,
+              newEndAyahId: true,
+              planJson: true,
+            },
+          });
+          return { session: toOpenSessionRecord(session), state, steps };
+        } catch (error) {
+          if (!looksLikeMissingCoreSchema(error)) {
+            throw error;
+          }
+          // Fall through to legacy-compatible shape below.
+        }
+      }
+
       try {
-        const session = await prisma.session.create({
+        const session = await tx.session.create({
           data: {
             userId: profile.id,
             status: "OPEN",
@@ -641,7 +729,6 @@ async function ensureOpenSession(
             newEndAyahId: state.queue.newAyahIds.length
               ? state.queue.newAyahIds[state.queue.newAyahIds.length - 1]
               : null,
-            planJson: buildSessionPlanSnapshot(state.localDate, state, steps),
           },
           select: {
             id: true,
@@ -650,7 +737,8 @@ async function ensureOpenSession(
             mode: true,
             weeklyGateRequired: true,
             newUnlocked: true,
-            planJson: true,
+            newStartAyahId: true,
+            newEndAyahId: true,
           },
         });
         return { session: toOpenSessionRecord(session), state, steps };
@@ -658,67 +746,32 @@ async function ensureOpenSession(
         if (!looksLikeMissingCoreSchema(error)) {
           throw error;
         }
-        // Fallback to legacy session shape below.
+        // Fall through to legacy-compatible shape below.
       }
     }
 
-    try {
-      const session = await prisma.session.create({
-        data: {
-          userId: profile.id,
-          status: "OPEN",
-          localDate: state.localDate,
-          mode: state.mode,
-          reviewDebtMinutesAtStart: Math.round(state.reviewDebtMinutes),
-          warmupPassed: state.warmupRequired ? null : true,
-          warmupRetryUsed: false,
-          weeklyGateRequired: state.weeklyGateRequired,
-          weeklyGatePassed: state.weeklyGateRequired ? null : true,
-          newUnlocked: state.newUnlocked,
-          warmupAyahIds: state.queue.warmupAyahIds,
-          reviewAyahIds,
-          newStartAyahId: state.queue.newAyahIds[0] ?? null,
-          newEndAyahId: state.queue.newAyahIds.length
-            ? state.queue.newAyahIds[state.queue.newAyahIds.length - 1]
-            : null,
-        },
-        select: {
-          id: true,
-          startedAt: true,
-          localDate: true,
-          mode: true,
-          weeklyGateRequired: true,
-          newUnlocked: true,
-        },
-      });
-      return { session: toOpenSessionRecord(session), state, steps };
-    } catch (error) {
-      if (!looksLikeMissingCoreSchema(error)) {
-        throw error;
-      }
-      // Fallback to legacy session shape below.
-    }
-  }
-
-  const legacySession = await prisma.session.create({
-    data: {
-      userId: profile.id,
-      status: "OPEN",
-      localDate: state.localDate,
-      warmupAyahIds: state.queue.warmupAyahIds,
-      reviewAyahIds,
-      newStartAyahId: state.queue.newAyahIds[0] ?? null,
-      newEndAyahId: state.queue.newAyahIds.length
-        ? state.queue.newAyahIds[state.queue.newAyahIds.length - 1]
-        : null,
-    },
-    select: {
-      id: true,
-      startedAt: true,
-      localDate: true,
-    },
+    const legacySession = await tx.session.create({
+      data: {
+        userId: profile.id,
+        status: "OPEN",
+        localDate: state.localDate,
+        warmupAyahIds: state.queue.warmupAyahIds,
+        reviewAyahIds,
+        newStartAyahId: state.queue.newAyahIds[0] ?? null,
+        newEndAyahId: state.queue.newAyahIds.length
+          ? state.queue.newAyahIds[state.queue.newAyahIds.length - 1]
+          : null,
+      },
+      select: {
+        id: true,
+        startedAt: true,
+        localDate: true,
+        newStartAyahId: true,
+        newEndAyahId: true,
+      },
+    });
+    return { session: toOpenSessionRecord(legacySession), state, steps };
   });
-  return { session: toOpenSessionRecord(legacySession), state, steps };
 }
 
 export async function startTodaySession(clerkUserId: string, input?: { preferredTranslationId?: QuranTranslationId | string }) {
@@ -789,45 +842,86 @@ export async function completeSession(input: CompleteSessionInput): Promise<Comp
     throw new Error("Database not configured.");
   }
   const prisma = db();
-  const endedAt = new Date(input.endedAt);
-  const startedAt = new Date(input.startedAt);
-  if (Number.isNaN(endedAt.getTime()) || Number.isNaN(startedAt.getTime())) {
-    throw new Error("Invalid session timestamps.");
+  const submittedEndedAt = new Date(input.endedAt);
+  const submittedStartedAt = new Date(input.startedAt);
+  if (Number.isNaN(submittedEndedAt.getTime()) || Number.isNaN(submittedStartedAt.getTime())) {
+    throw new SessionGuardError("Invalid session timestamps.");
   }
 
-  const localDate = input.localDate || isoDateInTimeZone(endedAt, profile.timezone);
-  const events = [...input.events].sort(
-    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-  );
-
   const result = await prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`hifz-complete-session:${profile.id}:${input.sessionId}`}))`;
+
     const currentSession = await tx.session.findFirst({
       where: { id: input.sessionId, userId: profile.id },
+      select: {
+        id: true,
+        status: true,
+        startedAt: true,
+        localDate: true,
+        mode: true,
+        weeklyGateRequired: true,
+        newUnlocked: true,
+        newStartAyahId: true,
+        newEndAyahId: true,
+        planJson: true,
+      },
     });
     if (currentSession?.status === "COMPLETED") {
       return { ok: true, skipped: true, sessionId: currentSession.id } as CompleteSessionResult;
     }
 
-    const session = currentSession ?? await tx.session.create({
-      data: {
-        id: input.sessionId,
-        userId: profile.id,
-        status: "OPEN",
-        localDate,
-        startedAt,
-        mode: profile.mode,
-        reviewDebtMinutesAtStart: 0,
-        warmupRetryUsed: false,
-        weeklyGateRequired: false,
-        newUnlocked: true,
-        warmupAyahIds: [],
-        reviewAyahIds: [],
-      },
+    if (!currentSession) {
+      throw new SessionGuardError("Open session not found.", 409, "session_not_open");
+    }
+    if (currentSession.status !== "OPEN") {
+      throw new SessionGuardError("Session is no longer open.", 409, "session_not_open");
+    }
+    if (input.localDate && input.localDate !== currentSession.localDate) {
+      throw new SessionGuardError("localDate does not match the open session.", 409, "session_conflict");
+    }
+
+    const session = toOpenSessionRecord(currentSession);
+    const plan = parseSessionPlanSnapshot(session.planJson);
+    if (!plan || plan.localDate !== session.localDate) {
+      throw new SessionGuardError("Session plan is unavailable or invalid.", 409, "session_plan_unavailable");
+    }
+    if (plan.weeklyGateRequired !== session.weeklyGateRequired) {
+      throw new SessionGuardError("Stored session gate requirements do not match the plan.", 409, "session_plan_mismatch");
+    }
+
+    const sessionNewAyahIds =
+      session.newStartAyahId != null && session.newEndAyahId != null
+        ? Array.from(
+            { length: Math.max(0, session.newEndAyahId - session.newStartAyahId + 1) },
+            (_, idx) => session.newStartAyahId! + idx,
+          )
+        : [];
+    if ((session.newStartAyahId == null) !== (session.newEndAyahId == null)) {
+      throw new SessionGuardError("Stored session new-ayah range is inconsistent.", 409, "session_plan_mismatch");
+    }
+
+    const validation = validateSessionCompletionAgainstPlan({
+      events: input.events,
+      steps: plan.steps,
+      warmupRequired: plan.warmupRequired,
+      weeklyGateRequired: plan.weeklyGateRequired,
+      cursorAyahIdAtStart: session.newStartAyahId ?? profile.cursorAyahId,
+      newAyahIds: sessionNewAyahIds,
     });
 
-    if (events.length) {
+    const completedAt = new Date();
+    const stampedEvents = validation.acceptedEvents.map((event, idx) => {
+      const offsetMs = validation.acceptedEvents.length - 1 - idx;
+      const occurredAt = new Date(Math.max(session.startedAt.getTime(), completedAt.getTime() - offsetMs));
+      return {
+        ...event,
+        occurredAt,
+      };
+    });
+
+    if (stampedEvents.length) {
       await tx.reviewEvent.createMany({
-        data: events.map((event) => ({
+        data: stampedEvents.map((event) => ({
           userId: profile.id,
           sessionId: session.id,
           surahNumber: verseRefFromAyahId(event.ayahId)?.surahNumber ?? profile.activeSurahNumber,
@@ -838,24 +932,24 @@ export async function completeSession(input: CompleteSessionInput): Promise<Comp
           durationSec: Math.max(0, Math.floor(event.durationSec)),
           fromAyahId: event.fromAyahId ?? null,
           toAyahId: event.toAyahId ?? null,
-          createdAt: new Date(event.createdAt),
+          createdAt: event.occurredAt,
         })),
       });
 
-      const attemptRows = events.filter((event) => event.grade).map((event) => ({
+      const attemptRows = stampedEvents.filter((event) => event.grade).map((event) => ({
         userId: profile.id,
         sessionId: session.id,
         ayahId: event.ayahId,
         stage: toAttemptStage(event.stage),
         grade: event.grade as SrsGrade,
-        createdAt: new Date(event.createdAt),
+        createdAt: event.occurredAt,
       }));
       if (attemptRows.length) {
         await tx.ayahAttempt.createMany({ data: attemptRows });
       }
     }
 
-    const recallEvents = events.filter((event) => isRecallEvent(event));
+    const recallEvents = stampedEvents.filter((event) => isRecallEvent(event));
     const touchedAyahIds = Array.from(new Set(recallEvents.map((event) => event.ayahId)));
     if (touchedAyahIds.length) {
       const existing = await tx.ayahReview.findMany({
@@ -870,7 +964,7 @@ export async function completeSession(input: CompleteSessionInput): Promise<Comp
         if (!event.grade) {
           continue;
         }
-        const now = new Date(event.createdAt);
+        const now = event.occurredAt;
         const current = byAyahId.get(event.ayahId);
         const next = applyGrade(
           current
@@ -933,43 +1027,12 @@ export async function completeSession(input: CompleteSessionInput): Promise<Comp
       }
     }
 
-    const latestWarmup = new Map<number, SrsGrade>();
-    const warmupEvents = events.filter((event) => event.stage === "WARMUP" && event.grade);
-    for (const event of warmupEvents) {
-      latestWarmup.set(event.ayahId, event.grade as SrsGrade);
-    }
-    const warmupGrades = Array.from(latestWarmup.values());
-    const warmupPassed = isWarmupGatePassed(warmupGrades);
-    const warmupRetryUsed = warmupEvents.length > latestWarmup.size;
+    const warmupPassed = validation.warmupPassed;
+    const warmupRetryUsed = validation.warmupRetryUsed;
+    const weeklyPassed = validation.weeklyPassed;
+    const nextCursor = validation.nextCursorAyahId;
 
-    const latestWeekly = new Map<number, SrsGrade>();
-    const weeklyEvents = events.filter((event) => event.stage === "WEEKLY_TEST" && event.grade);
-    for (const event of weeklyEvents) {
-      latestWeekly.set(event.ayahId, event.grade as SrsGrade);
-    }
-    const weeklyGrades = Array.from(latestWeekly.values());
-    const weeklyPassed = isWarmupGatePassed(weeklyGrades);
-
-    let nextCursor = profile.cursorAyahId;
-    const newBlindEvents = events
-      .filter((event) => event.stage === "NEW" && event.phase === "NEW_BLIND" && event.grade)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-
-    const gateBlocked = !warmupPassed || (session.weeklyGateRequired && !weeklyPassed);
-    if (!gateBlocked) {
-      for (const event of newBlindEvents) {
-        if (event.ayahId !== nextCursor) {
-          continue;
-        }
-        if (event.grade === "GOOD" || event.grade === "EASY") {
-          nextCursor += 1;
-          continue;
-        }
-        break;
-      }
-    }
-
-    const linkEvents = events.filter(
+    const linkEvents = stampedEvents.filter(
       (event) => (event.stage === "LINK" || event.stage === "LINK_REPAIR") &&
         Number.isFinite(event.fromAyahId) &&
         Number.isFinite(event.toAyahId) &&
@@ -995,38 +1058,38 @@ export async function completeSession(input: CompleteSessionInput): Promise<Comp
           failCount: isTransitionSuccess(event.grade as SrsGrade) ? 0 : 1,
           successRateCached: isTransitionSuccess(event.grade as SrsGrade) ? 1 : 0,
           lastGrade: event.grade as SrsGrade,
-          lastOccurredAt: new Date(event.createdAt),
+          lastOccurredAt: event.occurredAt,
         },
         update: {
           attemptCount: { increment: 1 },
           successCount: { increment: isTransitionSuccess(event.grade as SrsGrade) ? 1 : 0 },
           failCount: { increment: isTransitionSuccess(event.grade as SrsGrade) ? 0 : 1 },
           lastGrade: event.grade as SrsGrade,
-          lastOccurredAt: new Date(event.createdAt),
+          lastOccurredAt: event.occurredAt,
         },
       });
       const attemptCount = row.attemptCount;
       const successCount = row.successCount;
       const successRate = attemptCount ? (successCount / attemptCount) : 0;
       const weak = isWeakTransition({ attemptCount, successCount });
-      const nextRepairAt = weak ? new Date(endedAt.getTime() + (24 * 60 * 60 * 1000)) : null;
+      const nextRepairAt = weak ? new Date(completedAt.getTime() + (24 * 60 * 60 * 1000)) : null;
       await tx.weakTransition.update({
         where: { id: row.id },
         data: {
           successRateCached: successRate,
           nextRepairAt,
-          resolvedAt: weak ? null : new Date(event.createdAt),
+          resolvedAt: weak ? null : event.occurredAt,
         },
       });
     }
 
-    const reviewDurations = events
+    const reviewDurations = stampedEvents
       .filter((event) => (event.stage === "WARMUP" || event.stage === "REVIEW" || event.stage === "WEEKLY_TEST") && event.durationSec > 0)
       .map((event) => seconds(event.durationSec, 45));
-    const newDurations = events
+    const newDurations = stampedEvents
       .filter((event) => event.stage === "NEW" && event.durationSec > 0)
       .map((event) => seconds(event.durationSec, 90));
-    const linkDurations = events
+    const linkDurations = stampedEvents
       .filter((event) => (event.stage === "LINK" || event.stage === "LINK_REPAIR") && event.durationSec > 0)
       .map((event) => seconds(event.durationSec, 35));
     const averages = updateLearnedAverages({
@@ -1049,6 +1112,7 @@ export async function completeSession(input: CompleteSessionInput): Promise<Comp
       },
     });
 
+    const weeklyEvents = stampedEvents.filter((event) => event.stage === "WEEKLY_TEST" && event.grade);
     if (weeklyEvents.length) {
       const passRate = weeklyEvents.filter((event) => event.grade === "GOOD" || event.grade === "EASY").length /
         weeklyEvents.length;
@@ -1056,8 +1120,8 @@ export async function completeSession(input: CompleteSessionInput): Promise<Comp
         data: {
           userId: profile.id,
           gateType: "WEEKLY",
-          windowStart: new Date(endedAt.getTime() - (7 * 24 * 60 * 60 * 1000)),
-          windowEnd: endedAt,
+          windowStart: new Date(completedAt.getTime() - (7 * 24 * 60 * 60 * 1000)),
+          windowEnd: completedAt,
           sampleSize: weeklyEvents.length,
           passRate,
           outcome: weeklyPassed ? "PASS" : "FAIL",
@@ -1073,9 +1137,9 @@ export async function completeSession(input: CompleteSessionInput): Promise<Comp
       where: { id: session.id },
       data: {
         status: "COMPLETED",
-        startedAt,
-        endedAt,
-        localDate,
+        startedAt: session.startedAt,
+        endedAt: completedAt,
+        localDate: session.localDate,
         warmupPassed,
         warmupRetryUsed,
         weeklyGatePassed: session.weeklyGateRequired ? weeklyPassed : true,
@@ -1116,10 +1180,12 @@ export async function runMonthlyAuditForUser(clerkUserId: string) {
       },
     });
 
-    await tx.userProfile.update({
-      where: { id: profile.id },
-      data: moderateRebalanceProfilePatch(now),
-    });
+    if (forceMonthlyTest) {
+      await tx.userProfile.update({
+        where: { id: profile.id },
+        data: moderateRebalanceProfilePatch(now),
+      });
+    }
   });
 
   return { forceMonthlyTest };
