@@ -6,7 +6,7 @@
   background:
     radial-gradient(1000px 360px at -6% -30%, rgba(194, 65, 12, 0.15), transparent 58%),
     radial-gradient(900px 280px at 105% -20%, rgba(var(--kw-accent-rgb), 0.12), transparent 56%),
-    linear-gradient(135deg, rgba(255, 252, 248, 0.97), rgba(248, 244, 239, 0.94));
+    linear-gradient(135deg, var(--kw-card-strong), var(--kw-surface-strong));
   box-shadow: var(--kw-shadow);
 }
 
@@ -65,7 +65,7 @@
 .heroStat {
   border-radius: 18px;
   border: 1px solid var(--kw-border-2);
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--kw-surface);
   padding: 14px;
 }
 
@@ -96,7 +96,7 @@
   align-self: start;
   border-radius: 22px;
   border: 1px solid rgba(194, 65, 12, 0.16);
-  background: rgba(255, 255, 255, 0.86);
+  background: var(--kw-card-strong);
   padding: 18px;
   box-shadow: var(--kw-shadow-soft);
 }
@@ -124,7 +124,7 @@
   min-height: 144px;
   border-radius: 20px;
   border: 1px solid var(--kw-border-2);
-  background: rgba(255, 255, 255, 0.76);
+  background: var(--kw-surface-strong);
   padding: 16px;
   text-align: left;
   transition:
@@ -141,7 +141,9 @@
 
 .chapterCard[data-active="1"] {
   border-color: rgba(var(--kw-accent-rgb), 0.22);
-  background: linear-gradient(180deg, rgba(var(--kw-accent-rgb), 0.11), rgba(var(--kw-accent-rgb), 0.05));
+  background:
+    linear-gradient(180deg, rgba(var(--kw-accent-rgb), 0.14), rgba(var(--kw-accent-rgb), 0.05)),
+    var(--kw-surface-strong);
   box-shadow: var(--kw-shadow-soft);
 }
 
@@ -161,7 +163,7 @@
   place-items: center;
   border-radius: 16px;
   border: 1px solid var(--kw-border-2);
-  background: rgba(255, 255, 255, 0.84);
+  background: var(--kw-surface);
 }
 
 .chapterIconWrap[data-tone="accent"],
@@ -234,7 +236,7 @@
 .railHeader {
   border-radius: 18px;
   border: 1px solid var(--kw-border-2);
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--kw-surface);
   padding: 14px;
 }
 
@@ -250,7 +252,7 @@
   align-items: start;
   border-radius: 18px;
   border: 1px solid var(--kw-border-2);
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--kw-surface);
   padding: 12px;
   text-align: left;
   transition:
@@ -266,7 +268,9 @@
 
 .stepListItem[data-active="1"] {
   border-color: rgba(var(--kw-accent-rgb), 0.2);
-  background: rgba(var(--kw-accent-rgb), 0.08);
+  background:
+    linear-gradient(180deg, rgba(var(--kw-accent-rgb), 0.12), rgba(var(--kw-accent-rgb), 0.04)),
+    var(--kw-surface);
 }
 
 .stepListItem[data-seen="1"] .stepIndex {
@@ -283,7 +287,7 @@
   height: 32px;
   border-radius: 999px;
   border: 1px solid var(--kw-border-2);
-  background: rgba(255, 255, 255, 0.86);
+  background: var(--kw-surface-strong);
   font-family:
     var(--font-kw-mono),
     "IBM Plex Mono",
@@ -314,7 +318,7 @@
 .stageCard {
   background:
     radial-gradient(680px 220px at 90% -10%, rgba(var(--kw-accent-rgb), 0.08), transparent 60%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(246, 248, 252, 0.88));
+    linear-gradient(180deg, var(--kw-card-strong), var(--kw-surface-strong));
 }
 
 .stageTop {
@@ -337,7 +341,7 @@
 .detailCard {
   border-radius: 18px;
   border: 1px solid var(--kw-border-2);
-  background: rgba(255, 255, 255, 0.74);
+  background: var(--kw-surface);
   padding: 14px;
 }
 
@@ -359,7 +363,7 @@
   place-items: center;
   border-radius: 14px;
   border: 1px solid rgba(194, 65, 12, 0.18);
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--kw-surface);
   color: var(--kw-ember-600);
 }
 
@@ -369,7 +373,7 @@
   border: 1px solid rgba(var(--kw-accent-rgb), 0.14);
   background:
     radial-gradient(420px 160px at 85% -10%, rgba(var(--kw-accent-rgb), 0.08), transparent 60%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 248, 252, 0.9));
+    linear-gradient(180deg, var(--kw-card-strong), var(--kw-surface-strong));
   padding: 20px;
 }
 
@@ -425,7 +429,7 @@
   height: 38px;
   border-radius: 14px;
   border: 1px solid var(--kw-border-2);
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--kw-surface);
   color: var(--kw-ink);
   transition:
     transform 160ms ease,
@@ -462,7 +466,7 @@
 .completionMetric {
   border-radius: 18px;
   border: 1px solid var(--kw-border-2);
-  background: rgba(255, 255, 255, 0.74);
+  background: var(--kw-surface);
   padding: 14px;
 }
 
@@ -498,7 +502,7 @@
 }
 
 .sidebarCard {
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--kw-card-strong);
 }
 
 .sourceList {
@@ -514,7 +518,7 @@
   gap: 12px;
   border-radius: 16px;
   border: 1px solid var(--kw-border-2);
-  background: rgba(255, 255, 255, 0.74);
+  background: var(--kw-surface);
   padding: 13px 14px;
   font-size: 0.9rem;
   font-weight: 600;
@@ -529,7 +533,9 @@
 .sourceRow:hover {
   transform: translateY(-1px);
   border-color: rgba(var(--kw-accent-rgb), 0.18);
-  background: rgba(var(--kw-accent-rgb), 0.05);
+  background:
+    linear-gradient(180deg, rgba(var(--kw-accent-rgb), 0.08), rgba(var(--kw-accent-rgb), 0.03)),
+    var(--kw-surface);
 }
 
 .sidebarChecklist {
@@ -560,6 +566,28 @@
 .checkDot[data-active="1"] {
   border-color: rgba(22, 163, 74, 0.22);
   background: rgba(22, 163, 74, 0.72);
+}
+
+:global(html[data-mode="dark"]) .hero {
+  border-color: rgba(251, 146, 60, 0.18);
+  background:
+    radial-gradient(1000px 360px at -6% -30%, rgba(251, 146, 60, 0.14), transparent 58%),
+    radial-gradient(900px 280px at 105% -20%, rgba(var(--kw-accent-rgb), 0.16), transparent 56%),
+    linear-gradient(135deg, rgba(10, 14, 24, 0.96), rgba(14, 20, 34, 0.94));
+}
+
+:global(html[data-mode="dark"]) .hero::before {
+  background-image:
+    linear-gradient(to right, rgba(248, 250, 252, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(248, 250, 252, 0.05) 1px, transparent 1px);
+}
+
+:global(html[data-mode="dark"]) .heroGlowLeft {
+  background: radial-gradient(circle, rgba(251, 146, 60, 0.16), transparent 70%);
+}
+
+:global(html[data-mode="dark"]) .heroGlowRight {
+  background: radial-gradient(circle, rgba(var(--kw-accent-rgb), 0.22), transparent 70%);
 }
 
 @media (max-width: 1279px) {
