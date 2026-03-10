@@ -68,8 +68,8 @@ export default async function FluencyPage() {
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
             Best for users who need smoother pace before heavier memorization. Use compact reader audio with repeat and auto-next, then read the same passage aloud.
           </p>
-          <Link href="/quran/read?view=compact" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
-            Open compact reader <ArrowRight size={14} />
+          <Link href="/fluency/lesson/listen-repeat" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
+            Open lesson <ArrowRight size={14} />
           </Link>
         </Card>
 
@@ -87,10 +87,10 @@ export default async function FluencyPage() {
                     Again {ayah.againCount} | Hard {ayah.hardCount}
                   </p>
                   <Link
-                    href={`/quran/read?view=compact&surah=${ayah.surahNumber}&cursor=${ayah.ayahId}`}
+                    href="/fluency/lesson/hesitation"
                     className="mt-2 inline-flex text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
                   >
-                    Practice this ayah
+                    Open hesitation lesson
                   </Link>
                 </div>
               ))}
@@ -127,11 +127,28 @@ export default async function FluencyPage() {
               ))}
             </div>
           ) : null}
-          <Link href="/practice" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
-            Open practice drills <ArrowRight size={14} />
+          <Link href="/fluency/lesson/transitions" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
+            Open transition lesson <ArrowRight size={14} />
           </Link>
         </Card>
       </div>
+
+      <Card>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Retest when your flow feels calmer</p>
+            <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+              Retesting should answer one question: does the recitation sound more stable than before? It should not be a punishment screen.
+            </p>
+          </div>
+          <Link
+            href="/fluency/retest"
+            className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+          >
+            Open fluency retest <ArrowRight size={14} />
+          </Link>
+        </div>
+      </Card>
     </div>
   );
 }

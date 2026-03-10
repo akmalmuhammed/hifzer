@@ -7,6 +7,7 @@ import {
   BookOpenText,
   CalendarDays,
   ChevronDown,
+  GraduationCap,
   House,
   LifeBuoy,
   LibraryBig,
@@ -37,7 +38,7 @@ type NavKey =
   | "support"
   | "settings";
 
-type NavItem = { href: string; key: NavKey; icon: typeof House };
+type NavItem = { href: string; key: NavKey | "teacher"; icon: typeof House; label?: string };
 
 const PRIMARY: NavItem[] = [
   { href: "/", key: "home", icon: House },
@@ -53,6 +54,7 @@ const INSIGHTS: NavItem[] = [
 ];
 
 const PLATFORM: NavItem[] = [
+  { href: "/teacher", key: "teacher", icon: GraduationCap, label: "Teacher" },
   { href: "/roadmap", key: "roadmap", icon: Map },
   { href: "/support", key: "support", icon: LifeBuoy },
 ];
@@ -79,6 +81,9 @@ function isActive(pathname: string, href: string): boolean {
   if (href === "/support") {
     return pathname === "/support";
   }
+  if (href === "/teacher") {
+    return pathname === "/teacher" || pathname.startsWith("/teacher/");
+  }
   if (href === "/settings") {
     return pathname === "/settings" || pathname.startsWith("/settings/");
   }
@@ -104,6 +109,7 @@ function NavLink(props: { item: NavItem; pathname: string; copy: ReturnType<type
   const { item, pathname, copy } = props;
   const active = isActive(pathname, item.href);
   const Icon = item.icon;
+  const label = item.label ?? (item.key === "teacher" ? "Teacher" : copy.nav[item.key]);
   return (
     <TrackedLink
       key={item.href}
@@ -124,7 +130,7 @@ function NavLink(props: { item: NavItem; pathname: string; copy: ReturnType<type
       >
         <Icon size={18} />
       </span>
-      <span className="truncate">{copy.nav[item.key]}</span>
+      <span className="truncate">{label}</span>
     </TrackedLink>
   );
 }
@@ -263,6 +269,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
           {mobileItems.map((item) => {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;
+            const label = item.label ?? (item.key === "teacher" ? "Teacher" : copy.nav[item.key]);
             return (
               <TrackedLink
                 key={item.href}
@@ -276,7 +283,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
                 )}
               >
                 <Icon size={18} />
-                <span className="truncate">{copy.nav[item.key]}</span>
+                <span className="truncate">{label}</span>
               </TrackedLink>
             );
           })}

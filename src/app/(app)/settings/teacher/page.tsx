@@ -59,8 +59,14 @@ export default function TeacherSettingsPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             <Link
-              href="/progress"
+              href="/teacher"
               className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+            >
+              Open teacher dashboard
+            </Link>
+            <Link
+              href="/progress"
+              className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
             >
               Open progress
             </Link>
