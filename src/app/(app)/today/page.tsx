@@ -1,7 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
 import * as Sentry from "@sentry/nextjs";
+import { getReciterLabel } from "@/hifzer/audio/reciters";
 import { loadTodayState } from "@/hifzer/engine/server";
 import { listLearningLanes } from "@/hifzer/profile/server";
+import { getAyahById, getSurahInfo } from "@/hifzer/quran/lookup.server";
+import { getQuranReadProgress } from "@/hifzer/quran/read-progress.server";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { dbConfigured } from "@/lib/db";
 import { TodayClient } from "./today-client";
@@ -33,6 +36,17 @@ export default async function TodayPage() {
     ]);
 
     const { profile, state } = todayResult;
+    const quranProgress = await getQuranReadProgress(profile.id);
+    const quranAyah = getAyahById(quranProgress.lastReadAyahId ?? profile.quranCursorAyahId) ?? getAyahById(1);
+    const quranSurah = getSurahInfo(quranAyah?.surahNumber ?? 1);
+    const quranRef = quranAyah ? `${quranAyah.surahNumber}:${quranAyah.ayahNumber}` : "1:1";
+    const trackedParams = new URLSearchParams({ view: "compact" });
+    if (quranAyah) {
+      trackedParams.set("surah", String(quranAyah.surahNumber));
+      trackedParams.set("cursor", String(quranAyah.id));
+    }
+    const continueHref = `/quran/read?${trackedParams.toString()}`;
+    const anonymousHref = `${continueHref}&anon=1`;
 
     const initialData: TodayPayload = {
       localDate: state.localDate,
@@ -40,6 +54,15 @@ export default async function TodayPage() {
         activeSurahNumber: profile.activeSurahNumber,
         cursorAyahId: profile.cursorAyahId,
         dailyMinutes: profile.dailyMinutes,
+        reciterLabel: getReciterLabel(profile.reciterId),
+      },
+      quran: {
+        completionPct: quranProgress.completionPct,
+        completedKhatmahCount: quranProgress.completionKhatmahCount,
+        currentSurahName: quranSurah?.nameTransliteration ?? `Surah ${quranAyah?.surahNumber ?? 1}`,
+        currentRef: quranRef,
+        continueHref,
+        anonymousHref,
       },
       state: {
         mode: state.mode,

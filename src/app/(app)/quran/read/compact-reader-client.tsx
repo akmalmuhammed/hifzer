@@ -32,6 +32,7 @@ type Props = {
   translationAlignClass: string;
   compactReaderAnchor: string;
   syncEnabled: boolean;
+  reciterId: string;
 };
 
 export function CompactReaderClient({
@@ -48,6 +49,7 @@ export function CompactReaderClient({
   translationAlignClass,
   compactReaderAnchor,
   syncEnabled,
+  reciterId,
 }: Props) {
   const router = useRouter();
   const [cursorIndex, setCursorIndex] = useState(() => {
@@ -154,6 +156,7 @@ export function CompactReaderClient({
           <div className="w-full sm:w-auto">
             <AyahAudioPlayer
               ayahId={current.id}
+              reciterId={reciterId}
               className="w-full sm:w-auto"
               streakTrackSource={anonymous ? undefined : "quran_browse"}
               autoPlayPrefKey="hifzer_quran_autoplay_v1"

@@ -1,14 +1,16 @@
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
-import { ArrowRight, BookMarked, BookOpen, Compass, EyeOff } from "lucide-react";
+import { ArrowRight, BookMarked, BookOpen, Compass, EyeOff, Headphones, Radio } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
+import { getReciterLabel } from "@/hifzer/audio/reciters";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { getAyahById, getSurahInfo, listJuzs, listSurahs } from "@/hifzer/quran/lookup.server";
 import { getQuranReadProgress } from "@/hifzer/quran/read-progress.server";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { QuranCompletionProgress } from "./quran-completion-progress";
 import { QuranProgressBackfill } from "./quran-progress-backfill";
+import { QuranReadingPlanCard } from "./quran-reading-plan-card";
 
 export const metadata = {
   title: "Qur'an",
@@ -16,6 +18,7 @@ export const metadata = {
 
 export default async function QuranIndexPage() {
   const totalAyahs = 6236;
+  let profile = null as Awaited<ReturnType<typeof getOrCreateUserProfile>>;
   let readCoverage = {
     uniqueReadAyahCount: 0,
     completionPct: 0,
@@ -26,7 +29,7 @@ export default async function QuranIndexPage() {
   if (clerkEnabled()) {
     const { userId } = await auth();
     if (userId) {
-      const profile = await getOrCreateUserProfile(userId);
+      profile = await getOrCreateUserProfile(userId);
       if (profile) {
         readCoverage = await getQuranReadProgress(profile.id);
       }
@@ -57,6 +60,7 @@ export default async function QuranIndexPage() {
   }
   const trackedHref = `/quran/read?${trackedParams.toString()}`;
   const anonymousHref = `${trackedHref}&anon=1`;
+  const activeReciterLabel = getReciterLabel(profile?.reciterId ?? "default");
 
   return (
     <div className="pb-12 pt-10 md:pb-16 md:pt-14">
@@ -109,6 +113,15 @@ export default async function QuranIndexPage() {
           currentAyahNumber={lastAyah?.ayahNumber ?? 1}
           completedKhatmahCount={readCoverage.completionKhatmahCount}
           resumeHref={trackedHref}
+        />
+      </div>
+
+      <div className="mt-8">
+        <QuranReadingPlanCard
+          totalAyahs={totalAyahs}
+          completedAyahCount={readCoverage.uniqueReadAyahCount}
+          continueHref={trackedHref}
+          anonymousHref={anonymousHref}
         />
       </div>
 
@@ -169,6 +182,76 @@ export default async function QuranIndexPage() {
               Open anonymous window
               <EyeOff size={15} />
             </Link>
+          </div>
+        </Card>
+      </div>
+
+      <div className="mt-8 grid gap-4 lg:grid-cols-2">
+        <Card className="relative overflow-hidden">
+          <div className="pointer-events-none absolute -right-12 -top-10 h-32 w-32 rounded-full bg-[rgba(var(--kw-accent-rgb),0.12)]" />
+          <div className="relative">
+            <div className="flex items-center gap-2">
+              <Pill tone="accent">Listening mode</Pill>
+              <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">Read less, hear more</span>
+            </div>
+            <p className="mt-4 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+              Keep one reciter in your ears every day.
+            </p>
+            <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+              Use compact mode with auto-advance for commute, chores, or evening review. Stay in the same voice when you want stronger auditory recall.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Pill tone="neutral">Active: {activeReciterLabel}</Pill>
+              <Pill tone="neutral">Auto-next available</Pill>
+            </div>
+            <div className="mt-6 flex flex-wrap gap-2">
+              <Link
+                href={trackedHref}
+                className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+              >
+                Start listening <Headphones size={15} />
+              </Link>
+              <Link
+                href="/settings/reciter"
+                className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
+              >
+                Change reciter <Radio size={15} />
+              </Link>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="relative overflow-hidden">
+          <div className="pointer-events-none absolute -left-12 -top-20 h-40 w-40 rounded-full bg-[rgba(255,152,52,0.12)]" />
+          <div className="relative">
+            <div className="flex items-center gap-2">
+              <Pill tone="warn">Khatmah rhythm</Pill>
+              <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">Seasonal planning</span>
+            </div>
+            <p className="mt-4 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+              Plan ahead for Ramadan or any focused month.
+            </p>
+            <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+              Your current coverage is {readCoverage.completionPct.toFixed(1)}%. Use the reading-plan card above to choose a 30-day, 90-day, or year-long khatmah track and keep the same pace.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Pill tone="neutral">Khatmah completed: {readCoverage.completionKhatmahCount}</Pill>
+              <Pill tone="neutral">Last tracked ayah: #{lastAyah?.id ?? 1}</Pill>
+            </div>
+            <div className="mt-6 flex flex-wrap gap-2">
+              <Link
+                href="/ramadan"
+                className="inline-flex items-center gap-2 rounded-xl border border-[rgba(255,152,52,0.35)] bg-[rgba(255,152,52,0.14)] px-4 py-2 text-sm font-semibold text-[rgb(163,89,24)]"
+              >
+                Open Ramadan planner <ArrowRight size={15} />
+              </Link>
+              <Link
+                href={trackedHref}
+                className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
+              >
+                Resume today&apos;s reading
+              </Link>
+            </div>
           </div>
         </Card>
       </div>

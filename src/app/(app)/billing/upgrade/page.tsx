@@ -15,15 +15,17 @@ export const metadata = {
 };
 
 const FREE_FEATURES = [
-  "Daily plan and session flow",
-  "Per-ayah grading and queueing",
-  "Dark mode and standard visuals",
+  "Daily reading and listening",
+  "Bookmarks, translations, and reminders",
+  "Core Hifz plan, session flow, and review queue",
+  "Basic fluency and progress surfaces",
 ];
 
 const PAID_FEATURES = [
-  "Theme and accent personalization",
-  "Expanded reciter/audio options",
-  "Advanced progress features as they ship",
+  "Advanced recitation analytics and reports",
+  "Teacher, parent, and class workflows as they ship",
+  "Deeper audio tooling and premium review insights",
+  "Family and supervised-learning features",
 ];
 
 export default async function BillingUpgradePage() {
@@ -49,7 +51,7 @@ export default async function BillingUpgradePage() {
       <PageHeader
         eyebrow="Billing"
         title="Upgrade"
-        subtitle="Choose your plan. Paid unlocks additional personalization."
+        subtitle="Keep the core Qur'an habit accessible. Paid should unlock deeper learning tools, not basic access."
       />
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -61,7 +63,7 @@ export default async function BillingUpgradePage() {
                 $0
               </p>
               <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                Good for daily consistency and core hifz flow.
+                Good for daily reading, listening, and core Hifz work.
               </p>
             </div>
             <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)]">
@@ -87,7 +89,7 @@ export default async function BillingUpgradePage() {
                 $7<span className="ml-2 text-sm font-semibold text-[color:var(--kw-muted)]">/ month</span>
               </p>
               <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                More personalization with subscription billing via Paddle.
+                Designed for advanced learners, teachers, and deeper review workflows.
               </p>
             </div>
             <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] text-[color:var(--kw-ink)]">

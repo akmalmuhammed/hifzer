@@ -6,6 +6,15 @@ export type TodayPayload = {
     activeSurahNumber: number;
     cursorAyahId: number;
     dailyMinutes: number;
+    reciterLabel?: string;
+  };
+  quran: {
+    completionPct: number;
+    completedKhatmahCount: number;
+    currentSurahName: string;
+    currentRef: string;
+    continueHref: string;
+    anonymousHref: string;
   };
   state: {
     mode: "NORMAL" | "CONSOLIDATION" | "CATCH_UP";

@@ -31,6 +31,21 @@ export function AyahAudioPlayer(props: {
     () => audioUrl(props.reciterId ?? "default", props.ayahId),
     [props.ayahId, props.reciterId],
   );
+  const playerKey = `${props.reciterId ?? "default"}:${props.ayahId}`;
+  return <AyahAudioPlayerInner key={playerKey} {...props} src={src} />;
+}
+
+function AyahAudioPlayerInner(props: {
+  ayahId: number;
+  reciterId?: string;
+  className?: string;
+  streakTrackSource?: "quran_browse";
+  trailingControl?: ReactNode;
+  autoPlayPrefKey?: string;
+  onAutoAdvance?: () => void;
+  src: string | null;
+}) {
+  const src = props.src;
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const repeatLeftRef = useRef(0);
@@ -44,6 +59,7 @@ export function AyahAudioPlayer(props: {
   const [speedIndex, setSpeedIndex] = useState(1);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [loadError, setLoadError] = useState(false);
   const [autoPlayEnabled, setAutoPlayEnabled] = useState(() => {
     if (typeof window === "undefined" || !props.autoPlayPrefKey) {
       return false;
@@ -126,15 +142,22 @@ export function AyahAudioPlayer(props: {
       }
     }
 
+    function onError() {
+      setLoadError(true);
+      setPlaying(false);
+    }
+
     audioEl.addEventListener("play", onPlay);
     audioEl.addEventListener("pause", onPause);
     audioEl.addEventListener("timeupdate", onTimeUpdate);
     audioEl.addEventListener("ended", onEnded);
+    audioEl.addEventListener("error", onError);
     return () => {
       audioEl.removeEventListener("play", onPlay);
       audioEl.removeEventListener("pause", onPause);
       audioEl.removeEventListener("timeupdate", onTimeUpdate);
       audioEl.removeEventListener("ended", onEnded);
+      audioEl.removeEventListener("error", onError);
       releaseSinglePlayback(audioEl);
     };
   }, []);
@@ -227,7 +250,7 @@ export function AyahAudioPlayer(props: {
     seekToTime(value);
   }
 
-  const disabled = !src;
+  const disabled = !src || loadError;
 
   function toggleAutoPlay() {
     const prefKey = props.autoPlayPrefKey;
@@ -266,8 +289,16 @@ export function AyahAudioPlayer(props: {
                 ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]"
                 : "border-[rgba(43,75,255,0.22)] bg-[rgba(43,75,255,0.10)] text-[rgba(31,54,217,1)] hover:bg-[rgba(43,75,255,0.14)]",
             )}
-            aria-label={disabled ? "Audio not configured" : playing ? "Pause" : "Play"}
-            title={disabled ? "Audio base URL not configured" : playing ? "Pause" : "Play"}
+            aria-label={disabled ? "Audio unavailable" : playing ? "Pause" : "Play"}
+            title={
+              !src
+                ? "Audio base URL not configured"
+                : loadError
+                  ? "Audio file unavailable for this reciter"
+                  : playing
+                    ? "Pause"
+                    : "Play"
+            }
           >
             {playing ? <Pause size={16} /> : <Play size={16} />}
           </button>
@@ -278,7 +309,9 @@ export function AyahAudioPlayer(props: {
                 Audio
               </p>
               {disabled ? (
-                <span className="truncate text-xs text-[color:var(--kw-muted)]">Not configured</span>
+                <span className="truncate text-xs text-[color:var(--kw-muted)]">
+                  {loadError ? "Unavailable" : "Not configured"}
+                </span>
               ) : (
                 <span className="text-xs text-[color:var(--kw-muted)]">
                   {formatSeconds(currentTime)} / {formatSeconds(duration)}

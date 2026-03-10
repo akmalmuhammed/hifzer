@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, BookOpenText, ChevronDown, PlayCircle, RefreshCcw } from "lucide-react";
+import { ArrowRight, BookOpenText, ChevronDown, Headphones, PlayCircle, RefreshCcw } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { SessionFlowTutorial } from "@/components/app/session-flow-tutorial";
 import { SurahSearchSelect } from "@/components/app/surah-search-select";
@@ -300,14 +300,14 @@ export function TodayClient({
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Home"
+        eyebrow="Today"
         title="Today"
-        subtitle="Your daily Hifz run, powered by spaced repetition."
+        subtitle="Read today, listen today, review what is due, and memorize with structure when the queue is ready."
         right={
           <div className="flex items-center gap-2">
             <Link href="/quran">
               <Button variant="secondary" className="gap-2">
-                Browse Qur&apos;an <BookOpenText size={16} />
+                Open Qur&apos;an <BookOpenText size={16} />
               </Button>
             </Link>
           </div>
@@ -371,12 +371,12 @@ export function TodayClient({
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h2 className="font-[family-name:var(--font-kw-display)] text-2xl tracking-tight text-[color:var(--kw-ink)] sm:text-3xl">
-                    Your Hifz run is ready
+                    Your Qur&apos;an day is ready
                   </h2>
                   <p className="mt-1.5 text-sm text-[color:var(--kw-muted)]">
                     {totalQueueItems === 0
-                      ? "No items queued today"
-                      : `~${estimatedMinutes} min \u00B7 ${totalQueueItems} ayah${totalQueueItems !== 1 ? "s" : ""} queued`}
+                      ? `No Hifz steps are queued right now. Reading and listening are still open.`
+                      : `~${estimatedMinutes} min \u00B7 ${totalQueueItems} Hifz ayah${totalQueueItems !== 1 ? "s" : ""} queued`}
                   </p>
                 </div>
                 <Pill tone={modeTone(data.state.mode)}>{data.state.mode.replace("_", " ")}</Pill>
@@ -402,15 +402,25 @@ export function TodayClient({
 
               {/* Action buttons */}
               <div className="mt-5 flex flex-wrap items-center gap-3">
+                <Link href={data.quran.continueHref}>
+                  <Button variant="secondary" size="lg" className="gap-2">
+                    Read <BookOpenText size={18} />
+                  </Button>
+                </Link>
+                <Link href={data.quran.anonymousHref}>
+                  <Button variant="secondary" className="gap-2">
+                    Listen <Headphones size={16} />
+                  </Button>
+                </Link>
                 <Link href="/hifz">
                   <Button size="lg" className="gap-2">
-                    Start Hifz <PlayCircle size={18} />
+                    Memorize <PlayCircle size={18} />
                   </Button>
                 </Link>
                 {hasReviewPressure ? (
                   <Link href="/hifz?focus=review">
                     <Button variant="secondary" className="gap-2">
-                      Quick review <ArrowRight size={16} />
+                      Review due items <ArrowRight size={16} />
                     </Button>
                   </Link>
                 ) : null}
@@ -451,6 +461,60 @@ export function TodayClient({
               ) : null}
             </div>
           </Card>
+
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <Card>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Read</p>
+              <p className="mt-2 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                Continue from {data.quran.currentRef}
+              </p>
+              <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+                Qur&apos;an coverage {data.quran.completionPct.toFixed(1)}% | {data.quran.currentSurahName}
+              </p>
+              <Link href={data.quran.continueHref} className="mt-4 inline-flex text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
+                Continue reading
+              </Link>
+            </Card>
+
+            <Card>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Listen</p>
+              <p className="mt-2 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                {data.profile.reciterLabel ?? "System default"}
+              </p>
+              <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+                Use compact reader audio with repeat and auto-next for commute, chores, or evening recitation.
+              </p>
+              <Link href={data.quran.anonymousHref} className="mt-4 inline-flex text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
+                Open listening mode
+              </Link>
+            </Card>
+
+            <Card>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Memorize</p>
+              <p className="mt-2 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                {data.state.queue.newAyahIds.length} new ayahs available
+              </p>
+              <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+                Warm-up {data.state.queue.warmupAyahIds.length} | Review {reviewCount} | Mode {data.state.mode.toLowerCase().replace("_", "-")}
+              </p>
+              <Link href="/hifz" className="mt-4 inline-flex text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
+                Start Hifz run
+              </Link>
+            </Card>
+
+            <Card>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Review</p>
+              <p className="mt-2 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                {data.state.dueNowCount} due now
+              </p>
+              <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+                {data.state.dueSoonCount} due in the next 6h. {data.state.weeklyGateRequired ? "Weekly gate pending." : "Weekly gate clear."}
+              </p>
+              <Link href="/hifz?focus=review" className="mt-4 inline-flex text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
+                Open review queue
+              </Link>
+            </Card>
+          </div>
 
           {/* ========== COLLAPSIBLE DIAGNOSTICS ========== */}
           <div>

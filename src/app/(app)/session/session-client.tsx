@@ -50,6 +50,7 @@ type SessionStartPayload = {
   preferences?: {
     quranTranslationId: string;
     quranShowDetails: boolean;
+    reciterId: string;
   };
   state: {
     mode: "NORMAL" | "CONSOLIDATION" | "CATCH_UP";
@@ -1337,7 +1338,10 @@ export function SessionClient() {
                 ) : null}
               </div>
               <div className="max-w-xl">
-                <AyahAudioPlayer ayahId={currentStep.ayahId} />
+                <AyahAudioPlayer
+                  ayahId={currentStep.ayahId}
+                  reciterId={run.preferences?.reciterId}
+                />
               </div>
             </div>
           )}

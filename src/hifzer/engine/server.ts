@@ -825,6 +825,7 @@ export async function startTodaySession(clerkUserId: string, input?: { preferred
     preferences: {
       quranTranslationId: translationId,
       quranShowDetails: profile.quranShowDetails,
+      reciterId: profile.reciterId,
     },
     state: sessionState,
     steps: sessionSteps,

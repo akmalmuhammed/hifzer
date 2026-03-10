@@ -1,19 +1,23 @@
-import { Music } from "lucide-react";
-import { PlaceholderPage } from "@/components/app/placeholder-page";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { audioBaseUrl } from "@/hifzer/audio/config";
+import { getProfileSnapshot } from "@/hifzer/profile/server";
+import { ReciterSettingsClient } from "./reciter-settings-client";
 
 export const metadata = {
   title: "Reciter",
 };
 
-export default function ReciterSettingsPage() {
+export default async function ReciterSettingsPage() {
+  const { userId } = await auth();
+  if (!userId) {
+    redirect("/login");
+  }
+  const profile = await getProfileSnapshot(userId);
   return (
-    <PlaceholderPage
-      eyebrow="Settings"
-      title="Reciter"
-      subtitle="Preview and select reciters. Free includes the default reciter; Paid unlocks more."
-      icon={<Music size={18} />}
-      message="Reciter selection not wired yet"
+    <ReciterSettingsClient
+      initialReciterId={profile?.reciterId ?? "default"}
+      audioConfigured={Boolean(audioBaseUrl())}
     />
   );
 }
-

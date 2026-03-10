@@ -129,6 +129,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   const userId = authEnabled ? (await auth()).userId : null;
   const distractionFree = await getDistractionFreeServer();
   const profile = userId ? await getProfileSnapshot(userId) : null;
+  const reciterId = profile?.reciterId ?? "default";
   const requestedView = parseView(searchParams.view);
   const view = distractionFree ? "compact" : requestedView;
   const surahNumber = parseBoundedInt(searchParams.surah, 1, 114);
@@ -455,7 +456,11 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
                   <span className="text-xs text-[color:var(--kw-faint)]">#{ayah.id}</span>
                 </div>
                 <div className="w-full sm:w-auto">
-                  <AyahAudioPlayer ayahId={ayah.id} streakTrackSource={anonymous ? undefined : "quran_browse"} />
+                  <AyahAudioPlayer
+                    ayahId={ayah.id}
+                    reciterId={reciterId}
+                    streakTrackSource={anonymous ? undefined : "quran_browse"}
+                  />
                 </div>
               </div>
 
@@ -552,6 +557,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
           translationAlignClass={translationAlignClass}
           compactReaderAnchor={COMPACT_READER_ANCHOR}
           syncEnabled={Boolean(!anonymous && authEnabled && userId)}
+          reciterId={reciterId}
         />
       ) : null}
     </div>

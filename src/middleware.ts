@@ -14,6 +14,7 @@ const isProtectedRoute = createRouteMatcher([
   "/roadmap(.*)",
   "/support(.*)",
   "/progress(.*)",
+  "/ramadan(.*)",
   "/settings(.*)",
   "/streak(.*)",
   "/milestones(.*)",

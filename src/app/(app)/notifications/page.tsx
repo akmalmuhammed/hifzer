@@ -1,19 +1,25 @@
-import { Bell } from "lucide-react";
-import { PlaceholderPage } from "@/components/app/placeholder-page";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { getProfileSnapshot } from "@/hifzer/profile/server";
+import { NotificationsClient } from "./notifications-client";
 
 export const metadata = {
   title: "Notifications",
 };
 
-export default function NotificationsPage() {
+export default async function NotificationsPage() {
+  const { userId } = await auth();
+  if (!userId) {
+    redirect("/login");
+  }
+  const profile = await getProfileSnapshot(userId);
   return (
-    <PlaceholderPage
-      eyebrow="Notifications"
-      title="Notifications"
-      subtitle="Reminders, streak nudges, and session prompts."
-      icon={<Bell size={18} />}
-      message="Notifications not wired yet"
+    <NotificationsClient
+      initial={{
+        emailRemindersEnabled: profile?.emailRemindersEnabled ?? true,
+        reminderTimeLocal: profile?.reminderTimeLocal ?? "06:00",
+        timezone: profile?.timezone ?? "UTC",
+      }}
     />
   );
 }
-

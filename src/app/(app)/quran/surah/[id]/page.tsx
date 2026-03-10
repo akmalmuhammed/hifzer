@@ -1,8 +1,10 @@
+import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
+import { getProfileSnapshot } from "@/hifzer/profile/server";
 import { getSurahInfo, listAyahsForSurah } from "@/hifzer/quran/lookup.server";
 import { getSahihTranslationByAyahId } from "@/hifzer/quran/translation.server";
 
@@ -16,6 +18,9 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
 }
 
 export default async function SurahPage(props: { params: Promise<{ id: string }> }) {
+  const { userId } = await auth();
+  const profile = userId ? await getProfileSnapshot(userId) : null;
+  const reciterId = profile?.reciterId ?? "default";
   const params = await props.params;
   const surahNumber = Number(params.id);
   const info = getSurahInfo(surahNumber);
@@ -75,7 +80,7 @@ export default async function SurahPage(props: { params: Promise<{ id: string }>
                 <span className="text-xs text-[color:var(--kw-faint)]">#{a.id}</span>
               </div>
               <div className="w-full sm:w-auto">
-                <AyahAudioPlayer ayahId={a.id} streakTrackSource="quran_browse" />
+                <AyahAudioPlayer ayahId={a.id} reciterId={reciterId} streakTrackSource="quran_browse" />
               </div>
             </div>
 

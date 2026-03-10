@@ -12,6 +12,7 @@ import type {
 import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
 import { getSurahInfo } from "@/hifzer/quran/lookup.server";
 import { DEFAULT_QURAN_TRANSLATION_ID, type QuranTranslationId } from "@/hifzer/quran/translation-prefs";
+import { normalizeReciterId } from "@/hifzer/audio/reciters";
 import { ensureCoreSchemaCompatibility, getCoreSchemaCapabilities } from "@/lib/db-compat";
 import { db, dbConfigured } from "@/lib/db";
 
@@ -494,6 +495,25 @@ export async function saveDisplayPrefs(input: {
       themePreset: input.themePreset,
       accentPreset: input.accentPreset,
     }),
+  });
+  return toSnapshot(row);
+}
+
+export async function saveReciterPrefs(input: {
+  clerkUserId: string;
+  reciterId: string;
+}) {
+  if (!dbConfigured()) {
+    return null;
+  }
+  const reciterId = normalizeReciterId(input.reciterId);
+  const row = await upsertProfileCompat({
+    clerkUserId: input.clerkUserId,
+    buildCreate: (hasQuranLaneColumns) => ({
+      ...defaultCreateData(input.clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
+      reciterId,
+    }),
+    buildUpdate: () => ({ reciterId }),
   });
   return toSnapshot(row);
 }
