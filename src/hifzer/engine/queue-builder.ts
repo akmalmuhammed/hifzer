@@ -151,8 +151,25 @@ export function buildTodayEngineQueue(input: {
   const usedSeconds = usedReviewSeconds + (repairLinks.length * avgLinkSeconds);
   const remainingForNew = Math.max(0, totalSeconds - usedSeconds);
 
-  let newCount = mode === "CATCH_UP" ? 0 : Math.floor(remainingForNew / avgNewSeconds);
+  const allowCatchUpBootstrapNew =
+    mode === "CATCH_UP" &&
+    input.allReviews.length < 1 &&
+    input.dueReviews.length < 1 &&
+    repairDue.length < 1 &&
+    warmupAyahIds.length < 1 &&
+    weeklyGateAyahIds.length < 1 &&
+    sabqiReviewAyahIds.length < 1 &&
+    manzilReviewAyahIds.length < 1;
+
+  // Avoid a dead-end when historical mode signals say "catch up" but there is
+  // literally no review or repair work to catch up on yet.
+  let newCount = mode === "CATCH_UP" && !allowCatchUpBootstrapNew
+    ? 0
+    : Math.floor(remainingForNew / avgNewSeconds);
   if (mode === "CONSOLIDATION") {
+    newCount = Math.min(newCount, 2);
+  }
+  if (allowCatchUpBootstrapNew) {
     newCount = Math.min(newCount, 2);
   }
   if (profile.rebalanceUntil && profile.rebalanceUntil.getTime() > now.getTime()) {
@@ -172,7 +189,7 @@ export function buildTodayEngineQueue(input: {
 
   // Gate requirements are evaluated inside the session (warm-up / weekly pass).
   // `newUnlocked` only represents mode-level eligibility.
-  const newUnlocked = mode !== "CATCH_UP";
+  const newUnlocked = mode !== "CATCH_UP" || allowCatchUpBootstrapNew;
 
   return {
     localDate,

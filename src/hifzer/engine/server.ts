@@ -13,6 +13,7 @@ import { db } from "@/lib/db";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { isoDateInTimeZone } from "@/hifzer/engine/date";
 import { buildTodayEngineQueue } from "@/hifzer/engine/queue-builder";
+import { nextStartPointIfSurahCompleted } from "@/hifzer/engine/surah-progress";
 import {
   monthlyGateOutcome,
   moderateRebalanceProfilePatch,
@@ -460,15 +461,34 @@ async function loadRetention3d(profileId: string, now: Date): Promise<number> {
   return retention3dAverage({ events, now });
 }
 
+async function normalizeHifzStartPoint(profile: UserProfile): Promise<UserProfile> {
+  const nextStartPoint = nextStartPointIfSurahCompleted({
+    activeSurahNumber: profile.activeSurahNumber,
+    cursorAyahId: profile.cursorAyahId,
+  });
+  if (!nextStartPoint) {
+    return profile;
+  }
+
+  return db().userProfile.update({
+    where: { id: profile.id },
+    data: {
+      activeSurahNumber: nextStartPoint.activeSurahNumber,
+      cursorAyahId: nextStartPoint.cursorAyahId,
+    },
+  });
+}
+
 export async function loadTodayState(clerkUserId: string): Promise<{
   profile: UserProfile;
   state: TodayEngineResult;
   steps: SessionStep[];
 }> {
-  const profile = await getOrCreateUserProfile(clerkUserId);
-  if (!profile) {
+  const initialProfile = await getOrCreateUserProfile(clerkUserId);
+  if (!initialProfile) {
     throw new Error("Database not configured.");
   }
+  const profile = await normalizeHifzStartPoint(initialProfile);
 
   const prisma = db();
   const now = new Date();

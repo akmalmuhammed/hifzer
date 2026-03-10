@@ -106,6 +106,26 @@ describe("engine/queue-builder", () => {
     expect(state.newUnlocked).toBe(false);
   });
 
+  it("bootstraps a small new queue in CATCH_UP when there is nothing to review", () => {
+    const now = new Date("2026-02-15T09:00:00.000Z");
+    const state = buildTodayEngineQueue({
+      profile: profileFixture(),
+      now,
+      allReviews: [],
+      dueReviews: [],
+      weakTransitions: [] as WeakTransition[],
+      yesterdayNewAyahIds: [],
+      lastCompletedLocalDate: "2026-02-10",
+      weeklyGateDue: false,
+      retention3dAvg: 2.2,
+      monthlyTestRequired: false,
+    });
+
+    expect(state.mode).toBe("CATCH_UP");
+    expect(state.newUnlocked).toBe(true);
+    expect(state.queue.newAyahIds).toEqual([1, 2]);
+  });
+
   it("does not count unscheduled rest days as missed days", () => {
     const now = new Date("2026-02-16T09:00:00.000Z");
     const state = buildTodayEngineQueue({
