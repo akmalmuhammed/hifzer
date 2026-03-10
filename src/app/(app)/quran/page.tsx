@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
-import { ArrowRight, BookMarked, BookOpen, Compass, EyeOff, Headphones, Radio } from "lucide-react";
+import { ArrowRight, BookMarked, BookOpen, Compass, EyeOff, Headphones, MoonStar, Radio } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import { getReciterLabel } from "@/hifzer/audio/reciters";
@@ -98,6 +98,13 @@ export default async function QuranIndexPage() {
             >
               Open smart bookmarks
               <BookMarked size={14} />
+            </Link>
+            <Link
+              href="/dua"
+              className="inline-flex items-center gap-2 rounded-xl border border-[rgba(194,65,12,0.22)] bg-[rgba(194,65,12,0.10)] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-ember-600)]"
+            >
+              Laylat al-Qadr dua
+              <MoonStar size={14} />
             </Link>
           </div>
         </div>

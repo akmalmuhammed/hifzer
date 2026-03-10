@@ -11,6 +11,7 @@ export type AppUiCopy = {
     today: string;
     hifz: string;
     quran: string;
+    dua: string;
     progress: string;
     streak: string;
     glossary: string;
@@ -74,6 +75,7 @@ const APP_UI_COPY: Record<UiLanguage, AppUiCopy> = {
       today: "Today",
       hifz: "Hifz",
       quran: "Qur'an",
+      dua: "Dua",
       progress: "Progress",
       streak: "Streak",
       glossary: "Glossary",
@@ -135,6 +137,7 @@ const APP_UI_COPY: Record<UiLanguage, AppUiCopy> = {
       today: "آج",
       hifz: "حفظ",
       quran: "قرآن",
+      dua: "دعا",
       progress: "پیش رفت",
       streak: "تسلسل",
       glossary: "لغت",
@@ -196,6 +199,7 @@ const APP_UI_COPY: Record<UiLanguage, AppUiCopy> = {
       today: "Hari ini",
       hifz: "Hifz",
       quran: "Qur'an",
+      dua: "Doa",
       progress: "Progres",
       streak: "Streak",
       glossary: "Glosarium",
@@ -257,6 +261,7 @@ const APP_UI_COPY: Record<UiLanguage, AppUiCopy> = {
       today: "Bugün",
       hifz: "Hıfz",
       quran: "Kur'an",
+      dua: "Dua",
       progress: "İlerleme",
       streak: "Seri",
       glossary: "Sözlük",
@@ -318,6 +323,7 @@ const APP_UI_COPY: Record<UiLanguage, AppUiCopy> = {
       today: "امروز",
       hifz: "حفظ",
       quran: "قرآن",
+      dua: "دعا",
       progress: "پیشرفت",
       streak: "تداوم",
       glossary: "واژه‌نامه",
@@ -379,6 +385,7 @@ const APP_UI_COPY: Record<UiLanguage, AppUiCopy> = {
       today: "আজ",
       hifz: "হিফজ",
       quran: "কুরআন",
+      dua: "দু'আ",
       progress: "অগ্রগতি",
       streak: "স্ট্রিক",
       glossary: "গ্লসারি",
@@ -440,6 +447,7 @@ const APP_UI_COPY: Record<UiLanguage, AppUiCopy> = {
       today: "ഇന്ന്",
       hifz: "ഹിഫ്‌സ്",
       quran: "ഖുർആൻ",
+      dua: "ദുആ",
       progress: "പുരോഗതി",
       streak: "സ്റ്റ്രീക്ക്",
       glossary: "ഗ്ലോസറി",
