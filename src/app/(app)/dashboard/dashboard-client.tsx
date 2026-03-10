@@ -1,18 +1,27 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
+import clsx from "clsx";
 
 import {
   ArrowRight,
+  BookOpenText,
   BookMarked,
   CalendarDays,
   ChevronLeft,
   ChevronRight,
+  Clock3,
   Compass,
+  Flame,
+  Gauge,
   PlayCircle,
+  Radar,
   RefreshCcw,
+  ShieldCheck,
   TrendingUp,
+  type LucideIcon,
 } from "lucide-react";
 import { AreaTrend } from "@/components/charts/area-trend";
 import { DonutProgress } from "@/components/charts/donut-progress";
@@ -203,6 +212,111 @@ function DashboardSkeleton() {
   );
 }
 
+function iconToneClass(tone: "accent" | "neutral" | "warn"): string {
+  if (tone === "warn") {
+    return styles.iconWarn;
+  }
+  if (tone === "neutral") {
+    return styles.iconNeutral;
+  }
+  return styles.iconAccent;
+}
+
+function QuickActionCard(props: {
+  href: string;
+  eyebrow: string;
+  title: string;
+  note: string;
+  icon: LucideIcon;
+  tone?: "accent" | "neutral";
+}) {
+  const Icon = props.icon;
+  return (
+    <Link
+      href={props.href}
+      className={clsx(styles.actionTile, "group")}
+      data-tone={props.tone ?? "neutral"}
+    >
+      <span className={clsx(styles.iconBadge, iconToneClass(props.tone === "accent" ? "accent" : "neutral"))}>
+        <Icon size={16} />
+      </span>
+      <div className="min-w-0">
+        <p className={styles.actionEyebrow}>{props.eyebrow}</p>
+        <p className={styles.actionTitle}>{props.title}</p>
+        <p className={styles.actionNote}>{props.note}</p>
+      </div>
+      <ArrowRight size={15} className="text-[color:var(--kw-faint)] transition group-hover:text-[rgba(var(--kw-accent-rgb),1)]" />
+    </Link>
+  );
+}
+
+function MetricTile(props: {
+  label: string;
+  value: ReactNode;
+  detail: ReactNode;
+  icon: LucideIcon;
+  tone: "accent" | "neutral" | "warn";
+  foot?: ReactNode;
+  delayMs?: number;
+}) {
+  const Icon = props.icon;
+  return (
+    <div className="kw-fade-in h-full" style={{ animationDelay: `${props.delayMs ?? 0}ms` }}>
+      <Card className={`${styles.metricCard} h-full`}>
+        <div className={styles.metricHeader}>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">
+              {props.label}
+            </p>
+            <div className={`${styles.numericValue} mt-3 text-3xl text-[color:var(--kw-ink)]`}>
+              {props.value}
+            </div>
+            <p className={`${styles.metricBody} mt-2 text-sm leading-6 text-[color:var(--kw-muted)]`}>
+              {props.detail}
+            </p>
+          </div>
+          <span className={clsx(styles.iconBadge, iconToneClass(props.tone))}>
+            <Icon size={17} />
+          </span>
+        </div>
+        {props.foot ? <div className={styles.metricFoot}>{props.foot}</div> : null}
+      </Card>
+    </div>
+  );
+}
+
+function SectionHeader(props: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  tone?: "accent" | "neutral" | "warn";
+  meta?: ReactNode;
+}) {
+  const Icon = props.icon;
+  return (
+    <div className={styles.sectionHeader}>
+      <div className="flex items-start gap-3">
+        <span className={clsx(styles.iconBadge, iconToneClass(props.tone ?? "neutral"))}>
+          <Icon size={17} />
+        </span>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">
+            {props.eyebrow}
+          </p>
+          <p className="mt-1 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
+            {props.title}
+          </p>
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-[color:var(--kw-muted)]">
+            {props.description}
+          </p>
+        </div>
+      </div>
+      {props.meta ? <div className="flex shrink-0 flex-wrap items-center gap-2">{props.meta}</div> : null}
+    </div>
+  );
+}
+
 export function DashboardClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -271,13 +385,13 @@ export function DashboardClient() {
 
   const calendarCells = useMemo(() => {
     if (!overview) {
-      return [] as Array<{ key: string; blank: boolean; day: number; date: string; value: number; isFuture: boolean }>;
+      return [] as Array<{ key: string; blank: boolean; day: number; date: string; value: number; isFuture: boolean; isToday: boolean }>;
     }
     const year = selectedMonthStart.getUTCFullYear();
     const monthIndex = selectedMonthStart.getUTCMonth();
     const firstWeekday = (new Date(Date.UTC(year, monthIndex, 1)).getUTCDay() + 6) % 7;
     const daysInMonth = daysInMonthUtc(selectedMonthStart);
-    const cells: Array<{ key: string; blank: boolean; day: number; date: string; value: number; isFuture: boolean }> = [];
+    const cells: Array<{ key: string; blank: boolean; day: number; date: string; value: number; isFuture: boolean; isToday: boolean }> = [];
 
     for (let idx = 0; idx < firstWeekday; idx += 1) {
       cells.push({
@@ -287,6 +401,7 @@ export function DashboardClient() {
         date: "",
         value: 0,
         isFuture: false,
+        isToday: false,
       });
     }
 
@@ -299,6 +414,7 @@ export function DashboardClient() {
         date,
         value: activityByDate.get(date) ?? 0,
         isFuture: date > overview.today.localDate,
+        isToday: date === overview.today.localDate,
       });
     }
 
@@ -363,17 +479,17 @@ export function DashboardClient() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Home"
-        title="Dashboard"
-        subtitle="A live command deck for retention, session quality, and Qur'an reading momentum."
+        eyebrow="Dashboard"
+        title="Command center"
+        subtitle="A clear readout of retention, review load, and Qur'an reading momentum."
         right={
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="secondary" className="gap-2" onClick={() => void load()}>
               Refresh <RefreshCcw size={16} />
             </Button>
-            <Link href="/hifz">
+            <Link href="/today">
               <Button className="gap-2">
-                Start Hifz <PlayCircle size={16} />
+                Open Today <ArrowRight size={16} />
               </Button>
             </Link>
           </div>
@@ -397,14 +513,14 @@ export function DashboardClient() {
       ) : null}
 
       {!loading && !error && overview ? (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <section className={`kw-fade-in ${styles.commandDeck} px-5 py-5 sm:px-6`}>
             <div className={styles.pulseOrb} />
             <div className={styles.driftOrb} />
-            <div className="relative grid gap-5 lg:grid-cols-[minmax(0,1fr)_220px]">
-              <div className="space-y-4">
+            <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1fr)_260px]">
+              <div className="space-y-5">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Pill tone="accent">Command Deck</Pill>
+                  <Pill tone="accent">Command center</Pill>
                   <Pill tone={modeTone(overview.profile.mode)}>{modeLabel(overview.profile.mode)}</Pill>
                   {status ? <Pill tone={status.tone}>{status.label}</Pill> : null}
                   <span className="text-xs text-[color:var(--kw-faint)]">
@@ -413,50 +529,102 @@ export function DashboardClient() {
                 </div>
 
                 <div>
-                  <h2 className="text-balance font-[family-name:var(--font-kw-display)] text-3xl tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
-                    Precision view of your Hifz system.
+                  <h2 className={`${styles.heroTitle} kw-marketing-display text-balance text-4xl text-[color:var(--kw-ink)] sm:text-5xl`}>
+                    Protect today&apos;s rhythm before review debt grows.
                   </h2>
-                  <p className="mt-2 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
-                    Sessions, review pressure, Qur&apos;an completion, and recall quality are unified here so you can
-                    act immediately.
+                  <p className={`${styles.heroBody} mt-3 text-sm leading-7 text-[color:var(--kw-muted)]`}>
+                    The dashboard now reads like an operations screen: what needs action, what is stable, and where your
+                    next best move sits across Hifz and Qur&apos;an.
                   </p>
+                </div>
+
+                <div className={styles.actionRail}>
+                  <QuickActionCard
+                    href="/today"
+                    eyebrow="Today"
+                    title="Review the live queue"
+                    note={`${overview.today.completedSessions} completed sessions today`}
+                    icon={Radar}
+                    tone="accent"
+                  />
+                  <QuickActionCard
+                    href="/hifz"
+                    eyebrow="Hifz"
+                    title="Start the next memorization block"
+                    note={`${overview.reviewHealth.dueNow} reviews are waiting now`}
+                    icon={PlayCircle}
+                  />
+                  <QuickActionCard
+                    href="/quran/read?view=compact"
+                    eyebrow="Qur'an"
+                    title="Continue your reading lane"
+                    note={`${overview.quran.currentSurahName} | ${overview.quran.cursorRef}`}
+                    icon={BookOpenText}
+                  />
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-3">
                   <div className={`${styles.kpiTile} px-3 py-2.5`}>
                     <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
-                      Sessions (7d)
+                      Due now
                     </p>
-                    <p className="mt-1 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                      {overview.kpis.completedSessions7d}
+                    <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
+                      {overview.reviewHealth.dueNow}
                     </p>
+                    <p className="mt-2 text-xs text-[color:var(--kw-muted)]">Weak links {overview.reviewHealth.weakTransitions}</p>
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-2.5`}>
                     <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
-                      Recall Events
+                      Sessions (7d)
                     </p>
-                    <p className="mt-1 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                      {overview.kpis.recallEvents7d}
+                    <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
+                      {overview.kpis.completedSessions7d}
                     </p>
+                    <p className="mt-2 text-xs text-[color:var(--kw-muted)]">{overview.kpis.totalSessionMinutes7d} min practiced</p>
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-2.5`}>
                     <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
                       Qur&apos;an Coverage
                     </p>
-                    <p className="mt-1 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                    <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
                       {overview.kpis.quranCompletionPct.toFixed(1)}%
                     </p>
+                    <p className="mt-2 text-xs text-[color:var(--kw-muted)]">Khatmah x{overview.quran.completedKhatmahCount}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">Focus score</p>
+              <div className={styles.spotlightPanel}>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">System score</p>
+                    <p className="mt-1 text-sm leading-6 text-[color:var(--kw-muted)]">
+                      Weighted from practice consistency, retention quality, and Qur&apos;an coverage.
+                    </p>
+                  </div>
+                  <span className={clsx(styles.iconBadge, styles.iconAccent)}>
+                    <Gauge size={17} />
+                  </span>
+                </div>
                 <div className="mt-3 flex items-center justify-between gap-3">
                   <DonutProgress value={heroScore / 100} size={86} stroke={8} tone="accent" />
                   <div className="text-right">
-                    <p className="text-4xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{heroScore}</p>
+                    <p className={`${styles.numericValue} text-4xl text-[color:var(--kw-ink)]`}>{heroScore}</p>
                     <p className="text-xs text-[color:var(--kw-muted)]">out of 100</p>
+                  </div>
+                </div>
+                <div className={styles.spotlightMeta}>
+                  <div className={styles.spotlightMetaRow}>
+                    <span>Next review</span>
+                    <strong>{formatMaybeDateTime(overview.reviewHealth.nextDueAt)}</strong>
+                  </div>
+                  <div className={styles.spotlightMetaRow}>
+                    <span>Reminder</span>
+                    <strong>{overview.profile.reminderTimeLocal}</strong>
+                  </div>
+                  <div className={styles.spotlightMetaRow}>
+                    <span>Timezone</span>
+                    <strong>{overview.profile.timezone}</strong>
                   </div>
                 </div>
                 <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -465,9 +633,9 @@ export function DashboardClient() {
                       Continue Qur&apos;an <BookMarked size={14} />
                     </Button>
                   </Link>
-                  <Link href="/today">
+                  <Link href="/hifz">
                     <Button size="sm" className="gap-2">
-                      Open Today <ArrowRight size={14} />
+                      Start Hifz <PlayCircle size={14} />
                     </Button>
                   </Link>
                 </div>
@@ -475,87 +643,78 @@ export function DashboardClient() {
             </div>
           </section>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <div className="kw-fade-in h-full" style={{ animationDelay: "40ms" }}>
-              <Card className={`${styles.metricCard} h-full`}>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Practice minutes (7d)</p>
-                <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                  {overview.kpis.totalSessionMinutes7d}
-                </p>
-                <p className={`${styles.metricBody} mt-1 text-xs text-[color:var(--kw-muted)]`}>
-                  Avg {overview.kpis.avgSessionMinutes7d.toFixed(1)} min per completed session
-                </p>
-                <Sparkline values={overview.sessionTrend14d.map((d) => d.minutes)} tone="accent" className={styles.metricFoot} />
-              </Card>
-            </div>
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            <MetricTile
+              label="Practice minutes (7d)"
+              value={overview.kpis.totalSessionMinutes7d}
+              detail={`Avg ${overview.kpis.avgSessionMinutes7d.toFixed(1)} min per completed session`}
+              icon={Clock3}
+              tone="accent"
+              delayMs={40}
+              foot={<Sparkline values={overview.sessionTrend14d.map((d) => d.minutes)} tone="accent" className={styles.metricSparkline} />}
+            />
 
-            <div className="kw-fade-in h-full" style={{ animationDelay: "80ms" }}>
-              <Card className={`${styles.metricCard} h-full`}>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Retention score</p>
-                <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                  {overview.kpis.retentionScore14d}
-                </p>
-                <p className={`${styles.metricBody} mt-1 text-xs text-[color:var(--kw-muted)]`}>Based on Again/Hard/Good/Easy over 14 days</p>
-                <Sparkline values={trendRecall} tone="brand" className={styles.metricFoot} />
-              </Card>
-            </div>
+            <MetricTile
+              label="Retention score"
+              value={overview.kpis.retentionScore14d}
+              detail="Based on graded recall over the last 14 days."
+              icon={Gauge}
+              tone="neutral"
+              delayMs={80}
+              foot={<Sparkline values={trendRecall} tone="brand" className={styles.metricSparkline} />}
+            />
 
-            <div className="kw-fade-in h-full" style={{ animationDelay: "120ms" }}>
-              <Card className={`${styles.metricCard} h-full`}>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Review pressure</p>
-                <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{overview.reviewHealth.dueNow}</p>
-                <p className={`${styles.metricBody} mt-1 text-xs text-[color:var(--kw-muted)]`}>
-                  Due now | {overview.reviewHealth.dueSoon6h} due in next 6h
-                </p>
-                <p className={`${styles.metricFoot} ${styles.metricDate} text-xs text-[color:var(--kw-faint)]`} title={formatMaybeDateTime(overview.reviewHealth.nextDueAt)}>
+            <MetricTile
+              label="Review pressure"
+              value={overview.reviewHealth.dueNow}
+              detail={`Due now, with ${overview.reviewHealth.dueSoon6h} more due in the next 6 hours.`}
+              icon={RefreshCcw}
+              tone="warn"
+              delayMs={120}
+              foot={(
+                <p className={`${styles.metricDate} text-xs text-[color:var(--kw-faint)]`} title={formatMaybeDateTime(overview.reviewHealth.nextDueAt)}>
                   {formatMaybeDateTime(overview.reviewHealth.nextDueAt)}
                 </p>
-              </Card>
-            </div>
+              )}
+            />
 
-            <div className="kw-fade-in h-full" style={{ animationDelay: "160ms" }}>
-              <Card className={`${styles.metricCard} h-full`}>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Streak</p>
-                <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                  {overview.streak.currentStreakDays}d
-                </p>
-                <p className={`${styles.metricBody} mt-1 text-xs text-[color:var(--kw-muted)]`}>
-                  Best {overview.streak.bestStreakDays}d {overview.streak.graceInUseToday ? "| grace active" : ""}
-                </p>
-                <div className={`${styles.metricFoot} flex gap-2`}>
-                  <Pill tone="neutral">Today ayahs: {overview.streak.todayQualifiedAyahs}</Pill>
-                </div>
-              </Card>
-            </div>
+            <MetricTile
+              label="Streak"
+              value={`${overview.streak.currentStreakDays}d`}
+              detail={`Best ${overview.streak.bestStreakDays}d${overview.streak.graceInUseToday ? " | grace active" : ""}`}
+              icon={Flame}
+              tone="accent"
+              delayMs={160}
+              foot={<Pill tone="neutral">Today ayahs: {overview.streak.todayQualifiedAyahs}</Pill>}
+            />
           </div>
 
-          <div className="grid gap-4 xl:grid-cols-2">
+          <div className="grid gap-5 xl:grid-cols-2">
             <div className="kw-fade-in h-full" style={{ animationDelay: "200ms" }}>
               <Card className="h-full">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Momentum stream</p>
-                    <p className="mt-1 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                      Session minutes over 14 days
-                    </p>
-                  </div>
-                  <Pill tone="accent">{overview.profile.timezone}</Pill>
-                </div>
+                <SectionHeader
+                  eyebrow="Momentum stream"
+                  title="Session minutes over 14 days"
+                  description="A clean view of whether effort is drifting up, flattening out, or slipping."
+                  icon={TrendingUp}
+                  tone="accent"
+                  meta={<Pill tone="accent">{overview.profile.timezone}</Pill>}
+                />
                 <div className="mt-4">
                   <AreaTrend points={trendMinutes} tone="accent" valueSuffix="m" />
                 </div>
                 <div className="mt-4 grid gap-2 sm:grid-cols-3">
                   <div className={`${styles.kpiTile} px-3 py-2`}>
                     <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Tracked ayahs</p>
-                    <p className="mt-1 text-lg font-semibold text-[color:var(--kw-ink)]">{overview.kpis.trackedAyahs}</p>
+                    <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{overview.kpis.trackedAyahs}</p>
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-2`}>
                     <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Weak links</p>
-                    <p className="mt-1 text-lg font-semibold text-[color:var(--kw-ink)]">{overview.reviewHealth.weakTransitions}</p>
+                    <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{overview.reviewHealth.weakTransitions}</p>
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-2`}>
                     <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Practice days</p>
-                    <p className="mt-1 text-lg font-semibold text-[color:var(--kw-ink)]">{overview.profile.practiceDaysPerWeek}/7</p>
+                    <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{overview.profile.practiceDaysPerWeek}/7</p>
                   </div>
                 </div>
               </Card>
@@ -563,15 +722,14 @@ export function DashboardClient() {
 
             <div className="kw-fade-in h-full" style={{ animationDelay: "240ms" }}>
               <Card className="h-full">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Recitation quality</p>
-                    <p className="mt-1 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                      Futuristic quality radar
-                    </p>
-                  </div>
-                  <Pill tone="neutral">14d</Pill>
-                </div>
+                <SectionHeader
+                  eyebrow="Recitation quality"
+                  title="Recall quality mix"
+                  description="Grade balance and stage mix, without the dashboard sounding like a sci-fi control panel."
+                  icon={ShieldCheck}
+                  tone="accent"
+                  meta={<Pill tone="neutral">14d</Pill>}
+                />
 
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <div className={styles.qualityOrbWrap}>
@@ -592,28 +750,35 @@ export function DashboardClient() {
                   </div>
                 </div>
 
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Pill tone="danger">Again {overview.gradeMix14d.AGAIN}</Pill>
+                  <Pill tone="warn">Hard {overview.gradeMix14d.HARD}</Pill>
+                  <Pill tone="success">Good {overview.gradeMix14d.GOOD}</Pill>
+                  <Pill tone="accent">Easy {overview.gradeMix14d.EASY}</Pill>
+                </div>
+
                 <div className="mt-4 grid gap-2 sm:grid-cols-2">
                   <div className={`${styles.kpiTile} px-3 py-2`}>
                     <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Again / Hard</p>
-                    <p className="mt-1 text-base font-semibold text-[color:var(--kw-ink)]">
+                    <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
                       {overview.gradeMix14d.AGAIN} / {overview.gradeMix14d.HARD}
                     </p>
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-2`}>
                     <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Good / Easy</p>
-                    <p className="mt-1 text-base font-semibold text-[color:var(--kw-ink)]">
+                    <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
                       {overview.gradeMix14d.GOOD} / {overview.gradeMix14d.EASY}
                     </p>
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-2`}>
                     <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Warmup + Review</p>
-                    <p className="mt-1 text-base font-semibold text-[color:var(--kw-ink)]">
+                    <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
                       {overview.stageMix14d.WARMUP + overview.stageMix14d.REVIEW}
                     </p>
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-2`}>
                     <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">New + Link</p>
-                    <p className="mt-1 text-base font-semibold text-[color:var(--kw-ink)]">
+                    <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
                       {overview.stageMix14d.NEW + overview.stageMix14d.LINK + overview.stageMix14d.LINK_REPAIR}
                     </p>
                   </div>
@@ -622,18 +787,17 @@ export function DashboardClient() {
             </div>
           </div>
 
-          <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+          <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
             <div className="kw-fade-in h-full" style={{ animationDelay: "280ms" }}>
               <Card className="h-full">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Qur&apos;an compass</p>
-                    <p className="mt-1 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                      {overview.quran.currentSurahName} | {overview.quran.cursorRef}
-                    </p>
-                  </div>
-                  <Pill tone="accent">Ayah #{overview.quran.cursorAyahId}</Pill>
-                </div>
+                <SectionHeader
+                  eyebrow="Qur&apos;an compass"
+                  title={`${overview.quran.currentSurahName} | ${overview.quran.cursorRef}`}
+                  description="Reading progress stays separate from Hifz, but it still belongs in the same command view."
+                  icon={BookOpenText}
+                  tone="accent"
+                  meta={<Pill tone="accent">Ayah #{overview.quran.cursorAyahId}</Pill>}
+                />
 
                 <div className="mt-4 grid gap-4 sm:grid-cols-[120px_minmax(0,1fr)]">
                   <div className="flex items-center justify-center rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] p-3">
@@ -674,13 +838,13 @@ export function DashboardClient() {
 
             <div className="kw-fade-in h-full" style={{ animationDelay: "320ms" }}>
               <Card className="h-full">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Review health map</p>
-                    <p className="mt-1 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">Monthly activity calendar</p>
-                  </div>
-                  <CalendarDays size={18} className="text-[color:var(--kw-muted)]" />
-                </div>
+                <SectionHeader
+                  eyebrow="Activity calendar"
+                  title="Monthly consistency map"
+                  description="A denser view of how often you actually showed up, with today clearly marked."
+                  icon={CalendarDays}
+                  tone="neutral"
+                />
                 <div className="mt-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <Button
@@ -721,6 +885,7 @@ export function DashboardClient() {
                         title={cell.blank ? "" : `${formatLocalDate(cell.date)}: ${cell.value}`}
                         className={cell.blank ? styles.calendarBlank : styles.calendarCell}
                         data-future={cell.isFuture ? "1" : "0"}
+                        data-today={cell.isToday ? "1" : "0"}
                         style={cell.blank ? undefined : { backgroundColor: activityColor(cell.value, calendarMax) }}
                       >
                         {cell.blank ? "" : cell.day}
