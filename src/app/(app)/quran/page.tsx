@@ -7,6 +7,7 @@ import { getReciterLabel } from "@/hifzer/audio/reciters";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { getAyahById, getSurahInfo, listJuzs, listSurahs } from "@/hifzer/quran/lookup.server";
 import { getQuranReadProgress } from "@/hifzer/quran/read-progress.server";
+import { DEFAULT_QURAN_TRANSLATION_ID, getQuranTranslationOption } from "@/hifzer/quran/translation-prefs";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { QuranCompletionProgress } from "./quran-completion-progress";
 import { QuranProgressBackfill } from "./quran-progress-backfill";
@@ -37,6 +38,7 @@ export default async function QuranIndexPage() {
   }
 
   const progressAyahId = readCoverage.lastReadAyahId ?? profile?.quranCursorAyahId ?? 1;
+  const selectedTranslation = getQuranTranslationOption(profile?.quranTranslationId ?? DEFAULT_QURAN_TRANSLATION_ID);
 
   const surahs = listSurahs();
   const juzs = listJuzs();
@@ -255,6 +257,48 @@ export default async function QuranIndexPage() {
           </div>
         </Card>
       </div>
+
+      <Card className="mt-8">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <Pill tone="neutral">Source trust</Pill>
+              <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">Content provenance</span>
+            </div>
+            <p className="mt-4 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+              Keep the Qur&apos;an stack traceable.
+            </p>
+            <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
+              Arabic text and metadata are bundled from Tanzil. Your default translation is{" "}
+              <span className="font-semibold text-[color:var(--kw-ink)]">{selectedTranslation?.label ?? "Unknown"}</span>{" "}
+              from <span className="font-semibold text-[color:var(--kw-ink)]">{selectedTranslation?.sourceLabel ?? "Unknown"}</span>.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Pill tone="accent">Arabic text: Tanzil</Pill>
+            <Pill tone={selectedTranslation?.sourceStatus === "verified" ? "accent" : "warn"}>
+              {selectedTranslation?.sourceStatus === "verified" ? "Translation source verified" : "Translation review pending"}
+            </Pill>
+          </div>
+        </div>
+        <p className="mt-4 text-sm leading-7 text-[color:var(--kw-faint)]">
+          {selectedTranslation?.sourceNote ?? "Source notes unavailable for this translation."}
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Link
+            href="/legal/sources"
+            className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
+          >
+            View source registry
+          </Link>
+          <Link
+            href="/settings/language"
+            className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+          >
+            Review translation language
+          </Link>
+        </div>
+      </Card>
 
       <Card className="mt-8">
         <QuranProgressBackfill

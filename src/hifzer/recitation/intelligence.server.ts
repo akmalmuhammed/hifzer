@@ -171,6 +171,31 @@ export type SurahConfidenceRow = {
   nextAction: string;
 };
 
+export type WeakAyahHotspot = {
+  ayahId: number;
+  ref: string;
+  surahName: string;
+  pageNumber: number;
+  confidenceScore: number;
+  snippet: string | null;
+  lastGrade: SrsGrade | null;
+  nextReviewAt: string;
+  reasons: string[];
+};
+
+export type WeakLineZone = {
+  surahNumber: number;
+  surahName: string;
+  pageNumber: number;
+  startAyahId: number;
+  endAyahId: number;
+  startRef: string;
+  endRef: string;
+  intensityScore: number;
+  hotspotCount: number;
+  rationale: string;
+};
+
 export type MemorizationIntelligence = {
   mushabihat: MushabihatPair[];
   seamTrainer: SeamTrainerDrill[];
@@ -182,6 +207,8 @@ export type MemorizationIntelligence = {
   salahBuilder: SalahSet[];
   meaningFrames: MeaningFrame[];
   heatmap: SurahConfidenceRow[];
+  weakAyahHotspots: WeakAyahHotspot[];
+  weakLineZones: WeakLineZone[];
   metrics: {
     fragileAyahs: number;
     weakSeams: number;
@@ -585,6 +612,22 @@ function stableBandWeight(band: MemorizationBand): number {
   return 0.28;
 }
 
+function scoreAyahConfidence(input: {
+  row: ReviewRow;
+  challengeMap: Map<number, ChallengeSummary>;
+  nowMs: number;
+  seamPenalty: number;
+}): number {
+  const challengePenalty = (input.challengeMap.get(input.row.ayahId)?.totalCount ?? 0) * 6;
+  const duePenalty = input.row.nextReviewAt.getTime() <= input.nowMs ? 18 : 0;
+  const gradePenalty = input.row.lastGrade === "AGAIN" ? 16 : input.row.lastGrade === "HARD" ? 8 : 0;
+  return clamp(
+    Math.round((stableBandWeight(input.row.band) * 100) - challengePenalty - duePenalty - gradePenalty - input.seamPenalty),
+    12,
+    98,
+  );
+}
+
 function segmentStableRun(
   run: ReviewRow[],
   challengeMap: Map<number, ChallengeSummary>,
@@ -831,6 +874,112 @@ function buildMeaningFrames(newAyahIds: number[], translationId: string): Meanin
   return frames.filter(Boolean).slice(0, 3);
 }
 
+function buildWeakAyahHotspots(input: {
+  ayahReviews: ReviewRow[];
+  challengeMap: Map<number, ChallengeSummary>;
+  weakTransitions: WeakTransitionRow[];
+}): WeakAyahHotspot[] {
+  const nowMs = Date.now();
+  const seamPenaltyByAyahId = new Map<number, number>();
+  for (const transition of input.weakTransitions) {
+    seamPenaltyByAyahId.set(transition.fromAyahId, (seamPenaltyByAyahId.get(transition.fromAyahId) ?? 0) + 6);
+    seamPenaltyByAyahId.set(transition.toAyahId, (seamPenaltyByAyahId.get(transition.toAyahId) ?? 0) + 4);
+  }
+
+  return input.ayahReviews
+    .map((row) => {
+      const ayah = getAyahById(row.ayahId);
+      if (!ayah) {
+        return null;
+      }
+      const surah = getSurahInfo(ayah.surahNumber);
+      const confidenceScore = scoreAyahConfidence({
+        row,
+        challengeMap: input.challengeMap,
+        nowMs,
+        seamPenalty: seamPenaltyByAyahId.get(row.ayahId) ?? 0,
+      });
+      const reasons: string[] = [];
+      const challenge = input.challengeMap.get(row.ayahId);
+      if (row.nextReviewAt.getTime() <= nowMs) {
+        reasons.push("due now");
+      }
+      if (row.band === "ENCODING") {
+        reasons.push("encoding");
+      }
+      if (row.lastGrade === "AGAIN" || row.lastGrade === "HARD") {
+        reasons.push(`last grade ${row.lastGrade.toLowerCase()}`);
+      }
+      if (challenge) {
+        reasons.push(`${challenge.totalCount} recent struggle signal${challenge.totalCount === 1 ? "" : "s"}`);
+      }
+      if ((seamPenaltyByAyahId.get(row.ayahId) ?? 0) > 0) {
+        reasons.push("seam weakness nearby");
+      }
+
+      return {
+        ayahId: row.ayahId,
+        ref: `${ayah.surahNumber}:${ayah.ayahNumber}`,
+        surahName: surah?.nameTransliteration ?? `Surah ${ayah.surahNumber}`,
+        pageNumber: ayah.pageNumber,
+        confidenceScore,
+        snippet: trimSnippet(ayah.textUthmani),
+        lastGrade: row.lastGrade ?? null,
+        nextReviewAt: row.nextReviewAt.toISOString(),
+        reasons,
+      } satisfies WeakAyahHotspot;
+    })
+    .filter((row): row is WeakAyahHotspot => Boolean(row))
+    .sort((left, right) => {
+      if (left.confidenceScore !== right.confidenceScore) {
+        return left.confidenceScore - right.confidenceScore;
+      }
+      return left.ref.localeCompare(right.ref);
+    })
+    .slice(0, 10);
+}
+
+function buildWeakLineZones(hotspots: WeakAyahHotspot[]): WeakLineZone[] {
+  const byPage = new Map<string, WeakAyahHotspot[]>();
+  for (const hotspot of hotspots) {
+    const key = `${hotspot.surahName}:${hotspot.pageNumber}`;
+    const bucket = byPage.get(key) ?? [];
+    bucket.push(hotspot);
+    byPage.set(key, bucket);
+  }
+
+  return Array.from(byPage.values())
+    .map((rows) => {
+      const sorted = rows
+        .slice()
+        .sort((left, right) => left.ayahId - right.ayahId);
+      const first = sorted[0];
+      const last = sorted[sorted.length - 1];
+      const startAyah = first ? getAyahById(first.ayahId) : null;
+      const endAyah = last ? getAyahById(last.ayahId) : null;
+      if (!first || !last || !startAyah || !endAyah) {
+        return null;
+      }
+      const intensityScore = Math.round(sorted.reduce((sum, row) => sum + (100 - row.confidenceScore), 0) / sorted.length);
+      const topReasons = Array.from(new Set(sorted.flatMap((row) => row.reasons))).slice(0, 2);
+      return {
+        surahNumber: startAyah.surahNumber,
+        surahName: first.surahName,
+        pageNumber: first.pageNumber,
+        startAyahId: first.ayahId,
+        endAyahId: last.ayahId,
+        startRef: `${startAyah.surahNumber}:${startAyah.ayahNumber}`,
+        endRef: `${endAyah.surahNumber}:${endAyah.ayahNumber}`,
+        intensityScore,
+        hotspotCount: sorted.length,
+        rationale: topReasons.length ? topReasons.join(" + ") : "weakness concentrated on one page",
+      } satisfies WeakLineZone;
+    })
+    .filter((row): row is WeakLineZone => Boolean(row))
+    .sort((left, right) => right.intensityScore - left.intensityScore)
+    .slice(0, 6);
+}
+
 function buildConfidenceHeatmap(input: {
   activeSurahNumber: number;
   ayahReviews: ReviewRow[];
@@ -838,6 +987,18 @@ function buildConfidenceHeatmap(input: {
   weakTransitions: WeakTransitionRow[];
 }): SurahConfidenceRow[] {
   const now = Date.now();
+  const weakTransitionCountByAyah = new Map<number, number>();
+  const weakTransitionCountBySurah = new Map<number, number>();
+  for (const transition of input.weakTransitions) {
+    weakTransitionCountByAyah.set(transition.fromAyahId, (weakTransitionCountByAyah.get(transition.fromAyahId) ?? 0) + 1);
+    weakTransitionCountByAyah.set(transition.toAyahId, (weakTransitionCountByAyah.get(transition.toAyahId) ?? 0) + 1);
+    const ayah = getAyahById(transition.fromAyahId);
+    if (!ayah) {
+      continue;
+    }
+    weakTransitionCountBySurah.set(ayah.surahNumber, (weakTransitionCountBySurah.get(ayah.surahNumber) ?? 0) + 1);
+  }
+
   const bySurah = new Map<number, {
     trackedAyahs: number;
     stableAyahs: number;
@@ -865,10 +1026,12 @@ function buildConfidenceHeatmap(input: {
     };
 
     surah.trackedAyahs += 1;
-    const challengePenalty = (input.challengeMap.get(row.ayahId)?.totalCount ?? 0) * 6;
-    const duePenalty = row.nextReviewAt.getTime() <= now ? 18 : 0;
-    const gradePenalty = row.lastGrade === "AGAIN" ? 16 : row.lastGrade === "HARD" ? 8 : 0;
-    const ayahScore = clamp(Math.round((stableBandWeight(row.band) * 100) - challengePenalty - duePenalty - gradePenalty), 12, 98);
+    const ayahScore = scoreAyahConfidence({
+      row,
+      challengeMap: input.challengeMap,
+      nowMs: now,
+      seamPenalty: (weakTransitionCountByAyah.get(row.ayahId) ?? 0) * 6,
+    });
     surah.weightedScore += ayahScore;
 
     if (ayahScore < surah.weakestScore) {
@@ -886,15 +1049,6 @@ function buildConfidenceHeatmap(input: {
     }
 
     bySurah.set(ayah.surahNumber, surah);
-  }
-
-  const weakTransitionCountBySurah = new Map<number, number>();
-  for (const transition of input.weakTransitions) {
-    const ayah = getAyahById(transition.fromAyahId);
-    if (!ayah) {
-      continue;
-    }
-    weakTransitionCountBySurah.set(ayah.surahNumber, (weakTransitionCountBySurah.get(ayah.surahNumber) ?? 0) + 1);
   }
 
   const rows = Array.from(bySurah.entries()).map(([surahNumber, state]) => {
@@ -1032,6 +1186,12 @@ export async function getMemorizationIntelligence(clerkUserId: string): Promise<
     challengeMap,
     weakTransitions,
   });
+  const weakAyahHotspots = buildWeakAyahHotspots({
+    ayahReviews,
+    challengeMap,
+    weakTransitions,
+  });
+  const weakLineZones = buildWeakLineZones(weakAyahHotspots);
 
   return {
     mushabihat,
@@ -1046,6 +1206,8 @@ export async function getMemorizationIntelligence(clerkUserId: string): Promise<
       challengeMap,
       weakTransitions,
     }),
+    weakAyahHotspots,
+    weakLineZones,
     metrics: {
       fragileAyahs: challengeMap.size,
       weakSeams: weakTransitions.length,

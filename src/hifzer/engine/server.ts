@@ -26,7 +26,11 @@ import type { SessionEventInput, SessionStep, TodayEngineResult, TodayQueuePlan 
 import { applyGrade, defaultReviewState } from "@/hifzer/srs/update";
 import { getAyahById, verseRefFromAyahId } from "@/hifzer/quran/lookup.server";
 import { listPhoneticsForAyahIds, listQuranTranslationsForAyahIds } from "@/hifzer/quran/translation.server";
-import { normalizeQuranTranslationId, type QuranTranslationId } from "@/hifzer/quran/translation-prefs";
+import {
+  getQuranTranslationProviderKey,
+  normalizeQuranTranslationId,
+  type QuranTranslationId,
+} from "@/hifzer/quran/translation-prefs";
 import { getCoreSchemaCapabilities } from "@/lib/db-compat";
 import {
   SessionGuardError,
@@ -830,7 +834,7 @@ export async function startTodaySession(clerkUserId: string, input?: { preferred
     state: sessionState,
     steps: sessionSteps,
     translations: {
-      provider: `tanzil.${translationId}`,
+      provider: getQuranTranslationProviderKey(translationId),
       byAyahId: translationsByAyahId,
     },
     phonetics: {

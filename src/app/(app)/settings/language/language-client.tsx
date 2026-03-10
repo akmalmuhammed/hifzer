@@ -13,6 +13,7 @@ import { useToast } from "@/components/ui/toast";
 import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
 import {
   buildQuranTranslationCookieValue,
+  getQuranTranslationOption,
   QURAN_TRANSLATION_OPTIONS,
   type QuranTranslationId,
 } from "@/hifzer/quran/translation-prefs";
@@ -70,7 +71,7 @@ export function LanguageSettingsClient(props: LanguageSettingsClientProps) {
     }
   }
 
-  const selected = QURAN_TRANSLATION_OPTIONS.find((option) => option.id === quranTranslationId) ?? null;
+  const selected = getQuranTranslationOption(quranTranslationId);
 
   return (
     <div className="space-y-6">
@@ -105,7 +106,17 @@ export function LanguageSettingsClient(props: LanguageSettingsClientProps) {
             <div className="mt-3 flex flex-wrap gap-2">
               <Pill tone="accent">{selected?.label ?? copy.languageSettings.unknownLanguage}</Pill>
               <Pill tone="neutral">{selected?.rtl ? copy.languageSettings.rtlScript : copy.languageSettings.ltrScript}</Pill>
+              <Pill tone={selected?.sourceStatus === "verified" ? "accent" : "warn"}>
+                {selected?.sourceStatus === "verified" ? "Source verified" : "Source review pending"}
+              </Pill>
             </div>
+            <p className="mt-3 max-w-2xl text-xs leading-6 text-[color:var(--kw-faint)]">
+              Source: {selected?.sourceLabel ?? "Unknown"}.
+              {selected?.sourceNote ? ` ${selected.sourceNote}` : ""}
+            </p>
+            <p className="mt-1 text-xs leading-6 text-[color:var(--kw-faint)]">
+              Source registry and provider notes live in <a className="font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline" href="/legal/sources">/legal/sources</a>.
+            </p>
           </div>
         </div>
 

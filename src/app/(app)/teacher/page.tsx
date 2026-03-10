@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
+import { listTeacherCircleHub } from "@/hifzer/circles/server";
 import { getDashboardOverview } from "@/hifzer/dashboard/server";
 import { loadTodayState } from "@/hifzer/engine/server";
 import { listLearningLanes } from "@/hifzer/profile/server";
@@ -58,12 +59,13 @@ export default async function TeacherPage() {
     redirect("/login");
   }
 
-  const [overview, today, lanes, insights, intelligence] = await Promise.all([
+  const [overview, today, lanes, insights, intelligence, circles] = await Promise.all([
     getDashboardOverview(userId),
     loadTodayState(userId),
     listLearningLanes(userId, 6),
     getRecitationInsights(userId, { challengeLimit: 6, transitionLimit: 6 }),
     getMemorizationIntelligence(userId),
+    listTeacherCircleHub(userId),
   ]);
 
   if (!overview || !insights) {
@@ -336,6 +338,42 @@ export default async function TeacherPage() {
           )}
         </Card>
       </div>
+
+      <Card>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <Users size={16} className="text-[color:var(--kw-faint)]" />
+              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Halaqah / family circles</p>
+            </div>
+            <p className="mt-3 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">Track weekly targets, attendance, oral check status, and comments for small supervised groups.</p>
+            <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
+              This keeps the supervision workflow small and practical: who attended, who passed, who needs retest, and what the parent or teacher needs to remember next week.
+            </p>
+          </div>
+          <Link href="/teacher/circles" className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
+            Manage circles <ArrowRight size={14} />
+          </Link>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Circles</p>
+            <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{circles?.circles.length ?? 0}</p>
+          </div>
+          <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Members</p>
+            <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+              {circles?.circles.reduce((sum, circle) => sum + circle.memberCount, 0) ?? 0}
+            </p>
+          </div>
+          <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Review needed</p>
+            <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+              {circles?.circles.reduce((sum, circle) => sum + circle.reviewNeededCount, 0) ?? 0}
+            </p>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }

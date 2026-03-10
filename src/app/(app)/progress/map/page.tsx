@@ -105,6 +105,85 @@ export default async function ProgressMapPage() {
             </div>
           </Card>
 
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+            <Card>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Weak ayah hotspots</p>
+              <div className="mt-4 space-y-3">
+                {intelligence.weakAyahHotspots.length ? intelligence.weakAyahHotspots.map((hotspot) => (
+                  <div key={hotspot.ayahId} className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Pill tone={hotspot.confidenceScore >= 70 ? "warn" : "danger"}>{hotspot.confidenceScore}% confidence</Pill>
+                      <Pill tone="neutral">{hotspot.ref}</Pill>
+                      <Pill tone="neutral">Page {hotspot.pageNumber}</Pill>
+                    </div>
+                    <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">{hotspot.surahName}</p>
+                    {hotspot.snippet ? (
+                      <p dir="rtl" className="mt-2 text-xs text-[color:var(--kw-faint)]">{hotspot.snippet}</p>
+                    ) : null}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {hotspot.reasons.map((reason) => (
+                        <Pill key={`${hotspot.ayahId}-${reason}`} tone="neutral">{reason}</Pill>
+                      ))}
+                    </div>
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                      <p className="text-xs text-[color:var(--kw-muted)]">Next review {new Date(hotspot.nextReviewAt).toLocaleString()}</p>
+                      <Link href={`/quran/read?view=compact&surah=${Number(hotspot.ref.split(":")[0])}&cursor=${hotspot.ayahId}`} className="inline-flex items-center gap-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
+                        Open ayah <ArrowRight size={14} />
+                      </Link>
+                    </div>
+                  </div>
+                )) : (
+                  <EmptyState
+                    title="No weak ayahs mapped"
+                    message="As Hifz history accumulates, the weakest ayahs will appear here with their reasons."
+                    icon={<Map size={18} />}
+                  />
+                )}
+              </div>
+            </Card>
+
+            <Card>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Weak line zones and seam hotspots</p>
+              <div className="mt-4 space-y-3">
+                {intelligence.weakLineZones.length ? intelligence.weakLineZones.map((zone) => (
+                  <div key={`${zone.startAyahId}-${zone.endAyahId}`} className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Pill tone={zone.intensityScore >= 40 ? "danger" : "warn"}>{zone.intensityScore} intensity</Pill>
+                      <Pill tone="neutral">Page {zone.pageNumber}</Pill>
+                      <Pill tone="neutral">{zone.startRef} - {zone.endRef}</Pill>
+                    </div>
+                    <p className="mt-2 text-sm text-[color:var(--kw-muted)]">{zone.surahName} | {zone.hotspotCount} hotspot{zone.hotspotCount === 1 ? "" : "s"} | {zone.rationale}</p>
+                    <Link href={`/quran/read?view=compact&surah=${zone.surahNumber}&cursor=${zone.startAyahId}`} className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
+                      Open weak zone <ArrowRight size={14} />
+                    </Link>
+                  </div>
+                )) : (
+                  <EmptyState
+                    title="No weak zones mapped"
+                    message="When multiple weak ayahs cluster on the same page, they will appear here as a hotter line-like zone."
+                    icon={<Map size={18} />}
+                  />
+                )}
+                {intelligence.seamTrainer.length ? (
+                  <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4">
+                    <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Weak transitions</p>
+                    <div className="mt-3 space-y-2">
+                      {intelligence.seamTrainer.slice(0, 4).map((seam) => (
+                        <div key={seam.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[color:var(--kw-border-2)] bg-white px-3 py-3">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Pill tone="warn">{seam.loopCount} loops</Pill>
+                            <Pill tone="neutral">{seam.fromRef} -&gt; {seam.toRef}</Pill>
+                          </div>
+                          <p className="text-xs text-[color:var(--kw-muted)]">Success {seam.successRatePct}%</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </Card>
+          </div>
+
           <Card>
             <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Memorization band distribution</p>
             <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">

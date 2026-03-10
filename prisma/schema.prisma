@@ -106,6 +106,32 @@ enum QuranBrowseSource {
   BACKFILL
 }
 
+enum CircleKind {
+  HALAQAH
+  FAMILY
+}
+
+enum CircleMemberRole {
+  LEAD
+  TEACHER
+  PARENT
+  STUDENT
+}
+
+enum CircleAttendanceStatus {
+  PENDING
+  ATTENDED
+  MISSED
+  EXCUSED
+}
+
+enum CircleOralCheckStatus {
+  PENDING
+  PASS
+  REVIEW_NEEDED
+  ABSENT
+}
+
 model UserProfile {
   id                    String   @id @default(cuid())
   clerkUserId           String   @unique
@@ -161,6 +187,9 @@ model UserProfile {
   bookmarks             Bookmark[]
   bookmarkEvents        BookmarkEvent[]
   quranBrowseEvents     QuranBrowseEvent[]
+  ownedTeacherCircles   TeacherCircle[]           @relation("OwnedTeacherCircles")
+  teacherCircleLinks    TeacherCircleMember[]     @relation("TeacherCircleLinkedUser")
+  teacherCircleUpdates  TeacherCircleWeeklyCheck[] @relation("TeacherCircleUpdatedBy")
 
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
@@ -398,4 +427,64 @@ model QuranBrowseEvent {
   @@index([userId, lastSeenAt])
   @@index([userId, ayahId, lastSeenAt])
   @@index([userId, localDate, source])
+}
+
+model TeacherCircle {
+  id          String      @id @default(cuid())
+  ownerUserId String
+  name        String
+  kind        CircleKind
+  description String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  owner       UserProfile @relation("OwnedTeacherCircles", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  members     TeacherCircleMember[]
+  weeklyChecks TeacherCircleWeeklyCheck[]
+
+  @@index([ownerUserId, updatedAt])
+}
+
+model TeacherCircleMember {
+  id           String            @id @default(cuid())
+  circleId     String
+  linkedUserId String?
+  displayName  String
+  role         CircleMemberRole
+  notes        String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  circle       TeacherCircle     @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  linkedUser   UserProfile?      @relation("TeacherCircleLinkedUser", fields: [linkedUserId], references: [id], onDelete: SetNull)
+  weeklyChecks TeacherCircleWeeklyCheck[]
+
+  @@unique([circleId, displayName])
+  @@index([circleId, role])
+  @@index([linkedUserId])
+}
+
+model TeacherCircleWeeklyCheck {
+  id               String                 @id @default(cuid())
+  circleId         String
+  memberId         String
+  weekStartLocalDate String
+  targetLabel      String
+  targetStartAyahId Int?
+  targetEndAyahId  Int?
+  attendanceStatus CircleAttendanceStatus @default(PENDING)
+  oralCheckStatus  CircleOralCheckStatus  @default(PENDING)
+  teacherComment   String?
+  parentComment    String?
+  updatedByUserId  String
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  circle           TeacherCircle          @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  member           TeacherCircleMember    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  updatedBy        UserProfile            @relation("TeacherCircleUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: Cascade)
+
+  @@unique([memberId, weekStartLocalDate])
+  @@index([circleId, weekStartLocalDate])
+  @@index([updatedByUserId, updatedAt])
 }
