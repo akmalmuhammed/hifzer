@@ -237,6 +237,59 @@
   flex-wrap: wrap;
 }
 
+.dashboardTabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 18px;
+  border: 1px solid var(--kw-border-2);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: var(--kw-shadow-soft);
+}
+
+.dashboardTab {
+  display: grid;
+  gap: 3px;
+  min-width: 230px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  background: transparent;
+  text-align: left;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease;
+}
+
+.dashboardTab:hover {
+  transform: translateY(-1px);
+  background: rgba(var(--kw-accent-rgb), 0.06);
+}
+
+.dashboardTab[data-active="1"] {
+  border-color: rgba(var(--kw-accent-rgb), 0.2);
+  background: linear-gradient(180deg, rgba(var(--kw-accent-rgb), 0.13), rgba(var(--kw-accent-rgb), 0.06));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.34);
+}
+
+.dashboardTabLabel {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--kw-ink);
+}
+
+.dashboardTabNote {
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--kw-muted);
+}
+
 .iconBadge {
   display: inline-flex;
   align-items: center;
@@ -264,6 +317,249 @@
   border-color: rgba(234, 88, 12, 0.18);
   background: rgba(234, 88, 12, 0.1);
   color: var(--kw-ember-600);
+}
+
+.duaDeck {
+  display: grid;
+  gap: 20px;
+}
+
+.duaHero {
+  position: relative;
+  overflow: hidden;
+  border-radius: calc(var(--kw-radius-xl) + 2px);
+  border: 1px solid rgba(194, 65, 12, 0.18);
+  background:
+    radial-gradient(1000px 360px at -4% -34%, rgba(194, 65, 12, 0.16), transparent 60%),
+    radial-gradient(900px 260px at 110% -24%, rgba(var(--kw-accent-rgb), 0.12), transparent 55%),
+    linear-gradient(135deg, rgba(255, 252, 248, 0.96), rgba(249, 245, 241, 0.94));
+  box-shadow: var(--kw-shadow);
+}
+
+.duaHero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(11, 18, 32, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(11, 18, 32, 0.035) 1px, transparent 1px);
+  background-size: 34px 34px;
+  opacity: 0.18;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.78), transparent 95%);
+  pointer-events: none;
+}
+
+.duaSummaryPanel {
+  position: relative;
+  z-index: 1;
+  border-radius: 22px;
+  border: 1px solid rgba(194, 65, 12, 0.12);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(252, 247, 242, 0.88));
+  padding: 18px;
+  box-shadow: 0 18px 34px rgba(11, 18, 32, 0.08);
+}
+
+.duaSummaryRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.duaSummaryTitle {
+  font-size: 0.96rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--kw-ink);
+}
+
+.duaSummaryText {
+  margin-top: 4px;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: var(--kw-muted);
+}
+
+.duaBoundaryBox {
+  margin-top: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(194, 65, 12, 0.16);
+  background: rgba(194, 65, 12, 0.06);
+  padding: 14px;
+}
+
+.duaFeatureGrid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.duaQuoteBlock {
+  margin-top: 20px;
+  border-radius: 22px;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.12);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(246, 248, 252, 0.86));
+  padding: 20px;
+}
+
+.duaArabic {
+  font-family:
+    var(--font-kw-quran),
+    "KFGQPC Uthmanic Script HAFS",
+    "Scheherazade New",
+    "Amiri",
+    "Noto Naskh Arabic",
+    serif;
+  font-size: clamp(1.95rem, 4vw, 2.5rem);
+  line-height: 2.05;
+  color: var(--kw-ink);
+}
+
+.duaTransliteration {
+  margin-top: 14px;
+  font-size: 0.96rem;
+  line-height: 1.7;
+  color: var(--kw-ink-2);
+}
+
+.duaTranslation {
+  margin-top: 12px;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--kw-muted);
+}
+
+.duaSourceRow {
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.duaSourceLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(var(--kw-accent-rgb), 1);
+  text-decoration: none;
+}
+
+.duaSourceLink:hover {
+  text-decoration: underline;
+}
+
+.duaMiniNote {
+  border-radius: 18px;
+  border: 1px solid var(--kw-border-2);
+  background: rgba(255, 255, 255, 0.74);
+  padding: 14px;
+}
+
+.duaMiniNoteTitle {
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--kw-ink);
+}
+
+.duaMiniNoteText {
+  margin-top: 8px;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--kw-muted);
+}
+
+.duaGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.duaStepList {
+  margin-top: 20px;
+  display: grid;
+  gap: 14px;
+}
+
+.duaStep {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: flex-start;
+  border-top: 1px solid rgba(11, 18, 32, 0.06);
+  padding-top: 14px;
+}
+
+.duaStep:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.duaStepNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.18);
+  background: rgba(var(--kw-accent-rgb), 0.1);
+  font-family:
+    var(--font-kw-mono),
+    "IBM Plex Mono",
+    ui-monospace,
+    monospace;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: rgba(var(--kw-accent-rgb), 1);
+}
+
+.duaBoundaryList {
+  margin-top: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.duaBoundaryItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.duaSourcesList {
+  margin-top: 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.duaSourceCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 16px;
+  border: 1px solid var(--kw-border-2);
+  background: rgba(255, 255, 255, 0.72);
+  padding: 13px 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--kw-ink-2);
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.duaSourceCard:hover {
+  transform: translateY(-1px);
+  border-color: rgba(var(--kw-accent-rgb), 0.18);
+  background: rgba(var(--kw-accent-rgb), 0.05);
 }
 
 .qualityOrbWrap {
@@ -408,9 +704,22 @@
   .actionRail {
     grid-template-columns: 1fr;
   }
+
+  .duaFeatureGrid,
+  .duaGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 767px) {
+  .dashboardTabs {
+    display: grid;
+  }
+
+  .dashboardTab {
+    min-width: 0;
+  }
+
   .calendarGrid {
     gap: 6px;
   }
@@ -428,6 +737,15 @@
 
   .heroTitle {
     max-width: 14ch;
+  }
+
+  .duaArabic {
+    font-size: 1.8rem;
+    line-height: 1.95;
+  }
+
+  .duaQuoteBlock {
+    padding: 16px;
   }
 }
 
