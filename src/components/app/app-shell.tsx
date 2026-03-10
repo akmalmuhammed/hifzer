@@ -164,10 +164,10 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
   const { enabled: distractionFree } = useDistractionFree();
   const copy = getAppUiCopy(language);
   const primaryItems = distractionFree
-    ? PRIMARY.filter((item) => item.key === "hifz" || item.key === "quran")
+    ? PRIMARY.filter((item) => item.key === "hifz" || item.key === "quran" || item.key === "dua")
     : PRIMARY;
   const mobileItems = distractionFree
-    ? MOBILE_NAV.filter((item) => item.key === "hifz" || item.key === "quran")
+    ? MOBILE_NAV.filter((item) => item.key === "hifz" || item.key === "quran" || item.key === "dua")
     : MOBILE_NAV;
 
   useEffect(() => {

@@ -1,0 +1,624 @@
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: calc(var(--kw-radius-xl) + 4px);
+  border: 1px solid rgba(194, 65, 12, 0.18);
+  background:
+    radial-gradient(1000px 360px at -6% -30%, rgba(194, 65, 12, 0.15), transparent 58%),
+    radial-gradient(900px 280px at 105% -20%, rgba(var(--kw-accent-rgb), 0.12), transparent 56%),
+    linear-gradient(135deg, rgba(255, 252, 248, 0.97), rgba(248, 244, 239, 0.94));
+  box-shadow: var(--kw-shadow);
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(11, 18, 32, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(11, 18, 32, 0.04) 1px, transparent 1px);
+  background-size: 34px 34px;
+  opacity: 0.18;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.78), transparent 95%);
+  pointer-events: none;
+}
+
+.heroGlowLeft,
+.heroGlowRight {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(18px);
+  pointer-events: none;
+}
+
+.heroGlowLeft {
+  left: -44px;
+  bottom: -66px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(194, 65, 12, 0.18), transparent 70%);
+}
+
+.heroGlowRight {
+  right: -64px;
+  top: -42px;
+  width: 240px;
+  height: 240px;
+  background: radial-gradient(circle, rgba(var(--kw-accent-rgb), 0.18), transparent 70%);
+}
+
+.heroGrid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  padding: 22px;
+}
+
+.heroStats {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.heroStat {
+  border-radius: 18px;
+  border: 1px solid var(--kw-border-2);
+  background: rgba(255, 255, 255, 0.72);
+  padding: 14px;
+}
+
+.heroStatLabel {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--kw-faint);
+}
+
+.heroStatValue {
+  display: block;
+  margin-top: 8px;
+  font-family:
+    var(--font-kw-mono),
+    "IBM Plex Mono",
+    ui-monospace,
+    monospace;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--kw-ink);
+}
+
+.heroBoundary {
+  align-self: start;
+  border-radius: 22px;
+  border: 1px solid rgba(194, 65, 12, 0.16);
+  background: rgba(255, 255, 255, 0.86);
+  padding: 18px;
+  box-shadow: var(--kw-shadow-soft);
+}
+
+.boundaryIcon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 16px;
+  border: 1px solid rgba(194, 65, 12, 0.18);
+  background: rgba(194, 65, 12, 0.1);
+  color: var(--kw-ember-600);
+}
+
+.chapterRail {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.chapterCard {
+  display: grid;
+  gap: 8px;
+  min-height: 144px;
+  border-radius: 20px;
+  border: 1px solid var(--kw-border-2);
+  background: rgba(255, 255, 255, 0.76);
+  padding: 16px;
+  text-align: left;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.chapterCard:hover {
+  transform: translateY(-2px);
+  border-color: rgba(var(--kw-accent-rgb), 0.18);
+}
+
+.chapterCard[data-active="1"] {
+  border-color: rgba(var(--kw-accent-rgb), 0.22);
+  background: linear-gradient(180deg, rgba(var(--kw-accent-rgb), 0.11), rgba(var(--kw-accent-rgb), 0.05));
+  box-shadow: var(--kw-shadow-soft);
+}
+
+.chapterCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.chapterIconWrap,
+.stageIconWrap,
+.sidebarIcon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 16px;
+  border: 1px solid var(--kw-border-2);
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.chapterIconWrap[data-tone="accent"],
+.stageIconWrap[data-tone="accent"],
+.sidebarIcon[data-tone="accent"] {
+  border-color: rgba(var(--kw-accent-rgb), 0.2);
+  background: rgba(var(--kw-accent-rgb), 0.1);
+  color: rgba(var(--kw-accent-rgb), 1);
+}
+
+.chapterIconWrap[data-tone="warn"],
+.stageIconWrap[data-tone="warn"],
+.sidebarIcon[data-tone="warn"] {
+  border-color: rgba(194, 65, 12, 0.18);
+  background: rgba(194, 65, 12, 0.1);
+  color: var(--kw-ember-600);
+}
+
+.chapterIconWrap[data-tone="success"],
+.stageIconWrap[data-tone="success"],
+.sidebarIcon[data-tone="success"] {
+  border-color: rgba(22, 163, 74, 0.18);
+  background: rgba(22, 163, 74, 0.1);
+  color: var(--kw-lime-600);
+}
+
+.chapterIconWrap[data-tone="neutral"],
+.stageIconWrap[data-tone="neutral"],
+.sidebarIcon[data-tone="neutral"] {
+  color: var(--kw-ink-2);
+}
+
+.chapterCount {
+  font-family:
+    var(--font-kw-mono),
+    "IBM Plex Mono",
+    ui-monospace,
+    monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--kw-faint);
+}
+
+.chapterTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--kw-ink);
+}
+
+.chapterDesc {
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: var(--kw-muted);
+}
+
+.workspace {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 260px minmax(0, 1fr) 320px;
+  align-items: start;
+}
+
+.stepRail,
+.sidebar {
+  display: grid;
+  gap: 14px;
+}
+
+.railHeader {
+  border-radius: 18px;
+  border: 1px solid var(--kw-border-2);
+  background: rgba(255, 255, 255, 0.72);
+  padding: 14px;
+}
+
+.stepList {
+  display: grid;
+  gap: 10px;
+}
+
+.stepListItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  border-radius: 18px;
+  border: 1px solid var(--kw-border-2);
+  background: rgba(255, 255, 255, 0.72);
+  padding: 12px;
+  text-align: left;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.stepListItem:hover {
+  transform: translateY(-1px);
+  border-color: rgba(var(--kw-accent-rgb), 0.18);
+}
+
+.stepListItem[data-active="1"] {
+  border-color: rgba(var(--kw-accent-rgb), 0.2);
+  background: rgba(var(--kw-accent-rgb), 0.08);
+}
+
+.stepListItem[data-seen="1"] .stepIndex {
+  border-color: rgba(22, 163, 74, 0.18);
+  background: rgba(22, 163, 74, 0.12);
+  color: var(--kw-lime-600);
+}
+
+.stepIndex {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--kw-border-2);
+  background: rgba(255, 255, 255, 0.86);
+  font-family:
+    var(--font-kw-mono),
+    "IBM Plex Mono",
+    ui-monospace,
+    monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--kw-ink);
+}
+
+.stepEyebrow {
+  display: block;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--kw-faint);
+}
+
+.stepTitle {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--kw-ink);
+}
+
+.stageCard {
+  background:
+    radial-gradient(680px 220px at 90% -10%, rgba(var(--kw-accent-rgb), 0.08), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(246, 248, 252, 0.88));
+}
+
+.stageTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.stepCountLabel {
+  font-size: 0.78rem;
+  color: var(--kw-faint);
+}
+
+.detailGrid {
+  margin-top: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.detailCard {
+  border-radius: 18px;
+  border: 1px solid var(--kw-border-2);
+  background: rgba(255, 255, 255, 0.74);
+  padding: 14px;
+}
+
+.actionCallout {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(194, 65, 12, 0.14);
+  background: rgba(194, 65, 12, 0.06);
+  padding: 14px;
+}
+
+.actionCalloutIcon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 14px;
+  border: 1px solid rgba(194, 65, 12, 0.18);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--kw-ember-600);
+}
+
+.duaCard {
+  margin-top: 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.14);
+  background:
+    radial-gradient(420px 160px at 85% -10%, rgba(var(--kw-accent-rgb), 0.08), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 248, 252, 0.9));
+  padding: 20px;
+}
+
+.duaArabic {
+  font-family:
+    var(--font-kw-quran),
+    "KFGQPC Uthmanic Script HAFS",
+    "Scheherazade New",
+    "Amiri",
+    "Noto Naskh Arabic",
+    serif;
+  font-size: clamp(2rem, 4.5vw, 2.7rem);
+  line-height: 2.05;
+  color: var(--kw-ink);
+}
+
+.duaTransliteration {
+  margin-top: 14px;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--kw-ink-2);
+}
+
+.duaTranslation {
+  margin-top: 10px;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--kw-muted);
+}
+
+.counterPanel {
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid rgba(11, 18, 32, 0.06);
+  padding-top: 16px;
+}
+
+.counterControls {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.counterButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  border: 1px solid var(--kw-border-2);
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--kw-ink);
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.counterButton:hover {
+  transform: translateY(-1px);
+  border-color: rgba(var(--kw-accent-rgb), 0.18);
+  background: rgba(var(--kw-accent-rgb), 0.06);
+}
+
+.counterValue {
+  min-width: 56px;
+  text-align: center;
+  font-family:
+    var(--font-kw-mono),
+    "IBM Plex Mono",
+    ui-monospace,
+    monospace;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--kw-ink);
+}
+
+.completionWrap {
+  margin-top: 18px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.completionMetric {
+  border-radius: 18px;
+  border: 1px solid var(--kw-border-2);
+  background: rgba(255, 255, 255, 0.74);
+  padding: 14px;
+}
+
+.completionMetricLabel {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--kw-faint);
+}
+
+.completionMetricValue {
+  display: block;
+  margin-top: 8px;
+  font-family:
+    var(--font-kw-mono),
+    "IBM Plex Mono",
+    ui-monospace,
+    monospace;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--kw-ink);
+}
+
+.stageActions {
+  margin-top: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sidebarCard {
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.sourceList {
+  margin-top: 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.sourceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 16px;
+  border: 1px solid var(--kw-border-2);
+  background: rgba(255, 255, 255, 0.74);
+  padding: 13px 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--kw-ink-2);
+  text-decoration: none;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.sourceRow:hover {
+  transform: translateY(-1px);
+  border-color: rgba(var(--kw-accent-rgb), 0.18);
+  background: rgba(var(--kw-accent-rgb), 0.05);
+}
+
+.sidebarChecklist {
+  margin-top: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.checkRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--kw-muted);
+}
+
+.checkDot {
+  width: 12px;
+  height: 12px;
+  margin-top: 8px;
+  border-radius: 999px;
+  border: 1px solid var(--kw-border-2);
+  background: rgba(11, 18, 32, 0.08);
+}
+
+.checkDot[data-active="1"] {
+  border-color: rgba(22, 163, 74, 0.22);
+  background: rgba(22, 163, 74, 0.72);
+}
+
+@media (max-width: 1279px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .stepRail,
+  .sidebar {
+    order: unset;
+  }
+
+  .stepList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1023px) {
+  .heroGrid,
+  .chapterRail {
+    grid-template-columns: 1fr;
+  }
+
+  .heroStats,
+  .completionWrap {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .heroGrid,
+  .hero {
+    padding: 0;
+  }
+
+  .heroGrid {
+    padding: 18px;
+  }
+
+  .stepList {
+    grid-template-columns: 1fr;
+  }
+
+  .duaArabic {
+    font-size: 1.85rem;
+    line-height: 1.95;
+  }
+
+  .stageActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chapterCard,
+  .stepListItem,
+  .counterButton,
+  .sourceRow {
+    transition: none;
+  }
+}
