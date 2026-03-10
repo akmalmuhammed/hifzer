@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
-import { ArrowRight, GraduationCap, Link2, ShieldCheck, Users } from "lucide-react";
+import { ArrowRight, GraduationCap, Link2, ShieldCheck, Sparkles, Users } from "lucide-react";
 import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/app/page-header";
 import { Card } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { Pill } from "@/components/ui/pill";
 import { getDashboardOverview } from "@/hifzer/dashboard/server";
 import { loadTodayState } from "@/hifzer/engine/server";
 import { listLearningLanes } from "@/hifzer/profile/server";
+import { getMemorizationIntelligence } from "@/hifzer/recitation/intelligence.server";
 import { getRecitationInsights } from "@/hifzer/recitation/server";
 
 export const metadata = {
@@ -57,11 +58,12 @@ export default async function TeacherPage() {
     redirect("/login");
   }
 
-  const [overview, today, lanes, insights] = await Promise.all([
+  const [overview, today, lanes, insights, intelligence] = await Promise.all([
     getDashboardOverview(userId),
     loadTodayState(userId),
     listLearningLanes(userId, 6),
     getRecitationInsights(userId, { challengeLimit: 6, transitionLimit: 6 }),
+    getMemorizationIntelligence(userId),
   ]);
 
   if (!overview || !insights) {
@@ -243,6 +245,92 @@ export default async function TeacherPage() {
                 title="No open transition repairs"
                 message="When the student starts breaking at ayah joins, the weak seams will appear here."
                 icon={<Link2 size={18} />}
+              />
+            </div>
+          )}
+        </Card>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <Card>
+          <div className="flex items-center gap-2">
+            <Sparkles size={16} className="text-[color:var(--kw-faint)]" />
+            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Imam prep mode</p>
+          </div>
+          <p className="mt-3 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">Prayer-paced passages that are already stable enough to lead with.</p>
+          {intelligence?.imamPrep.length ? (
+            <div className="mt-4 space-y-3">
+              {intelligence.imamPrep.map((passage) => (
+                <div key={`${passage.startAyahId}-${passage.endAyahId}`} className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Pill tone={passage.confidenceZone === "Green" ? "success" : passage.confidenceZone === "Amber" ? "warn" : "neutral"}>
+                      {passage.confidenceZone}
+                    </Pill>
+                    <Pill tone="neutral">{passage.startRef} - {passage.endRef}</Pill>
+                    <Pill tone="neutral">{passage.confidenceScore}% confidence</Pill>
+                  </div>
+                  <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+                    {passage.surahName} | {passage.ayahCount} ayahs | Emergency prompt at {passage.promptRef}
+                  </p>
+                  {passage.promptSnippet ? (
+                    <p dir="rtl" className="mt-2 text-xs text-[color:var(--kw-faint)]">{passage.promptSnippet}</p>
+                  ) : null}
+                  <p className="mt-3 text-sm text-[color:var(--kw-muted)]">{passage.loopPlan}</p>
+                  <Link
+                    href={`/quran/read?view=compact&surah=${passage.surahNumber}&cursor=${passage.startAyahId}`}
+                    className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+                  >
+                    Open imam prep <ArrowRight size={14} />
+                  </Link>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-4">
+              <EmptyState
+                title="No imam-ready passages yet"
+                message="This unlocks once a contiguous passage is sitting in stable Manzil or Mastered territory without recent breakdowns."
+                icon={<Sparkles size={18} />}
+              />
+            </div>
+          )}
+        </Card>
+
+        <Card>
+          <div className="flex items-center gap-2">
+            <GraduationCap size={16} className="text-[color:var(--kw-faint)]" />
+            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Hifz-to-salah builder</p>
+          </div>
+          <p className="mt-3 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">Turn stable memorization into prayer-sized sets without guessing what is safe to use.</p>
+          {intelligence?.salahBuilder.length ? (
+            <div className="mt-4 space-y-3">
+              {intelligence.salahBuilder.map((set) => (
+                <div key={set.label} className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Pill tone="accent">{set.label}</Pill>
+                    <Pill tone="neutral">{set.passages.length} passage{set.passages.length === 1 ? "" : "s"}</Pill>
+                  </div>
+                  <p className="mt-2 text-sm text-[color:var(--kw-muted)]">{set.rationale}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {set.passages.map((passage) => (
+                      <Link
+                        key={`${set.label}-${passage.startAyahId}`}
+                        href={`/quran/read?view=compact&surah=${passage.surahNumber}&cursor=${passage.startAyahId}`}
+                        className="rounded-full border border-[color:var(--kw-border-2)] bg-white px-3 py-1.5 text-xs font-semibold text-[color:var(--kw-ink)]"
+                      >
+                        {passage.startRef} - {passage.endRef}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-4">
+              <EmptyState
+                title="No salah sets available yet"
+                message="Build more stable contiguous Manzil passages first. Once they hold cleanly, Hifzer can package them into prayer-ready sets here."
+                icon={<GraduationCap size={18} />}
               />
             </div>
           )}

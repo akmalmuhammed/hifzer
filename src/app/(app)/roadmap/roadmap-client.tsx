@@ -47,21 +47,21 @@ const LANES: Lane[] = [
   {
     label: "Next",
     horizon: "Upcoming major release",
-    focus: "AI recitation intelligence",
+    focus: "Memorization intelligence",
     milestones: [
       {
-        title: "AI recitation correction",
-        detail: "Detect pronunciation and sequence errors at ayah level with actionable correction prompts.",
+        title: "Mushabihat radar and seam trainer",
+        detail: "Catch similar ayah confusion early, then convert weak transitions into one-tap seam-only drills.",
         status: "planned",
       },
       {
-        title: "Tajweed-aware detection",
-        detail: "Introduce rule-sensitive feedback for stretch, stop, and articulation confidence markers.",
+        title: "Rescue sessions and confidence heatmap",
+        detail: "Generate 5-10 minute fix-the-damage sessions and show fragility directly on a surah confidence map.",
         status: "planned",
       },
       {
-        title: "Teacher review overlays",
-        detail: "Enable teacher-assist layers for flagged weak passages and recurring mistakes.",
+        title: "Imam prep and Hifz-to-salah builder",
+        detail: "Turn stable passages into prayer-ready sets with prompt anchors, loop plans, and teacher-facing readiness signals.",
         status: "planned",
       },
     ],
