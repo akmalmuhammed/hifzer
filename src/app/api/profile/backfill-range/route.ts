@@ -113,7 +113,6 @@ export async function POST(req: Request) {
     try {
       tracking = await recordQuranBrowseAyahRangeRead({
         profileId: profile.id,
-        mode: profile.mode,
         timezone: profile.timezone,
         ayahIds,
       });

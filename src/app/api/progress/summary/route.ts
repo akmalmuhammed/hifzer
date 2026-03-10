@@ -6,11 +6,10 @@ import { addIsoDaysUtc } from "@/hifzer/derived/dates";
 import { isoDateInTimeZone } from "@/hifzer/engine/date";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { getAyahById, getSurahInfo } from "@/hifzer/quran/lookup.server";
+import { distinctQuranAyahs } from "@/hifzer/quran/read-progress.logic";
 import {
-  QURAN_BROWSE_MARKER_DURATION_SEC,
-  QURAN_BROWSE_MARKER_PHASE,
-  QURAN_BROWSE_MARKER_STAGE,
   getQuranReadProgress,
+  listQuranBrowseEvents,
 } from "@/hifzer/quran/read-progress.server";
 import { db } from "@/lib/db";
 
@@ -62,16 +61,6 @@ export async function GET() {
     const start14d = addIsoDaysUtc(todayLocalDate, -13);
     const start30d = addIsoDaysUtc(todayLocalDate, -29);
 
-    const quranMarkerWhere = {
-      userId: profile.id,
-      stage: QURAN_BROWSE_MARKER_STAGE,
-      phase: QURAN_BROWSE_MARKER_PHASE,
-      grade: null,
-      durationSec: QURAN_BROWSE_MARKER_DURATION_SEC,
-      fromAyahId: { not: null },
-      toAyahId: { not: null },
-    };
-
     const [
       sessions30dRaw,
       recentSessionsRaw,
@@ -79,7 +68,7 @@ export async function GET() {
       dueNow,
       trackedAyahs,
       quranReadProgress,
-      quranDistinctAyahs,
+      quranCoverageEvents,
     ] = await Promise.all([
       prisma.session.findMany({
         where: {
@@ -155,9 +144,8 @@ export async function GET() {
         where: { userId: profile.id },
       }),
       getQuranReadProgress(profile.id),
-      prisma.reviewEvent.groupBy({
-        by: ["ayahId", "surahNumber"],
-        where: quranMarkerWhere,
+      listQuranBrowseEvents({
+        profileId: profile.id,
       }),
     ]);
 
@@ -206,6 +194,8 @@ export async function GET() {
         warmupPassed: session.warmupPassed,
         weeklyGatePassed: session.weeklyGatePassed,
       }));
+
+    const quranDistinctAyahs = distinctQuranAyahs(quranCoverageEvents);
 
     const ayahsRecited = quranDistinctAyahs.length;
     const ayahsLeft = Math.max(0, TOTAL_AYAHS - ayahsRecited);

@@ -36,7 +36,7 @@ export default async function QuranIndexPage() {
     }
   }
 
-  const progressAyahId = readCoverage.lastReadAyahId ?? 1;
+  const progressAyahId = readCoverage.lastReadAyahId ?? profile?.quranCursorAyahId ?? 1;
 
   const surahs = listSurahs();
   const juzs = listJuzs();

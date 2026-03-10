@@ -5,7 +5,8 @@ import { addIsoDaysUtc } from "@/hifzer/derived/dates";
 import { isoDateInTimeZone } from "@/hifzer/engine/date";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { getAyahById, getSurahInfo } from "@/hifzer/quran/lookup.server";
-import { getQuranReadProgress } from "@/hifzer/quran/read-progress.server";
+import { ayahIdsByDate } from "@/hifzer/quran/read-progress.logic";
+import { getQuranReadProgress, listQuranBrowseEvents } from "@/hifzer/quran/read-progress.server";
 import { getUserStreakSummary } from "@/hifzer/streak/server";
 import { db } from "@/lib/db";
 
@@ -160,7 +161,6 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
     sessions365d,
     gradedEvents14d,
     stageAgg14d,
-    browseEvents14d,
     dueNow,
     dueSoon6h,
     nextDue,
@@ -169,6 +169,7 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
     weakTransitions,
     streak,
     quranReadProgress,
+    browseEvents14d,
   ] = await Promise.all([
     prisma.session.findMany({
       where: {
@@ -236,6 +237,14 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
       by: ["stage"],
       where: {
         userId: profile.id,
+        NOT: {
+          stage: "REVIEW",
+          phase: "STANDARD",
+          grade: null,
+          durationSec: 1,
+          fromAyahId: { not: null },
+          toAyahId: { not: null },
+        },
         session: {
           localDate: {
             gte: start14d,
@@ -244,32 +253,6 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
         },
       },
       _count: { _all: true },
-    }),
-    prisma.reviewEvent.findMany({
-      where: {
-        userId: profile.id,
-        stage: "REVIEW",
-        phase: "STANDARD",
-        grade: null,
-        durationSec: { gt: 0 },
-        session: {
-          localDate: {
-            gte: start14d,
-            lte: todayLocalDate,
-          },
-        },
-      },
-      select: {
-        ayahId: true,
-        surahNumber: true,
-        fromAyahId: true,
-        toAyahId: true,
-        session: {
-          select: {
-            localDate: true,
-          },
-        },
-      },
     }),
     prisma.ayahReview.count({
       where: {
@@ -307,6 +290,12 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
     }),
     getUserStreakSummary(clerkUserId),
     getQuranReadProgress(profile.id),
+    listQuranBrowseEvents({
+      profileId: profile.id,
+      sources: ["AUDIO_PLAY"],
+      startLocalDate: start14d,
+      endLocalDate: todayLocalDate,
+    }),
   ]);
 
   const trendDates = Array.from({ length: 14 }, (_, idx) => addIsoDaysUtc(start14d, idx));
@@ -362,19 +351,8 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
     bucket.recallEvents += 1;
   }
 
-  const browseByDate = new Map<string, Set<number>>();
-  const uniqueBrowseSurahsRecited14d = new Set<number>();
-  for (const event of browseEvents14d) {
-    const isBrowseMarker = event.fromAyahId === event.ayahId && event.toAyahId === event.ayahId;
-    if (!isBrowseMarker) {
-      continue;
-    }
-    uniqueBrowseSurahsRecited14d.add(event.surahNumber);
-    const dateKey = event.session.localDate;
-    const set = browseByDate.get(dateKey) ?? new Set<number>();
-    set.add(event.ayahId);
-    browseByDate.set(dateKey, set);
-  }
+  const browseByDate = ayahIdsByDate(browseEvents14d, { sources: ["AUDIO_PLAY"] });
+  const uniqueBrowseSurahsRecited14d = new Set<number>(browseEvents14d.map((event) => event.surahNumber));
 
   const sessionTrend14d = trendDates.map((date) => {
     const base = trendIndex.get(date);

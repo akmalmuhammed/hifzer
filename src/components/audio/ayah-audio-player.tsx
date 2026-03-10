@@ -84,6 +84,7 @@ function AyahAudioPlayerInner(props: {
       const res = await fetch("/api/streak/recite", {
         method: "POST",
         headers: { "content-type": "application/json" },
+        keepalive: true,
         body: JSON.stringify({
           ayahId: props.ayahId,
           source: "quran_browse",

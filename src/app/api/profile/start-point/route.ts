@@ -3,7 +3,6 @@ import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getSurahInfo } from "@/hifzer/quran/lookup";
 import { getOrCreateUserProfile, saveQuranStartPoint, saveStartPoint } from "@/hifzer/profile/server";
-import { recordQuranBrowseAyahRead } from "@/hifzer/quran/read-progress.server";
 import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -135,21 +134,6 @@ export async function POST(req: Request) {
           throw error;
         }
         abandonedOpenSessions = 0;
-      }
-    }
-
-    if (source === "quran_read") {
-      try {
-        await recordQuranBrowseAyahRead({
-          profileId: fullProfile.id,
-          mode: fullProfile.mode,
-          timezone: fullProfile.timezone,
-          ayahId: expectedAyahId,
-        });
-      } catch (error) {
-        if (!looksLikeMissingCoreSchema(error)) {
-          throw error;
-        }
       }
     }
 

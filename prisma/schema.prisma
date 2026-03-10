@@ -100,6 +100,12 @@ enum BookmarkMutationType {
   CATEGORY_DELETE
 }
 
+enum QuranBrowseSource {
+  READER_VIEW
+  AUDIO_PLAY
+  BACKFILL
+}
+
 model UserProfile {
   id                    String   @id @default(cuid())
   clerkUserId           String   @unique
@@ -154,6 +160,7 @@ model UserProfile {
   bookmarkCategories    BookmarkCategory[]
   bookmarks             Bookmark[]
   bookmarkEvents        BookmarkEvent[]
+  quranBrowseEvents     QuranBrowseEvent[]
 
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
@@ -373,4 +380,22 @@ model QualityGateRun {
 
   @@index([userId, gateType, createdAt])
   @@index([userId, windowEnd])
+}
+
+model QuranBrowseEvent {
+  id         String            @id @default(cuid())
+  userId     String
+  ayahId     Int
+  surahNumber Int
+  localDate  String
+  source     QuranBrowseSource
+  firstSeenAt DateTime         @default(now())
+  lastSeenAt DateTime          @default(now())
+
+  user       UserProfile       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, localDate, ayahId, source])
+  @@index([userId, lastSeenAt])
+  @@index([userId, ayahId, lastSeenAt])
+  @@index([userId, localDate, source])
 }

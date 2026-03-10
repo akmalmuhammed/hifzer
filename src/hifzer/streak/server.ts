@@ -3,10 +3,9 @@
 import type { AttemptStage, ReviewPhase } from "@prisma/client";
 import { isoDateInTimeZone } from "@/hifzer/engine/date";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
+import { ayahIdsByDate } from "@/hifzer/quran/read-progress.logic";
 import {
-  QURAN_BROWSE_MARKER_DURATION_SEC,
-  QURAN_BROWSE_MARKER_PHASE,
-  QURAN_BROWSE_MARKER_STAGE,
+  listQuranBrowseEvents,
   recordQuranBrowseAyahRead,
 } from "@/hifzer/quran/read-progress.server";
 import { db } from "@/lib/db";
@@ -95,23 +94,6 @@ function isRecallRelevantRow(row: { stage: AttemptStage; phase: ReviewPhase; gra
   return row.stage === "NEW" && row.phase === NEW_BLIND_PHASE;
 }
 
-function isBrowseMarkerRow(row: {
-  stage: AttemptStage;
-  phase: ReviewPhase;
-  grade: string | null;
-  durationSec: number;
-  ayahId: number;
-  fromAyahId: number | null;
-  toAyahId: number | null;
-}): boolean {
-  return row.stage === QURAN_BROWSE_MARKER_STAGE &&
-    row.phase === QURAN_BROWSE_MARKER_PHASE &&
-    row.grade == null &&
-    row.durationSec === QURAN_BROWSE_MARKER_DURATION_SEC &&
-    row.fromAyahId === row.ayahId &&
-    row.toAyahId === row.ayahId;
-}
-
 export async function recordBrowseAyahRecitation(clerkUserId: string, ayahId: number): Promise<StreakRecordResult> {
   const profile = await getOrCreateUserProfile(clerkUserId);
   if (!profile || !profile.onboardingCompletedAt || !Number.isFinite(ayahId) || ayahId <= 0) {
@@ -125,9 +107,9 @@ export async function recordBrowseAyahRecitation(clerkUserId: string, ayahId: nu
 
   const result = await recordQuranBrowseAyahRead({
     profileId: profile.id,
-    mode: profile.mode,
     timezone: profile.timezone,
     ayahId: Math.floor(ayahId),
+    source: "AUDIO_PLAY",
   });
 
   return {
@@ -155,51 +137,46 @@ export async function getUserStreakSummary(clerkUserId: string): Promise<StreakS
   const startLocalDate = onboardingLocalDate <= todayLocalDate ? onboardingLocalDate : todayLocalDate;
 
   const prisma = db();
-  const rows = await prisma.reviewEvent.findMany({
-    where: {
-      userId: profile.id,
-      durationSec: { gt: 0 },
-      OR: [
-        {
-          grade: { not: null },
-          OR: [
-            { stage: { in: RECALL_STAGES } },
-            { stage: "NEW", phase: NEW_BLIND_PHASE },
-          ],
-        },
-        {
-          stage: QURAN_BROWSE_MARKER_STAGE,
-          phase: QURAN_BROWSE_MARKER_PHASE,
-          grade: null,
-          durationSec: QURAN_BROWSE_MARKER_DURATION_SEC,
-        },
-      ],
-      session: {
-        localDate: {
-          gte: startLocalDate,
-          lte: todayLocalDate,
+  const [hifzRows, quranAudioRows] = await Promise.all([
+    prisma.reviewEvent.findMany({
+      where: {
+        userId: profile.id,
+        durationSec: { gt: 0 },
+        grade: { not: null },
+        OR: [
+          { stage: { in: RECALL_STAGES } },
+          { stage: "NEW", phase: NEW_BLIND_PHASE },
+        ],
+        session: {
+          localDate: {
+            gte: startLocalDate,
+            lte: todayLocalDate,
+          },
         },
       },
-    },
-    select: {
-      ayahId: true,
-      stage: true,
-      phase: true,
-      grade: true,
-      fromAyahId: true,
-      toAyahId: true,
-      durationSec: true,
-      session: {
-        select: {
-          localDate: true,
+      select: {
+        ayahId: true,
+        stage: true,
+        phase: true,
+        grade: true,
+        session: {
+          select: {
+            localDate: true,
+          },
         },
       },
-    },
-  });
+    }),
+    listQuranBrowseEvents({
+      profileId: profile.id,
+      sources: ["AUDIO_PLAY"],
+      startLocalDate,
+      endLocalDate: todayLocalDate,
+    }),
+  ]);
 
   const ayahSetByDate = new Map<string, Set<number>>();
-  for (const row of rows) {
-    const isRelevant = isRecallRelevantRow(row) || isBrowseMarkerRow(row);
+  for (const row of hifzRows) {
+    const isRelevant = isRecallRelevantRow(row);
     if (!isRelevant) {
       continue;
     }
@@ -210,6 +187,15 @@ export async function getUserStreakSummary(clerkUserId: string): Promise<StreakS
     const set = ayahSetByDate.get(localDate) ?? new Set<number>();
     set.add(row.ayahId);
     ayahSetByDate.set(localDate, set);
+  }
+
+  const quranAyahSetByDate = ayahIdsByDate(quranAudioRows, { sources: ["AUDIO_PLAY"] });
+  for (const [date, ayahIds] of quranAyahSetByDate.entries()) {
+    const set = ayahSetByDate.get(date) ?? new Set<number>();
+    for (const ayahId of ayahIds) {
+      set.add(ayahId);
+    }
+    ayahSetByDate.set(date, set);
   }
 
   const qualifiedAyahCountByDate: Record<string, number> = {};
