@@ -137,7 +137,7 @@ export async function getUserStreakSummary(clerkUserId: string): Promise<StreakS
   const startLocalDate = onboardingLocalDate <= todayLocalDate ? onboardingLocalDate : todayLocalDate;
 
   const prisma = db();
-  const [hifzRows, quranAudioRows] = await Promise.all([
+  const [hifzRows, quranBrowseRows] = await Promise.all([
     prisma.reviewEvent.findMany({
       where: {
         userId: profile.id,
@@ -168,7 +168,7 @@ export async function getUserStreakSummary(clerkUserId: string): Promise<StreakS
     }),
     listQuranBrowseEvents({
       profileId: profile.id,
-      sources: ["AUDIO_PLAY"],
+      sources: ["AUDIO_PLAY", "READER_VIEW"],
       startLocalDate,
       endLocalDate: todayLocalDate,
     }),
@@ -189,7 +189,7 @@ export async function getUserStreakSummary(clerkUserId: string): Promise<StreakS
     ayahSetByDate.set(localDate, set);
   }
 
-  const quranAyahSetByDate = ayahIdsByDate(quranAudioRows, { sources: ["AUDIO_PLAY"] });
+  const quranAyahSetByDate = ayahIdsByDate(quranBrowseRows, { sources: ["AUDIO_PLAY", "READER_VIEW"] });
   for (const [date, ayahIds] of quranAyahSetByDate.entries()) {
     const set = ayahSetByDate.get(date) ?? new Set<number>();
     for (const ayahId of ayahIds) {

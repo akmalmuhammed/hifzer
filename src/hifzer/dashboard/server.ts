@@ -292,7 +292,7 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
     getQuranReadProgress(profile.id),
     listQuranBrowseEvents({
       profileId: profile.id,
-      sources: ["AUDIO_PLAY"],
+      sources: ["AUDIO_PLAY", "READER_VIEW"],
       startLocalDate: start14d,
       endLocalDate: todayLocalDate,
     }),
@@ -351,7 +351,7 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
     bucket.recallEvents += 1;
   }
 
-  const browseByDate = ayahIdsByDate(browseEvents14d, { sources: ["AUDIO_PLAY"] });
+  const browseByDate = ayahIdsByDate(browseEvents14d, { sources: ["AUDIO_PLAY", "READER_VIEW"] });
   const uniqueBrowseSurahsRecited14d = new Set<number>(browseEvents14d.map((event) => event.surahNumber));
 
   const sessionTrend14d = trendDates.map((date) => {

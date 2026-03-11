@@ -1,9 +1,4 @@
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'QuranBrowseSource') THEN
-    CREATE TYPE "QuranBrowseSource" AS ENUM ('READER_VIEW', 'AUDIO_PLAY', 'BACKFILL');
-  END IF;
-END $$;
+CREATE TYPE "QuranBrowseSource" AS ENUM ('READER_VIEW', 'AUDIO_PLAY', 'BACKFILL');
 
 CREATE TABLE "QuranBrowseEvent" (
   "id" TEXT NOT NULL,
