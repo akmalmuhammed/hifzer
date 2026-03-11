@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
 import { SupportTextPanel } from "@/components/quran/support-text-panel";
+import { QuranViewportProgressTracker } from "@/components/quran/quran-viewport-progress-tracker";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import { getDistractionFreeServer } from "@/hifzer/focus/server";
@@ -448,8 +449,16 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
 
       {ayahs.length > 0 && view === "list" ? (
         <div className="mt-8 space-y-3">
+          <QuranViewportProgressTracker enabled={Boolean(!anonymous && authEnabled && userId)} />
           {listAyahs.map((ayah) => (
-            <Card key={ayah.id} className="py-3">
+            <Card
+              key={ayah.id}
+              className="py-3"
+              data-quran-track="1"
+              data-quran-ayah-id={ayah.id}
+              data-quran-surah-number={ayah.surahNumber}
+              data-quran-ayah-number={ayah.ayahNumber}
+            >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1 text-xs font-semibold text-[color:var(--kw-muted)]">

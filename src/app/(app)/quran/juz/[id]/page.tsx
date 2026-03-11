@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
+import { QuranViewportProgressTracker } from "@/components/quran/quran-viewport-progress-tracker";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import { getProfileSnapshot } from "@/hifzer/profile/server";
@@ -67,8 +68,16 @@ export default async function JuzPage(props: { params: Promise<{ id: string }> }
       </div>
 
       <div className="mt-10 space-y-3">
+        <QuranViewportProgressTracker enabled={Boolean(userId)} />
         {ayahs.map((a) => (
-          <Card key={a.id} className="py-3">
+          <Card
+            key={a.id}
+            className="py-3"
+            data-quran-track="1"
+            data-quran-ayah-id={a.id}
+            data-quran-surah-number={a.surahNumber}
+            data-quran-ayah-number={a.ayahNumber}
+          >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex items-center gap-2">
                 <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1 text-xs font-semibold text-[color:var(--kw-muted)]">
