@@ -187,6 +187,8 @@ model UserProfile {
   bookmarks             Bookmark[]
   bookmarkEvents        BookmarkEvent[]
   quranBrowseEvents     QuranBrowseEvent[]
+  customDuas           CustomDua[]
+  duaDeckOrders        DuaDeckOrder[]
   ownedTeacherCircles   TeacherCircle[]           @relation("OwnedTeacherCircles")
   teacherCircleLinks    TeacherCircleMember[]     @relation("TeacherCircleLinkedUser")
   teacherCircleUpdates  TeacherCircleWeeklyCheck[] @relation("TeacherCircleUpdatedBy")
@@ -427,6 +429,39 @@ model QuranBrowseEvent {
   @@index([userId, lastSeenAt])
   @@index([userId, ayahId, lastSeenAt])
   @@index([userId, localDate, source])
+}
+
+model CustomDua {
+  id              String      @id @default(cuid())
+  userId          String
+  moduleId        String      @default("laylat-al-qadr")
+  title           String
+  arabic          String?
+  transliteration String?
+  translation     String
+  note            String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user            UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, moduleId, updatedAt])
+  @@index([userId, moduleId, createdAt])
+}
+
+model DuaDeckOrder {
+  id        String      @id @default(cuid())
+  userId    String
+  moduleId  String      @default("laylat-al-qadr")
+  itemKey   String
+  sortOrder Int         @default(0)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId, itemKey])
+  @@index([userId, moduleId, sortOrder, updatedAt])
 }
 
 model TeacherCircle {

@@ -3,16 +3,17 @@ import { laylatAlQadrJourney } from "@/hifzer/ramadan/laylat-al-qadr";
 
 describe("laylatAlQadrJourney", () => {
   it("keeps the experience order anchored from method to duas to completion", () => {
-    expect(laylatAlQadrJourney.steps[0]?.chapter).toBe("prophetic");
-    expect(laylatAlQadrJourney.steps.at(-1)?.chapter).toBe("completion");
+    expect(laylatAlQadrJourney.id).toBe("laylat-al-qadr");
+    expect(laylatAlQadrJourney.steps[0]?.id).toBe("laylat-seek-night");
+    expect(laylatAlQadrJourney.steps.at(-1)?.id).toBe("laylat-completion");
 
     const duaStepIndexes = laylatAlQadrJourney.steps
-      .map((step, index) => (step.chapter === "duas" ? index : -1))
+      .map((step, index) => (step.dua ? index : -1))
       .filter((index) => index >= 0);
 
     expect(duaStepIndexes.length).toBeGreaterThan(1);
     expect(Math.min(...duaStepIndexes)).toBeGreaterThan(
-      laylatAlQadrJourney.steps.findIndex((step) => step.chapter === "asking"),
+      laylatAlQadrJourney.steps.findIndex((step) => step.id === "laylat-adab-of-dua"),
     );
   });
 

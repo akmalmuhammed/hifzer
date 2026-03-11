@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, BookMarked, BookOpen, Compass, EyeOff, Headphones, MoonStar, Radio } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
+import { QuranMotivationHero } from "@/components/quran/quran-motivation-hero";
 import { getReciterLabel } from "@/hifzer/audio/reciters";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { getAyahById, getSurahInfo, listJuzs, listSurahs } from "@/hifzer/quran/lookup.server";
@@ -68,17 +69,8 @@ export default async function QuranIndexPage() {
     <div className="pb-12 pt-10 md:pb-16 md:pt-14">
       <Pill tone="neutral">Qur&apos;an</Pill>
       <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
-            Recite the Qur&apos;an. It will intercede for you.
-            <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Keep one clean path for daily recitation.</span>
-          </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
-            Resume exactly where you stopped, use private mode when needed, and keep your read progress consistent.
-            <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
-              Sahih Muslim 804a
-            </span>
-          </p>
+        <div className="min-w-0 flex-1">
+          <QuranMotivationHero />
           <div className="mt-4 flex flex-wrap gap-2">
             <Link
               href="/quran/glossary"

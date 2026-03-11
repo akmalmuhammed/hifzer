@@ -33,6 +33,7 @@ import { AreaTrend } from "@/components/charts/area-trend";
 import { DonutProgress } from "@/components/charts/donut-progress";
 import { Sparkline } from "@/components/charts/sparkline";
 import { PageHeader } from "@/components/app/page-header";
+import { SupportTextPanel } from "@/components/quran/support-text-panel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -461,8 +462,14 @@ function DashboardDuaTab() {
             <p dir="rtl" className={styles.duaArabic}>
               {guide.featuredDua.arabic}
             </p>
-            <p className={styles.duaTransliteration}>{guide.featuredDua.transliteration}</p>
-            <p className={styles.duaTranslation}>{guide.featuredDua.translation}</p>
+            <div className="mt-4 space-y-3">
+              <SupportTextPanel kind="transliteration">
+                {guide.featuredDua.transliteration}
+              </SupportTextPanel>
+              <SupportTextPanel kind="translation">
+                {guide.featuredDua.translation}
+              </SupportTextPanel>
+            </div>
             <div className={styles.duaSourceRow}>
               <Pill tone="neutral">{guide.featuredDua.source.label}</Pill>
               <a

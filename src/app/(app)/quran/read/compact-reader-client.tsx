@@ -1,13 +1,38 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type TouchEvent, type WheelEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
 import { ReaderBookmarkControl } from "@/components/bookmarks/reader-bookmark-control";
+import { SupportTextPanel } from "@/components/quran/support-text-panel";
 import { Card } from "@/components/ui/card";
 import type { ReaderUiCopy } from "@/hifzer/quran/reader-ui-copy";
-import { ReadProgressSync } from "./read-progress-sync";
+import { ReadProgressSync, type ReadProgressSyncHandle } from "./read-progress-sync";
+
+const QURAN_AUDIO_SPEED_PREF_KEY = "hifzer_quran_audio_speed_v1";
+const QURAN_ARABIC_SCALE_KEY = "hifzer_quran_arabic_scale_v1";
+const MIN_ARABIC_SCALE = 0.8;
+const MAX_ARABIC_SCALE = 1.75;
+
+function clampArabicScale(value: number): number {
+  return Math.max(MIN_ARABIC_SCALE, Math.min(MAX_ARABIC_SCALE, value));
+}
+
+function readStoredArabicScale(): number {
+  if (typeof window === "undefined") {
+    return 1;
+  }
+  try {
+    const raw = window.localStorage.getItem(QURAN_ARABIC_SCALE_KEY);
+    if (!raw) {
+      return 1;
+    }
+    return clampArabicScale(Number(raw));
+  } catch {
+    return 1;
+  }
+}
 
 export type CompactAyahData = {
   id: number;
@@ -52,10 +77,13 @@ export function CompactReaderClient({
   reciterId,
 }: Props) {
   const router = useRouter();
+  const progressSyncRef = useRef<ReadProgressSyncHandle | null>(null);
+  const pinchDistanceRef = useRef<number | null>(null);
   const [cursorIndex, setCursorIndex] = useState(() => {
     const idx = ayahs.findIndex((a) => a.id === initialAyahId);
     return idx >= 0 ? idx : 0;
   });
+  const [arabicScale, setArabicScale] = useState(readStoredArabicScale);
 
   // Track the "global" position across the full filtered set so the counter stays accurate.
   const globalIndexRef = useRef(indexInSet);
@@ -74,23 +102,51 @@ export function CompactReaderClient({
     window.history.replaceState(null, "", url.toString());
   }, [currentId]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    try {
+      window.localStorage.setItem(QURAN_ARABIC_SCALE_KEY, String(arabicScale));
+    } catch {
+      // ignore storage write failures
+    }
+  }, [arabicScale]);
+
   if (!current) return null;
+
+  function resizeArabic(delta: number) {
+    setArabicScale((previous) => clampArabicScale(previous + delta));
+  }
+
+  function advanceToIndex(nextIndex: number) {
+    const boundedIndex = Math.max(0, Math.min(ayahs.length - 1, nextIndex));
+    if (boundedIndex === cursorIndex) {
+      return;
+    }
+
+    const nextAyah = ayahs[boundedIndex];
+    progressSyncRef.current?.markAyahVisited({
+      surahNumber: nextAyah.surahNumber,
+      ayahNumber: nextAyah.ayahNumber,
+      ayahId: nextAyah.id,
+    });
+    setCursorIndex(boundedIndex);
+    const delta = boundedIndex - cursorIndex;
+    const nextGlobal = globalIndexRef.current + delta;
+    globalIndexRef.current = nextGlobal;
+    setGlobalIndex(nextGlobal);
+  }
 
   function handlePrev() {
     if (cursorIndex > 0) {
-      setCursorIndex((i) => i - 1);
-      const next = globalIndexRef.current - 1;
-      globalIndexRef.current = next;
-      setGlobalIndex(next);
+      advanceToIndex(cursorIndex - 1);
     }
   }
 
   function handleNext() {
     if (cursorIndex < ayahs.length - 1) {
-      setCursorIndex((i) => i + 1);
-      const next = globalIndexRef.current + 1;
-      globalIndexRef.current = next;
-      setGlobalIndex(next);
+      advanceToIndex(cursorIndex + 1);
     }
   }
 
@@ -113,13 +169,54 @@ export function CompactReaderClient({
 
   function handleAutoAdvance() {
     if (nextAyah) {
-      handleNext();
+      advanceToIndex(cursorIndex + 1);
       return;
     }
     if (resolvedNextSurahHref) {
       router.push(resolvedNextSurahHref, { scroll: false });
     }
   }
+
+  function onArabicTouchStart(event: TouchEvent<HTMLDivElement>) {
+    if (event.touches.length >= 2) {
+      const [first, second] = Array.from(event.touches);
+      pinchDistanceRef.current = Math.hypot(second.clientX - first.clientX, second.clientY - first.clientY);
+    }
+  }
+
+  function onArabicTouchMove(event: TouchEvent<HTMLDivElement>) {
+    if (event.touches.length < 2) {
+      pinchDistanceRef.current = null;
+      return;
+    }
+    const [first, second] = Array.from(event.touches);
+    const distance = Math.hypot(second.clientX - first.clientX, second.clientY - first.clientY);
+    if (pinchDistanceRef.current != null) {
+      event.preventDefault();
+      const delta = (distance - pinchDistanceRef.current) / 240;
+      if (Math.abs(delta) > 0.01) {
+        setArabicScale((previous) => clampArabicScale(previous + delta));
+      }
+    }
+    pinchDistanceRef.current = distance;
+  }
+
+  function onArabicTouchEnd(event: TouchEvent<HTMLDivElement>) {
+    if (event.touches.length < 2) {
+      pinchDistanceRef.current = null;
+    }
+  }
+
+  function onArabicWheel(event: WheelEvent<HTMLDivElement>) {
+    if (!event.ctrlKey && !event.metaKey) {
+      return;
+    }
+    event.preventDefault();
+    const delta = event.deltaY > 0 ? -0.06 : 0.06;
+    resizeArabic(delta);
+  }
+
+  const arabicFontSize = `clamp(${(1.8 * arabicScale).toFixed(2)}rem, ${(5 * arabicScale).toFixed(2)}vw, ${(2.7 * arabicScale).toFixed(2)}rem)`;
 
   const btnBase =
     "rounded-xl border px-3 py-2 text-sm font-semibold";
@@ -135,6 +232,7 @@ export function CompactReaderClient({
     <div id={compactReaderAnchor} className="mt-8">
       {syncEnabled && (
         <ReadProgressSync
+          ref={progressSyncRef}
           enabled
           surahNumber={current.surahNumber}
           ayahNumber={current.ayahNumber}
@@ -160,6 +258,7 @@ export function CompactReaderClient({
               className="w-full sm:w-auto"
               streakTrackSource={anonymous ? undefined : "quran_browse"}
               autoPlayPrefKey="hifzer_quran_autoplay_v1"
+              speedPrefKey={QURAN_AUDIO_SPEED_PREF_KEY}
               onAutoAdvance={handleAutoAdvance}
               trailingControl={
                 <ReaderBookmarkControl
@@ -175,7 +274,29 @@ export function CompactReaderClient({
         </div>
 
         {/* Arabic text */}
-        <div dir="rtl" className="mt-4 text-right text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
+            Pinch, Ctrl + wheel, or use A-/A+
+          </span>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => resizeArabic(-0.08)} className={btnSecondary}>
+              A-
+            </button>
+            <button type="button" onClick={() => resizeArabic(0.08)} className={btnSecondary}>
+              A+
+            </button>
+          </div>
+        </div>
+        <div
+          dir="rtl"
+          className="mt-3 text-right text-[color:var(--kw-ink)]"
+          style={{ fontSize: arabicFontSize, lineHeight: 2.05, touchAction: "manipulation" }}
+          onTouchStart={onArabicTouchStart}
+          onTouchMove={onArabicTouchMove}
+          onTouchEnd={onArabicTouchEnd}
+          onTouchCancel={onArabicTouchEnd}
+          onWheel={onArabicWheel}
+        >
           {current.textUthmani}
         </div>
 
@@ -183,17 +304,18 @@ export function CompactReaderClient({
         {showAnyDetails ? (
           <div className="mt-3 space-y-2">
             {showPhonetic ? (
-              <p dir="ltr" className="text-sm leading-7 text-[color:var(--kw-faint)]">
+              <SupportTextPanel kind="transliteration">
                 {current.phonetic ?? ui.phoneticUnavailable}
-              </p>
+              </SupportTextPanel>
             ) : null}
             {showTranslation ? (
-              <p
+              <SupportTextPanel
+                kind="translation"
                 dir={translationDir}
-                className={`text-sm leading-7 text-[color:var(--kw-muted)] ${translationAlignClass}`}
+                alignClassName={translationAlignClass}
               >
                 {current.translation ?? ui.translationUnavailable}
-              </p>
+              </SupportTextPanel>
             ) : null}
           </div>
         ) : (

@@ -8,6 +8,23 @@ import { claimSinglePlayback, releaseSinglePlayback } from "@/components/audio/s
 
 const SPEEDS = [0.75, 1, 1.25] as const;
 
+function readPersistedSpeedIndex(prefKey: string | undefined): number {
+  if (typeof window === "undefined" || !prefKey) {
+    return 1;
+  }
+  try {
+    const raw = window.localStorage.getItem(prefKey);
+    if (!raw) {
+      return 1;
+    }
+    const parsed = Number(raw);
+    const index = SPEEDS.findIndex((value) => value === parsed);
+    return index >= 0 ? index : 1;
+  } catch {
+    return 1;
+  }
+}
+
 function formatSeconds(seconds: number): string {
   if (!Number.isFinite(seconds) || seconds <= 0) {
     return "0:00";
@@ -25,6 +42,7 @@ export function AyahAudioPlayer(props: {
   streakTrackSource?: "quran_browse";
   trailingControl?: ReactNode;
   autoPlayPrefKey?: string;
+  speedPrefKey?: string;
   onAutoAdvance?: () => void;
 }) {
   const src = useMemo(
@@ -42,6 +60,7 @@ function AyahAudioPlayerInner(props: {
   streakTrackSource?: "quran_browse";
   trailingControl?: ReactNode;
   autoPlayPrefKey?: string;
+  speedPrefKey?: string;
   onAutoAdvance?: () => void;
   src: string | null;
 }) {
@@ -56,7 +75,7 @@ function AyahAudioPlayerInner(props: {
 
   const [playing, setPlaying] = useState(false);
   const [repeatCount, setRepeatCount] = useState(1);
-  const [speedIndex, setSpeedIndex] = useState(1);
+  const [speedIndex, setSpeedIndex] = useState(() => readPersistedSpeedIndex(props.speedPrefKey));
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [loadError, setLoadError] = useState(false);
@@ -170,6 +189,17 @@ function AyahAudioPlayerInner(props: {
     }
     audio.playbackRate = speed;
   }, [speed]);
+
+  useEffect(() => {
+    if (!props.speedPrefKey || typeof window === "undefined") {
+      return;
+    }
+    try {
+      window.localStorage.setItem(props.speedPrefKey, String(speed));
+    } catch {
+      // ignore storage write failures
+    }
+  }, [props.speedPrefKey, speed]);
 
   useEffect(() => {
     speedRef.current = speed;

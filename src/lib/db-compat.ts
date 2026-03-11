@@ -10,6 +10,7 @@ export type CoreSchemaCapabilities = {
   hasSessionModernColumns: boolean;
   hasSessionPlanJson: boolean;
   hasQuranBrowseTable: boolean;
+  hasCustomDuaTables: boolean;
 };
 
 function resolveDbSchemaName(): string {
@@ -36,6 +37,7 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
       hasSessionModernColumns: false,
       hasSessionPlanJson: false,
       hasQuranBrowseTable: false,
+      hasCustomDuaTables: false,
     };
   }
 
@@ -82,6 +84,31 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
               LOWER('lastSeenAt')
             )
           )
+          OR (
+            LOWER(table_name) = LOWER('CustomDua')
+            AND LOWER(column_name) IN (
+              LOWER('userId'),
+              LOWER('moduleId'),
+              LOWER('title'),
+              LOWER('arabic'),
+              LOWER('transliteration'),
+              LOWER('translation'),
+              LOWER('note'),
+              LOWER('createdAt'),
+              LOWER('updatedAt')
+            )
+          )
+          OR (
+            LOWER(table_name) = LOWER('DuaDeckOrder')
+            AND LOWER(column_name) IN (
+              LOWER('userId'),
+              LOWER('moduleId'),
+              LOWER('itemKey'),
+              LOWER('sortOrder'),
+              LOWER('createdAt'),
+              LOWER('updatedAt')
+            )
+          )
         )
     `;
 
@@ -98,6 +125,16 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
     const quranBrowseColumns = new Set(
       rows
         .filter((row) => row.table_name.toLowerCase() === "quranbrowseevent")
+        .map((row) => row.column_name.toLowerCase()),
+    );
+    const customDuaColumns = new Set(
+      rows
+        .filter((row) => row.table_name.toLowerCase() === "customdua")
+        .map((row) => row.column_name.toLowerCase()),
+    );
+    const duaDeckOrderColumns = new Set(
+      rows
+        .filter((row) => row.table_name.toLowerCase() === "duadeckorder")
         .map((row) => row.column_name.toLowerCase()),
     );
 
@@ -124,6 +161,19 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
         quranBrowseColumns.has("source") &&
         quranBrowseColumns.has("firstseenat") &&
         quranBrowseColumns.has("lastseenat"),
+      hasCustomDuaTables:
+        customDuaColumns.has("userid") &&
+        customDuaColumns.has("moduleid") &&
+        customDuaColumns.has("title") &&
+        customDuaColumns.has("translation") &&
+        customDuaColumns.has("createdat") &&
+        customDuaColumns.has("updatedat") &&
+        duaDeckOrderColumns.has("userid") &&
+        duaDeckOrderColumns.has("moduleid") &&
+        duaDeckOrderColumns.has("itemkey") &&
+        duaDeckOrderColumns.has("sortorder") &&
+        duaDeckOrderColumns.has("createdat") &&
+        duaDeckOrderColumns.has("updatedat"),
     };
   } catch {
     // Fail-safe: assume legacy schema if capability probing fails.
@@ -132,6 +182,7 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
       hasSessionModernColumns: false,
       hasSessionPlanJson: false,
       hasQuranBrowseTable: false,
+      hasCustomDuaTables: false,
     };
   }
 }
@@ -342,6 +393,71 @@ export async function ensureCoreSchemaCompatibility(): Promise<void> {
         );
       `);
       await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "CustomDua" (
+          "id" TEXT NOT NULL,
+          "userId" TEXT NOT NULL,
+          "moduleId" TEXT NOT NULL DEFAULT 'laylat-al-qadr',
+          "title" TEXT NOT NULL,
+          "arabic" TEXT,
+          "transliteration" TEXT,
+          "translation" TEXT NOT NULL,
+          "note" TEXT,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "CustomDua_pkey" PRIMARY KEY ("id")
+        );
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "DuaDeckOrder" (
+          "id" TEXT NOT NULL,
+          "userId" TEXT NOT NULL,
+          "moduleId" TEXT NOT NULL DEFAULT 'laylat-al-qadr',
+          "itemKey" TEXT NOT NULL,
+          "sortOrder" INTEGER NOT NULL DEFAULT 0,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "DuaDeckOrder_pkey" PRIMARY KEY ("id")
+        );
+      `);
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "CustomDua"
+        ADD COLUMN IF NOT EXISTS "moduleId" TEXT NOT NULL DEFAULT 'laylat-al-qadr';
+      `);
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "DuaDeckOrder"
+        ADD COLUMN IF NOT EXISTS "moduleId" TEXT NOT NULL DEFAULT 'laylat-al-qadr';
+      `);
+      await prisma.$executeRawUnsafe(`
+        DO $$
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'CustomDua_userId_fkey'
+          ) THEN
+            ALTER TABLE "CustomDua"
+            ADD CONSTRAINT "CustomDua_userId_fkey"
+            FOREIGN KEY ("userId") REFERENCES "UserProfile"("id")
+            ON DELETE CASCADE ON UPDATE CASCADE;
+          END IF;
+        END $$;
+      `);
+      await prisma.$executeRawUnsafe(`
+        DO $$
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'DuaDeckOrder_userId_fkey'
+          ) THEN
+            ALTER TABLE "DuaDeckOrder"
+            ADD CONSTRAINT "DuaDeckOrder_userId_fkey"
+            FOREIGN KEY ("userId") REFERENCES "UserProfile"("id")
+            ON DELETE CASCADE ON UPDATE CASCADE;
+          END IF;
+        END $$;
+      `);
+      await prisma.$executeRawUnsafe(`
         CREATE INDEX IF NOT EXISTS "ReviewEvent_userId_createdAt_idx" ON "ReviewEvent"("userId", "createdAt");
       `);
       await prisma.$executeRawUnsafe(`
@@ -368,6 +484,21 @@ export async function ensureCoreSchemaCompatibility(): Promise<void> {
       `);
       await prisma.$executeRawUnsafe(`
         CREATE INDEX IF NOT EXISTS "QuranBrowseEvent_userId_localDate_source_idx" ON "QuranBrowseEvent"("userId", "localDate", "source");
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "CustomDua_userId_moduleId_updatedAt_idx" ON "CustomDua"("userId", "moduleId", "updatedAt");
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "CustomDua_userId_moduleId_createdAt_idx" ON "CustomDua"("userId", "moduleId", "createdAt");
+      `);
+      await prisma.$executeRawUnsafe(`
+        DROP INDEX IF EXISTS "DuaDeckOrder_userId_itemKey_key";
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE UNIQUE INDEX IF NOT EXISTS "DuaDeckOrder_userId_moduleId_itemKey_key" ON "DuaDeckOrder"("userId", "moduleId", "itemKey");
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "DuaDeckOrder_userId_moduleId_sortOrder_updatedAt_idx" ON "DuaDeckOrder"("userId", "moduleId", "sortOrder", "updatedAt");
       `);
       await prisma.$executeRawUnsafe(`
         INSERT INTO "QuranBrowseEvent" (
@@ -423,6 +554,7 @@ export async function ensureCoreSchemaCompatibility(): Promise<void> {
         hasSessionModernColumns: true,
         hasSessionPlanJson: true,
         hasQuranBrowseTable: true,
+        hasCustomDuaTables: true,
       });
     })().catch((error) => {
       ensureCoreSchemaPatchPromise = null;

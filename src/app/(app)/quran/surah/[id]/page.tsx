@@ -8,6 +8,8 @@ import { getProfileSnapshot } from "@/hifzer/profile/server";
 import { getSurahInfo, listAyahsForSurah } from "@/hifzer/quran/lookup.server";
 import { getSahihTranslationByAyahId } from "@/hifzer/quran/translation.server";
 
+const QURAN_AUDIO_SPEED_PREF_KEY = "hifzer_quran_audio_speed_v1";
+
 export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const surahNumber = Number(params.id);
@@ -80,7 +82,12 @@ export default async function SurahPage(props: { params: Promise<{ id: string }>
                 <span className="text-xs text-[color:var(--kw-faint)]">#{a.id}</span>
               </div>
               <div className="w-full sm:w-auto">
-                <AyahAudioPlayer ayahId={a.id} reciterId={reciterId} streakTrackSource="quran_browse" />
+                <AyahAudioPlayer
+                  ayahId={a.id}
+                  reciterId={reciterId}
+                  streakTrackSource="quran_browse"
+                  speedPrefKey={QURAN_AUDIO_SPEED_PREF_KEY}
+                />
               </div>
             </div>
 

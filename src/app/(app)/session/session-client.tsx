@@ -8,6 +8,7 @@ import { ArrowRight, CheckCircle2, CornerDownLeft, Link2, PlayCircle, RotateCcw 
 import clsx from "clsx";
 import { PageHeader } from "@/components/app/page-header";
 import { SessionFlowTutorial } from "@/components/app/session-flow-tutorial";
+import { SupportTextPanel } from "@/components/quran/support-text-panel";
 import { SurahSearchSelect } from "@/components/app/surah-search-select";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
 import { useDistractionFree } from "@/components/providers/distraction-free-provider";
@@ -98,6 +99,7 @@ const SESSION_COACH_KEYS = {
   weeklyGate: "hifzer_tip_weekly_gate_v1",
 } as const;
 const SESSION_PROGRESS_KEY_LEGACY = "hifzer_open_session_progress_v1";
+const SESSION_SUPPORT_PREFS_KEY = "hifzer_session_support_copy_v1";
 
 type CoachKey = keyof typeof SESSION_COACH_KEYS;
 type StoredSessionProgress = {
@@ -109,6 +111,11 @@ type StoredSessionProgress = {
   warmupRetryUsed: boolean;
   warmupInterstitial: boolean;
   reviewOnlyLock: boolean;
+};
+
+type StoredSessionSupportPrefs = {
+  showPhonetic: boolean;
+  showTranslation: boolean;
 };
 
 function gradeScore(grade: "AGAIN" | "HARD" | "GOOD" | "EASY"): number {
@@ -131,6 +138,10 @@ function applyStepFilters(steps: Step[], quickReviewMode: boolean, reviewOnlyLoc
 
 function sessionProgressStorageKey(userId: string | null | undefined): string {
   return userId ? `${SESSION_PROGRESS_KEY_LEGACY}:${userId}` : SESSION_PROGRESS_KEY_LEGACY;
+}
+
+function sessionSupportPrefsStorageKey(userId: string | null | undefined): string {
+  return userId ? `${SESSION_SUPPORT_PREFS_KEY}:${userId}` : SESSION_SUPPORT_PREFS_KEY;
 }
 
 function migrateLegacySessionProgress(storageKey: string): void {
@@ -207,6 +218,39 @@ function clearStoredSessionProgress(storageKey: string): void {
   }
   try {
     window.localStorage.removeItem(storageKey);
+  } catch {
+    // Ignore storage errors.
+  }
+}
+
+function readStoredSessionSupportPrefs(storageKey: string): StoredSessionSupportPrefs | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  try {
+    const raw = window.localStorage.getItem(storageKey);
+    if (!raw) {
+      return null;
+    }
+    const parsed = JSON.parse(raw) as Partial<StoredSessionSupportPrefs>;
+    if (typeof parsed.showPhonetic !== "boolean" || typeof parsed.showTranslation !== "boolean") {
+      return null;
+    }
+    return {
+      showPhonetic: parsed.showPhonetic,
+      showTranslation: parsed.showTranslation,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredSessionSupportPrefs(storageKey: string, value: StoredSessionSupportPrefs): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  try {
+    window.localStorage.setItem(storageKey, JSON.stringify(value));
   } catch {
     // Ignore storage errors.
   }
@@ -358,6 +402,7 @@ export function SessionClient() {
   const { userId } = useAuth();
   const { enabled: distractionFree } = useDistractionFree();
   const progressStorageKey = useMemo(() => sessionProgressStorageKey(userId), [userId]);
+  const supportPrefsStorageKey = useMemo(() => sessionSupportPrefsStorageKey(userId), [userId]);
   const quickReviewMode = searchParams.get("focus") === "review";
   const { pushToast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -370,6 +415,7 @@ export function SessionClient() {
   const [warmupInterstitial, setWarmupInterstitial] = useState(false);
   const [reviewOnlyLock, setReviewOnlyLock] = useState(false);
   const [showText, setShowText] = useState(true);
+  const [showPhonetic, setShowPhonetic] = useState(true);
   const [showTranslation, setShowTranslation] = useState(true);
   const [switchOpen, setSwitchOpen] = useState(false);
   const [switchingSurah, setSwitchingSurah] = useState(false);
@@ -460,6 +506,7 @@ export function SessionClient() {
       }
 
       const restored = readStoredSessionProgress(progressStorageKey);
+      const storedSupportPrefs = readStoredSessionSupportPrefs(supportPrefsStorageKey);
       const resumeState = restored &&
           restored.sessionId === payload.sessionId &&
           restored.localDate === payload.localDate &&
@@ -481,7 +528,9 @@ export function SessionClient() {
       }
 
       setRun(payload);
-      setShowTranslation(distractionFree ? false : (payload.preferences?.quranShowDetails ?? true));
+      const defaultShowDetails = payload.preferences?.quranShowDetails ?? true;
+      setShowPhonetic(distractionFree ? false : (storedSupportPrefs?.showPhonetic ?? defaultShowDetails));
+      setShowTranslation(distractionFree ? false : (storedSupportPrefs?.showTranslation ?? defaultShowDetails));
       setStepIndex(nextStepIndex);
       setEvents(nextEvents);
       setStepStartedAt(Date.now());
@@ -494,7 +543,7 @@ export function SessionClient() {
     } finally {
       setLoading(false);
     }
-  }, [distractionFree, flushPendingSync, loadLearningLanes, progressStorageKey, quickReviewMode, router]);
+  }, [distractionFree, flushPendingSync, loadLearningLanes, progressStorageKey, quickReviewMode, router, supportPrefsStorageKey]);
 
   useEffect(() => {
     void loadRun();
@@ -543,9 +592,17 @@ export function SessionClient() {
 
   useEffect(() => {
     if (distractionFree) {
+      setShowPhonetic(false);
       setShowTranslation(false);
     }
   }, [distractionFree]);
+
+  useEffect(() => {
+    writeStoredSessionSupportPrefs(supportPrefsStorageKey, {
+      showPhonetic,
+      showTranslation,
+    });
+  }, [showPhonetic, showTranslation, supportPrefsStorageKey]);
 
   useEffect(() => {
     const activeLane = learningLanes.find((lane) => lane.isActive) ?? learningLanes[0];
@@ -878,19 +935,18 @@ export function SessionClient() {
         <Button
           type="button"
           variant="secondary"
-          onClick={() =>
-            setShowTranslation((current) => {
-              const next = !current;
-              void fetch("/api/profile/quran-reader-prefs", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ quranShowDetails: next }),
-              }).catch(() => {
-                // Non-blocking: keep in-session toggle even if persistence fails.
-              });
-              return next;
-            })
-          }
+          onClick={() => setShowPhonetic((current) => !current)}
+          disabled={!showText}
+          className="w-full gap-2 sm:w-auto"
+        >
+          {showPhonetic ? "Hide transliteration" : "Show transliteration"}
+        </Button>
+      ) : null}
+      {currentStep?.kind === "AYAH" && !distractionFree ? (
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => setShowTranslation((current) => !current)}
           disabled={!showText}
           className="w-full gap-2 sm:w-auto"
         >
@@ -1305,18 +1361,26 @@ export function SessionClient() {
                     <div dir="rtl" className="text-right font-[family-name:var(--font-kw-quran)] text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
                       {ayahText ?? "Ayah text unavailable"}
                     </div>
-                    {showTranslation && !distractionFree ? (
+                    {(showPhonetic || showTranslation) && !distractionFree ? (
                       <div className="space-y-2">
-                        <p dir="ltr" className="text-left text-sm leading-7 text-[color:var(--kw-faint)]">
-                          {phonetic ?? "Phonetic unavailable"}
-                        </p>
-                        <p dir={translationDir} className={`text-sm leading-7 text-[color:var(--kw-muted)] ${translationAlignClass}`}>
-                          {translation ?? "Translation unavailable"}
-                        </p>
+                        {showPhonetic ? (
+                          <SupportTextPanel kind="transliteration">
+                            {phonetic ?? "Transliteration unavailable"}
+                          </SupportTextPanel>
+                        ) : null}
+                        {showTranslation ? (
+                          <SupportTextPanel
+                            kind="translation"
+                            dir={translationDir}
+                            alignClassName={translationAlignClass}
+                          >
+                            {translation ?? "Translation unavailable"}
+                          </SupportTextPanel>
+                        ) : null}
                       </div>
                     ) : !distractionFree ? (
                       <p dir="ltr" className="text-left text-sm leading-7 text-[color:var(--kw-faint)]">
-                        Translation hidden.
+                        Transliteration and translation hidden.
                       </p>
                     ) : null}
                   </div>

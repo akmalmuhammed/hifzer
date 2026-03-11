@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
+import { SupportTextPanel } from "@/components/quran/support-text-panel";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import { getDistractionFreeServer } from "@/hifzer/focus/server";
@@ -30,6 +31,7 @@ import { ReaderPreferencesControls } from "./reader-preferences-controls";
 type ReaderView = "list" | "compact";
 const COMPACT_READER_ANCHOR = "compact-reader";
 const LIST_PAGE_SIZE = 40;
+const QURAN_AUDIO_SPEED_PREF_KEY = "hifzer_quran_audio_speed_v1";
 
 type SearchParamShape = {
   view?: string | string[];
@@ -460,6 +462,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
                     ayahId={ayah.id}
                     reciterId={reciterId}
                     streakTrackSource={anonymous ? undefined : "quran_browse"}
+                    speedPrefKey={QURAN_AUDIO_SPEED_PREF_KEY}
                   />
                 </div>
               </div>
@@ -470,18 +473,19 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
               {showAnyDetails ? (
                 <div className="mt-3 space-y-2">
                   {showPhonetic ? (
-                    <p dir="ltr" className="text-sm leading-7 text-[color:var(--kw-faint)]">
+                    <SupportTextPanel kind="transliteration">
                       {getPhoneticByAyahId(ayah.id) ?? ui.phoneticUnavailable}
-                    </p>
+                    </SupportTextPanel>
                   ) : null}
                   {showTranslation ? (
-                    <p
+                    <SupportTextPanel
+                      kind="translation"
                       dir={translationDir}
-                      className={`text-sm leading-7 text-[color:var(--kw-muted)] ${translationAlignClass}`}
+                      alignClassName={translationAlignClass}
                     >
                       {getQuranTranslationByAyahId(ayah.id, quranTranslationId) ??
                         `${ui.translationUnavailable} (${quranTranslationId})`}
-                    </p>
+                    </SupportTextPanel>
                   ) : null}
                 </div>
               ) : (
