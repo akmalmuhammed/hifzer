@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
+  ArrowLeft,
   ArrowRight,
   BookOpenText,
   ChevronLeft,
@@ -20,7 +21,6 @@ import {
   Trash2,
   type LucideIcon,
 } from "lucide-react";
-import { PageHeader } from "@/components/app/page-header";
 import { SupportTextPanel } from "@/components/quran/support-text-panel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -37,7 +37,7 @@ import {
 import styles from "./dua-experience.module.css";
 
 const STORAGE_KEY = "hifzer.dua.experience.v3";
-const DUA_VISIBILITY_KEY = "hifzer.dua.support-copy.v1";
+const DUA_VISIBILITY_KEY = "hifzer.dua.support-copy.v2";
 
 type ModuleProgressState = {
   currentIndex: number;
@@ -50,10 +50,14 @@ type SavedState = {
   moduleState: Record<string, ModuleProgressState>;
 };
 
+type DuaExperienceView = "home" | "experience" | "manage";
+
 type DuaExperienceClientProps = {
   canManageCustomDuas: boolean;
   initialCustomDuas: CustomDuaSnapshot[];
   initialDeckOrders: DuaDeckOrderSnapshot[];
+  initialModuleId?: DuaModuleId;
+  initialView?: DuaExperienceView;
 };
 
 type CustomDuaDraft = {
@@ -104,9 +108,9 @@ function kindLabel(kind: JourneyKind): string {
     return "Verified anchor";
   }
   if (kind === "personal") {
-    return "Private to you";
+    return "Private dua";
   }
-  return "Hifzer structured";
+  return "Guided step";
 }
 
 function buildDefaultModuleProgress(journeyModule: DuaJourneyModule): ModuleProgressState {
@@ -122,11 +126,10 @@ function normalizeModuleProgress(journeyModule: DuaJourneyModule, input?: Partia
   const stepIds = journeyModule.steps.map((step) => step.id);
   const validStepIds = new Set(stepIds);
   const fallback = buildDefaultModuleProgress(journeyModule);
-  const currentIndex = typeof input?.currentIndex === "number" &&
-      input.currentIndex >= 0 &&
-      input.currentIndex < stepIds.length
-    ? input.currentIndex
-    : fallback.currentIndex;
+  const currentIndex =
+    typeof input?.currentIndex === "number" && input.currentIndex >= 0 && input.currentIndex < stepIds.length
+      ? input.currentIndex
+      : fallback.currentIndex;
   const repetitionCounts =
     input?.repetitionCounts && typeof input.repetitionCounts === "object"
       ? (input.repetitionCounts as Record<string, number>)
@@ -194,30 +197,25 @@ function loadSavedState(modules: DuaJourneyModule[]): SavedState {
 }
 
 function loadVisibilityPrefs(): DuaVisibilityPrefs {
+  const fallback = {
+    showTransliteration: false,
+    showTranslation: true,
+  };
   if (typeof window === "undefined") {
-    return {
-      showTransliteration: true,
-      showTranslation: true,
-    };
+    return fallback;
   }
   try {
     const raw = window.localStorage.getItem(DUA_VISIBILITY_KEY);
     if (!raw) {
-      return {
-        showTransliteration: true,
-        showTranslation: true,
-      };
+      return fallback;
     }
     const parsed = JSON.parse(raw) as Partial<DuaVisibilityPrefs>;
     return {
-      showTransliteration: typeof parsed.showTransliteration === "boolean" ? parsed.showTransliteration : true,
-      showTranslation: typeof parsed.showTranslation === "boolean" ? parsed.showTranslation : true,
+      showTransliteration: typeof parsed.showTransliteration === "boolean" ? parsed.showTransliteration : fallback.showTransliteration,
+      showTranslation: typeof parsed.showTranslation === "boolean" ? parsed.showTranslation : fallback.showTranslation,
     };
   } catch {
-    return {
-      showTransliteration: true,
-      showTranslation: true,
-    };
+    return fallback;
   }
 }
 
@@ -246,10 +244,20 @@ function emptyDraft(moduleId: DuaModuleId, sortOrder?: number): CustomDuaDraft {
   };
 }
 
+function moduleHref(moduleId: DuaModuleId): string {
+  return `/dua/${moduleId}`;
+}
+
+function deckHref(moduleId: DuaModuleId): string {
+  return `/dua/${moduleId}/deck`;
+}
+
 export function DuaExperienceClient({
   canManageCustomDuas,
   initialCustomDuas,
   initialDeckOrders,
+  initialModuleId,
+  initialView = "home",
 }: DuaExperienceClientProps) {
   const initialModules = buildDuaModules({
     customDuas: initialCustomDuas,
@@ -258,8 +266,7 @@ export function DuaExperienceClient({
   const [customDuas, setCustomDuas] = useState(initialCustomDuas);
   const [deckOrders, setDeckOrders] = useState(initialDeckOrders);
   const [experienceState, setExperienceState] = useState<SavedState>(() => loadSavedState(initialModules));
-  const [showManager, setShowManager] = useState(false);
-  const [draft, setDraft] = useState<CustomDuaDraft>(emptyDraft(DEFAULT_DUA_MODULE_ID, 10));
+  const [draft, setDraft] = useState<CustomDuaDraft>(emptyDraft(initialModuleId ?? DEFAULT_DUA_MODULE_ID, 10));
   const [formError, setFormError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [savingDraft, setSavingDraft] = useState(false);
@@ -267,6 +274,7 @@ export function DuaExperienceClient({
   const [deletingCustomId, setDeletingCustomId] = useState<string | null>(null);
   const [orderDrafts, setOrderDrafts] = useState<Record<string, string>>({});
   const [visibilityPrefs, setVisibilityPrefs] = useState<DuaVisibilityPrefs>(loadVisibilityPrefs);
+  const [showStudySupport, setShowStudySupport] = useState(false);
 
   const modules = useMemo(
     () =>
@@ -282,6 +290,20 @@ export function DuaExperienceClient({
   }, [modules]);
 
   useEffect(() => {
+    if (!initialModuleId) {
+      return;
+    }
+    setExperienceState((previous) =>
+      previous.currentModuleId === initialModuleId
+        ? previous
+        : {
+            ...previous,
+            currentModuleId: initialModuleId,
+          },
+    );
+  }, [initialModuleId]);
+
+  useEffect(() => {
     if (typeof window !== "undefined") {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(experienceState));
     }
@@ -293,9 +315,8 @@ export function DuaExperienceClient({
     }
   }, [visibilityPrefs]);
 
-  const currentModule =
-    modules.find((journeyModule) => journeyModule.id === experienceState.currentModuleId) ??
-    modules[0];
+  const resolvedModuleId = initialModuleId ?? experienceState.currentModuleId;
+  const currentModule = modules.find((journeyModule) => journeyModule.id === resolvedModuleId) ?? modules[0];
   const currentModuleState =
     (currentModule && experienceState.moduleState[currentModule.id]) ||
     (currentModule ? buildDefaultModuleProgress(currentModule) : { currentIndex: 0, repetitionCounts: {}, visitedStepIds: [] });
@@ -336,6 +357,9 @@ export function DuaExperienceClient({
     : 10;
 
   useEffect(() => {
+    if (!currentModule) {
+      return;
+    }
     setOrderDrafts((previous) => {
       const next: Record<string, string> = { ...previous };
       for (const entry of deckEntries) {
@@ -344,25 +368,37 @@ export function DuaExperienceClient({
       }
       return next;
     });
-  }, [currentModule.id, deckEntries]);
+  }, [currentModule, deckEntries]);
 
   useEffect(() => {
-    if (draft.id === null) {
-      setDraft((previous) => ({
-        ...previous,
-        moduleId: currentModule.id,
-        sortOrder: previous.sortOrder || String(nextSuggestedSortOrder),
-      }));
+    if (!currentModule || draft.id !== null) {
+      return;
     }
-  }, [currentModule.id, draft.id, nextSuggestedSortOrder]);
+    setDraft((previous) => ({
+      ...previous,
+      moduleId: currentModule.id,
+      sortOrder: previous.sortOrder || String(nextSuggestedSortOrder),
+    }));
+  }, [currentModule, draft.id, nextSuggestedSortOrder]);
+
+  useEffect(() => {
+    if (initialView !== "experience") {
+      return;
+    }
+    setShowStudySupport(false);
+  }, [currentModule?.id, currentModuleState.currentIndex, initialView]);
 
   const currentRepetitions = currentStep ? currentModuleState.repetitionCounts[currentStep.id] ?? 0 : 0;
-  const totalDuaRepetitions = useMemo(
-    () => Object.values(currentModuleState.repetitionCounts).reduce((sum, count) => sum + count, 0),
-    [currentModuleState.repetitionCounts],
-  );
   const currentStepHasTransliteration = Boolean(currentStep?.dua?.transliteration?.trim());
-  const showAnyDuaSupport = visibilityPrefs.showTransliteration || visibilityPrefs.showTranslation;
+  const canManageCurrentModule = Boolean(currentModule?.supportsCustomDeck && canManageCustomDuas);
+  const currentProgress = currentModule
+    ? moduleProgress.find((entry) => entry.module.id === currentModule.id)
+    : null;
+  const currentModuleIndex = currentModule ? modules.findIndex((journeyModule) => journeyModule.id === currentModule.id) : -1;
+  const nextModule =
+    currentModuleIndex >= 0 && currentModuleIndex < modules.length - 1
+      ? modules[currentModuleIndex + 1]
+      : null;
 
   function setModuleProgress(moduleId: DuaModuleId, updater: (previous: ModuleProgressState) => ModuleProgressState) {
     setExperienceState((previous) => {
@@ -373,21 +409,13 @@ export function DuaExperienceClient({
       const current = previous.moduleState[moduleId] ?? buildDefaultModuleProgress(journeyModule);
       return {
         ...previous,
+        currentModuleId: moduleId,
         moduleState: {
           ...previous.moduleState,
           [moduleId]: normalizeModuleProgress(journeyModule, updater(current)),
         },
       };
     });
-  }
-
-  function goToModule(moduleId: DuaModuleId) {
-    setExperienceState((previous) => ({
-      ...previous,
-      currentModuleId: moduleId,
-    }));
-    setFormError(null);
-    setFeedback(null);
   }
 
   function goToStep(nextIndex: number) {
@@ -416,6 +444,9 @@ export function DuaExperienceClient({
   }
 
   function adjustRepetitions(stepId: string, delta: number) {
+    if (!currentModule) {
+      return;
+    }
     setModuleProgress(currentModule.id, (previous) => {
       const nextValue = Math.max(0, (previous.repetitionCounts[stepId] ?? 0) + delta);
       return {
@@ -455,12 +486,11 @@ export function DuaExperienceClient({
     });
     setFormError(null);
     setFeedback("Editing your private dua.");
-    setShowManager(true);
   }
 
   async function submitCustomDua(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!canManageCustomDuas) {
+    if (!canManageCustomDuas || !currentModule) {
       return;
     }
 
@@ -517,6 +547,10 @@ export function DuaExperienceClient({
   }
 
   async function updateDeckOrder(itemKey: string, inputValue: string, options?: { reset?: boolean }) {
+    if (!currentModule || !canManageCustomDuas) {
+      return;
+    }
+
     setSavingOrderKey(itemKey);
     setFormError(null);
     setFeedback(null);
@@ -565,6 +599,10 @@ export function DuaExperienceClient({
   }
 
   async function removeCustomDua(customId: string) {
+    if (!currentModule || !canManageCustomDuas) {
+      return;
+    }
+
     setDeletingCustomId(customId);
     setFormError(null);
     setFeedback(null);
@@ -599,333 +637,178 @@ export function DuaExperienceClient({
     }
   }
 
-  if (!currentModule || !currentStep) {
+  if (!currentModule) {
     return null;
   }
 
-  const currentModuleIndex = modules.findIndex((journeyModule) => journeyModule.id === currentModule.id);
-  const nextModule = currentModuleIndex >= 0 && currentModuleIndex < modules.length - 1
-    ? modules[currentModuleIndex + 1]
-    : null;
-  const isLastStep = currentModuleState.currentIndex === currentModule.steps.length - 1;
-  const currentProgress = moduleProgress.find((entry) => entry.module.id === currentModule.id);
+  if (initialView === "home") {
+    const resumeSeen = currentProgress?.seen ?? 0;
 
-  return (
-    <div className={styles.page}>
-      <PageHeader
-        eyebrow="Dua"
-        title="Guided dua modules"
-        subtitle="Focused step-by-step experiences for Laylat al-Qadr, repentance, and future guided worship modules."
-        right={(
-          <div className="flex flex-wrap items-center gap-2">
-            <Button asChild variant="secondary" className="gap-2">
-              <Link href="/quran">
-                Back to Qur&apos;an <ArrowRight size={16} />
-              </Link>
-            </Button>
-            <Button variant="secondary" className="gap-2" onClick={resetCurrentModule}>
-              Reset this module <RefreshCcw size={16} />
-            </Button>
+    return (
+      <div className={styles.page}>
+        <Card className={styles.homeHeroCard}>
+          <div className={styles.homeHeroTop}>
+            <div>
+              <p className={styles.homeEyebrow}>Dua</p>
+              <h1 className={styles.homeTitle}>Focused guided dua experiences</h1>
+              <p className={styles.homeSubtitle}>
+                Choose a module, move one step at a time, open study support only when you need context, and keep
+                private dua management separate from the worship flow.
+              </p>
+            </div>
+            <div className={styles.homeActions}>
+              <Button asChild className="gap-2">
+                <Link href={moduleHref(currentModule.id)}>
+                  {resumeSeen > 1 ? `Continue ${currentModule.label}` : `Open ${currentModule.label}`}
+                  <ArrowRight size={16} />
+                </Link>
+              </Button>
+              <Button asChild variant="secondary" className="gap-2">
+                <Link href="/quran">
+                  Back to Qur&apos;an <BookOpenText size={16} />
+                </Link>
+              </Button>
+            </div>
           </div>
-        )}
-      />
 
-      <section className={styles.moduleStrip}>
-        {moduleProgress.map(({ module: journeyModule, seen, total }) => {
-          const Icon = moduleIcon(journeyModule.id);
-          const active = journeyModule.id === currentModule.id;
-          return (
-            <button
-              key={journeyModule.id}
-              type="button"
-              onClick={() => goToModule(journeyModule.id)}
-              className={styles.moduleCard}
-              data-active={active ? "1" : "0"}
-            >
-              <span className={styles.moduleCardTop}>
-                <span className={styles.moduleIcon} data-tone={moduleTone(journeyModule.id)}>
-                  <Icon size={18} />
-                </span>
-                <span className={styles.moduleCount}>{seen}/{total}</span>
+          <div className={styles.principleGrid}>
+            <div className={styles.principleCard}>
+              <span className={styles.principleIcon}>
+                <HandHeart size={16} />
               </span>
-              <span className={styles.moduleEyebrow}>{journeyModule.eyebrow}</span>
-              <span className={styles.moduleTitle}>{journeyModule.label}</span>
-              <span className={styles.moduleDescription}>{journeyModule.description}</span>
-            </button>
-          );
-        })}
-      </section>
-
-      <section className={styles.shell}>
-        <aside className={styles.navigator}>
-          <Card className={styles.navigatorCard}>
-            <div className={styles.navigatorTop}>
-              <Pill tone={moduleTone(currentModule.id)}>{currentModule.shortLabel}</Pill>
-              <Pill tone="neutral">
-                {currentModuleState.currentIndex + 1} / {currentModule.steps.length}
-              </Pill>
-            </div>
-            <h2 className={styles.navigatorTitle}>{currentModule.title}</h2>
-            <p className={styles.navigatorSubtitle}>{currentModule.subtitle}</p>
-            <div className={styles.boundaryCard}>
-              <span className={styles.boundaryIcon}>
-                <CircleAlert size={16} />
-              </span>
-              <p>{currentModule.authenticityBoundary}</p>
-            </div>
-            <div className={styles.moduleMetaRow}>
-              <div className={styles.metricCard}>
-                <span className={styles.metricLabel}>Visited</span>
-                <strong className={styles.metricValue}>{currentProgress?.seen ?? 0}</strong>
-              </div>
-              <div className={styles.metricCard}>
-                <span className={styles.metricLabel}>Repetitions</span>
-                <strong className={styles.metricValue}>{totalDuaRepetitions}</strong>
+              <div>
+                <p className={styles.principleTitle}>Guided first</p>
+                <p className={styles.principleText}>The main experience stays centered on one current step and one clear action.</p>
               </div>
             </div>
-            {currentModule.supportsCustomDeck ? (
-              <Button
-                variant="secondary"
-                className="mt-2 gap-2"
-                onClick={() => setShowManager((previous) => !previous)}
-              >
+            <div className={styles.principleCard}>
+              <span className={styles.principleIcon}>
+                <BookOpenText size={16} />
+              </span>
+              <div>
+                <p className={styles.principleTitle}>Study when needed</p>
+                <p className={styles.principleText}>Reflection prompts, authenticity notes, and sources stay secondary instead of competing with the dua.</p>
+              </div>
+            </div>
+            <div className={styles.principleCard}>
+              <span className={styles.principleIcon}>
                 <Sparkles size={16} />
-                {showManager ? "Hide private deck" : "Manage private deck"}
-              </Button>
-            ) : null}
-          </Card>
-
-          <div className={styles.stepRail}>
-            {currentModule.steps.map((step, index) => {
-              const active = index === currentModuleState.currentIndex;
-              const seen = currentModuleState.visitedStepIds.includes(step.id);
-              return (
-                <button
-                  key={step.id}
-                  type="button"
-                  className={styles.stepButton}
-                  data-active={active ? "1" : "0"}
-                  data-seen={seen ? "1" : "0"}
-                  onClick={() => goToStep(index)}
-                >
-                  <span className={styles.stepNumber}>{index + 1}</span>
-                  <span className={styles.stepCopy}>
-                    <span className={styles.stepEyebrow}>{step.eyebrow}</span>
-                    <span className={styles.stepTitle}>{step.title}</span>
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </aside>
-
-        <main className={styles.stage}>
-          <Card className={styles.stageCard}>
-            <div className={styles.stageTop}>
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Pill tone={moduleTone(currentModule.id)}>{currentModule.label}</Pill>
-                  <Pill tone={kindTone(currentStep.kind)}>{kindLabel(currentStep.kind)}</Pill>
-                  {currentStep.deckOrder ? <Pill tone="success">Deck order {currentStep.deckOrder}</Pill> : null}
-                </div>
-                <div>
-                  <p className={styles.stageCount}>Step {currentModuleState.currentIndex + 1} of {currentModule.steps.length}</p>
-                  <h3 className={styles.stageTitle}>{currentStep.title}</h3>
-                  <p className={styles.stageSummary}>{currentStep.summary}</p>
-                </div>
+              </span>
+              <div>
+                <p className={styles.principleTitle}>Private management apart</p>
+                <p className={styles.principleText}>Custom duas and deck order live in a dedicated surface so worship mode stays calm.</p>
               </div>
             </div>
+          </div>
+        </Card>
 
-            {currentStep.actionLine ? (
-              <div className={styles.actionBand}>
-                <span className={styles.actionIcon}>
-                  <HandHeart size={16} />
-                </span>
-                <div>
-                  <p className={styles.sectionLabel}>Do this now</p>
-                  <p className={styles.actionText}>{currentStep.actionLine}</p>
-                </div>
-              </div>
-            ) : null}
-
-            <section className={styles.practiceSection}>
-              <p className={styles.sectionLabel}>Focused steps</p>
-              <div className={styles.practiceList}>
-                {currentStep.practice.map((item) => (
-                  <div key={item} className={styles.practiceItem}>
-                    <span className={styles.practiceDot} />
-                    <p>{item}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section className={styles.evidenceGrid}>
-              {currentStep.evidence.map((item) => (
-                <div key={`${item.eyebrow}-${item.title}`} className={styles.evidenceCard}>
-                  <p className={styles.sectionLabel}>{item.eyebrow}</p>
-                  <p className={styles.evidenceTitle}>{item.title}</p>
-                  <p className={styles.evidenceDetail}>{item.detail}</p>
-                  {item.source ? (
-                    <a
-                      href={item.source.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      className={styles.sourceLink}
-                    >
-                      {item.source.label} <ArrowRight size={14} />
-                    </a>
-                  ) : (
-                    <span className={styles.privateSource}>Private to your account</span>
-                  )}
-                </div>
-              ))}
-            </section>
-
-            {currentStep.dua ? (
-              <div className={styles.duaCard}>
-                <div className={styles.duaTopRow}>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Pill tone="neutral">Dua card</Pill>
-                    <Pill tone={kindTone(currentStep.kind)}>{kindLabel(currentStep.kind)}</Pill>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="secondary"
-                      onClick={() =>
-                        setVisibilityPrefs((previous) => ({
-                          ...previous,
-                          showTransliteration: !previous.showTransliteration,
-                        }))}
-                      disabled={!currentStepHasTransliteration}
-                    >
-                      {visibilityPrefs.showTransliteration ? "Hide transliteration" : "Show transliteration"}
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="secondary"
-                      onClick={() =>
-                        setVisibilityPrefs((previous) => ({
-                          ...previous,
-                          showTranslation: !previous.showTranslation,
-                        }))}
-                    >
-                      {visibilityPrefs.showTranslation ? "Hide translation" : "Show translation"}
-                    </Button>
-                  </div>
-                </div>
-
-                {currentStep.dua.arabic ? (
-                  <p dir="rtl" className={styles.duaArabic}>
-                    {currentStep.dua.arabic}
-                  </p>
-                ) : null}
-
-                <div className={styles.duaSupportStack}>
-                  {visibilityPrefs.showTransliteration && currentStep.dua.transliteration ? (
-                    <SupportTextPanel kind="transliteration" className={styles.duaSupportPanel}>
-                      {currentStep.dua.transliteration}
-                    </SupportTextPanel>
-                  ) : null}
-                  {visibilityPrefs.showTranslation ? (
-                    <SupportTextPanel kind="translation" className={styles.duaSupportPanel}>
-                      {currentStep.dua.translation}
-                    </SupportTextPanel>
-                  ) : null}
-                  {!showAnyDuaSupport ? (
-                    <div className={styles.duaHiddenNotice}>
-                      <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Transliteration and translation hidden.</p>
-                      <p className="mt-1 text-sm leading-6 text-[color:var(--kw-muted)]">
-                        Use the display controls above when you want them back.
-                      </p>
+        <section className={styles.moduleGrid}>
+          {moduleProgress.map(({ module: journeyModule, seen, total }) => {
+            const Icon = moduleIcon(journeyModule.id);
+            const progressWidth = Math.max(0, Math.min(100, Math.round((seen / Math.max(total, 1)) * 100)));
+            const isResumeModule = journeyModule.id === currentModule.id;
+            return (
+              <Card key={journeyModule.id} className={styles.moduleOverviewCard} data-active={isResumeModule ? "1" : "0"}>
+                <div className={styles.moduleOverviewTop}>
+                  <div className={styles.moduleHeadline}>
+                    <span className={styles.moduleIcon} data-tone={moduleTone(journeyModule.id)}>
+                      <Icon size={18} />
+                    </span>
+                    <div>
+                      <p className={styles.moduleEyebrow}>{journeyModule.eyebrow}</p>
+                      <h2 className={styles.moduleTitle}>{journeyModule.label}</h2>
                     </div>
-                  ) : null}
+                  </div>
+                  <span className={styles.moduleCount}>{seen}/{total}</span>
                 </div>
 
-                <div className={styles.counterPanel}>
-                  <div>
-                    <p className={styles.sectionLabel}>{currentStep.dua.trackerLabel}</p>
-                    <p className={styles.counterNote}>{currentStep.dua.trackerNote}</p>
-                  </div>
-                  <div className={styles.counterControls}>
-                    <button
-                      type="button"
-                      className={styles.counterButton}
-                      onClick={() => adjustRepetitions(currentStep.id, -1)}
-                      aria-label="Decrease repetition count"
-                    >
-                      <Minus size={16} />
-                    </button>
-                    <span className={styles.counterValue}>{currentRepetitions}</span>
-                    <button
-                      type="button"
-                      className={styles.counterButton}
-                      onClick={() => adjustRepetitions(currentStep.id, 1)}
-                      aria-label="Increase repetition count"
-                    >
-                      <Plus size={16} />
-                    </button>
-                  </div>
+                <p className={styles.moduleDescription}>{journeyModule.description}</p>
+
+                <div className={styles.moduleMetaRow}>
+                  <span className={styles.metricChip}>Visited {seen} of {total}</span>
+                  <span className={styles.metricChip}>
+                    {journeyModule.supportsCustomDeck ? "Private deck available" : "Guided only"}
+                  </span>
                 </div>
-              </div>
-            ) : null}
 
-            {currentStep.reflectionPrompt ? (
-              <div className={styles.reflectionCard}>
-                <p className={styles.sectionLabel}>Reflection</p>
-                <p>{currentStep.reflectionPrompt}</p>
-              </div>
-            ) : null}
+                <div className={styles.progressTrack} aria-hidden="true">
+                  <span className={styles.progressFill} style={{ width: `${progressWidth}%` }} />
+                </div>
 
-            <div className={styles.stageActions}>
-              <Button
-                variant="secondary"
-                className="gap-2"
-                onClick={() => goToStep(currentModuleState.currentIndex - 1)}
-                disabled={currentModuleState.currentIndex === 0}
-              >
-                <ChevronLeft size={16} />
-                Previous
-              </Button>
-
-              {isLastStep ? (
-                <div className="flex flex-wrap items-center gap-2">
-                  {nextModule ? (
-                    <Button
-                      variant="secondary"
-                      className="gap-2"
-                      onClick={() => goToModule(nextModule.id)}
-                    >
-                      Open {nextModule.label} <ArrowRight size={16} />
-                    </Button>
-                  ) : null}
-                  <Button asChild variant="secondary" className="gap-2">
-                    <Link href="/quran/read?view=compact">
-                      Open Qur&apos;an <BookOpenText size={16} />
+                <div className={styles.moduleOverviewActions}>
+                  <Button asChild className="gap-2">
+                    <Link href={moduleHref(journeyModule.id)}>
+                      {seen > 0 ? "Continue module" : "Start module"} <ArrowRight size={16} />
                     </Link>
                   </Button>
+                  {journeyModule.supportsCustomDeck && canManageCustomDuas ? (
+                    <Button asChild variant="ghost" className="gap-2">
+                      <Link href={deckHref(journeyModule.id)}>
+                        Private deck <Sparkles size={16} />
+                      </Link>
+                    </Button>
+                  ) : null}
                 </div>
-              ) : (
-                <Button className="gap-2" onClick={() => goToStep(currentModuleState.currentIndex + 1)}>
-                  Next
-                  <ChevronRight size={16} />
-                </Button>
-              )}
-            </div>
-          </Card>
-        </main>
-      </section>
+              </Card>
+            );
+          })}
+        </section>
+      </div>
+    );
+  }
 
-      {showManager ? (
+  if (!currentStep) {
+    return null;
+  }
+
+  const isLastStep = currentModuleState.currentIndex === currentModule.steps.length - 1;
+  const hasVisibleDuaCopy = Boolean(
+    currentStep.dua &&
+      (
+        currentStep.dua.arabic?.trim() ||
+        (visibilityPrefs.showTransliteration && currentStep.dua.transliteration?.trim()) ||
+        (visibilityPrefs.showTranslation && currentStep.dua.translation.trim())
+      ),
+  );
+
+  if (initialView === "manage") {
+    return (
+      <div className={styles.page}>
+        <Card className={styles.focusHero}>
+          <div className={styles.focusHeroTop}>
+            <Button asChild variant="ghost" className="gap-2">
+              <Link href={moduleHref(currentModule.id)}>
+                <ArrowLeft size={16} />
+                Back to experience
+              </Link>
+            </Button>
+            <div className={styles.focusHeroActions}>
+              <Button asChild variant="secondary" className="gap-2">
+                <Link href="/dua">All modules</Link>
+              </Button>
+            </div>
+          </div>
+
+          <div>
+            <Pill tone={moduleTone(currentModule.id)}>{currentModule.label}</Pill>
+            <h1 className={styles.focusTitle}>Private deck management</h1>
+            <p className={styles.focusSubtitle}>
+              Add your own duas or adjust deck order here so the guided worship experience can stay uncluttered.
+            </p>
+          </div>
+
+          <div className={styles.focusMetaRow}>
+            <span className={styles.focusMetaPill}>{deckEntries.length} deck items</span>
+            <span className={styles.focusMetaPill}>Separate from worship mode</span>
+          </div>
+        </Card>
+
         <section className={styles.managerShell}>
           <Card className={styles.managerCard}>
-            <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className={styles.managerTop}>
               <div>
                 <p className={styles.sectionLabel}>Private dua manager</p>
-                <h3 className={styles.managerTitle}>Add your own dua to {currentModule.label}</h3>
+                <h2 className={styles.managerTitle}>Add your own dua to {currentModule.label}</h2>
                 <p className={styles.managerSubtitle}>
                   Your private duas are stored only under your user and merged into this module&apos;s deck order.
                 </p>
@@ -1014,16 +897,22 @@ export function DuaExperienceClient({
           </Card>
 
           <Card className={styles.managerCard}>
-            <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className={styles.managerTop}>
               <div>
                 <p className={styles.sectionLabel}>Deck order</p>
-                <h3 className={styles.managerTitle}>Control what comes first</h3>
+                <h2 className={styles.managerTitle}>Control what comes first</h2>
                 <p className={styles.managerSubtitle}>
                   Built-in duas and your private duas share one ordered sequence inside this module.
                 </p>
               </div>
               <Pill tone="neutral">{currentModule.label}</Pill>
             </div>
+
+            {!canManageCustomDuas ? (
+              <div className={styles.notice} data-tone="neutral">
+                Sign in to edit deck order for this module.
+              </div>
+            ) : null}
 
             <div className={styles.deckOrderList}>
               {deckEntries.map((entry) => {
@@ -1042,10 +931,11 @@ export function DuaExperienceClient({
                             ...previous,
                             [key]: event.target.value,
                           }))}
+                        disabled={!canManageCustomDuas}
                       />
                     </label>
 
-                    <div className="min-w-0">
+                    <div className={styles.deckBody}>
                       <div className="flex flex-wrap items-center gap-2">
                         <p className={styles.deckOrderTitle}>{entry.title}</p>
                         <Pill tone={kindTone(entry.kind)}>{kindLabel(entry.kind)}</Pill>
@@ -1060,6 +950,7 @@ export function DuaExperienceClient({
                         className="gap-2"
                         loading={savingOrderKey === entry.itemKey}
                         onClick={() => updateDeckOrder(entry.itemKey, orderDrafts[key] ?? String(entry.sortOrder))}
+                        disabled={!canManageCustomDuas}
                       >
                         <Save size={14} />
                         Save
@@ -1072,6 +963,7 @@ export function DuaExperienceClient({
                             variant="ghost"
                             className="gap-2"
                             onClick={() => populateDraftFromCustom(entry.customId)}
+                            disabled={!canManageCustomDuas}
                           >
                             <PencilLine size={14} />
                             Edit
@@ -1086,6 +978,7 @@ export function DuaExperienceClient({
                                 removeCustomDua(entry.customId);
                               }
                             }}
+                            disabled={!canManageCustomDuas}
                           >
                             <Trash2 size={14} />
                             Delete
@@ -1096,7 +989,7 @@ export function DuaExperienceClient({
                           size="sm"
                           variant="ghost"
                           onClick={() => updateDeckOrder(entry.itemKey, String(entry.sortOrder), { reset: true })}
-                          disabled={savingOrderKey === entry.itemKey}
+                          disabled={!canManageCustomDuas || savingOrderKey === entry.itemKey}
                         >
                           Reset
                         </Button>
@@ -1108,7 +1001,323 @@ export function DuaExperienceClient({
             </div>
           </Card>
         </section>
-      ) : null}
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.page}>
+      <Card className={styles.focusHero}>
+        <div className={styles.focusHeroTop}>
+          <Button asChild variant="ghost" className="gap-2">
+            <Link href="/dua">
+              <ArrowLeft size={16} />
+              All modules
+            </Link>
+          </Button>
+          <div className={styles.focusHeroActions}>
+            {canManageCurrentModule ? (
+              <Button asChild variant="secondary" className="gap-2">
+                <Link href={deckHref(currentModule.id)}>
+                  <Sparkles size={16} />
+                  Private deck
+                </Link>
+              </Button>
+            ) : null}
+            <Button variant="secondary" className="gap-2" onClick={resetCurrentModule}>
+              Reset progress <RefreshCcw size={16} />
+            </Button>
+          </div>
+        </div>
+
+        <div>
+          <Pill tone={moduleTone(currentModule.id)}>{currentModule.label}</Pill>
+          <h1 className={styles.focusTitle}>{currentModule.title}</h1>
+          <p className={styles.focusSubtitle}>{currentModule.subtitle}</p>
+        </div>
+
+        <div className={styles.focusMetaRow}>
+          <span className={styles.focusMetaPill}>
+            Step {currentModuleState.currentIndex + 1} of {currentModule.steps.length}
+          </span>
+          <span className={styles.focusMetaPill}>
+            Visited {currentProgress?.seen ?? 0} of {currentModule.steps.length}
+          </span>
+          <button
+            type="button"
+            className={styles.focusMetaPill}
+            data-interactive="1"
+            onClick={() => setShowStudySupport((previous) => !previous)}
+          >
+            {showStudySupport ? "Hide study support" : "Open study support"}
+          </button>
+        </div>
+      </Card>
+
+      <section className={styles.stepShell}>
+        <div className={styles.stepRail}>
+          {currentModule.steps.map((step, index) => {
+            const active = index === currentModuleState.currentIndex;
+            const seen = currentModuleState.visitedStepIds.includes(step.id);
+            return (
+              <button
+                key={step.id}
+                type="button"
+                className={styles.stepButton}
+                data-active={active ? "1" : "0"}
+                data-seen={seen ? "1" : "0"}
+                onClick={() => goToStep(index)}
+              >
+                <span className={styles.stepNumber}>{index + 1}</span>
+                <span className={styles.stepCopy}>
+                  <span className={styles.stepEyebrow}>{step.eyebrow}</span>
+                  <span className={styles.stepTitle}>{step.title}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className={styles.focusStage}>
+        <Card className={styles.stageCard}>
+          <div className={styles.stageHeader}>
+            <div className="flex flex-wrap items-center gap-2">
+              <Pill tone={kindTone(currentStep.kind)}>{kindLabel(currentStep.kind)}</Pill>
+            </div>
+            <div>
+              <p className={styles.stageCount}>
+                Step {currentModuleState.currentIndex + 1} of {currentModule.steps.length}
+              </p>
+              <h2 className={styles.stageTitle}>{currentStep.title}</h2>
+              <p className={styles.stageSummary}>{currentStep.summary}</p>
+            </div>
+          </div>
+
+          {currentStep.actionLine ? (
+            <div className={styles.actionBand}>
+              <span className={styles.actionIcon}>
+                <HandHeart size={16} />
+              </span>
+              <div>
+                <p className={styles.sectionLabel}>Do this now</p>
+                <p className={styles.actionText}>{currentStep.actionLine}</p>
+              </div>
+            </div>
+          ) : null}
+
+          {currentStep.dua ? (
+            <div className={styles.duaCard}>
+              <div>
+                <p className={styles.sectionLabel}>Dua</p>
+                <p className={styles.duaIntro}>Keep the recitation slow and present. Reveal only the support text you actually need.</p>
+              </div>
+
+              {currentStep.dua.arabic ? (
+                <p dir="rtl" className={styles.duaArabic}>
+                  {currentStep.dua.arabic}
+                </p>
+              ) : null}
+
+              {hasVisibleDuaCopy ? (
+                <div className={styles.duaSupportStack}>
+                  {visibilityPrefs.showTransliteration && currentStep.dua.transliteration ? (
+                    <SupportTextPanel kind="transliteration" className={styles.duaSupportPanel}>
+                      {currentStep.dua.transliteration}
+                    </SupportTextPanel>
+                  ) : null}
+                  {visibilityPrefs.showTranslation ? (
+                    <SupportTextPanel kind="translation" className={styles.duaSupportPanel}>
+                      {currentStep.dua.translation}
+                    </SupportTextPanel>
+                  ) : null}
+                </div>
+              ) : (
+                <div className={styles.notice} data-tone="neutral">
+                  Focus mode is hiding support text right now. Use Practice tools below if you want translation or transliteration back.
+                </div>
+              )}
+            </div>
+          ) : null}
+
+          <section className={styles.practiceSection}>
+            <p className={styles.sectionLabel}>Stay with this step</p>
+            <div className={styles.practiceList}>
+              {currentStep.practice.map((item) => (
+                <div key={item} className={styles.practiceItem}>
+                  <span className={styles.practiceDot} />
+                  <p>{item}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <div className={styles.stageActions}>
+            <Button
+              variant="secondary"
+              className="gap-2"
+              onClick={() => goToStep(currentModuleState.currentIndex - 1)}
+              disabled={currentModuleState.currentIndex === 0}
+            >
+              <ChevronLeft size={16} />
+              Previous
+            </Button>
+
+            {isLastStep ? (
+              <div className={styles.actionCluster}>
+                {nextModule ? (
+                  <Button asChild variant="secondary" className="gap-2">
+                    <Link href={moduleHref(nextModule.id)}>
+                      Open {nextModule.label} <ArrowRight size={16} />
+                    </Link>
+                  </Button>
+                ) : null}
+                <Button asChild variant="secondary" className="gap-2">
+                  <Link href="/quran/read?view=compact">
+                    Open Qur&apos;an <BookOpenText size={16} />
+                  </Link>
+                </Button>
+              </div>
+            ) : (
+              <Button className="gap-2" onClick={() => goToStep(currentModuleState.currentIndex + 1)}>
+                Next
+                <ChevronRight size={16} />
+              </Button>
+            )}
+          </div>
+        </Card>
+
+        {currentStep.dua ? (
+          <Card className={styles.toolCard}>
+            <div className={styles.toolTop}>
+              <div>
+                <p className={styles.sectionLabel}>Practice tools</p>
+                <p className={styles.toolSummary}>
+                  Keep the main experience simple, then reveal support copy or use a light repetition counter only when it helps.
+                </p>
+              </div>
+            </div>
+
+            <div className={styles.toolActions}>
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                onClick={() =>
+                  setVisibilityPrefs((previous) => ({
+                    ...previous,
+                    showTransliteration: !previous.showTransliteration,
+                  }))}
+                disabled={!currentStepHasTransliteration}
+              >
+                {visibilityPrefs.showTransliteration ? "Hide transliteration" : "Show transliteration"}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                onClick={() =>
+                  setVisibilityPrefs((previous) => ({
+                    ...previous,
+                    showTranslation: !previous.showTranslation,
+                  }))}
+              >
+                {visibilityPrefs.showTranslation ? "Hide translation" : "Show translation"}
+              </Button>
+            </div>
+
+            <div className={styles.counterPanel}>
+              <div>
+                <p className={styles.sectionLabel}>{currentStep.dua.trackerLabel}</p>
+                <p className={styles.counterNote}>{currentStep.dua.trackerNote}</p>
+              </div>
+              <div className={styles.counterControls}>
+                <button
+                  type="button"
+                  className={styles.counterButton}
+                  onClick={() => adjustRepetitions(currentStep.id, -1)}
+                  aria-label="Decrease repetition count"
+                >
+                  <Minus size={16} />
+                </button>
+                <span className={styles.counterValue}>{currentRepetitions}</span>
+                <button
+                  type="button"
+                  className={styles.counterButton}
+                  onClick={() => adjustRepetitions(currentStep.id, 1)}
+                  aria-label="Increase repetition count"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
+            </div>
+          </Card>
+        ) : null}
+
+        <Card className={styles.studyCard}>
+          <div className={styles.studyTop}>
+            <div>
+              <p className={styles.sectionLabel}>Study support</p>
+              <h3 className={styles.studyTitle}>Why this step is here</h3>
+              <p className={styles.studySummary}>
+                Sources, reflection, and authenticity notes stay secondary so the current step can stay primary.
+              </p>
+            </div>
+            <Button type="button" variant="secondary" onClick={() => setShowStudySupport((previous) => !previous)}>
+              {showStudySupport ? "Hide" : "Open"}
+            </Button>
+          </div>
+
+          {showStudySupport ? (
+            <div className={styles.supportGrid}>
+              <div className={styles.contextNotice}>
+                <span className={styles.boundaryIcon}>
+                  <CircleAlert size={16} />
+                </span>
+                <p>{currentModule.authenticityBoundary}</p>
+              </div>
+
+              {currentStep.reflectionPrompt ? (
+                <section className={styles.reflectionCard}>
+                  <p className={styles.sectionLabel}>Reflection</p>
+                  <p>{currentStep.reflectionPrompt}</p>
+                </section>
+              ) : null}
+
+              <section className={styles.evidenceSection}>
+                <p className={styles.sectionLabel}>Verified anchors</p>
+                <div className={styles.evidenceList}>
+                  {currentStep.evidence.map((item) => (
+                    <div key={`${item.eyebrow}-${item.title}`} className={styles.evidenceItem}>
+                      <div className={styles.evidenceBody}>
+                        <p className={styles.sectionLabel}>{item.eyebrow}</p>
+                        <p className={styles.evidenceTitle}>{item.title}</p>
+                        <p className={styles.evidenceDetail}>{item.detail}</p>
+                      </div>
+                      {item.source ? (
+                        <a
+                          href={item.source.href}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={styles.sourceLink}
+                        >
+                          {item.source.label} <ArrowRight size={14} />
+                        </a>
+                      ) : (
+                        <span className={styles.privateSource}>Private to your account</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+          ) : (
+            <p className={styles.studyClosed}>
+              Keep the page centered on worship. Open study support when you want authenticity notes, reflection, or sources.
+            </p>
+          )}
+        </Card>
+      </section>
     </div>
   );
 }

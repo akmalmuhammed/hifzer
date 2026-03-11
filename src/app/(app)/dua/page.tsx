@@ -1,20 +1,17 @@
-import { auth } from "@clerk/nextjs/server";
-import { listDuaDeckState } from "@/hifzer/ramadan/custom-dua.server";
 import { DuaExperienceClient } from "./dua-experience-client";
+import { loadDuaPageData } from "./dua-page-data";
 
 export const metadata = {
   title: "Dua",
 };
 
 export default async function DuaPage() {
-  const { userId } = await auth();
-  const state = userId
-    ? await listDuaDeckState(userId)
-    : { customDuas: [], deckOrders: [] };
+  const state = await loadDuaPageData();
 
   return (
     <DuaExperienceClient
-      canManageCustomDuas={Boolean(userId)}
+      initialView="home"
+      canManageCustomDuas={Boolean(state.userId)}
       initialCustomDuas={state.customDuas}
       initialDeckOrders={state.deckOrders}
     />

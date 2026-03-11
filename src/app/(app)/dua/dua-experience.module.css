@@ -1,49 +1,163 @@
 .page {
   display: grid;
-  gap: 22px;
-  padding: 2.5rem 0 4rem;
+  gap: 20px;
+  padding: 2.25rem 0 4rem;
 }
 
-.moduleStrip {
+.homeHeroCard,
+.moduleOverviewCard,
+.focusHero,
+.stageCard,
+.toolCard,
+.studyCard,
+.managerCard {
   display: grid;
-  gap: 14px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.moduleCard {
-  display: grid;
-  gap: 10px;
-  border-radius: 24px;
+  gap: 18px;
   border: 1px solid var(--kw-border-2);
   background:
-    radial-gradient(540px 160px at 100% -20%, rgba(var(--kw-accent-rgb), 0.08), transparent 58%),
+    radial-gradient(540px 180px at 100% -20%, rgba(var(--kw-accent-rgb), 0.08), transparent 58%),
     linear-gradient(180deg, var(--kw-card-strong), var(--kw-surface-strong));
-  padding: 18px;
-  text-align: left;
-  transition:
-    transform 180ms ease,
-    border-color 180ms ease,
-    box-shadow 180ms ease;
 }
 
-.moduleCard:hover {
-  transform: translateY(-2px);
-  border-color: rgba(var(--kw-accent-rgb), 0.18);
-  box-shadow: var(--kw-shadow-soft);
-}
-
-.moduleCard[data-active="1"] {
-  border-color: rgba(var(--kw-accent-rgb), 0.26);
-  box-shadow: var(--kw-shadow-soft);
-}
-
-.moduleCardTop {
+.homeHeroTop,
+.homeActions,
+.moduleOverviewTop,
+.moduleOverviewActions,
+.focusHeroTop,
+.focusHeroActions,
+.focusMetaRow,
+.stageActions,
+.actionCluster,
+.toolActions,
+.counterPanel,
+.managerTop,
+.managerActions,
+.deckActions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
+.moduleOverviewActions,
+.toolActions,
+.actionCluster {
+  justify-content: flex-start;
+}
+
+.homeHeroTop,
+.focusHeroTop,
+.managerTop,
+.counterPanel {
+  align-items: flex-start;
+}
+
+.homeEyebrow,
+.sectionLabel,
+.fieldLabel,
+.moduleEyebrow,
+.stageCount,
+.stepEyebrow {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--kw-faint);
+}
+
+.homeTitle,
+.focusTitle,
+.moduleTitle,
+.stageTitle,
+.principleTitle,
+.studyTitle,
+.managerTitle,
+.deckOrderTitle,
+.evidenceTitle {
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--kw-ink);
+}
+
+.homeTitle {
+  margin-top: 8px;
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  line-height: 0.98;
+}
+
+.focusTitle {
+  margin-top: 10px;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.02;
+}
+
+.moduleTitle {
+  font-size: 1.18rem;
+}
+
+.studyTitle,
+.managerTitle {
+  font-size: 1.45rem;
+}
+
+.homeSubtitle,
+.principleText,
+.moduleDescription,
+.focusSubtitle,
+.stageSummary,
+.actionText,
+.duaIntro,
+.toolSummary,
+.counterNote,
+.studySummary,
+.studyClosed,
+.managerSubtitle,
+.deckOrderSummary,
+.evidenceDetail,
+.practiceItem p,
+.reflectionCard p,
+.contextNotice p,
+.notice {
+  color: var(--kw-muted);
+  line-height: 1.72;
+}
+
+.homeActions {
+  justify-content: flex-start;
+}
+
+.principleGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.principleCard,
+.metricChip,
+.focusMetaPill,
+.stepButton,
+.practiceItem,
+.contextNotice,
+.reflectionCard,
+.evidenceItem,
+.fieldInput,
+.fieldTextarea,
+.notice,
+.deckOrderRow {
+  border-radius: 18px;
+  border: 1px solid var(--kw-border-2);
+  background: var(--kw-surface);
+}
+
+.principleCard {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  padding: 16px;
+}
+
+.principleIcon,
 .moduleIcon,
 .actionIcon,
 .boundaryIcon,
@@ -54,12 +168,54 @@
   justify-content: center;
 }
 
+.principleIcon,
 .moduleIcon {
   width: 40px;
   height: 40px;
   border-radius: 16px;
   border: 1px solid var(--kw-border-2);
   background: var(--kw-surface);
+}
+
+.principleIcon {
+  border-color: rgba(var(--kw-accent-rgb), 0.18);
+  background: rgba(var(--kw-accent-rgb), 0.1);
+  color: rgba(var(--kw-accent-rgb), 1);
+}
+
+.moduleGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.moduleOverviewCard {
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.moduleOverviewCard:hover {
+  transform: translateY(-2px);
+  border-color: rgba(var(--kw-accent-rgb), 0.18);
+  box-shadow: var(--kw-shadow-soft);
+}
+
+.moduleOverviewCard[data-active="1"] {
+  border-color: rgba(var(--kw-accent-rgb), 0.24);
+  box-shadow: var(--kw-shadow-soft);
+}
+
+.moduleOverviewTop {
+  align-items: flex-start;
+}
+
+.moduleHeadline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
 
 .moduleIcon[data-tone="accent"] {
@@ -75,8 +231,6 @@
 }
 
 .moduleCount,
-.stageCount,
-.metricValue,
 .counterValue {
   font-family:
     var(--font-kw-mono),
@@ -86,159 +240,72 @@
 }
 
 .moduleCount {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: var(--kw-faint);
-}
-
-.moduleEyebrow,
-.sectionLabel,
-.fieldLabel,
-.metricLabel,
-.stageCount,
-.stepEyebrow {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--kw-faint);
-}
-
-.moduleTitle,
-.navigatorTitle,
-.managerTitle,
-.deckOrderTitle,
-.evidenceTitle,
-.stepTitle {
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--kw-ink);
-}
-
-.moduleTitle {
-  font-size: 1.15rem;
-}
-
-.moduleDescription,
-.navigatorSubtitle,
-.managerSubtitle,
-.evidenceDetail,
-.counterNote,
-.deckOrderSummary,
-.practiceItem p,
-.reflectionCard p,
-.boundaryCard p,
-.notice,
-.actionText,
-.stageSummary {
-  color: var(--kw-muted);
-  line-height: 1.72;
-}
-
-.shell {
-  display: grid;
-  gap: 18px;
-  grid-template-columns: 320px minmax(0, 1fr);
-  align-items: start;
-}
-
-.navigator {
-  display: grid;
-  gap: 14px;
-}
-
-.navigatorCard,
-.stageCard,
-.managerCard {
-  background:
-    radial-gradient(540px 180px at 100% -20%, rgba(var(--kw-accent-rgb), 0.08), transparent 58%),
-    linear-gradient(180deg, var(--kw-card-strong), var(--kw-surface-strong));
-}
-
-.navigatorTop,
-.duaTopRow,
-.stageActions,
-.managerActions,
-.deckActions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.boundaryCard,
-.actionBand,
-.reflectionCard,
-.notice {
-  border-radius: 18px;
-  border: 1px solid var(--kw-border-2);
-  background: var(--kw-surface);
-  padding: 14px 16px;
-}
-
-.boundaryCard,
-.actionBand {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 12px;
-}
-
-.boundaryIcon,
-.actionIcon {
-  width: 36px;
-  height: 36px;
-  border-radius: 14px;
-  border: 1px solid rgba(194, 65, 12, 0.18);
-  background: rgba(194, 65, 12, 0.12);
-  color: var(--kw-ember-600);
-}
-
-.navigatorTitle {
-  margin-top: 14px;
-  font-size: 1.8rem;
-}
-
-.navigatorSubtitle {
-  margin-top: 8px;
-  font-size: 0.95rem;
 }
 
 .moduleMetaRow {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.metricCard,
-.evidenceCard,
-.practiceItem,
-.stepButton,
-.deckOrderRow,
-.fieldInput,
-.fieldTextarea,
-.duaHiddenNotice {
-  border-radius: 18px;
-  border: 1px solid var(--kw-border-2);
-  background: var(--kw-surface);
-}
-
-.metricCard {
-  padding: 14px;
-}
-
-.metricValue {
-  display: block;
-  margin-top: 8px;
-  font-size: 1.25rem;
+.metricChip,
+.focusMetaPill {
+  padding: 10px 12px;
+  font-size: 0.82rem;
   font-weight: 700;
+  color: var(--kw-faint);
+}
+
+.focusMetaPill {
+  border-radius: 999px;
+}
+
+.focusMetaPill[data-interactive="1"] {
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.focusMetaPill[data-interactive="1"]:hover {
+  border-color: rgba(var(--kw-accent-rgb), 0.18);
   color: var(--kw-ink);
+}
+
+.progressTrack {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(11, 18, 32, 0.08);
+}
+
+.progressFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(var(--kw-accent-rgb), 0.95), rgba(var(--kw-accent-rgb), 0.55));
+}
+
+.stepShell {
+  overflow: hidden;
 }
 
 .stepRail {
   display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(230px, 1fr);
   gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+
+.stepRail::-webkit-scrollbar {
+  display: none;
 }
 
 .stepButton {
@@ -246,6 +313,7 @@
   grid-template-columns: auto minmax(0, 1fr);
   gap: 12px;
   align-items: start;
+  min-height: 100%;
   padding: 12px;
   text-align: left;
   transition:
@@ -290,46 +358,94 @@
   margin-top: 6px;
   font-size: 0.94rem;
   line-height: 1.5;
+  color: var(--kw-ink);
 }
 
-.stageCard {
+.focusStage {
   display: grid;
-  gap: 18px;
+  gap: 16px;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-.stage {
-  min-width: 0;
-}
-
-.stageTop {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+.stageHeader {
+  display: grid;
   gap: 12px;
 }
 
 .stageTitle {
   margin-top: 8px;
-  font-size: clamp(2rem, 4vw, 3rem);
-  line-height: 1.05;
-  font-weight: 700;
-  letter-spacing: -0.05em;
+  font-size: clamp(1.9rem, 4vw, 2.9rem);
+  line-height: 1.04;
+}
+
+.actionBand,
+.contextNotice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.actionBand {
+  border-radius: 20px;
+  border: 1px solid var(--kw-border-2);
+  background: var(--kw-surface);
+}
+
+.actionIcon,
+.boundaryIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 14px;
+  border: 1px solid rgba(194, 65, 12, 0.18);
+  background: rgba(194, 65, 12, 0.12);
+  color: var(--kw-ember-600);
+}
+
+.duaCard {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.16);
+  background:
+    radial-gradient(420px 160px at 90% -10%, rgba(var(--kw-accent-rgb), 0.08), transparent 60%),
+    linear-gradient(180deg, var(--kw-card-strong), var(--kw-surface-strong));
+}
+
+.duaArabic {
+  font-family:
+    var(--font-kw-quran),
+    "KFGQPC Uthmanic Script HAFS",
+    "Scheherazade New",
+    "Amiri",
+    "Noto Naskh Arabic",
+    serif;
+  font-size: clamp(2rem, 4vw, 2.7rem);
+  line-height: 2.02;
   color: var(--kw-ink);
 }
 
-.stageSummary {
-  margin-top: 12px;
-  font-size: 1rem;
-}
-
-.practiceSection {
+.duaSupportStack,
+.practiceList,
+.evidenceList,
+.managerForm,
+.deckOrderList,
+.supportGrid {
   display: grid;
   gap: 12px;
 }
 
-.practiceList {
+.duaSupportPanel {
+  margin-top: 0;
+}
+
+.practiceSection,
+.evidenceSection {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .practiceItem {
@@ -347,85 +463,15 @@
   background: rgba(var(--kw-accent-rgb), 0.78);
 }
 
-.evidenceGrid {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.evidenceCard {
-  display: grid;
-  gap: 10px;
-  padding: 16px;
-}
-
-.evidenceTitle {
-  font-size: 1.05rem;
-}
-
-.sourceLink,
-.privateSource {
-  font-size: 0.84rem;
-  font-weight: 700;
-}
-
-.sourceLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--kw-link);
-  text-decoration: none;
-}
-
-.privateSource {
-  color: var(--kw-faint);
-}
-
-.duaCard {
-  display: grid;
+.toolCard,
+.studyCard {
   gap: 16px;
-  border-radius: 24px;
-  border: 1px solid rgba(var(--kw-accent-rgb), 0.16);
-  background:
-    radial-gradient(420px 160px at 90% -10%, rgba(var(--kw-accent-rgb), 0.08), transparent 60%),
-    linear-gradient(180deg, var(--kw-card-strong), var(--kw-surface-strong));
-  padding: 18px;
-}
-
-.duaArabic {
-  font-family:
-    var(--font-kw-quran),
-    "KFGQPC Uthmanic Script HAFS",
-    "Scheherazade New",
-    "Amiri",
-    "Noto Naskh Arabic",
-    serif;
-  font-size: clamp(2rem, 4vw, 2.7rem);
-  line-height: 2.02;
-  color: var(--kw-ink);
-}
-
-.duaSupportStack {
-  display: grid;
-  gap: 12px;
-}
-
-.duaSupportPanel {
-  margin-top: 0;
-}
-
-.duaHiddenNotice {
-  padding: 14px;
 }
 
 .counterPanel {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
   gap: 16px;
-  border-top: 1px solid rgba(11, 18, 32, 0.08);
   padding-top: 16px;
+  border-top: 1px solid rgba(11, 18, 32, 0.08);
 }
 
 .counterControls {
@@ -454,26 +500,77 @@
   color: var(--kw-ink);
 }
 
+.studyTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.reflectionCard,
+.evidenceItem {
+  padding: 16px;
+}
+
+.evidenceItem {
+  display: grid;
+  gap: 10px;
+}
+
+.evidenceBody {
+  display: grid;
+  gap: 6px;
+}
+
+.evidenceTitle {
+  margin-top: 6px;
+  font-size: 1.04rem;
+}
+
+.sourceLink,
+.privateSource {
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.sourceLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  color: var(--kw-link);
+  text-decoration: none;
+}
+
+.privateSource {
+  color: var(--kw-faint);
+}
+
+.notice {
+  padding: 14px 16px;
+}
+
+.notice[data-tone="success"] {
+  border-color: rgba(22, 163, 74, 0.18);
+  background: rgba(22, 163, 74, 0.08);
+  color: var(--kw-ink);
+}
+
+.notice[data-tone="danger"] {
+  border-color: rgba(225, 29, 72, 0.18);
+  background: rgba(225, 29, 72, 0.08);
+  color: var(--kw-ink);
+}
+
+.notice[data-tone="neutral"] {
+  color: var(--kw-muted);
+}
+
 .managerShell {
   display: grid;
   gap: 18px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.managerTitle {
-  margin-top: 10px;
-  font-size: 1.5rem;
-}
-
-.managerSubtitle {
-  margin-top: 8px;
-  font-size: 0.95rem;
-}
-
-.managerForm,
-.deckOrderList {
-  display: grid;
-  gap: 14px;
 }
 
 .formGrid {
@@ -482,7 +579,8 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.field {
+.field,
+.orderField {
   display: grid;
   gap: 8px;
 }
@@ -505,45 +603,25 @@
   resize: vertical;
 }
 
-.notice[data-tone="success"] {
-  border-color: rgba(22, 163, 74, 0.18);
-  background: rgba(22, 163, 74, 0.08);
-  color: var(--kw-ink);
-}
-
-.notice[data-tone="danger"] {
-  border-color: rgba(225, 29, 72, 0.18);
-  background: rgba(225, 29, 72, 0.08);
-  color: var(--kw-ink);
-}
-
 .deckOrderRow {
   display: grid;
-  gap: 14px;
   grid-template-columns: 110px minmax(0, 1fr) auto;
+  gap: 14px;
   align-items: start;
-  padding: 14px;
+  padding: 16px;
 }
 
-.orderField {
+.deckBody {
   display: grid;
   gap: 8px;
-}
-
-.deckOrderSummary {
-  margin-top: 8px;
+  min-width: 0;
 }
 
 @media (max-width: 1180px) {
-  .shell,
-  .managerShell,
-  .moduleStrip,
-  .evidenceGrid {
+  .principleGrid,
+  .moduleGrid,
+  .managerShell {
     grid-template-columns: 1fr;
-  }
-
-  .navigator {
-    order: 2;
   }
 }
 
@@ -553,17 +631,13 @@
     padding-top: 1.75rem;
   }
 
-  .formGrid,
-  .deckOrderRow,
-  .moduleMetaRow {
-    grid-template-columns: 1fr;
+  .stepRail {
+    grid-auto-columns: minmax(270px, 85vw);
   }
 
-  .stageActions,
-  .duaTopRow,
-  .managerActions,
-  .deckActions {
-    align-items: stretch;
+  .formGrid,
+  .deckOrderRow {
+    grid-template-columns: 1fr;
   }
 
   .duaArabic {

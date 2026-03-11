@@ -6,6 +6,7 @@ const CORS_CHECK_ROUTES = ["/", "/pricing", "/quran-preview"] as const;
 
 const PROTECTED_PREFIXES = [
   "/today",
+  "/dua",
   "/hifz",
   "/session",
   "/quran",
@@ -78,6 +79,18 @@ test("signed-out GET /quran redirects to /login or Clerk sign-in flow", async ({
   ).toBe(true);
 });
 
+test("signed-out GET /dua redirects to /login or Clerk sign-in flow", async ({ request }) => {
+  const response = await request.get("/dua", { maxRedirects: 0 });
+  const status = response.status();
+  expect([301, 302, 303, 307, 308]).toContain(status);
+
+  const location = response.headers()["location"] ?? "";
+  expect(
+    /\/login(?:\?|$)|\/sign-in(?:\?|$)|\/sso-callback(?:\?|$)/i.test(location),
+    `Expected redirect location to auth flow, got: ${location}`,
+  ).toBe(true);
+});
+
 test("pricing primary CTA navigates (no dead click)", async ({ page }) => {
   await clickPricingPrimaryCta(page);
   await expect(page).toHaveURL(/\/(login|signup|today)(?:\?|$)/);
@@ -136,7 +149,7 @@ test("sitemap has no double-slash URLs and no gated routes", async ({ request })
     "Sitemap contains malformed // URLs",
   ).toEqual([]);
 
-  const gatedPrefixes = ["/quran/", "/today", "/hifz", "/session", "/progress", "/settings", "/history", "/billing"];
+  const gatedPrefixes = ["/quran/", "/today", "/dua", "/hifz", "/session", "/progress", "/settings", "/history", "/billing"];
   const gatedLocs = locs.filter((loc) => {
     try {
       const path = new URL(loc).pathname;

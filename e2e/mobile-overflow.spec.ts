@@ -10,6 +10,7 @@ const ROUTES = [
   "/signup",
   "/forgot-password",
   "/today",
+  "/dua",
   "/hifz",
   "/session",
   "/quran",
