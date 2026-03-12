@@ -4,7 +4,7 @@ import type { QuranBrowseSource } from "@prisma/client";
 import { isoDateInTimeZone } from "@/hifzer/engine/date";
 import { getAyahById } from "@/hifzer/quran/lookup.server";
 import { db } from "@/lib/db";
-import { getCoreSchemaCapabilities } from "@/lib/db-compat";
+import { ensureCoreSchemaCompatibility, getCoreSchemaCapabilities } from "@/lib/db-compat";
 
 const TOTAL_AYAHS = 6236;
 const RESUME_SOURCES: QuranBrowseSource[] = ["READER_VIEW", "BACKFILL"];
@@ -47,7 +47,16 @@ function looksLikeMissingCoreSchema(error: unknown): boolean {
 
 async function quranBrowseTrackingAvailable(): Promise<boolean> {
   const capabilities = await getCoreSchemaCapabilities();
-  return capabilities.hasQuranBrowseTable;
+  if (capabilities.hasQuranBrowseTable) {
+    return true;
+  }
+  try {
+    await ensureCoreSchemaCompatibility();
+  } catch {
+    // Ignore patch failures and fall back to a fresh capability probe.
+  }
+  const refreshed = await getCoreSchemaCapabilities({ refresh: true });
+  return refreshed.hasQuranBrowseTable;
 }
 
 async function upsertQuranBrowseEvent(input: {

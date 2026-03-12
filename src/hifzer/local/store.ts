@@ -4,8 +4,10 @@ import { isoDateLocal } from "@/hifzer/derived/dates";
 
 export const STORAGE_KEYS = {
   onboardingCompleted: "hifzer_onboarding_completed_v1",
-  activeSurahNumber: "hifzer_active_surah_number_v1",
-  cursorAyahId: "hifzer_cursor_ayah_id_v1",
+  hifzActiveSurahNumber: "hifzer_hifz_active_surah_number_v1",
+  hifzCursorAyahId: "hifzer_hifz_cursor_ayah_id_v1",
+  quranActiveSurahNumber: "hifzer_quran_active_surah_number_v1",
+  quranCursorAyahId: "hifzer_quran_cursor_ayah_id_v1",
 
   srsReviews: "hifzer_srs_reviews_v1",
   attempts: "hifzer_attempts_v1",
@@ -16,6 +18,11 @@ export const STORAGE_KEYS = {
   bookmarks: "hifzer_bookmarks_v1",
   pendingBookmarkSync: "hifzer_pending_bookmark_sync_v1",
   cutoverApplied: "hifzer_cutover_v3_applied",
+} as const;
+
+const LEGACY_STORAGE_KEYS = {
+  activeSurahNumber: "hifzer_active_surah_number_v1",
+  cursorAyahId: "hifzer_cursor_ayah_id_v1",
 } as const;
 
 type StoredReview = Omit<AyahReviewState, "nextReviewAt" | "lastReviewAt"> & {
@@ -82,11 +89,11 @@ export function setOnboardingCompleted() {
   window.localStorage.setItem(STORAGE_KEYS.onboardingCompleted, "1");
 }
 
-export function getActiveSurahNumber(): number | null {
+function readStoredNumber(key: string): number | null {
   if (!isBrowser()) {
     return null;
   }
-  const raw = window.localStorage.getItem(STORAGE_KEYS.activeSurahNumber);
+  const raw = window.localStorage.getItem(key);
   if (!raw) {
     return null;
   }
@@ -94,24 +101,48 @@ export function getActiveSurahNumber(): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-export function getCursorAyahId(): number | null {
-  if (!isBrowser()) {
-    return null;
-  }
-  const raw = window.localStorage.getItem(STORAGE_KEYS.cursorAyahId);
-  if (!raw) {
-    return null;
-  }
-  const n = Number(raw);
-  return Number.isFinite(n) ? n : null;
+export function getHifzActiveSurahNumber(): number | null {
+  return readStoredNumber(STORAGE_KEYS.hifzActiveSurahNumber);
 }
 
-export function setActiveSurahCursor(activeSurahNumber: number, cursorAyahId: number) {
+export function getHifzCursorAyahId(): number | null {
+  return readStoredNumber(STORAGE_KEYS.hifzCursorAyahId);
+}
+
+export function setHifzActiveSurahCursor(activeSurahNumber: number, cursorAyahId: number) {
   if (!isBrowser()) {
     return;
   }
-  window.localStorage.setItem(STORAGE_KEYS.activeSurahNumber, String(activeSurahNumber));
-  window.localStorage.setItem(STORAGE_KEYS.cursorAyahId, String(cursorAyahId));
+  window.localStorage.setItem(STORAGE_KEYS.hifzActiveSurahNumber, String(activeSurahNumber));
+  window.localStorage.setItem(STORAGE_KEYS.hifzCursorAyahId, String(cursorAyahId));
+}
+
+export function getQuranActiveSurahNumber(): number | null {
+  return readStoredNumber(STORAGE_KEYS.quranActiveSurahNumber);
+}
+
+export function getQuranCursorAyahId(): number | null {
+  return readStoredNumber(STORAGE_KEYS.quranCursorAyahId);
+}
+
+export function setQuranActiveSurahCursor(activeSurahNumber: number, cursorAyahId: number) {
+  if (!isBrowser()) {
+    return;
+  }
+  window.localStorage.setItem(STORAGE_KEYS.quranActiveSurahNumber, String(activeSurahNumber));
+  window.localStorage.setItem(STORAGE_KEYS.quranCursorAyahId, String(cursorAyahId));
+}
+
+export function getActiveSurahNumber(): number | null {
+  return getHifzActiveSurahNumber();
+}
+
+export function getCursorAyahId(): number | null {
+  return getHifzCursorAyahId();
+}
+
+export function setActiveSurahCursor(activeSurahNumber: number, cursorAyahId: number) {
+  setHifzActiveSurahCursor(activeSurahNumber, cursorAyahId);
 }
 
 export function getLastCompletedLocalDate(): string | null {
@@ -486,23 +517,37 @@ export function applyFreshStartBridge() {
     return;
   }
   const keepOnboarding = window.localStorage.getItem(STORAGE_KEYS.onboardingCompleted);
-  const keepSurah = window.localStorage.getItem(STORAGE_KEYS.activeSurahNumber);
-  const keepCursor = window.localStorage.getItem(STORAGE_KEYS.cursorAyahId);
+  const keepHifzSurah =
+    window.localStorage.getItem(STORAGE_KEYS.hifzActiveSurahNumber) ??
+    window.localStorage.getItem(LEGACY_STORAGE_KEYS.activeSurahNumber);
+  const keepHifzCursor =
+    window.localStorage.getItem(STORAGE_KEYS.hifzCursorAyahId) ??
+    window.localStorage.getItem(LEGACY_STORAGE_KEYS.cursorAyahId);
+  const keepQuranSurah = window.localStorage.getItem(STORAGE_KEYS.quranActiveSurahNumber);
+  const keepQuranCursor = window.localStorage.getItem(STORAGE_KEYS.quranCursorAyahId);
 
   window.localStorage.removeItem(STORAGE_KEYS.srsReviews);
   window.localStorage.removeItem(STORAGE_KEYS.attempts);
   window.localStorage.removeItem(STORAGE_KEYS.openSession);
   window.localStorage.removeItem(STORAGE_KEYS.sessions);
   window.localStorage.removeItem(STORAGE_KEYS.lastCompletedLocalDate);
+  window.localStorage.removeItem(LEGACY_STORAGE_KEYS.activeSurahNumber);
+  window.localStorage.removeItem(LEGACY_STORAGE_KEYS.cursorAyahId);
 
   if (keepOnboarding) {
     window.localStorage.setItem(STORAGE_KEYS.onboardingCompleted, keepOnboarding);
   }
-  if (keepSurah) {
-    window.localStorage.setItem(STORAGE_KEYS.activeSurahNumber, keepSurah);
+  if (keepHifzSurah) {
+    window.localStorage.setItem(STORAGE_KEYS.hifzActiveSurahNumber, keepHifzSurah);
   }
-  if (keepCursor) {
-    window.localStorage.setItem(STORAGE_KEYS.cursorAyahId, keepCursor);
+  if (keepHifzCursor) {
+    window.localStorage.setItem(STORAGE_KEYS.hifzCursorAyahId, keepHifzCursor);
+  }
+  if (keepQuranSurah) {
+    window.localStorage.setItem(STORAGE_KEYS.quranActiveSurahNumber, keepQuranSurah);
+  }
+  if (keepQuranCursor) {
+    window.localStorage.setItem(STORAGE_KEYS.quranCursorAyahId, keepQuranCursor);
   }
   window.localStorage.setItem(STORAGE_KEYS.cutoverApplied, "1");
 }

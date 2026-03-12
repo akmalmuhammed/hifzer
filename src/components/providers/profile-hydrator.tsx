@@ -2,7 +2,12 @@
 
 import { useEffect } from "react";
 import { useTheme, type AccentPreset, type ThemePreset } from "@/components/providers/theme-provider";
-import { applyFreshStartBridge, setActiveSurahCursor, setOnboardingCompleted } from "@/hifzer/local/store";
+import {
+  applyFreshStartBridge,
+  setHifzActiveSurahCursor,
+  setOnboardingCompleted,
+  setQuranActiveSurahCursor,
+} from "@/hifzer/local/store";
 import type { ProfileSnapshot } from "@/hifzer/profile/server";
 
 const VALID_THEMES = new Set<ThemePreset>(["standard", "paper"]);
@@ -19,7 +24,8 @@ export function ProfileHydrator(props: { profile: ProfileSnapshot | null }) {
       return;
     }
 
-    setActiveSurahCursor(profile.activeSurahNumber, profile.cursorAyahId);
+    setHifzActiveSurahCursor(profile.activeSurahNumber, profile.cursorAyahId);
+    setQuranActiveSurahCursor(profile.quranActiveSurahNumber, profile.quranCursorAyahId);
     if (profile.onboardingCompleted) {
       setOnboardingCompleted();
     }

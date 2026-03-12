@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
-import { setActiveSurahCursor, setOpenSession } from "@/hifzer/local/store";
+import { setHifzActiveSurahCursor, setOpenSession } from "@/hifzer/local/store";
 import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
 import type { TodayPayload, LearningLane } from "./today-types";
 
@@ -231,7 +231,7 @@ export function TodayClient({
       const nextSurah = Number(payload.profile?.activeSurahNumber);
       const nextCursor = Number(payload.profile?.cursorAyahId);
       if (Number.isFinite(nextSurah) && Number.isFinite(nextCursor)) {
-        setActiveSurahCursor(nextSurah, nextCursor);
+        setHifzActiveSurahCursor(nextSurah, nextCursor);
       }
       setOpenSession(null);
       setSwitchOpen(false);

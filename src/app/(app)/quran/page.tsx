@@ -79,7 +79,7 @@ export default async function QuranIndexPage() {
               Open Qur&apos;anic glossary search
             </Link>
             <Link
-              href="/quran/read?view=compact"
+              href={trackedHref}
               className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.24)] bg-[rgba(var(--kw-accent-rgb),0.1)] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-[rgba(var(--kw-accent-rgb),1)]"
             >
               Continue reading <ArrowRight size={14} />

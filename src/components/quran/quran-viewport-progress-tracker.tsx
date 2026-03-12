@@ -10,6 +10,7 @@ type AyahVisitPayload = {
 
 function flushTrackedAyahs(
   pendingAyahIdsRef: MutableRefObject<Set<number>>,
+  latestPayloadRef: MutableRefObject<AyahVisitPayload | null>,
   trackTimerRef: MutableRefObject<ReturnType<typeof setTimeout> | null>,
   keepalive = false,
 ) {
@@ -18,13 +19,19 @@ function flushTrackedAyahs(
   }
 
   const ayahIds = Array.from(pendingAyahIdsRef.current);
+  const latestPayload = latestPayloadRef.current;
   pendingAyahIdsRef.current = new Set();
 
   void fetch("/api/quran/progress/track", {
     method: "POST",
     headers: { "content-type": "application/json" },
     keepalive,
-    body: JSON.stringify({ ayahIds }),
+    body: JSON.stringify({
+      ayahIds,
+      latestAyahId: latestPayload?.ayahId,
+      latestSurahNumber: latestPayload?.surahNumber,
+      latestAyahNumber: latestPayload?.ayahNumber,
+    }),
   }).catch(() => {
     for (const ayahId of ayahIds) {
       pendingAyahIdsRef.current.add(ayahId);
@@ -33,7 +40,7 @@ function flushTrackedAyahs(
       clearTimeout(trackTimerRef.current);
     }
     trackTimerRef.current = setTimeout(() => {
-      flushTrackedAyahs(pendingAyahIdsRef, trackTimerRef);
+      flushTrackedAyahs(pendingAyahIdsRef, latestPayloadRef, trackTimerRef);
     }, 1500);
   });
 }
@@ -59,8 +66,7 @@ export function QuranViewportProgressTracker(props: {
   const pendingAyahIdsRef = useRef<Set<number>>(new Set());
   const seenKeysRef = useRef<Set<string>>(new Set());
   const trackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const cursorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastCursorPayloadRef = useRef<AyahVisitPayload | null>(null);
+  const latestPayloadRef = useRef<AyahVisitPayload | null>(null);
 
   useEffect(() => {
     if (!props.enabled || typeof window === "undefined") {
@@ -69,23 +75,6 @@ export function QuranViewportProgressTracker(props: {
 
     const selector = props.selector ?? "[data-quran-track='1']";
 
-    function sendCursorSync(payload: AyahVisitPayload, keepalive = false) {
-      lastCursorPayloadRef.current = payload;
-      void fetch("/api/profile/start-point", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        keepalive,
-        body: JSON.stringify({
-          surahNumber: payload.surahNumber,
-          ayahNumber: payload.ayahNumber,
-          cursorAyahId: payload.ayahId,
-          source: "quran_read",
-        }),
-      }).catch(() => {
-        // Fail-open: local reading should continue even if cursor sync fails.
-      });
-    }
-
     function queueVisit(payload: AyahVisitPayload) {
       const key = `${payload.surahNumber}:${payload.ayahNumber}:${payload.ayahId}`;
       if (seenKeysRef.current.has(key)) {
@@ -93,26 +82,21 @@ export function QuranViewportProgressTracker(props: {
       }
       seenKeysRef.current.add(key);
       pendingAyahIdsRef.current.add(payload.ayahId);
+      latestPayloadRef.current = payload;
 
       if (trackTimerRef.current) {
         clearTimeout(trackTimerRef.current);
       }
       trackTimerRef.current = setTimeout(() => {
-        flushTrackedAyahs(pendingAyahIdsRef, trackTimerRef);
+        flushTrackedAyahs(pendingAyahIdsRef, latestPayloadRef, trackTimerRef);
       }, 450);
-
-      if (cursorTimerRef.current) {
-        clearTimeout(cursorTimerRef.current);
-      }
-      cursorTimerRef.current = setTimeout(() => {
-        sendCursorSync(payload);
-      }, 650);
     }
 
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (!entry.isIntersecting || entry.intersectionRatio < 0.6) {
+          const visibleEnough = entry.intersectionRatio >= 0.15 || entry.intersectionRect.height >= 120;
+          if (!entry.isIntersecting || !visibleEnough) {
             continue;
           }
           const payload = parseElementPayload(entry.target as HTMLElement);
@@ -122,8 +106,8 @@ export function QuranViewportProgressTracker(props: {
         }
       },
       {
-        threshold: [0.25, 0.6, 0.85],
-        rootMargin: "0px 0px -10% 0px",
+        threshold: [0.1, 0.15, 0.35, 0.6],
+        rootMargin: "0px 0px -18% 0px",
       },
     );
 
@@ -137,13 +121,7 @@ export function QuranViewportProgressTracker(props: {
       if (trackTimerRef.current) {
         clearTimeout(trackTimerRef.current);
       }
-      if (cursorTimerRef.current) {
-        clearTimeout(cursorTimerRef.current);
-      }
-      flushTrackedAyahs(pendingAyahIdsRef, trackTimerRef, true);
-      if (lastCursorPayloadRef.current) {
-        sendCursorSync(lastCursorPayloadRef.current, true);
-      }
+      flushTrackedAyahs(pendingAyahIdsRef, latestPayloadRef, trackTimerRef, true);
     };
   }, [props.enabled, props.selector]);
 

@@ -1,11 +1,15 @@
 import { auth } from "@clerk/nextjs/server";
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-import { getOrCreateUserProfile } from "@/hifzer/profile/server";
+import { getAyahById } from "@/hifzer/quran/lookup.server";
+import { getOrCreateUserProfile, saveQuranStartPoint } from "@/hifzer/profile/server";
 import { recordQuranBrowseAyahSet } from "@/hifzer/quran/read-progress.server";
 
 type Payload = {
   ayahIds?: unknown;
+  latestAyahId?: unknown;
+  latestSurahNumber?: unknown;
+  latestAyahNumber?: unknown;
 };
 
 export const runtime = "nodejs";
@@ -22,6 +26,40 @@ function parseAyahIds(raw: unknown): number[] | null {
     return null;
   }
   return Array.from(new Set(ayahIds));
+}
+
+function parseLatestCursor(raw: Payload, ayahIds: number[]): {
+  ayahId: number;
+  surahNumber: number;
+  ayahNumber: number;
+} | null {
+  if (raw.latestAyahId == null && raw.latestSurahNumber == null && raw.latestAyahNumber == null) {
+    return null;
+  }
+
+  const latestAyahId = Math.floor(Number(raw.latestAyahId));
+  const latestSurahNumber = Math.floor(Number(raw.latestSurahNumber));
+  const latestAyahNumber = Math.floor(Number(raw.latestAyahNumber));
+  if (!Number.isFinite(latestAyahId) || !Number.isFinite(latestSurahNumber) || !Number.isFinite(latestAyahNumber)) {
+    throw new Error("latest cursor payload must include numeric latestAyahId, latestSurahNumber, and latestAyahNumber.");
+  }
+  if (!ayahIds.includes(latestAyahId)) {
+    throw new Error("latestAyahId must be included in ayahIds.");
+  }
+
+  const ayah = getAyahById(latestAyahId);
+  if (!ayah) {
+    throw new Error("latestAyahId is out of range.");
+  }
+  if (ayah.surahNumber !== latestSurahNumber || ayah.ayahNumber !== latestAyahNumber) {
+    throw new Error("latest cursor payload does not match the referenced ayah.");
+  }
+
+  return {
+    ayahId: latestAyahId,
+    surahNumber: latestSurahNumber,
+    ayahNumber: latestAyahNumber,
+  };
 }
 
 export async function POST(req: Request) {
@@ -42,6 +80,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "ayahIds must be a non-empty array of positive numbers." }, { status: 400 });
   }
 
+  let latestCursor;
+  try {
+    latestCursor = parseLatestCursor(payload, ayahIds);
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Invalid latest cursor payload." }, { status: 400 });
+  }
+
   try {
     const profile = await getOrCreateUserProfile(userId);
     if (!profile) {
@@ -55,12 +100,18 @@ export async function POST(req: Request) {
       source: "READER_VIEW",
     });
 
+    const updatedProfile = latestCursor
+      ? await saveQuranStartPoint(userId, latestCursor.surahNumber, latestCursor.ayahId)
+      : null;
+
     return NextResponse.json({
       ok: true,
       trackedAyahCount: ayahIds.length,
       recordedAyahCount: result.recordedAyahCount,
       alreadyTrackedAyahCount: result.alreadyTrackedAyahCount,
       localDate: result.localDate,
+      cursorAyahId: updatedProfile?.quranCursorAyahId ?? null,
+      cursorSurahNumber: updatedProfile?.quranActiveSurahNumber ?? null,
     });
   } catch (error) {
     Sentry.captureException(error, {

@@ -21,7 +21,7 @@ import {
   getPendingSessionSyncPayloads,
   pushPendingSessionSyncPayload,
   replacePendingSessionSyncPayloads,
-  setActiveSurahCursor,
+  setHifzActiveSurahCursor,
   setOpenSession,
   type PendingSessionSyncPayload,
 } from "@/hifzer/local/store";
@@ -728,7 +728,7 @@ export function SessionClient() {
       const nextSurah = Number(payload.profile?.activeSurahNumber);
       const nextCursor = Number(payload.profile?.cursorAyahId);
       if (Number.isFinite(nextSurah) && Number.isFinite(nextCursor)) {
-        setActiveSurahCursor(nextSurah, nextCursor);
+        setHifzActiveSurahCursor(nextSurah, nextCursor);
       }
       setOpenSession(null);
       clearStoredSessionProgress(progressStorageKey);

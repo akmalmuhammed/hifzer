@@ -11,6 +11,7 @@ import {
 
 function flushTrackedAyahs(
   pendingAyahIdsRef: MutableRefObject<Set<number>>,
+  latestPayloadRef: MutableRefObject<VisitPayload | null>,
   trackTimerRef: MutableRefObject<ReturnType<typeof setTimeout> | null>,
   keepalive = false,
 ) {
@@ -18,6 +19,7 @@ function flushTrackedAyahs(
     return;
   }
   const ayahIds = Array.from(pendingAyahIdsRef.current);
+  const latestPayload = latestPayloadRef.current;
   pendingAyahIdsRef.current = new Set();
   void fetch("/api/quran/progress/track", {
     method: "POST",
@@ -25,6 +27,9 @@ function flushTrackedAyahs(
     keepalive,
     body: JSON.stringify({
       ayahIds,
+      latestAyahId: latestPayload?.ayahId,
+      latestSurahNumber: latestPayload?.surahNumber,
+      latestAyahNumber: latestPayload?.ayahNumber,
     }),
   }).catch(() => {
     for (const ayahId of ayahIds) {
@@ -34,7 +39,7 @@ function flushTrackedAyahs(
       clearTimeout(trackTimerRef.current);
     }
     trackTimerRef.current = setTimeout(() => {
-      flushTrackedAyahs(pendingAyahIdsRef, trackTimerRef);
+      flushTrackedAyahs(pendingAyahIdsRef, latestPayloadRef, trackTimerRef);
     }, 1500);
   });
 }
@@ -58,25 +63,7 @@ export const ReadProgressSync = forwardRef<ReadProgressSyncHandle, {
   const lastKeyRef = useRef<string>("");
   const pendingAyahIdsRef = useRef<Set<number>>(new Set());
   const trackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const cursorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastCursorPayloadRef = useRef<VisitPayload | null>(null);
-
-  const sendCursorSync = useCallback((payload: VisitPayload, keepalive = false) => {
-    lastCursorPayloadRef.current = payload;
-    void fetch("/api/profile/start-point", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      keepalive,
-      body: JSON.stringify({
-        surahNumber: payload.surahNumber,
-        ayahNumber: payload.ayahNumber,
-        cursorAyahId: payload.ayahId,
-        source: "quran_read",
-      }),
-    }).catch(() => {
-      // Fail-open: local reading should continue even if cursor sync fails.
-    });
-  }, []);
+  const latestPayloadRef = useRef<VisitPayload | null>(null);
 
   const queueVisit = useCallback((payload: VisitPayload, options?: { immediate?: boolean }) => {
     if (!props.enabled) {
@@ -90,21 +77,15 @@ export const ReadProgressSync = forwardRef<ReadProgressSyncHandle, {
     lastKeyRef.current = key;
 
     pendingAyahIdsRef.current.add(payload.ayahId);
+    latestPayloadRef.current = payload;
 
     if (trackTimerRef.current) {
       clearTimeout(trackTimerRef.current);
     }
     trackTimerRef.current = setTimeout(() => {
-      flushTrackedAyahs(pendingAyahIdsRef, trackTimerRef);
+      flushTrackedAyahs(pendingAyahIdsRef, latestPayloadRef, trackTimerRef);
     }, options?.immediate ? 160 : 800);
-
-    if (cursorTimerRef.current) {
-      clearTimeout(cursorTimerRef.current);
-    }
-    cursorTimerRef.current = setTimeout(() => {
-      sendCursorSync(payload, options?.immediate === true);
-    }, options?.immediate ? 180 : 900);
-  }, [props.enabled, sendCursorSync]);
+  }, [props.enabled]);
 
   useImperativeHandle(ref, () => ({
     markAyahVisited(payload) {
@@ -116,14 +97,8 @@ export const ReadProgressSync = forwardRef<ReadProgressSyncHandle, {
     if (trackTimerRef.current) {
       clearTimeout(trackTimerRef.current);
     }
-    if (cursorTimerRef.current) {
-      clearTimeout(cursorTimerRef.current);
-    }
-    flushTrackedAyahs(pendingAyahIdsRef, trackTimerRef, true);
-    if (lastCursorPayloadRef.current) {
-      sendCursorSync(lastCursorPayloadRef.current, true);
-    }
-  }, [sendCursorSync]);
+    flushTrackedAyahs(pendingAyahIdsRef, latestPayloadRef, trackTimerRef, true);
+  }, []);
 
   useEffect(() => {
     queueVisit({
@@ -135,9 +110,6 @@ export const ReadProgressSync = forwardRef<ReadProgressSyncHandle, {
     return () => {
       if (trackTimerRef.current) {
         clearTimeout(trackTimerRef.current);
-      }
-      if (cursorTimerRef.current) {
-        clearTimeout(cursorTimerRef.current);
       }
     };
   }, [props.ayahId, props.ayahNumber, props.surahNumber, queueVisit]);
