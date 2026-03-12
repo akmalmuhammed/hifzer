@@ -444,13 +444,13 @@ async function weeklyGateDue(profileId: string, now: Date): Promise<boolean> {
   const prisma = db();
   const row = await prisma.qualityGateRun.findFirst({
     where: { userId: profileId, gateType: "WEEKLY" },
-    orderBy: { createdAt: "desc" },
-    select: { createdAt: true },
+    orderBy: { windowEnd: "desc" },
+    select: { windowEnd: true },
   });
   if (!row) {
     return true;
   }
-  const diffMs = now.getTime() - row.createdAt.getTime();
+  const diffMs = now.getTime() - row.windowEnd.getTime();
   return diffMs >= (7 * 24 * 60 * 60 * 1000);
 }
 
@@ -483,7 +483,10 @@ async function normalizeHifzStartPoint(profile: UserProfile): Promise<UserProfil
   });
 }
 
-export async function loadTodayState(clerkUserId: string): Promise<{
+export async function loadTodayState(
+  clerkUserId: string,
+  input?: { now?: Date },
+): Promise<{
   profile: UserProfile;
   state: TodayEngineResult;
   steps: SessionStep[];
@@ -495,7 +498,7 @@ export async function loadTodayState(clerkUserId: string): Promise<{
   const profile = await normalizeHifzStartPoint(initialProfile);
 
   const prisma = db();
-  const now = new Date();
+  const now = input?.now ?? new Date();
   const localDate = isoDateInTimeZone(now, profile.timezone);
   const capabilities = await getCoreSchemaCapabilities();
   const hasSessionModernColumns = capabilities.hasSessionModernColumns;
@@ -798,8 +801,11 @@ async function ensureOpenSession(
   });
 }
 
-export async function startTodaySession(clerkUserId: string, input?: { preferredTranslationId?: QuranTranslationId | string }) {
-  const { profile, state, steps } = await loadTodayState(clerkUserId);
+export async function startTodaySession(
+  clerkUserId: string,
+  input?: { preferredTranslationId?: QuranTranslationId | string; now?: Date },
+) {
+  const { profile, state, steps } = await loadTodayState(clerkUserId, { now: input?.now });
   const openSession = await ensureOpenSession(profile, state, steps);
   const session = openSession.session;
   const sessionState = openSession.state;
@@ -852,6 +858,8 @@ type CompleteSessionInput = {
   endedAt: string;
   localDate?: string;
   events: SessionEventInput[];
+  now?: Date;
+  transactionTimeoutMs?: number;
 };
 
 type CompleteSessionResult = {
@@ -873,6 +881,7 @@ export async function completeSession(input: CompleteSessionInput): Promise<Comp
     throw new SessionGuardError("Invalid session timestamps.");
   }
 
+  const completedAt = input.now ?? new Date();
   const result = await prisma.$transaction(async (tx) => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`hifz-complete-session:${profile.id}:${input.sessionId}`}))`;
 
@@ -934,7 +943,6 @@ export async function completeSession(input: CompleteSessionInput): Promise<Comp
       newAyahIds: sessionNewAyahIds,
     });
 
-    const completedAt = new Date();
     const stampedEvents = validation.acceptedEvents.map((event, idx) => {
       const offsetMs = validation.acceptedEvents.length - 1 - idx;
       const occurredAt = new Date(Math.max(session.startedAt.getTime(), completedAt.getTime() - offsetMs));
@@ -1171,8 +1179,9 @@ export async function completeSession(input: CompleteSessionInput): Promise<Comp
         newUnlocked: session.newUnlocked && warmupPassed && (!session.weeklyGateRequired || weeklyPassed),
       },
     });
-
     return { ok: true, sessionId: session.id, updatedCursorAyahId: Math.max(profile.cursorAyahId, nextCursor) };
+  }, {
+    timeout: Math.max(5_000, input.transactionTimeoutMs ?? 5_000),
   });
 
   return result;

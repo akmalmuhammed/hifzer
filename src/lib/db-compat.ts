@@ -46,7 +46,7 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
 
   try {
     const rows = await prisma.$queryRaw<Array<{ table_name: string; column_name: string }>>`
-      SELECT table_name, column_name
+      SELECT table_name::text AS table_name, column_name::text AS column_name
       FROM information_schema.columns
       WHERE table_schema = ${schema}
         AND (
