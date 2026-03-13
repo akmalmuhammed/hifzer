@@ -953,6 +953,11 @@ export function SessionClient() {
           {showTranslation ? "Hide translation" : "Show translation"}
         </Button>
       ) : null}
+      <Link href="/hifz/progress" className="w-full sm:w-auto">
+        <Button variant="secondary" className="w-full gap-2 sm:w-auto">
+          Hifz progress <ArrowRight size={16} />
+        </Button>
+      </Link>
       <Link href="/today" className="w-full sm:w-auto">
         <Button variant="secondary" className="w-full gap-2 sm:w-auto">
           Back to Today <ArrowRight size={16} />

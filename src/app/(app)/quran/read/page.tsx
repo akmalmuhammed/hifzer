@@ -135,11 +135,17 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   const reciterId = profile?.reciterId ?? "default";
   const requestedView = parseView(searchParams.view);
   const view = distractionFree ? "compact" : requestedView;
-  const surahNumber = parseBoundedInt(searchParams.surah, 1, 114);
+  const requestedSurahNumber = parseBoundedInt(searchParams.surah, 1, 114);
   const ayahId = parseBoundedInt(searchParams.ayah, 1, 6236);
-  const cursorAyahId = parseBoundedInt(searchParams.cursor, 1, 6236);
+  const requestedCursorAyahId = parseBoundedInt(searchParams.cursor, 1, 6236);
   const requestedPage = parseBoundedInt(searchParams.page, 1, 500) ?? 1;
   const anonymous = readSingle(searchParams.anon) === "1";
+  const surahNumber = anonymous
+    ? requestedSurahNumber
+    : requestedSurahNumber ?? (ayahId == null ? (profile?.quranActiveSurahNumber ?? 1) : undefined);
+  const cursorAyahId = anonymous
+    ? requestedCursorAyahId
+    : requestedCursorAyahId ?? profile?.quranCursorAyahId ?? undefined;
   const quranTranslationId = normalizeQuranTranslationId(
     cookieStore.get(QURAN_TRANSLATION_COOKIE)?.value ?? profile?.quranTranslationId ?? DEFAULT_QURAN_TRANSLATION_ID,
   );

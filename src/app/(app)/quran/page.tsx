@@ -1,10 +1,12 @@
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { ArrowRight, BookMarked, BookOpen, Compass, EyeOff, Headphones, MoonStar, Radio } from "lucide-react";
+import { SurahProgressSection } from "@/components/progress/surah-progress-section";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import { QuranMotivationHero } from "@/components/quran/quran-motivation-hero";
 import { getReciterLabel } from "@/hifzer/audio/reciters";
+import { listQuranSurahProgress } from "@/hifzer/progress/surah-progress.server";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { getAyahById, getSurahInfo, listJuzs, listSurahs } from "@/hifzer/quran/lookup.server";
 import { getQuranReadProgress } from "@/hifzer/quran/read-progress.server";
@@ -28,17 +30,21 @@ export default async function QuranIndexPage() {
     lastReadAyahId: null as number | null,
     lastReadAt: null as string | null,
   };
+  let surahProgressItems = [] as Awaited<ReturnType<typeof listQuranSurahProgress>>;
   if (clerkEnabled()) {
     const { userId } = await auth();
     if (userId) {
       profile = await getOrCreateUserProfile(userId);
       if (profile) {
-        readCoverage = await getQuranReadProgress(profile.id);
+        [readCoverage, surahProgressItems] = await Promise.all([
+          getQuranReadProgress(profile.id),
+          listQuranSurahProgress(userId),
+        ]);
       }
     }
   }
 
-  const progressAyahId = readCoverage.lastReadAyahId ?? profile?.quranCursorAyahId ?? 1;
+  const progressAyahId = profile?.quranCursorAyahId ?? readCoverage.lastReadAyahId ?? 1;
   const selectedTranslation = getQuranTranslationOption(profile?.quranTranslationId ?? DEFAULT_QURAN_TRANSLATION_ID);
 
   const surahs = listSurahs();
@@ -98,6 +104,13 @@ export default async function QuranIndexPage() {
               Laylat al-Qadr dua
               <MoonStar size={14} />
             </Link>
+            <Link
+              href="/quran/progress"
+              className="inline-flex items-center gap-2 rounded-xl border border-[rgba(22,163,74,0.24)] bg-[rgba(22,163,74,0.10)] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-[rgb(21,128,61)]"
+            >
+              Surah progress
+              <ArrowRight size={14} />
+            </Link>
           </div>
         </div>
         <span className="grid h-12 w-12 place-items-center rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
@@ -123,6 +136,17 @@ export default async function QuranIndexPage() {
           completedAyahCount={readCoverage.uniqueReadAyahCount}
           continueHref={trackedHref}
           anonymousHref={anonymousHref}
+        />
+      </div>
+
+      <div className="mt-8">
+        <SurahProgressSection
+          title="Surah progress"
+          subtitle="Completed surahs are softly highlighted in green, while the current surah keeps its live percentage so refreshes and returns stay anchored to the same Qur'an lane."
+          items={surahProgressItems.slice(0, 8)}
+          viewAllHref="/quran/progress"
+          emptyTitle="No tracked surah progress yet"
+          emptyBody="Open the tracked reader and your current surah plus completed surahs will start appearing here."
         />
       </div>
 
