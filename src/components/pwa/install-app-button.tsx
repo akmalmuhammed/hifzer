@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { Download, Share } from "lucide-react";
+import { Download } from "lucide-react";
 import { useInstallApp } from "@/components/pwa/use-install-app";
 import { useToast } from "@/components/ui/toast";
 
@@ -24,8 +24,8 @@ export function InstallAppButton({ className }: { className?: string }) {
     }
   }
 
-  const label = install.canPrompt ? "Install app" : "Add to Home";
-  const Icon = install.canPrompt ? Download : Share;
+  const label = "Install on Android";
+  const Icon = Download;
 
   return (
     <button

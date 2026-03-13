@@ -199,8 +199,8 @@ export function SupportClient() {
               <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Support policy</p>
             </div>
             <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-              Product issues and infrastructure regressions are prioritized first. Feature requests are reviewed
-              against roadmap impact and user retention value.
+              Broken experiences are handled first. Feature requests are reviewed against clarity,
+              usefulness, and how much they help people return to the app consistently.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Pill tone="accent">Bug fixes first</Pill>

@@ -25,7 +25,7 @@ export const QURAN_TRANSLATION_OPTIONS = [
     sourceLabel: "Bundled dataset",
     sourceStatus: "review_required",
     sourceUrl: "/legal/sources",
-    sourceNote: "Available in-app today, but its external provenance is still being normalized into the new source registry.",
+    sourceNote: "Available in-app today while we continue verifying its external source details.",
   },
   {
     id: "id.indonesian",
@@ -36,7 +36,7 @@ export const QURAN_TRANSLATION_OPTIONS = [
     sourceLabel: "Bundled dataset",
     sourceStatus: "review_required",
     sourceUrl: "/legal/sources",
-    sourceNote: "Available in-app today, but its external provenance is still being normalized into the new source registry.",
+    sourceNote: "Available in-app today while we continue verifying its external source details.",
   },
   {
     id: "tr.yildirim",
@@ -47,7 +47,7 @@ export const QURAN_TRANSLATION_OPTIONS = [
     sourceLabel: "Bundled dataset",
     sourceStatus: "review_required",
     sourceUrl: "/legal/sources",
-    sourceNote: "Available in-app today, but its external provenance is still being normalized into the new source registry.",
+    sourceNote: "Available in-app today while we continue verifying its external source details.",
   },
   {
     id: "fa.fooladvand",
@@ -58,7 +58,7 @@ export const QURAN_TRANSLATION_OPTIONS = [
     sourceLabel: "Bundled dataset",
     sourceStatus: "review_required",
     sourceUrl: "/legal/sources",
-    sourceNote: "Available in-app today, but its external provenance is still being normalized into the new source registry.",
+    sourceNote: "Available in-app today while we continue verifying its external source details.",
   },
   {
     id: "bn.bengali",
@@ -69,7 +69,7 @@ export const QURAN_TRANSLATION_OPTIONS = [
     sourceLabel: "Bundled dataset",
     sourceStatus: "review_required",
     sourceUrl: "/legal/sources",
-    sourceNote: "Available in-app today, but its external provenance is still being normalized into the new source registry.",
+    sourceNote: "Available in-app today while we continue verifying its external source details.",
   },
   {
     id: "ml.abdulhameed",
@@ -80,7 +80,7 @@ export const QURAN_TRANSLATION_OPTIONS = [
     sourceLabel: "Bundled dataset",
     sourceStatus: "review_required",
     sourceUrl: "/legal/sources",
-    sourceNote: "Available in-app today, but its external provenance is still being normalized into the new source registry.",
+    sourceNote: "Available in-app today while we continue verifying its external source details.",
   },
 ] as const;
 

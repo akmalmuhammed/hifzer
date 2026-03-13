@@ -26,6 +26,13 @@ function isIosSafari(): boolean {
   return isIos && isSafari;
 }
 
+function isAndroid(): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
+  return /Android/i.test(window.navigator.userAgent);
+}
+
 function isStandaloneMode(): boolean {
   if (typeof window === "undefined") {
     return false;
@@ -46,6 +53,7 @@ export function useInstallApp() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState<boolean>(() => isStandaloneMode());
   const [iosSafari] = useState<boolean>(() => !isStandaloneMode() && isIosSafari());
+  const [android] = useState<boolean>(() => isAndroid());
   const [mobile] = useState<boolean>(() => isMobileDevice());
 
   useEffect(() => {
@@ -73,7 +81,7 @@ export function useInstallApp() {
   }, [installed]);
 
   const canPrompt = Boolean(deferredPrompt);
-  const canShowCta = !installed && (canPrompt || iosSafari);
+  const canShowCta = !installed && android && canPrompt;
 
   const requestInstall = useCallback(async (): Promise<InstallRequestResult> => {
     if (installed) {
@@ -97,12 +105,13 @@ export function useInstallApp() {
   return useMemo(
     () => ({
       mobile,
+      android,
       installed,
       iosSafari,
       canPrompt,
       canShowCta,
       requestInstall,
     }),
-    [canPrompt, canShowCta, installed, iosSafari, mobile, requestInstall],
+    [android, canPrompt, canShowCta, installed, iosSafari, mobile, requestInstall],
   );
 }

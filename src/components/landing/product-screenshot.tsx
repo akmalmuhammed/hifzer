@@ -2,12 +2,28 @@
 
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
+import { BookOpenText, HeartHandshake, ShieldCheck } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
-const PROOF_STATS = [
-  { label: "Users in flow", value: "2,400+" },
-  { label: "Avg weekly sessions", value: "10.8" },
-  { label: "Reported confidence", value: "91%" },
+const PRODUCT_OUTCOMES = [
+  {
+    label: "Separate lanes",
+    value: "Qur'an and Hifz stay distinct",
+    detail: "Reading progress and memorization progress do not overwrite one another.",
+    icon: ShieldCheck,
+  },
+  {
+    label: "Resume gently",
+    value: "Return to the last ayah you touched",
+    detail: "The app keeps your place ready instead of making you hunt for it again.",
+    icon: BookOpenText,
+  },
+  {
+    label: "Stay personal",
+    value: "Private reading and personal duas stay yours",
+    detail: "Tracked and untracked flows are clearly separated so the experience stays intentional.",
+    icon: HeartHandshake,
+  },
 ] as const;
 
 export function ProductScreenshot() {
@@ -51,23 +67,34 @@ export function ProductScreenshot() {
 
           <Card className="h-full">
             <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-              Outcome snapshot
+              Why people stay with it
             </p>
 
             <div className="mt-3 grid gap-2">
-              {PROOF_STATS.map((item) => (
+              {PRODUCT_OUTCOMES.map((item) => {
+                const Icon = item.icon;
+                return (
                 <div
                   key={item.label}
                   className="rounded-2xl border border-[color:var(--kw-border-2)] bg-white/75 px-3 py-3"
                 >
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                    {item.label}
-                  </p>
-                  <p className="mt-1 text-2xl font-[family-name:var(--font-kw-display)] tracking-tight text-[color:var(--kw-ink)]">
-                    {item.value}
-                  </p>
+                  <div className="flex items-start gap-3">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/80 text-[color:var(--kw-ink-2)]">
+                      <Icon size={18} />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+                        {item.label}
+                      </p>
+                      <p className="mt-1 text-base font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                        {item.value}
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-[color:var(--kw-muted)]">{item.detail}</p>
+                    </div>
+                  </div>
                 </div>
-              ))}
+              );
+              })}
             </div>
 
             <div className="mt-4 rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.08)] p-3">

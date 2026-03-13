@@ -10,7 +10,7 @@ import {
 } from "@/hifzer/local/store";
 import type { ProfileSnapshot } from "@/hifzer/profile/server";
 
-const VALID_THEMES = new Set<ThemePreset>(["standard", "paper"]);
+const VALID_THEMES = new Set<ThemePreset>(["standard", "paper", "noor", "dawn", "rose"]);
 const VALID_ACCENTS = new Set<AccentPreset>(["teal", "cobalt", "ember"]);
 
 export function ProfileHydrator(props: { profile: ProfileSnapshot | null }) {

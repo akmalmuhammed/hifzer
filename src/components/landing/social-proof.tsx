@@ -78,7 +78,7 @@ export function SocialProof() {
 
       <div className="mt-6 flex items-center justify-center gap-2 text-center text-xs text-[color:var(--kw-faint)]">
         <BookOpenText size={14} />
-        <span>Based on the Hifz OS Core System — a shareable spec for research-aligned Qur&apos;an memorization.</span>
+        <span>Built to protect daily recitation, review, and long-term memorization with one calm routine.</span>
       </div>
     </section>
   );

@@ -91,6 +91,27 @@ html[data-theme="paper"] {
   --kw-card-solid: #ffffff;
 }
 
+html[data-theme="noor"] {
+  --kw-bg: #f4f8ff;
+  --kw-card: rgba(249, 252, 255, 0.78);
+  --kw-card-strong: rgba(255, 255, 255, 0.92);
+  --kw-card-solid: #ffffff;
+}
+
+html[data-theme="dawn"] {
+  --kw-bg: #fff7ee;
+  --kw-card: rgba(255, 251, 245, 0.8);
+  --kw-card-strong: rgba(255, 255, 255, 0.94);
+  --kw-card-solid: #fffdf9;
+}
+
+html[data-theme="rose"] {
+  --kw-bg: #fff4f7;
+  --kw-card: rgba(255, 248, 251, 0.8);
+  --kw-card-strong: rgba(255, 250, 252, 0.94);
+  --kw-card-solid: #fffdfd;
+}
+
 html[data-accent="teal"] {
   --kw-accent-rgb: 10, 138, 119;
   --kw-accent: var(--kw-teal-700);
@@ -353,6 +374,38 @@ html[data-mode="dark"] .kw-gradient-headline {
   filter: saturate(112%);
 }
 
+html[data-theme="paper"] .kw-canvas::before {
+  background:
+    radial-gradient(980px 620px at 14% 16%, rgba(161, 98, 7, 0.12), transparent 62%),
+    radial-gradient(880px 520px at 84% 18%, rgba(194, 65, 12, 0.12), transparent 60%),
+    radial-gradient(920px 560px at 68% 90%, rgba(10, 138, 119, 0.1), transparent 64%),
+    linear-gradient(180deg, rgba(255, 253, 249, 0.92), rgba(251, 247, 242, 1));
+}
+
+html[data-theme="noor"] .kw-canvas::before {
+  background:
+    radial-gradient(1120px 700px at 10% 16%, rgba(34, 197, 94, 0.12), transparent 60%),
+    radial-gradient(920px 560px at 88% 18%, rgba(56, 189, 248, 0.18), transparent 60%),
+    radial-gradient(960px 620px at 72% 92%, rgba(99, 102, 241, 0.12), transparent 66%),
+    linear-gradient(180deg, rgba(249, 252, 255, 0.94), rgba(244, 248, 255, 1));
+}
+
+html[data-theme="dawn"] .kw-canvas::before {
+  background:
+    radial-gradient(1120px 700px at 12% 16%, rgba(245, 158, 11, 0.16), transparent 60%),
+    radial-gradient(920px 560px at 88% 18%, rgba(251, 146, 60, 0.14), transparent 60%),
+    radial-gradient(980px 620px at 68% 92%, rgba(236, 72, 153, 0.1), transparent 66%),
+    linear-gradient(180deg, rgba(255, 251, 244, 0.94), rgba(255, 247, 238, 1));
+}
+
+html[data-theme="rose"] .kw-canvas::before {
+  background:
+    radial-gradient(1120px 700px at 12% 16%, rgba(236, 72, 153, 0.18), transparent 60%),
+    radial-gradient(920px 560px at 88% 18%, rgba(244, 114, 182, 0.14), transparent 60%),
+    radial-gradient(980px 620px at 70% 92%, rgba(168, 85, 247, 0.12), transparent 66%),
+    linear-gradient(180deg, rgba(255, 249, 251, 0.94), rgba(255, 244, 247, 1));
+}
+
 .kw-canvas::after {
   content: "";
   position: absolute;
@@ -383,6 +436,38 @@ html[data-mode="dark"] .kw-canvas::before {
     ),
     linear-gradient(180deg, rgba(5, 10, 18, 0.96), rgba(11, 18, 32, 1));
   filter: saturate(118%);
+}
+
+html[data-mode="dark"][data-theme="paper"] .kw-canvas::before {
+  background:
+    radial-gradient(1100px 700px at 10% 15%, rgba(194, 65, 12, 0.16), transparent 62%),
+    radial-gradient(900px 560px at 88% 18%, rgba(245, 158, 11, 0.16), transparent 62%),
+    radial-gradient(980px 620px at 70% 90%, rgba(20, 184, 166, 0.12), transparent 68%),
+    linear-gradient(180deg, rgba(18, 14, 12, 0.96), rgba(27, 22, 18, 1));
+}
+
+html[data-mode="dark"][data-theme="noor"] .kw-canvas::before {
+  background:
+    radial-gradient(1100px 700px at 10% 15%, rgba(34, 197, 94, 0.16), transparent 62%),
+    radial-gradient(900px 560px at 88% 18%, rgba(56, 189, 248, 0.18), transparent 62%),
+    radial-gradient(980px 620px at 70% 90%, rgba(129, 140, 248, 0.16), transparent 68%),
+    linear-gradient(180deg, rgba(7, 13, 24, 0.96), rgba(10, 19, 34, 1));
+}
+
+html[data-mode="dark"][data-theme="dawn"] .kw-canvas::before {
+  background:
+    radial-gradient(1100px 700px at 10% 15%, rgba(251, 146, 60, 0.18), transparent 62%),
+    radial-gradient(900px 560px at 88% 18%, rgba(245, 158, 11, 0.16), transparent 62%),
+    radial-gradient(980px 620px at 70% 90%, rgba(244, 114, 182, 0.12), transparent 68%),
+    linear-gradient(180deg, rgba(22, 12, 8, 0.96), rgba(30, 18, 10, 1));
+}
+
+html[data-mode="dark"][data-theme="rose"] .kw-canvas::before {
+  background:
+    radial-gradient(1100px 700px at 10% 15%, rgba(244, 114, 182, 0.18), transparent 62%),
+    radial-gradient(900px 560px at 88% 18%, rgba(236, 72, 153, 0.14), transparent 62%),
+    radial-gradient(980px 620px at 70% 90%, rgba(168, 85, 247, 0.14), transparent 68%),
+    linear-gradient(180deg, rgba(22, 10, 18, 0.96), rgba(30, 12, 26, 1));
 }
 
 html[data-mode="dark"] .kw-canvas::after {

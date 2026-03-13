@@ -67,7 +67,7 @@ const APP_UI_COPY: Record<UiLanguage, AppUiCopy> = {
   "en.sahih": {
     skipToMain: "Skip to main content",
     language: "Language",
-    brandTagline: "Hifz operating system",
+    brandTagline: "Your daily Qur'an companion",
     sectionInsights: "Insights",
     sectionProduct: "Product",
     nav: {
@@ -85,7 +85,7 @@ const APP_UI_COPY: Record<UiLanguage, AppUiCopy> = {
     },
     marketing: {
       compare: "Compare",
-      openApp: "Open app",
+      openApp: "Continue in app",
       signIn: "Sign in",
       getStarted: "Get started",
       motivation: "Motivation",

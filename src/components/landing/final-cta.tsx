@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { Download, Share } from "lucide-react";
+import { ArrowRight, Download } from "lucide-react";
 import { IphoneInstallGuide } from "@/components/landing/iphone-install-guide";
 import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
@@ -15,7 +15,6 @@ export function FinalCta() {
   const { isSignedIn } = usePublicAuth();
   const install = useInstallApp();
   const { pushToast } = useToast();
-  const InstallIcon = install.canPrompt ? Download : Share;
 
   const onInstallNow = async () => {
     trackGaEvent("landing.install_primary_click", { placement: "final-cta" });
@@ -37,7 +36,7 @@ export function FinalCta() {
       pushToast({
         tone: "warning",
         title: "iPhone install",
-        message: "Tap Share, then Add to Home Screen.",
+        message: "Safari requires Share, then Add to Home Screen.",
       });
       return;
     }
@@ -74,30 +73,46 @@ export function FinalCta() {
           </p>
 
           <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <Button
-              type="button"
-              size="lg"
-              onClick={() => {
-                void onInstallNow();
-              }}
-            >
-              <InstallIcon size={18} />
-              Add to Home Screen now
+            <Button asChild size="lg">
+              <PublicAuthLink
+                signedInHref="/today"
+                signedOutHref="/signup"
+                onClick={() => {
+                  trackGaEvent("landing.secondary_start_free_click", { placement: "final-cta-primary" });
+                }}
+              >
+                {isSignedIn ? "Continue in app" : "Start free in browser"} <ArrowRight size={18} />
+              </PublicAuthLink>
             </Button>
+            {install.canShowCta ? (
+              <Button
+                type="button"
+                size="lg"
+                variant="secondary"
+                onClick={() => {
+                  void onInstallNow();
+                }}
+              >
+                <Download size={18} />
+                Install on Android
+              </Button>
+            ) : null}
           </div>
 
+          {!isSignedIn ? (
           <p className="mt-4">
             <PublicAuthLink
               signedInHref="/today"
-              signedOutHref="/signup"
+              signedOutHref="/quran-preview"
               onClick={() => {
                 trackGaEvent("landing.secondary_start_free_click", { placement: "final-cta" });
               }}
               className="text-sm font-semibold text-[color:var(--kw-muted)] underline underline-offset-2 transition hover:text-[color:var(--kw-ink)]"
             >
-              {isSignedIn ? "Open app" : "Start free in browser"}
+              Preview the reading flow
             </PublicAuthLink>
           </p>
+          ) : null}
         </div>
 
         <div className="mx-auto mt-8 grid max-w-[920px] gap-3 sm:grid-cols-2">

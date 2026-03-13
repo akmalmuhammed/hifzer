@@ -1,8 +1,7 @@
 ﻿"use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Download, Share, Sparkles } from "lucide-react";
-import { WindLines } from "@/components/brand/wind-lines";
+import { ArrowRight, Download, Sparkles } from "lucide-react";
 import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { Button } from "@/components/ui/button";
@@ -21,7 +20,6 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
   const { isSignedIn } = usePublicAuth();
   const install = useInstallApp();
   const { pushToast } = useToast();
-  const InstallIcon = install.canPrompt ? Download : Share;
 
   const onInstallNow = async () => {
     trackGaEvent("landing.install_primary_click", { placement: "hero" });
@@ -43,7 +41,7 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
       pushToast({
         tone: "warning",
         title: "iPhone install",
-        message: "Tap Share, then Add to Home Screen.",
+        message: "Safari requires Share, then Add to Home Screen.",
       });
       return;
     }
@@ -57,10 +55,6 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
 
   return (
     <section className="relative overflow-hidden py-14 md:py-20">
-      <div className="pointer-events-none absolute inset-x-0 -top-16 h-[340px] opacity-70">
-        <WindLines className="opacity-50 md:opacity-58" animated />
-      </div>
-
       <motion.div
         className="relative mx-auto grid max-w-[920px] gap-6 text-center"
         initial="hidden"
@@ -97,62 +91,53 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
         </motion.p>
 
         <motion.div variants={fadeUp} className="mt-1 flex flex-wrap items-center justify-center gap-3">
-          {primaryIntent === "signup" ? (
-            <Button asChild size="lg">
-              <PublicAuthLink
-                signedInHref="/today"
-                signedOutHref="/signup"
-                onClick={() => {
-                  trackGaEvent("landing.secondary_start_free_click", { placement: "hero-primary" });
-                }}
-              >
-                Start free in browser <ArrowRight size={18} />
-              </PublicAuthLink>
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              size="lg"
-              onClick={() => {
-                void onInstallNow();
-              }}
-            >
-              <InstallIcon size={18} />
-              Add to Home Screen now
-            </Button>
-          )}
-          <Button asChild size="lg" variant="secondary">
+          <Button asChild size="lg">
             <PublicAuthLink
               signedInHref="/today"
               signedOutHref="/signup"
               onClick={() => {
                 trackGaEvent("landing.secondary_start_free_click", {
-                  placement: "hero-auth-cta",
+                  placement: "hero-primary",
                   state: isSignedIn ? "signed_in" : "signed_out",
                 });
               }}
             >
-              {isSignedIn ? "Open app" : "Start free in browser"} <ArrowRight size={18} />
+              {isSignedIn ? "Continue in app" : "Start free in browser"} <ArrowRight size={18} />
             </PublicAuthLink>
           </Button>
+          {primaryIntent === "install" && install.canShowCta ? (
+            <Button
+              type="button"
+              size="lg"
+              variant="secondary"
+              onClick={() => {
+                void onInstallNow();
+              }}
+            >
+              <Download size={18} />
+              Install on Android
+            </Button>
+          ) : null}
         </motion.div>
 
+        {!isSignedIn ? (
         <motion.div variants={fadeUp}>
           <PublicAuthLink
             signedInHref="/today"
-            signedOutHref="/signup"
+            signedOutHref="/quran-preview"
             onClick={() => {
               trackGaEvent("landing.secondary_start_free_click", { placement: "hero-secondary" });
             }}
             className="text-sm font-semibold text-[color:var(--kw-muted)] underline underline-offset-2 transition hover:text-[color:var(--kw-ink)]"
           >
-            {isSignedIn ? "Open app now" : "Start free in browser"}
+            Preview the reading flow
           </PublicAuthLink>
         </motion.div>
+        ) : null}
 
         {!reduceMotion ? (
           <motion.p variants={fadeUp} className="text-xs text-[color:var(--kw-faint)]">
-            Works on Android and iPhone with home-screen install.
+            Android supports the direct install prompt. iPhone Safari needs manual Add to Home Screen steps.
           </motion.p>
         ) : null}
       </motion.div>

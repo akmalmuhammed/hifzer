@@ -285,14 +285,14 @@ export default async function QuranIndexPage() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <Pill tone="neutral">Source trust</Pill>
-              <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">Content provenance</span>
+              <Pill tone="neutral">Trusted sources</Pill>
+              <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">Reading clarity</span>
             </div>
             <p className="mt-4 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-              Keep the Qur&apos;an stack traceable.
+              Keep your reading sources clear and easy to understand.
             </p>
             <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
-              Arabic text and metadata are bundled from Tanzil. Your default translation is{" "}
+              Arabic text comes from Tanzil. Your default translation is{" "}
               <span className="font-semibold text-[color:var(--kw-ink)]">{selectedTranslation?.label ?? "Unknown"}</span>{" "}
               from <span className="font-semibold text-[color:var(--kw-ink)]">{selectedTranslation?.sourceLabel ?? "Unknown"}</span>.
             </p>
@@ -312,7 +312,7 @@ export default async function QuranIndexPage() {
             href="/legal/sources"
             className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
           >
-            View source registry
+            Learn about sources
           </Link>
           <Link
             href="/settings/language"

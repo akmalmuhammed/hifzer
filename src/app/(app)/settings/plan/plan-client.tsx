@@ -52,7 +52,7 @@ export function PlanSettingsClient(props: PlanClientProps) {
       <PageHeader
         eyebrow="Settings"
         title="Plan"
-        subtitle="Adjust budget and bias used by the Hifz OS queue engine."
+        subtitle="Adjust your time, rhythm, and learning focus for the way you actually practice."
       />
 
       <Card>
@@ -142,4 +142,3 @@ export function PlanSettingsClient(props: PlanClientProps) {
     </div>
   );
 }
-

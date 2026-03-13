@@ -123,7 +123,7 @@ function NavLink(props: { item: NavItem; pathname: string; copy: ReturnType<type
       href={item.href}
       telemetryName={`shell.nav.${item.key}`}
       className={clsx(
-        "flex items-center gap-3 rounded-[18px] border px-3 py-2 text-sm font-semibold shadow-[var(--kw-shadow-soft)] transition",
+        "flex items-center gap-3 rounded-[18px] border px-3.5 py-2.5 text-sm font-semibold shadow-[var(--kw-shadow-soft)] transition",
         active
           ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] text-[color:var(--kw-ink)]"
           : "border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] text-[color:var(--kw-muted)] hover:bg-[color:var(--kw-surface-strong)] hover:text-[color:var(--kw-ink)]",
@@ -131,11 +131,11 @@ function NavLink(props: { item: NavItem; pathname: string; copy: ReturnType<type
     >
       <span
         className={clsx(
-          "grid h-9 w-9 place-items-center rounded-2xl border bg-[color:var(--kw-surface)] text-[color:var(--kw-ink-2)]",
+          "grid h-10 w-10 place-items-center rounded-[16px] border bg-[color:var(--kw-surface)] text-[color:var(--kw-ink-2)]",
           active ? "border-[rgba(var(--kw-accent-rgb),0.26)]" : "border-[color:var(--kw-border-2)]",
         )}
       >
-        <Icon size={18} />
+        <Icon size={17} />
       </span>
       <span className="truncate">{label}</span>
     </TrackedLink>
@@ -292,7 +292,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
                     : "text-[color:var(--kw-muted)] hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)]",
                 )}
               >
-                <Icon size={18} />
+                <Icon size={17} />
                 <span className="truncate">{label}</span>
               </TrackedLink>
             );

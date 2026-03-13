@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BookOpenText } from "lucide-react";
+import { ArrowRight, BookOpenText, ChevronDown } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import type { SurahProgressItem } from "@/hifzer/progress/surah-progress.server";
@@ -11,6 +11,7 @@ type Props = {
   viewAllHref?: string;
   emptyTitle?: string;
   emptyBody?: string;
+  defaultExpanded?: boolean;
 };
 
 function formatTouchedAt(value: string | null): string | null {
@@ -98,70 +99,88 @@ export function SurahProgressSection({
   viewAllHref,
   emptyTitle = "No surah progress yet",
   emptyBody = "Start reciting to build your first tracked surah list.",
+  defaultExpanded = false,
 }: Props) {
   const inProgress = items.filter((item) => item.isCurrent || !item.isCompleted);
   const completed = items.filter((item) => item.isCompleted && !item.isCurrent);
 
   return (
     <Card>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <BookOpenText size={16} className="text-[color:var(--kw-faint)]" />
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">{title}</p>
+      <details className="group" open={defaultExpanded}>
+        <summary className="list-none cursor-pointer">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <BookOpenText size={16} className="text-[color:var(--kw-faint)]" />
+                <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">{title}</p>
+              </div>
+              <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">{subtitle}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Pill tone="neutral">{items.length} tracked</Pill>
+              <span className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]">
+                <span className="group-open:hidden">Show</span>
+                <span className="hidden group-open:inline">Hide</span>
+                <ChevronDown size={15} className="transition-transform group-open:rotate-180" />
+              </span>
+            </div>
           </div>
-          <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">{subtitle}</p>
-        </div>
-        {viewAllHref ? (
-          <Link
-            href={viewAllHref}
-            className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
-          >
-            View full list <ArrowRight size={15} />
-          </Link>
-        ) : null}
-      </div>
+        </summary>
 
-      {items.length < 1 ? (
-        <div className="mt-6 rounded-[22px] border border-dashed border-[color:var(--kw-border-2)] bg-white/55 p-5">
-          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{emptyTitle}</p>
-          <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">{emptyBody}</p>
-        </div>
-      ) : (
-        <>
-          {inProgress.length > 0 ? (
-            <div className="mt-6">
-              <div className="flex items-center gap-2">
-                <Pill tone="neutral">In progress</Pill>
-                <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">
-                  Current and partial surahs
-                </span>
-              </div>
-              <div className="mt-3 grid gap-3 xl:grid-cols-2">
-                {inProgress.map((item) => (
-                  <ProgressRow key={`${item.lane}-${item.surahNumber}`} item={item} />
-                ))}
-              </div>
+        <div className="mt-6">
+          {viewAllHref ? (
+            <div className="mb-4 flex justify-start">
+              <Link
+                href={viewAllHref}
+                className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+              >
+                View full list <ArrowRight size={15} />
+              </Link>
             </div>
           ) : null}
 
-          {completed.length > 0 ? (
-            <div className="mt-6">
-              <div className="flex items-center gap-2">
-                <Pill tone="accent">Completed</Pill>
-                <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">
-                  Subtly highlighted for fast scanning
-                </span>
-              </div>
-              <div className="mt-3 grid gap-3 xl:grid-cols-2">
-                {completed.map((item) => (
-                  <ProgressRow key={`${item.lane}-${item.surahNumber}`} item={item} />
-                ))}
-              </div>
+          {items.length < 1 ? (
+            <div className="rounded-[22px] border border-dashed border-[color:var(--kw-border-2)] bg-white/55 p-5">
+              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{emptyTitle}</p>
+              <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">{emptyBody}</p>
             </div>
-          ) : null}
-        </>
-      )}
+          ) : (
+            <>
+              {inProgress.length > 0 ? (
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Pill tone="neutral">In progress</Pill>
+                    <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">
+                      Current and partial surahs
+                    </span>
+                  </div>
+                  <div className="mt-3 grid gap-3 xl:grid-cols-2">
+                    {inProgress.map((item) => (
+                      <ProgressRow key={`${item.lane}-${item.surahNumber}`} item={item} />
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {completed.length > 0 ? (
+                <div className="mt-6">
+                  <div className="flex items-center gap-2">
+                    <Pill tone="accent">Completed</Pill>
+                    <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">
+                      Subtly highlighted for fast scanning
+                    </span>
+                  </div>
+                  <div className="mt-3 grid gap-3 xl:grid-cols-2">
+                    {completed.map((item) => (
+                      <ProgressRow key={`${item.lane}-${item.surahNumber}`} item={item} />
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </>
+          )}
+        </div>
+      </details>
     </Card>
   );
 }

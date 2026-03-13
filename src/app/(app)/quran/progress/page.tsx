@@ -52,6 +52,7 @@ export default async function QuranSurahProgressPage() {
           title="Full Qur&apos;an surah list"
           subtitle="Completion badges use tracked surah-end passes, while the current surah percentage stays anchored to your saved Qur&apos;an lane."
           items={items}
+          defaultExpanded
           emptyTitle="No Qur&apos;an surahs tracked yet"
           emptyBody="Read in tracked mode and your current surah plus completed surahs will appear here."
         />

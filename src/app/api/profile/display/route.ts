@@ -8,7 +8,7 @@ type Payload = {
   accentPreset?: unknown;
 };
 
-const ALLOWED_THEME = new Set(["standard", "paper"]);
+const ALLOWED_THEME = new Set(["standard", "paper", "noor", "dawn", "rose"]);
 const ALLOWED_ACCENT = new Set(["teal", "cobalt", "ember"]);
 
 export async function POST(req: Request) {
@@ -38,4 +38,3 @@ export async function POST(req: Request) {
   const profile = await saveDisplayPrefs({ clerkUserId: userId, darkMode, themePreset, accentPreset });
   return NextResponse.json({ ok: true, profile });
 }
-

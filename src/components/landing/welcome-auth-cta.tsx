@@ -12,7 +12,7 @@ export function WelcomeAuthCta() {
     return (
       <Button asChild size="lg" className="gap-2">
         <PublicAuthLink signedInHref="/today" className="inline-flex">
-          Open app <ArrowRight size={18} />
+          Continue in app <ArrowRight size={18} />
         </PublicAuthLink>
       </Button>
     );

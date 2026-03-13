@@ -64,7 +64,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                     {copy.marketing.openApp}
                   </TrackedLink>
                 </Button>
-                <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] shadow-[var(--kw-shadow-soft)]">
+                <div className="grid h-11 w-11 place-items-center rounded-[16px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] shadow-[var(--kw-shadow-soft)]">
                   <UserButton afterSignOutUrl="/" />
                 </div>
               </>
@@ -73,7 +73,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                 <PublicAuthLink
                   signedInHref="/today"
                   signedOutHref="/login"
-                  className="rounded-2xl px-3 py-2 text-sm font-semibold text-[color:var(--kw-muted)] transition hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)]"
+                  className="rounded-[16px] px-3 py-2.5 text-sm font-semibold text-[color:var(--kw-muted)] transition hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)]"
                 >
                   {copy.marketing.signIn}
                 </PublicAuthLink>
@@ -92,7 +92,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)] backdrop-blur transition hover:bg-[color:var(--kw-hover-strong)] md:hidden"
+            className="grid h-11 w-11 place-items-center rounded-[16px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)] backdrop-blur transition hover:bg-[color:var(--kw-hover-strong)] md:hidden"
             aria-label={copy.marketing.toggleMenu}
           >
             {open ? <X size={18} /> : <Menu size={18} />}
@@ -126,11 +126,11 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                     href="/today"
                     telemetryName="marketing.mobile-open-app"
                     onClick={() => setOpen(false)}
-                    className="flex-1 rounded-2xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 py-2 text-center text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]"
+                    className="flex-1 rounded-[16px] border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 py-2.5 text-center text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]"
                   >
                     {copy.marketing.openApp}
                   </TrackedLink>
-                  <div className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] shadow-[var(--kw-shadow-soft)]">
+                  <div className="grid h-11 w-11 place-items-center rounded-[16px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] shadow-[var(--kw-shadow-soft)]">
                     <UserButton afterSignOutUrl="/" />
                   </div>
                 </>
@@ -140,7 +140,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                     signedInHref="/today"
                     signedOutHref="/login"
                     onClick={() => setOpen(false)}
-                    className="flex-1 rounded-2xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 py-2 text-center text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]"
+                    className="flex-1 rounded-[16px] border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 py-2.5 text-center text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]"
                   >
                     {copy.marketing.signIn}
                   </PublicAuthLink>

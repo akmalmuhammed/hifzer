@@ -1,24 +1,17 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { Check, Lock, Moon, Sun } from "lucide-react";
+import { useEffect, useRef, type ReactNode } from "react";
+import { Check, Moon, Sun } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { useTheme, type AccentPreset, type ThemePreset } from "@/components/providers/theme-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Pill } from "@/components/ui/pill";
-import { useToast } from "@/components/ui/toast";
-
-function paidEnabled(): boolean {
-  // Paddle + entitlements will enforce this for real later.
-  return false;
-}
 
 function OptionRow(props: {
   title: string;
   desc: string;
-  right?: React.ReactNode;
-  children?: React.ReactNode;
+  right?: ReactNode;
+  children?: ReactNode;
 }) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -35,38 +28,108 @@ function OptionRow(props: {
 function SelectPill(props: {
   label: string;
   selected: boolean;
-  disabled?: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
-      disabled={props.disabled}
       onClick={props.onClick}
       className={[
         "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition",
-        props.disabled
-          ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]"
-          : props.selected
-            ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-            : "border-[color:var(--kw-border-2)] bg-[color:var(--kw-card)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-card-strong)]",
+        props.selected
+          ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+          : "border-[color:var(--kw-border-2)] bg-[color:var(--kw-card)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-card-strong)]",
       ].join(" ")}
     >
       {props.selected ? <Check size={14} /> : null}
       <span>{props.label}</span>
-      {props.disabled ? <Lock size={14} /> : null}
+    </button>
+  );
+}
+
+const THEME_OPTIONS: Array<{
+  id: ThemePreset;
+  label: string;
+  description: string;
+  previewClass: string;
+}> = [
+  {
+    id: "standard",
+    label: "Standard",
+    description: "Balanced glass surfaces with the core Hifzer atmosphere.",
+    previewClass: "from-[#dff7f1] via-[#eef2ff] to-[#fff4e5]",
+  },
+  {
+    id: "paper",
+    label: "Paper",
+    description: "Warmer parchment tones for a softer reading feel.",
+    previewClass: "from-[#fff8ef] via-[#fffaf6] to-[#f5efe8]",
+  },
+  {
+    id: "noor",
+    label: "Noor",
+    description: "Cool luminous blues and teals with a calmer night-glow edge.",
+    previewClass: "from-[#e1f5ff] via-[#eff6ff] to-[#dff7f1]",
+  },
+  {
+    id: "dawn",
+    label: "Dawn",
+    description: "A sunrise mix of sand, gold, and early-sky warmth.",
+    previewClass: "from-[#fff1d8] via-[#fff8ef] to-[#ffe4c7]",
+  },
+  {
+    id: "rose",
+    label: "Rose",
+    description: "A pink-tinted gradient with a softer devotional mood.",
+    previewClass: "from-[#ffe0ea] via-[#fff1f5] to-[#f7e8ff]",
+  },
+];
+
+const ACCENT_OPTIONS: Array<{ id: AccentPreset; label: string; swatchClass: string }> = [
+  { id: "teal", label: "Teal", swatchClass: "bg-[#0a8a77]" },
+  { id: "cobalt", label: "Cobalt", swatchClass: "bg-[#2b4bff]" },
+  { id: "ember", label: "Ember", swatchClass: "bg-[#ea580c]" },
+];
+
+function ThemeCard(props: {
+  label: string;
+  description: string;
+  selected: boolean;
+  previewClass: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={props.onClick}
+      className={[
+        "w-full rounded-[22px] border p-3 text-left transition",
+        props.selected
+          ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.08)] shadow-[var(--kw-shadow-soft)]"
+          : "border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] hover:bg-[color:var(--kw-surface)]",
+      ].join(" ")}
+    >
+      <div className={`h-16 rounded-[18px] bg-gradient-to-br ${props.previewClass}`} />
+      <div className="mt-3 flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{props.label}</p>
+          <p className="mt-1 text-sm leading-6 text-[color:var(--kw-muted)]">{props.description}</p>
+        </div>
+        {props.selected ? (
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]">
+            <Check size={16} />
+          </span>
+        ) : null}
+      </div>
     </button>
   );
 }
 
 export default function DisplaySettingsPage() {
   const { mode, theme, accent, toggleMode, setTheme, setAccent } = useTheme();
-  const { pushToast } = useToast();
-  const paid = paidEnabled();
   const mountedRef = useRef(false);
 
   useEffect(() => {
-    // Avoid immediate write on initial mount.
     if (!mountedRef.current) {
       mountedRef.current = true;
       return;
@@ -82,68 +145,50 @@ export default function DisplaySettingsPage() {
           accentPreset: accent,
         }),
       }).catch(() => {
-        // Client theme remains active even if persistence fails.
+        // Keep the local preference even if persistence fails.
       });
     }, 250);
 
     return () => window.clearTimeout(timer);
   }, [accent, mode, theme]);
 
-  function trySetTheme(next: ThemePreset) {
-    if (next !== "standard" && !paid) {
-      pushToast({ title: "Paid feature", message: "Theme presets unlock on Paid.", tone: "warning" });
-      return;
-    }
-    setTheme(next);
-  }
-
-  function trySetAccent(next: AccentPreset) {
-    if (next !== "teal" && !paid) {
-      pushToast({ title: "Paid feature", message: "Accent presets unlock on Paid.", tone: "warning" });
-      return;
-    }
-    setAccent(next);
-  }
-
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow="Settings"
         title="Display"
-        subtitle="Dark mode is free. Theme and accent presets are shown now; paid gating will be enforced with billing."
+        subtitle="Choose the mood, color, and contrast that make daily recitation easier to return to."
       />
 
       <Card>
         <OptionRow
           title="Mode"
-          desc="Switch between light and dark."
-          right={
+          desc="Switch between light and dark while keeping the Qur'an script untouched."
+          right={(
             <Button variant="secondary" className="gap-2" onClick={() => toggleMode()}>
               {mode === "dark" ? <Moon size={16} /> : <Sun size={16} />}
               {mode === "dark" ? "Dark" : "Light"}
             </Button>
-          }
+          )}
         />
       </Card>
 
       <Card>
         <OptionRow
           title="Theme"
-          desc="Standard is free. Paper is a premium preset."
-          right={<Pill tone={paid ? "success" : "neutral"}>{paid ? "Paid unlocked" : "Free"}</Pill>}
+          desc="These presets reshape the gradients and surface feel without changing the Qur'an font."
         >
-          <div className="flex flex-wrap gap-2">
-            <SelectPill
-              label="Standard"
-              selected={theme === "standard"}
-              onClick={() => trySetTheme("standard")}
-            />
-            <SelectPill
-              label="Paper"
-              selected={theme === "paper"}
-              disabled={!paid}
-              onClick={() => trySetTheme("paper")}
-            />
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {THEME_OPTIONS.map((option) => (
+              <ThemeCard
+                key={option.id}
+                label={option.label}
+                description={option.description}
+                previewClass={option.previewClass}
+                selected={theme === option.id}
+                onClick={() => setTheme(option.id)}
+              />
+            ))}
           </div>
         </OptionRow>
       </Card>
@@ -151,27 +196,28 @@ export default function DisplaySettingsPage() {
       <Card>
         <OptionRow
           title="Accent"
-          desc="Teal is free. Additional accents unlock on Paid."
-          right={<Pill tone={paid ? "success" : "neutral"}>{paid ? "Paid unlocked" : "Free"}</Pill>}
+          desc="Pick the color used for highlights, active states, and calls to action."
         >
           <div className="flex flex-wrap gap-2">
-            <SelectPill
-              label="Teal"
-              selected={accent === "teal"}
-              onClick={() => trySetAccent("teal")}
-            />
-            <SelectPill
-              label="Cobalt"
-              selected={accent === "cobalt"}
-              disabled={!paid}
-              onClick={() => trySetAccent("cobalt")}
-            />
-            <SelectPill
-              label="Ember"
-              selected={accent === "ember"}
-              disabled={!paid}
-              onClick={() => trySetAccent("ember")}
-            />
+            {ACCENT_OPTIONS.map((option) => (
+              <SelectPill
+                key={option.id}
+                label={option.label}
+                selected={accent === option.id}
+                onClick={() => setAccent(option.id)}
+              />
+            ))}
+          </div>
+          <div className="mt-3 flex flex-wrap gap-3">
+            {ACCENT_OPTIONS.map((option) => (
+              <div
+                key={`${option.id}-swatch`}
+                className="inline-flex items-center gap-2 rounded-full border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3 py-2 text-sm text-[color:var(--kw-muted)]"
+              >
+                <span className={`h-3 w-3 rounded-full ${option.swatchClass}`} />
+                {option.label}
+              </div>
+            ))}
           </div>
         </OptionRow>
       </Card>

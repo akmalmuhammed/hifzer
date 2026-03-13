@@ -14,7 +14,7 @@ export function MarketingFooter() {
             <div>
               <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Hifzer</p>
               <p className="text-xs text-[color:var(--kw-muted)]">
-                Hifz operating system.
+                Your daily Qur&apos;an companion.
               </p>
             </div>
           </div>

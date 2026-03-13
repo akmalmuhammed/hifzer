@@ -52,6 +52,7 @@ export default async function HifzSurahProgressPage() {
           title="Full Hifz surah list"
           subtitle="The current surah reflects your present memorization lane, while completed surahs stay visible so you can review what is already closed."
           items={items}
+          defaultExpanded
           emptyTitle="No Hifz surahs tracked yet"
           emptyBody="Complete Hifz sessions and the current plus completed surahs will appear here."
         />

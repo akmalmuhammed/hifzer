@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Hifzer",
     short_name: "Hifzer",
     description:
-      "Hifzer is the operating system for Qur'an memorization: quality gates, spaced repetition, and a daily plan that enforces retention.",
+      "A calm Qur'an companion for reading, reciting, and memorizing with structure.",
     start_url: "/",
     scope: "/",
     display: "standalone",
