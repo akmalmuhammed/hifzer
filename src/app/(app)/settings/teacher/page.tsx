@@ -65,10 +65,10 @@ export default function TeacherSettingsPage() {
               Open teacher dashboard
             </Link>
             <Link
-              href="/progress"
+              href="/hifz/progress"
               className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
             >
-              Open progress
+              Open Hifz progress
             </Link>
             <Link
               href="/settings/plan"

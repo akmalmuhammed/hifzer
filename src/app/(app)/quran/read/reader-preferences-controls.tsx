@@ -6,7 +6,6 @@ import { useToast } from "@/components/ui/toast";
 import type { ReaderUiCopy } from "@/hifzer/quran/reader-ui-copy";
 import {
   buildQuranTranslationCookieValue,
-  getQuranTranslationOption,
   QURAN_TRANSLATION_OPTIONS,
   type QuranTranslationId,
 } from "@/hifzer/quran/translation-prefs";
@@ -49,8 +48,6 @@ export function ReaderPreferencesControls(props: ReaderPreferencesControlsProps)
       throw new Error(payload.error || props.ui.failedSaveReaderPreferences);
     }
   }
-
-  const selected = getQuranTranslationOption(translationId);
 
   return (
     <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
@@ -100,18 +97,6 @@ export function ReaderPreferencesControls(props: ReaderPreferencesControlsProps)
             </option>
           ))}
         </select>
-        <span className="mt-1 block text-xs text-[color:var(--kw-faint)]">
-          {props.ui.active}: {selected?.label ?? translationId}
-        </span>
-        <span className="mt-1 block text-xs text-[color:var(--kw-faint)]">
-          Source: {selected?.sourceLabel ?? "Unknown"}.
-          {selected?.sourceStatus === "verified" ? " Verified." : " Review pending."}
-        </span>
-        {selected?.sourceNote ? (
-          <span className="mt-1 block text-xs leading-5 text-[color:var(--kw-faint)]">
-            {selected.sourceNote}
-          </span>
-        ) : null}
         {languageWarning ? (
           <span className="mt-1 block rounded-xl border border-[rgba(234,88,12,0.3)] bg-[rgba(234,88,12,0.08)] px-3 py-2 text-xs leading-5 text-[color:var(--kw-muted)]">
             <span className="block font-semibold text-[rgba(234,88,12,0.95)]">
@@ -161,9 +146,6 @@ export function ReaderPreferencesControls(props: ReaderPreferencesControlsProps)
             {showDetails ? props.ui.hideDetails : props.ui.showDetails}
           </button>
         </div>
-        <span className="mt-1 block text-xs text-[color:var(--kw-faint)]">
-          {props.ui.defaultDetailsHint}
-        </span>
         {!props.persistEnabled ? (
           <span className="mt-1 block text-xs text-[color:var(--kw-faint)]">
             {props.ui.signInToPersist}

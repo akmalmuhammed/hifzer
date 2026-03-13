@@ -115,10 +115,10 @@ export default async function MilestonesPage() {
               </div>
               <div className="mt-5 flex flex-wrap gap-2">
                 <Link
-                  href="/progress"
+                  href="/today"
                   className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
                 >
-                  Open progress <ArrowRight size={14} />
+                  Open dashboard <ArrowRight size={14} />
                 </Link>
                 <Link
                   href="/quran"

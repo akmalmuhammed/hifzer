@@ -58,6 +58,7 @@ export type LearningLane = {
 
 export type TodayDashboardSummary = {
   today: {
+    localDate: string;
     status: "idle" | "in_progress" | "completed";
     completedSessions: number;
   };
@@ -77,10 +78,15 @@ export type TodayDashboardSummary = {
     graceInUseToday: boolean;
     lastQualifiedDate: string | null;
   };
+  activityByDate: Array<{
+    date: string;
+    value: number;
+  }>;
 };
 
 export type DashboardOverviewLike = {
   today?: {
+    localDate?: string;
     status?: TodayDashboardSummary["today"]["status"];
     completedSessions?: number;
   };
@@ -102,6 +108,10 @@ export type DashboardOverviewLike = {
     graceInUseToday?: boolean;
     lastQualifiedDate?: string | null;
   };
+  activityByDate?: Array<{
+    date?: string;
+    value?: number;
+  }>;
 };
 
 export function toTodayDashboardSummary(overview: DashboardOverviewLike | null | undefined): TodayDashboardSummary | null {
@@ -111,6 +121,7 @@ export function toTodayDashboardSummary(overview: DashboardOverviewLike | null |
 
   return {
     today: {
+      localDate: String(overview.today.localDate ?? ""),
       status: overview.today.status ?? "idle",
       completedSessions: Number(overview.today.completedSessions ?? 0),
     },
@@ -130,5 +141,9 @@ export function toTodayDashboardSummary(overview: DashboardOverviewLike | null |
       graceInUseToday: Boolean(overview.streak.graceInUseToday),
       lastQualifiedDate: overview.streak.lastQualifiedDate ?? null,
     },
+    activityByDate: Array.isArray((overview as { activityByDate?: unknown[] }).activityByDate)
+      ? (((overview as { activityByDate?: Array<{ date?: string; value?: number }> }).activityByDate ?? [])
+        .filter((row): row is { date: string; value: number } => typeof row?.date === "string" && typeof row?.value === "number"))
+      : [],
   };
 }

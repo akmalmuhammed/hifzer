@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, BookOpenText, ChevronDown, Flame, Headphones, PlayCircle, RefreshCcw, ShieldCheck, TrendingUp } from "lucide-react";
+import { ArrowRight, BookOpenText, ChevronDown, Flame, Headphones, PlayCircle, RefreshCcw, TrendingUp } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { SessionFlowTutorial } from "@/components/app/session-flow-tutorial";
 import { SurahSearchSelect } from "@/components/app/surah-search-select";
@@ -67,6 +67,42 @@ function todayStatus(status: TodayDashboardSummary["today"]["status"]): { tone: 
     return { tone: "accent", label: "In progress" };
   }
   return { tone: "neutral", label: "Not started" };
+}
+
+function parseIsoDateToUtc(value: string): Date | null {
+  const [year, month, day] = value.split("-").map((part) => Number(part));
+  if (!year || !month || !day) {
+    return null;
+  }
+  return new Date(Date.UTC(year, month - 1, day));
+}
+
+function addUtcDays(base: Date, days: number): Date {
+  return new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate() + days));
+}
+
+function isoDateUtc(base: Date): string {
+  return base.toISOString().slice(0, 10);
+}
+
+function activityColor(value: number, max: number, isFuture: boolean): string {
+  if (isFuture) {
+    return "rgba(148,163,184,0.12)";
+  }
+  if (value <= 0) {
+    return "rgba(16,185,129,0.08)";
+  }
+  const pct = value / Math.max(1, max);
+  if (pct < 0.2) {
+    return "rgba(16,185,129,0.22)";
+  }
+  if (pct < 0.45) {
+    return "rgba(16,185,129,0.4)";
+  }
+  if (pct < 0.7) {
+    return "rgba(16,185,129,0.62)";
+  }
+  return "rgba(16,185,129,0.86)";
 }
 
 /* ---------- Skeleton placeholders ---------- */
@@ -324,6 +360,35 @@ export function TodayClient({
   const progressSummary = overview?.progress ?? null;
   const streakSummary = overview?.streak ?? null;
   const todayStatusPill = overview ? todayStatus(overview.today.status) : null;
+  const streakHeatmap = useMemo(() => {
+    if (!overview?.today.localDate) {
+      return [];
+    }
+    const endDate = parseIsoDateToUtc(overview.today.localDate);
+    if (!endDate) {
+      return [];
+    }
+    const weekdayMon0 = (endDate.getUTCDay() + 6) % 7;
+    const currentWeekStart = addUtcDays(endDate, -weekdayMon0);
+    const firstWeekStart = addUtcDays(currentWeekStart, -(7 * 7));
+    const activityMap = new Map(overview.activityByDate.map((row) => [row.date, row.value]));
+
+    return Array.from({ length: 56 }, (_, index) => {
+      const date = addUtcDays(firstWeekStart, index);
+      const iso = isoDateUtc(date);
+      return {
+        key: iso,
+        date: iso,
+        value: activityMap.get(iso) ?? 0,
+        isToday: iso === overview.today.localDate,
+        isFuture: iso > overview.today.localDate,
+      };
+    });
+  }, [overview]);
+  const streakHeatmapMax = useMemo(
+    () => Math.max(1, ...streakHeatmap.filter((cell) => !cell.isFuture).map((cell) => cell.value)),
+    [streakHeatmap],
+  );
 
   return (
     <div className="space-y-6">
@@ -603,14 +668,14 @@ export function TodayClient({
               </div>
 
               <div className="mt-5 flex flex-wrap items-center gap-3">
-                <Link href="/progress">
+                <Link href="/quran/progress">
                   <Button variant="secondary" className="gap-2">
-                    Open progress <ArrowRight size={16} />
+                    Qur&apos;an surahs <ArrowRight size={16} />
                   </Button>
                 </Link>
-                <Link href="/quran/progress">
+                <Link href="/hifz/progress">
                   <Button variant="ghost" className="gap-2">
-                    Qur&apos;an surahs <ArrowRight size={16} />
+                    Hifz surahs <ArrowRight size={16} />
                   </Button>
                 </Link>
               </div>
@@ -620,71 +685,90 @@ export function TodayClient({
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Streak</p>
-                  <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                    {streakSummary ? streakSummary.currentStreakDays : 0} day{streakSummary?.currentStreakDays === 1 ? "" : "s"}
-                  </p>
-                  <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
-                    Keep the daily relationship intact through reading, audio, or Hifz work that qualifies.
-                  </p>
+                  <div className="mt-2 flex flex-wrap items-end gap-3">
+                    <p className="text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                      {streakSummary ? streakSummary.currentStreakDays : 0} day{streakSummary?.currentStreakDays === 1 ? "" : "s"}
+                    </p>
+                    {todayStatusPill ? <Pill tone={todayStatusPill.tone}>{todayStatusPill.label}</Pill> : null}
+                    <Pill tone="accent">{streakSummary?.todayQualifiedAyahs ?? 0} ayahs today</Pill>
+                    {streakSummary?.graceInUseToday ? <Pill tone="warn">Grace used</Pill> : null}
+                  </div>
                 </div>
                 <span className="grid h-11 w-11 place-items-center rounded-[18px] border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.08)] text-[rgba(var(--kw-accent-rgb),1)]">
                   <Flame size={18} />
                 </span>
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                {todayStatusPill ? <Pill tone={todayStatusPill.tone}>{todayStatusPill.label}</Pill> : null}
-                {streakSummary?.graceInUseToday ? <Pill tone="warn">Grace used today</Pill> : null}
-                {overview?.today.completedSessions ? <Pill tone="neutral">{overview.today.completedSessions} Hifz session{overview.today.completedSessions === 1 ? "" : "s"} today</Pill> : null}
-                <Pill tone="accent">{streakSummary?.todayQualifiedAyahs ?? 0} ayahs counted today</Pill>
+              <div className="mt-5 rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] p-3.5">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
+                    Last 8 weeks
+                  </p>
+                  <div className="flex items-center gap-2 text-[11px] text-[color:var(--kw-faint)]">
+                    <span>Less</span>
+                    {[
+                      "rgba(16,185,129,0.08)",
+                      "rgba(16,185,129,0.22)",
+                      "rgba(16,185,129,0.4)",
+                      "rgba(16,185,129,0.62)",
+                      "rgba(16,185,129,0.86)",
+                    ].map((tone) => (
+                      <span
+                        key={tone}
+                        className="h-2.5 w-2.5 rounded-[4px] border border-white/10"
+                        style={{ backgroundColor: tone }}
+                      />
+                    ))}
+                    <span>More</span>
+                  </div>
+                </div>
+
+                <div className="mt-3 grid grid-flow-col grid-rows-7 gap-1.5 overflow-x-auto pb-1">
+                  {streakHeatmap.map((cell) => (
+                    <span
+                      key={cell.key}
+                      title={`${cell.date}: ${cell.value} activity`}
+                      className="h-3.5 w-3.5 rounded-[4px] border transition"
+                      style={{
+                        backgroundColor: activityColor(cell.value, streakHeatmapMax, cell.isFuture),
+                        borderColor: cell.isToday ? "rgba(var(--kw-accent-rgb),0.55)" : "rgba(255,255,255,0.08)",
+                        boxShadow: cell.isToday ? "0 0 0 1px rgba(var(--kw-accent-rgb),0.18)" : "none",
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
 
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3.5 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Best streak</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Best</p>
                   <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
                     {streakSummary?.bestStreakDays ?? 0} day{streakSummary?.bestStreakDays === 1 ? "" : "s"}
                   </p>
-                  <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
-                    Longest consistent run recorded for this account.
+                </div>
+                <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3.5 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Last qualified</p>
+                  <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
+                    {streakSummary?.lastQualifiedDate ?? "Not yet"}
                   </p>
                 </div>
                 <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3.5 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Last qualified day</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Signal</p>
                   <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
-                    {streakSummary?.lastQualifiedDate ?? "Not yet qualified"}
+                    {streakSummary && streakSummary.currentStreakDays > 0 ? "Momentum active" : "Start today"}
                   </p>
-                  <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
-                    Any qualifying Qur&apos;an or Hifz activity keeps this alive.
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-5 rounded-[18px] border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[rgba(var(--kw-accent-rgb),0.06)] px-3.5 py-3">
-                <div className="flex items-start gap-3">
-                  <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-[14px] border border-[rgba(var(--kw-accent-rgb),0.2)] bg-[color:var(--kw-surface)] text-[rgba(var(--kw-accent-rgb),1)]">
-                    <ShieldCheck size={16} />
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Return signal</p>
-                    <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
-                      {streakSummary && streakSummary.currentStreakDays > 0
-                        ? "You already have momentum. Protect it with one focused Qur'an touchpoint before the day closes."
-                        : "The first qualifying day matters more than a perfect plan. Read, listen, or complete one honest Hifz block today."}
-                    </p>
-                  </div>
                 </div>
               </div>
 
               <div className="mt-5 flex flex-wrap items-center gap-3">
-                <Link href="/streak">
+                <Link href="/quran/read?view=compact">
                   <Button variant="secondary" className="gap-2">
-                    Open streak <ArrowRight size={16} />
+                    Qualify today <ArrowRight size={16} />
                   </Button>
                 </Link>
-                <Link href="/quran/read?view=compact">
+                <Link href="/hifz">
                   <Button variant="ghost" className="gap-2">
-                    Qualify today <ArrowRight size={16} />
+                    Open Hifz <ArrowRight size={16} />
                   </Button>
                 </Link>
               </div>

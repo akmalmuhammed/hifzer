@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Bell, Eye, GraduationCap, Languages, LifeBuoy, Map, Palette, SlidersHorizontal, Target, UserRound, Volume2 } from "lucide-react";
+import { DistractionFreeToggle } from "@/components/app/distraction-free-toggle";
 import { PageHeader } from "@/components/app/page-header";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
@@ -111,6 +112,18 @@ export default async function SettingsPage() {
         title={copy.settingsPage.title}
         subtitle={copy.settingsPage.subtitle}
       />
+
+      <Card>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <Pill tone="accent">Focus mode</Pill>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
+              When this is on, the app shell is reduced and the Qur&apos;an reader becomes a minimal ayah-and-audio surface.
+            </p>
+          </div>
+          <DistractionFreeToggle />
+        </div>
+      </Card>
 
       <div className="grid gap-4 md:grid-cols-2">
         {items.map((item) => (

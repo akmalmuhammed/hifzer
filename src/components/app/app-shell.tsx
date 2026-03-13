@@ -15,8 +15,6 @@ import {
   Map,
   PlayCircle,
   Settings,
-  TrendingUp,
-  Flame,
 } from "lucide-react";
 import { DistractionFreeToggle } from "@/components/app/distraction-free-toggle";
 import { HifzerMark } from "@/components/brand/hifzer-mark";
@@ -51,8 +49,6 @@ const PRIMARY: NavItem[] = [
 ];
 
 const INSIGHTS: NavItem[] = [
-  { href: "/progress", key: "progress", icon: TrendingUp },
-  { href: "/streak", key: "streak", icon: Flame },
   { href: "/quran/glossary", key: "glossary", icon: LibraryBig },
 ];
 
@@ -68,7 +64,13 @@ const MOBILE_NAV: NavItem[] = [
   { href: "/hifz", key: "hifz", icon: PlayCircle },
   { href: "/quran", key: "quran", icon: BookOpenText },
   { href: "/dua", key: "dua", icon: MoonStar },
-  { href: "/progress", key: "progress", icon: TrendingUp },
+  { href: "/settings", key: "settings", icon: Settings },
+];
+
+const FOCUS_NAV: NavItem[] = [
+  { href: "/today", key: "today", icon: CalendarDays },
+  { href: "/hifz", key: "hifz", icon: PlayCircle },
+  { href: "/quran/read?view=compact", key: "quran", icon: BookOpenText },
   { href: "/settings", key: "settings", icon: Settings },
 ];
 
@@ -100,14 +102,14 @@ function isActive(pathname: string, href: string): boolean {
   if (href === "/quran/glossary") {
     return pathname === "/quran/glossary";
   }
+  if (href.startsWith("/quran")) {
+    return pathname === "/quran" || pathname.startsWith("/quran/");
+  }
   if (href === "/dua") {
     return pathname === "/dua" || pathname.startsWith("/dua/");
   }
   if (href === "/hifz") {
     return pathname === "/hifz" || pathname.startsWith("/hifz/") || pathname === "/session" || pathname.startsWith("/session/");
-  }
-  if (href === "/quran") {
-    return pathname === "/quran" || pathname.startsWith("/quran/");
   }
   return pathname === href;
 }
@@ -143,13 +145,16 @@ function NavLink(props: { item: NavItem; pathname: string; copy: ReturnType<type
 }
 
 function distractionRouteAllowed(pathname: string): boolean {
+  if (pathname === "/today") {
+    return true;
+  }
   if (pathname === "/hifz" || pathname.startsWith("/hifz/") || pathname === "/session" || pathname.startsWith("/session/")) {
     return true;
   }
-  if (pathname === "/quran" || pathname.startsWith("/quran/")) {
+  if (pathname === "/quran/read") {
     return true;
   }
-  if (pathname === "/dua" || pathname.startsWith("/dua/")) {
+  if (pathname === "/settings" || pathname.startsWith("/settings/")) {
     return true;
   }
   return false;
@@ -163,12 +168,8 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
   const { language } = useUiLanguage();
   const { enabled: distractionFree } = useDistractionFree();
   const copy = getAppUiCopy(language);
-  const primaryItems = distractionFree
-    ? PRIMARY.filter((item) => item.key === "hifz" || item.key === "quran" || item.key === "dua")
-    : PRIMARY;
-  const mobileItems = distractionFree
-    ? MOBILE_NAV.filter((item) => item.key === "hifz" || item.key === "quran" || item.key === "dua")
-    : MOBILE_NAV;
+  const primaryItems = distractionFree ? FOCUS_NAV : PRIMARY;
+  const mobileItems = distractionFree ? FOCUS_NAV : MOBILE_NAV;
 
   useEffect(() => {
     if (!distractionFree) {
@@ -256,11 +257,15 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
               </>
             ) : null}
 
-            <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] p-2">
-              <UiLanguageSwitcher compact />
-            </div>
+            {!distractionFree ? (
+              <>
+                <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] p-2">
+                  <UiLanguageSwitcher compact />
+                </div>
 
-            <DistractionFreeToggle />
+                <DistractionFreeToggle />
+              </>
+            ) : null}
 
           </div>
         </aside>
@@ -270,12 +275,14 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
         </main>
       </div>
 
-      <div className="fixed right-3 top-20 z-40 md:hidden">
-        <DistractionFreeToggle compact />
-      </div>
+      {!distractionFree ? (
+        <div className="fixed right-3 top-20 z-40 md:hidden">
+          <DistractionFreeToggle compact />
+        </div>
+      ) : null}
 
       <nav className="fixed bottom-3 left-1/2 z-40 w-[min(560px,calc(100vw-1.5rem))] -translate-x-1/2 rounded-[26px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-2 py-2 shadow-[var(--kw-shadow)] backdrop-blur md:hidden">
-        <div className={clsx("grid gap-1", distractionFree ? "grid-cols-2" : "grid-cols-7")}>
+        <div className={clsx("grid gap-1", distractionFree ? "grid-cols-4" : "grid-cols-6")}>
           {mobileItems.map((item) => {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;

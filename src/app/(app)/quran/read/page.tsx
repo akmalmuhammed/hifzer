@@ -375,7 +375,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   );
 
   return (
-    <div className="pb-12 pt-10 md:pb-16 md:pt-14">
+    <div className={distractionFree ? "pb-8 pt-4 md:pb-10 md:pt-6" : "pb-12 pt-10 md:pb-16 md:pt-14"}>
       {view === "compact" && compact.current ? (
         <CompactReaderScroll targetId={COMPACT_READER_ANCHOR} ayahId={compact.current.id} />
       ) : null}
@@ -403,8 +403,8 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
             </p>
           </div>
 
-          <div className="mt-8 md:hidden">
-            <details className="group rounded-[24px] border border-[color:var(--kw-border-2)] bg-white/65 p-3 shadow-[var(--kw-shadow-soft)]">
+          <div className="mt-8">
+            <details open className="group rounded-[24px] border border-[color:var(--kw-border-2)] bg-white/65 p-3 shadow-[var(--kw-shadow-soft)]">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/75 px-3 py-2.5 text-sm font-semibold text-[color:var(--kw-ink)]">
                 <span>{ui.readerFilters}</span>
                 <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/80 px-2 py-0.5 text-xs text-[color:var(--kw-muted)] group-open:hidden">
@@ -417,8 +417,6 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
               <div className="pt-3">{renderFilterControls()}</div>
             </details>
           </div>
-
-          <div className="mt-8 hidden md:block">{renderFilterControls()}</div>
 
           <div className="mt-6 flex flex-wrap items-center gap-2">
             <Pill tone="neutral">{ayahs.length} {ui.ayahsMatchedSuffix}</Pill>
@@ -577,6 +575,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
           compactReaderAnchor={COMPACT_READER_ANCHOR}
           syncEnabled={Boolean(!anonymous && authEnabled && userId)}
           reciterId={reciterId}
+          focusMode={distractionFree}
         />
       ) : null}
     </div>

@@ -102,7 +102,7 @@ export function StreakCornerBadge(props: { enabled: boolean }) {
 
       {showStreakBadge ? (
         <TrackedLink
-          href="/streak"
+          href="/today"
           telemetryName="shell.streak.badge"
           aria-label={label}
           title={label}
