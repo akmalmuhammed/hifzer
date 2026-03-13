@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { ArrowRight, BookMarked, BookOpen, Compass, EyeOff, MoonStar } from "lucide-react";
+import { DistractionFreeToggle } from "@/components/app/distraction-free-toggle";
 import { SurahProgressSection } from "@/components/progress/surah-progress-section";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
@@ -67,7 +68,10 @@ export default async function QuranIndexPage() {
   const anonymousHref = `${trackedHref}&anon=1`;
   return (
     <div className="pb-12 pt-10 md:pb-16 md:pt-14">
-      <Pill tone="neutral">Qur&apos;an</Pill>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Pill tone="neutral">Qur&apos;an</Pill>
+        <DistractionFreeToggle />
+      </div>
       <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0 flex-1">
           <QuranMotivationHero />

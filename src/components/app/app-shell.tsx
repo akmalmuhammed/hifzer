@@ -148,6 +148,9 @@ function distractionRouteAllowed(pathname: string): boolean {
   if (pathname === "/today") {
     return true;
   }
+  if (pathname === "/quran") {
+    return true;
+  }
   if (pathname === "/hifz" || pathname.startsWith("/hifz/") || pathname === "/session" || pathname.startsWith("/session/")) {
     return true;
   }
