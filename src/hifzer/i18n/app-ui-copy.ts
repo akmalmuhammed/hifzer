@@ -72,7 +72,7 @@ const APP_UI_COPY: Record<UiLanguage, AppUiCopy> = {
     sectionProduct: "Product",
     nav: {
       home: "Home",
-      today: "Today",
+      today: "Dashboard",
       hifz: "Hifz",
       quran: "Qur'an",
       dua: "Dua",

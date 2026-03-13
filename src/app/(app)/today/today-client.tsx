@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, BookOpenText, ChevronDown, Headphones, PlayCircle, RefreshCcw } from "lucide-react";
+import { ArrowRight, BookOpenText, ChevronDown, Flame, Headphones, PlayCircle, RefreshCcw, ShieldCheck, TrendingUp } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { SessionFlowTutorial } from "@/components/app/session-flow-tutorial";
 import { SurahSearchSelect } from "@/components/app/surah-search-select";
@@ -13,7 +13,13 @@ import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
 import { setHifzActiveSurahCursor, setOpenSession } from "@/hifzer/local/store";
 import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
-import type { TodayPayload, LearningLane } from "./today-types";
+import {
+  toTodayDashboardSummary,
+  type DashboardOverviewLike,
+  type TodayDashboardSummary,
+  type TodayPayload,
+  type LearningLane,
+} from "./today-types";
 
 function modeExplain(state: TodayPayload["state"]): { title: string; body: string; tone: "neutral" | "warn" | "accent" } {
   const debtPct = Math.round(state.debtRatio);
@@ -51,6 +57,16 @@ function modeExplain(state: TodayPayload["state"]): { title: string; body: strin
 function modeTone(mode: TodayPayload["state"]["mode"]): "accent" | "warn" {
   if (mode === "NORMAL") return "accent";
   return "warn";
+}
+
+function todayStatus(status: TodayDashboardSummary["today"]["status"]): { tone: "neutral" | "accent" | "success"; label: string } {
+  if (status === "completed") {
+    return { tone: "success", label: "Completed today" };
+  }
+  if (status === "in_progress") {
+    return { tone: "accent", label: "In progress" };
+  }
+  return { tone: "neutral", label: "Not started" };
 }
 
 /* ---------- Skeleton placeholders ---------- */
@@ -102,9 +118,11 @@ function DetailsSkeleton() {
 export function TodayClient({
   initialData,
   initialLanes,
+  initialOverview,
 }: {
   initialData?: TodayPayload | null;
   initialLanes?: LearningLane[];
+  initialOverview?: TodayDashboardSummary | null;
 }) {
   const router = useRouter();
   // When initialData is provided by the server component, start in a loaded state
@@ -117,6 +135,7 @@ export function TodayClient({
   const [switchingSurah, setSwitchingSurah] = useState(false);
   const [targetSurahNumber, setTargetSurahNumber] = useState(1);
   const [learningLanes, setLearningLanes] = useState<LearningLane[]>(initialLanes ?? []);
+  const [overview, setOverview] = useState<TodayDashboardSummary | null>(initialOverview ?? null);
   const { pushToast } = useToast();
   const [modeShiftNotice, setModeShiftNotice] = useState<{
     from: TodayPayload["state"]["mode"];
@@ -129,9 +148,10 @@ export function TodayClient({
     setLoading(true);
     setError(null);
     try {
-      const [todayRes, lanesRes] = await Promise.all([
+      const [todayRes, lanesRes, overviewRes] = await Promise.all([
         fetch("/api/session/today", { cache: "no-store" }),
         fetch("/api/profile/learning-lanes", { cache: "no-store" }),
+        fetch("/api/dashboard/overview", { cache: "no-store" }),
       ]);
       const payload = (await todayRes.json()) as TodayPayload & { error?: string };
       if (todayRes.status === 403 && payload.error === "onboarding_required") {
@@ -146,6 +166,11 @@ export function TodayClient({
       if (lanesRes.ok) {
         const lanesPayload = (await lanesRes.json()) as { lanes?: LearningLane[] };
         setLearningLanes(Array.isArray(lanesPayload.lanes) ? lanesPayload.lanes : []);
+      }
+
+      if (overviewRes.ok) {
+        const overviewPayload = (await overviewRes.json()) as { overview?: DashboardOverviewLike };
+        setOverview(toTodayDashboardSummary(overviewPayload.overview));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load today state.");
@@ -296,13 +321,16 @@ export function TodayClient({
       !data.state.warmupRequired &&
       !data.state.weeklyGateRequired,
   );
+  const progressSummary = overview?.progress ?? null;
+  const streakSummary = overview?.streak ?? null;
+  const todayStatusPill = overview ? todayStatus(overview.today.status) : null;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Today"
-        title="Today"
-        subtitle="Read today, listen today, review what is due, and memorize with structure when the queue is ready."
+        eyebrow="Dashboard"
+        title="Dashboard"
+        subtitle="Your reading, review, memorization, progress, and streak in one focused daily surface."
         right={
           <div className="flex items-center gap-2">
             <Link href="/quran">
@@ -513,6 +541,153 @@ export function TodayClient({
               <Link href="/hifz?focus=review" className="mt-4 inline-flex text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
                 Open review queue
               </Link>
+            </Card>
+          </div>
+
+          <div className="grid gap-4 xl:grid-cols-2">
+            <Card className="h-full">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Progress</p>
+                  <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                    {progressSummary ? `${progressSummary.quranCompletionPct.toFixed(1)}%` : `${data.quran.completionPct.toFixed(1)}%`}
+                  </p>
+                  <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
+                    Qur&apos;an coverage across tracked reading.
+                  </p>
+                </div>
+                <span className="grid h-11 w-11 place-items-center rounded-[18px] border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.08)] text-[rgba(var(--kw-accent-rgb),1)]">
+                  <TrendingUp size={18} />
+                </span>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3.5 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Current surah</p>
+                  <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
+                    {progressSummary?.currentSurahName ?? data.quran.currentSurahName}
+                  </p>
+                  <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
+                    {progressSummary
+                      ? `${progressSummary.currentSurahProgressPct}% through current surah`
+                      : `Continue from ${data.quran.currentRef}`}
+                  </p>
+                </div>
+                <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3.5 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Coverage signals</p>
+                  <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
+                    {progressSummary?.trackedAyahs ?? 0} tracked ayahs
+                  </p>
+                  <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
+                    {progressSummary?.browseRecitedAyahs7d ?? 0} ayahs read in the last 7 days
+                  </p>
+                </div>
+                <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3.5 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Hifz recall</p>
+                  <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
+                    {progressSummary?.recallEvents7d ?? 0} recall events in 7 days
+                  </p>
+                  <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
+                    Progress stays separate between Qur&apos;an reading and Hifz review.
+                  </p>
+                </div>
+                <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3.5 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Khatmah count</p>
+                  <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
+                    {progressSummary?.completedKhatmahCount ?? data.quran.completedKhatmahCount} completed
+                  </p>
+                  <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
+                    Resume from {data.quran.currentRef} whenever you return.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <Link href="/progress">
+                  <Button variant="secondary" className="gap-2">
+                    Open progress <ArrowRight size={16} />
+                  </Button>
+                </Link>
+                <Link href="/quran/progress">
+                  <Button variant="ghost" className="gap-2">
+                    Qur&apos;an surahs <ArrowRight size={16} />
+                  </Button>
+                </Link>
+              </div>
+            </Card>
+
+            <Card className="h-full">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Streak</p>
+                  <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                    {streakSummary ? streakSummary.currentStreakDays : 0} day{streakSummary?.currentStreakDays === 1 ? "" : "s"}
+                  </p>
+                  <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
+                    Keep the daily relationship intact through reading, audio, or Hifz work that qualifies.
+                  </p>
+                </div>
+                <span className="grid h-11 w-11 place-items-center rounded-[18px] border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.08)] text-[rgba(var(--kw-accent-rgb),1)]">
+                  <Flame size={18} />
+                </span>
+              </div>
+
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                {todayStatusPill ? <Pill tone={todayStatusPill.tone}>{todayStatusPill.label}</Pill> : null}
+                {streakSummary?.graceInUseToday ? <Pill tone="warn">Grace used today</Pill> : null}
+                {overview?.today.completedSessions ? <Pill tone="neutral">{overview.today.completedSessions} Hifz session{overview.today.completedSessions === 1 ? "" : "s"} today</Pill> : null}
+                <Pill tone="accent">{streakSummary?.todayQualifiedAyahs ?? 0} ayahs counted today</Pill>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3.5 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Best streak</p>
+                  <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
+                    {streakSummary?.bestStreakDays ?? 0} day{streakSummary?.bestStreakDays === 1 ? "" : "s"}
+                  </p>
+                  <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
+                    Longest consistent run recorded for this account.
+                  </p>
+                </div>
+                <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3.5 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Last qualified day</p>
+                  <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
+                    {streakSummary?.lastQualifiedDate ?? "Not yet qualified"}
+                  </p>
+                  <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
+                    Any qualifying Qur&apos;an or Hifz activity keeps this alive.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-[18px] border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[rgba(var(--kw-accent-rgb),0.06)] px-3.5 py-3">
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-[14px] border border-[rgba(var(--kw-accent-rgb),0.2)] bg-[color:var(--kw-surface)] text-[rgba(var(--kw-accent-rgb),1)]">
+                    <ShieldCheck size={16} />
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Return signal</p>
+                    <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
+                      {streakSummary && streakSummary.currentStreakDays > 0
+                        ? "You already have momentum. Protect it with one focused Qur'an touchpoint before the day closes."
+                        : "The first qualifying day matters more than a perfect plan. Read, listen, or complete one honest Hifz block today."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <Link href="/streak">
+                  <Button variant="secondary" className="gap-2">
+                    Open streak <ArrowRight size={16} />
+                  </Button>
+                </Link>
+                <Link href="/quran/read?view=compact">
+                  <Button variant="ghost" className="gap-2">
+                    Qualify today <ArrowRight size={16} />
+                  </Button>
+                </Link>
+              </div>
             </Card>
           </div>
 

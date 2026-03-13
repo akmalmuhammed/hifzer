@@ -55,3 +55,80 @@ export type LearningLane = {
   lastTouchedAt: string | null;
   isActive: boolean;
 };
+
+export type TodayDashboardSummary = {
+  today: {
+    status: "idle" | "in_progress" | "completed";
+    completedSessions: number;
+  };
+  progress: {
+    quranCompletionPct: number;
+    trackedAyahs: number;
+    currentSurahName: string;
+    currentSurahProgressPct: number;
+    completedKhatmahCount: number;
+    browseRecitedAyahs7d: number;
+    recallEvents7d: number;
+  };
+  streak: {
+    currentStreakDays: number;
+    bestStreakDays: number;
+    todayQualifiedAyahs: number;
+    graceInUseToday: boolean;
+    lastQualifiedDate: string | null;
+  };
+};
+
+export type DashboardOverviewLike = {
+  today?: {
+    status?: TodayDashboardSummary["today"]["status"];
+    completedSessions?: number;
+  };
+  kpis?: {
+    trackedAyahs?: number;
+    recallEvents7d?: number;
+    quranCompletionPct?: number;
+  };
+  quran?: {
+    currentSurahName?: string;
+    currentSurahProgressPct?: number;
+    completedKhatmahCount?: number;
+    browseRecitedAyahs7d?: number;
+  };
+  streak?: {
+    currentStreakDays?: number;
+    bestStreakDays?: number;
+    todayQualifiedAyahs?: number;
+    graceInUseToday?: boolean;
+    lastQualifiedDate?: string | null;
+  };
+};
+
+export function toTodayDashboardSummary(overview: DashboardOverviewLike | null | undefined): TodayDashboardSummary | null {
+  if (!overview?.today || !overview.kpis || !overview.quran || !overview.streak) {
+    return null;
+  }
+
+  return {
+    today: {
+      status: overview.today.status ?? "idle",
+      completedSessions: Number(overview.today.completedSessions ?? 0),
+    },
+    progress: {
+      quranCompletionPct: Number(overview.kpis.quranCompletionPct ?? 0),
+      trackedAyahs: Number(overview.kpis.trackedAyahs ?? 0),
+      currentSurahName: overview.quran.currentSurahName ?? "Surah 1",
+      currentSurahProgressPct: Number(overview.quran.currentSurahProgressPct ?? 0),
+      completedKhatmahCount: Number(overview.quran.completedKhatmahCount ?? 0),
+      browseRecitedAyahs7d: Number(overview.quran.browseRecitedAyahs7d ?? 0),
+      recallEvents7d: Number(overview.kpis.recallEvents7d ?? 0),
+    },
+    streak: {
+      currentStreakDays: Number(overview.streak.currentStreakDays ?? 0),
+      bestStreakDays: Number(overview.streak.bestStreakDays ?? 0),
+      todayQualifiedAyahs: Number(overview.streak.todayQualifiedAyahs ?? 0),
+      graceInUseToday: Boolean(overview.streak.graceInUseToday),
+      lastQualifiedDate: overview.streak.lastQualifiedDate ?? null,
+    },
+  };
+}
