@@ -94,32 +94,41 @@ export function StreakCornerBadge(props: { enabled: boolean }) {
     >
       <InstallAppButton className="max-w-full md:hidden" />
 
-      {showThemeToggle ? (
-        <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/85 p-1.5 text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] backdrop-blur">
-          <ThemeToggle />
-        </span>
-      ) : null}
+      {showThemeToggle || showStreakBadge ? (
+        <div className="flex items-center overflow-hidden rounded-full border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)]/92 p-1 text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] backdrop-blur">
+          {showThemeToggle ? (
+            <ThemeToggle className="h-11 w-11 rounded-full border-0 bg-transparent shadow-none hover:bg-[color:var(--kw-hover-soft)]" />
+          ) : null}
 
-      {showStreakBadge ? (
-        <TrackedLink
-          href="/today"
-          telemetryName="shell.streak.badge"
-          aria-label={label}
-          title={label}
-          className="max-w-full rounded-full border border-[rgba(245,158,11,0.32)] bg-white/85 px-3 py-2 text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] backdrop-blur transition hover:bg-white"
-        >
-          <span className="flex items-center gap-2">
-            <span className="grid h-6 w-6 place-items-center rounded-full bg-[rgba(245,158,11,0.14)] text-[rgb(194,65,12)]">
-              <Flame size={14} />
-            </span>
-            <span className="text-sm font-semibold leading-none">{badgeNumber(days)}</span>
-            {data?.streak.graceInUseToday ? (
-              <span className="rounded-full border border-[rgba(234,88,12,0.24)] bg-[rgba(234,88,12,0.10)] px-1.5 py-0.5 text-[10px] font-semibold text-[color:var(--kw-ember-600)]">
-                G
+          {showThemeToggle && showStreakBadge ? (
+            <span
+              aria-hidden="true"
+              className="mx-1 h-7 w-px rounded-full bg-[color:var(--kw-border-2)]"
+            />
+          ) : null}
+
+          {showStreakBadge ? (
+            <TrackedLink
+              href="/today"
+              telemetryName="shell.streak.badge"
+              aria-label={label}
+              title={label}
+              className="max-w-full rounded-full px-3 py-2 text-[color:var(--kw-ink)] transition hover:bg-[color:var(--kw-hover-soft)]"
+            >
+              <span className="flex items-center gap-2">
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-[rgba(245,158,11,0.14)] text-[rgb(194,65,12)]">
+                  <Flame size={14} />
+                </span>
+                <span className="text-sm font-semibold leading-none">{badgeNumber(days)}</span>
+                {data?.streak.graceInUseToday ? (
+                  <span className="rounded-full border border-[rgba(234,88,12,0.24)] bg-[rgba(234,88,12,0.10)] px-1.5 py-0.5 text-[10px] font-semibold text-[color:var(--kw-ember-600)]">
+                    G
+                  </span>
+                ) : null}
               </span>
-            ) : null}
-          </span>
-        </TrackedLink>
+            </TrackedLink>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );
