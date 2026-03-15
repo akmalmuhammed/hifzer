@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ClipboardCopy, Mail, MessageSquareText, ShieldCheck } from "lucide-react";
+import { SupportCheckoutCard } from "@/components/billing/support-checkout-card";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -26,7 +27,7 @@ function encodeMailto(text: string): string {
   return encodeURIComponent(text).replace(/%20/g, "+");
 }
 
-export function SupportClient() {
+export function SupportClient(props: { hasPortal?: boolean }) {
   const { pushToast } = useToast();
   const [category, setCategory] = useState<Category>("bug");
   const [subject, setSubject] = useState(CATEGORY_SUBJECT.bug);
@@ -72,6 +73,23 @@ export function SupportClient() {
     } catch {
       pushToast({ tone: "warning", title: "Copy failed", message: "Please copy the email manually." });
     }
+  }
+
+  function renderSupportPayment() {
+    return (
+      <Card className={`${styles.panel} px-4 py-4`}>
+        <div className="flex items-center gap-2">
+          <ShieldCheck size={16} className="text-[color:var(--kw-ink-2)]" />
+          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Support Hifzer</p>
+        </div>
+        <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
+          If you want to support the product directly, you can make a one-time Paddle payment here.
+        </p>
+        <div className="mt-4">
+          <SupportCheckoutCard hasPortal={props.hasPortal} />
+        </div>
+      </Card>
+    );
   }
 
   return (
@@ -183,6 +201,8 @@ export function SupportClient() {
         </div>
 
         <div className="kw-fade-in space-y-4" style={{ animationDelay: "100ms" }}>
+          {renderSupportPayment()}
+
           <Card className={`${styles.panel} px-4 py-4`}>
             <p className="text-sm font-semibold text-[color:var(--kw-ink)]">What helps us solve fast</p>
             <ul className="mt-3 space-y-2 text-sm leading-7 text-[color:var(--kw-muted)]">

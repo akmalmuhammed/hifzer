@@ -6,7 +6,8 @@ import { createContext, useCallback, useContext, useMemo, useState } from "react
 type PaddleEnvironment = "sandbox" | "production";
 
 type PaddleCheckoutInput = {
-  priceId: string;
+  priceId?: string;
+  transactionId?: string;
   customData?: Record<string, unknown>;
   successUrl?: string;
 };
@@ -82,14 +83,21 @@ export function PaddleProvider(props: {
       if (!configured || typeof window === "undefined" || !window.Paddle) {
         throw new Error("Paddle checkout is not configured.");
       }
+      if (!input.priceId && !input.transactionId) {
+        throw new Error("Paddle checkout needs a priceId or transactionId.");
+      }
 
       const checkoutOptions: Record<string, unknown> = {
-        items: [{ priceId: input.priceId, quantity: 1 }],
         settings: {
           displayMode: "overlay",
           successUrl: input.successUrl ?? `${window.location.origin}/billing/success`,
         },
       };
+      if (input.transactionId) {
+        checkoutOptions.transactionId = input.transactionId;
+      } else {
+        checkoutOptions.items = [{ priceId: input.priceId, quantity: 1 }];
+      }
 
       if (props.customerEmail) {
         checkoutOptions.customer = { email: props.customerEmail };

@@ -48,8 +48,8 @@ export function paddleWebhookSecret(): string {
   return readRequiredEnv("PADDLE_WEBHOOK_SECRET");
 }
 
-export function paddlePaidPriceId(): string {
-  return readRequiredEnv("PADDLE_PRICE_ID_PAID");
+export function paddleSupportCurrency(): string {
+  return process.env.PADDLE_SUPPORT_CURRENCY?.trim().toUpperCase() || "USD";
 }
 
 export function appPublicUrl(): string {
