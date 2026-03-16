@@ -19,8 +19,8 @@ export function MarketingFooter() {
             </div>
           </div>
           <p className="mt-4 max-w-sm text-sm leading-6 text-[color:var(--kw-muted)]">
-            Plan your day, practice with intention, and protect retention with a schedule that adapts
-            when life happens.
+            Keep your Hifz plan, Qur&apos;an reading, and dua life in one calm home without turning them
+            into one noisy streak.
           </p>
         </div>
 
@@ -29,7 +29,7 @@ export function MarketingFooter() {
             Product
           </p>
           <TrackedLink
-            href="/"
+            href="/#lanes"
             telemetryName="footer.how-it-works"
             className="font-semibold text-[color:var(--kw-ink)] hover:underline"
           >

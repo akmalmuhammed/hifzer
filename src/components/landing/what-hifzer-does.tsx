@@ -1,54 +1,55 @@
-﻿import { ArrowRight, CheckCircle2, Clock3 } from "lucide-react";
+import { BookOpenText, Bookmark, HandHeart, ShieldCheck } from "lucide-react";
 import { CardSoft } from "@/components/ui/card";
 
-const STEPS = [
+const LANES = [
   {
-    step: "01",
-    title: "Keep it daily, even if small",
-    copy: "Small daily recitation builds a lifelong bond with the Qur&apos;an.",
-    source: "Sahih al-Bukhari 6464",
-    icon: <CheckCircle2 size={18} />,
+    label: "Hifz",
+    title: "Memorize with a plan that stays honest",
+    copy:
+      "Review what is due first, add new portions only when they are ready, and recover gently after missed days.",
+    note: "Built for steadiness, not heroics.",
+    icon: <Bookmark size={18} />,
   },
   {
-    step: "02",
-    title: "Learn and teach what you recite",
-    copy: "What you learn deeply and share sincerely stays with you longer.",
-    source: "Sahih al-Bukhari 5027",
-    icon: <Clock3 size={18} />,
+    label: "Qur'an",
+    title: "Read without losing your place",
+    copy:
+      "Continue from the ayah you last touched, keep reader preferences ready, and move through the mushaf without friction.",
+    note: "Reading progress stays separate from Hifz.",
+    icon: <BookOpenText size={18} />,
   },
   {
-    step: "03",
-    title: "Do not stop when it feels hard",
-    copy: "Difficulty in recitation is not failure; it is reward with perseverance.",
-    source: "Sahih Muslim 798a",
-    icon: <ArrowRight size={18} />,
+    label: "Dua",
+    title: "Open guided worship without noise",
+    copy:
+      "Move through sourced dua modules, keep private personal duas separate, and let the page stay centered on worship.",
+    note: "Repentance, Laylat al-Qadr, and Allah's Beautiful Names are already built in.",
+    icon: <HandHeart size={18} />,
   },
 ] as const;
 
 export function WhatHifzerDoes() {
   return (
-    <section className="py-10 md:py-14">
+    <section id="lanes" className="py-10 md:py-14">
       <div className="mx-auto max-w-[860px] text-center">
         <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-          How Hifzer works
+          What Hifzer holds together
         </p>
         <h2 className="kw-marketing-display kw-gradient-headline mt-3 text-balance text-3xl leading-tight sm:text-4xl">
-          A recitation rhythm rooted in authentic guidance.
+          One calm home. Three clear lanes.
         </h2>
         <p className="mx-auto mt-3 max-w-[56ch] text-sm leading-7 text-[color:var(--kw-muted)]">
-          The most beloved deeds to Allah are those done consistently.
-          <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
-            Sahih al-Bukhari 6464
-          </span>
+          Hifzer treats memorization, daily reading, and dua like different acts of worship instead
+          of pushing everything into one noisy feed.
         </p>
       </div>
 
       <div className="mt-8 grid gap-4 md:grid-cols-3">
-        {STEPS.map((item) => (
-          <CardSoft key={item.title} className="h-full">
+        {LANES.map((item) => (
+          <CardSoft key={item.title} className="flex h-full flex-col">
             <div className="flex items-center justify-between gap-3">
-              <p className="font-[family-name:var(--font-kw-display)] text-2xl font-semibold tracking-tight text-[rgba(var(--kw-accent-rgb),1)]">
-                {item.step}
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[rgba(var(--kw-accent-rgb),1)]">
+                {item.label}
               </p>
               <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/75 text-[color:var(--kw-ink-2)]">
                 {item.icon}
@@ -58,13 +59,27 @@ export function WhatHifzerDoes() {
               {item.title}
             </p>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">{item.copy}</p>
-            <p className="mt-3">
-              <span className="inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
-                {item.source}
-              </span>
-            </p>
+            <div className="mt-4 rounded-2xl border border-[color:var(--kw-border-2)] bg-white/72 px-3 py-3 text-sm leading-6 text-[color:var(--kw-ink-2)]">
+              {item.note}
+            </div>
           </CardSoft>
         ))}
+      </div>
+
+      <div className="mt-6 rounded-[24px] border border-[color:var(--kw-border-2)] bg-white/72 px-5 py-4 shadow-[var(--kw-shadow-soft)] backdrop-blur">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.16)] bg-[rgba(var(--kw-accent-rgb),0.08)] text-[rgba(var(--kw-accent-rgb),1)]">
+            <ShieldCheck size={18} />
+          </span>
+          <div>
+            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">That separation is the point.</p>
+            <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">
+              Reading progress does not overwrite Hifz progress, and private duas do not get mixed
+              into public-feeling productivity streaks. The app stays cleaner because each lane keeps
+              its own purpose.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );

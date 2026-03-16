@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Clock3 } from "lucide-react";
+import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,39 +11,41 @@ import { Pill } from "@/components/ui/pill";
 const TODAY_STEPS = [
   {
     step: 1,
-    title: "Warm-up check",
-    time: "30-60s",
-    copy: "Quickly recite yesterday's new portion to confirm it is stable before moving on.",
+    title: "Resume the exact place you left",
+    time: "30s",
+    copy: "Continue from the ayah, lane, or module you last touched instead of rebuilding context.",
   },
   {
     step: 2,
-    title: "Review what's due",
+    title: "Give attention where it is due",
     time: "5-15m",
-    copy: "The app prioritizes due ayahs and weak links so review debt does not pile up.",
+    copy: "Read, review, or revise with clearer priorities so weak places do not quietly pile up.",
   },
   {
     step: 3,
-    title: "New memorization (optional)",
-    time: "2-8m",
-    copy: "If gates are passed and time allows, add a small new chunk and lock it in cleanly.",
+    title: "Leave without losing your place",
+    time: "1 tap",
+    copy: "Close the app knowing tomorrow's return can begin from something real instead of from zero.",
   },
 ] as const;
 
 export function SessionWalkthrough() {
   const reduceMotion = useReducedMotion();
+  const { isSignedIn } = usePublicAuth();
 
   return (
-    <section className="py-10 md:py-14">
+    <section id="daily-flow" className="py-10 md:py-14">
       <div className="grid gap-8 md:grid-cols-2 md:items-stretch">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-            What happens today
+            What returning today can feel like
           </p>
-          <h2 className="mt-3 text-balance font-[family-name:var(--font-kw-display)] text-3xl leading-tight tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
-            A simple daily flow.
+          <h2 className="kw-marketing-display mt-3 text-balance text-3xl leading-tight tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
+            Open Hifzer and the next step is already waiting.
           </h2>
           <p className="mt-4 max-w-xl text-sm leading-7 text-[color:var(--kw-muted)]">
-            No setup maze. No complicated decisions. Open the app and follow the next step.
+            No setup maze. No blank dashboard. Just a gentler path back into recitation, review, and
+            worship.
           </p>
 
           <div className="mt-6 space-y-3">
@@ -79,9 +82,9 @@ export function SessionWalkthrough() {
             <div className="flex h-full flex-col">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">First Hifz target</p>
+                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Built for real days</p>
                   <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
-                    Most users complete this in around 10 minutes.
+                    You do not need a perfect routine for the app to still feel useful.
                   </p>
                 </div>
                 <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)]">
@@ -90,14 +93,29 @@ export function SessionWalkthrough() {
               </div>
 
               <div className="mt-5 rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-                You focus on reciting and grading. Hifzer handles sequencing, spacing, and recovery logic
-                in the background.
+                Hifzer is designed for interrupted mornings, busy workdays, and tired evenings. It
+                remembers enough for you to resume with less resistance and more presence.
+              </div>
+
+              <div className="mt-4 grid gap-2">
+                {[
+                  "Clear next step instead of decision fatigue",
+                  "Honest progress instead of inflated streaks",
+                  "Calmer return instead of rebuilding your place",
+                ].map((line) => (
+                  <div
+                    key={line}
+                    className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/72 px-3 py-2.5 text-sm text-[color:var(--kw-ink-2)]"
+                  >
+                    {line}
+                  </div>
+                ))}
               </div>
 
               <div className="mt-6 md:mt-auto">
                 <Button asChild size="lg" className="w-full gap-2">
-                  <PublicAuthLink signedInHref="/hifz" signedOutHref="/signup">
-                    Start your first Hifz run <ArrowRight size={16} />
+                  <PublicAuthLink signedInHref="/today" signedOutHref="/quran-preview">
+                    {isSignedIn ? "Open today in app" : "Preview today's flow"} <ArrowRight size={16} />
                   </PublicAuthLink>
                 </Button>
               </div>

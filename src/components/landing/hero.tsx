@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Download, Sparkles } from "lucide-react";
@@ -13,6 +13,21 @@ const fadeUp = {
   hidden: { opacity: 0, y: 12 },
   show: { opacity: 1, y: 0 },
 };
+
+const HERO_HIGHLIGHTS = [
+  {
+    title: "Keep your place",
+    copy: "Return to the ayah, lane, or module you last touched instead of starting cold.",
+  },
+  {
+    title: "Keep lanes distinct",
+    copy: "Hifz, Qur'an reading, and dua stay separate so progress stays honest.",
+  },
+  {
+    title: "Keep returning daily",
+    copy: "Open the app and the next meaningful step is ready without a setup maze.",
+  },
+] as const;
 
 export function Hero(props: { primaryIntent?: "install" | "signup" }) {
   const primaryIntent = props.primaryIntent ?? "install";
@@ -54,40 +69,34 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
   };
 
   return (
-    <section className="relative overflow-hidden py-14 md:py-20">
+    <section id="hero" className="relative overflow-hidden py-10 md:py-14">
       <motion.div
-        className="relative mx-auto grid max-w-[920px] gap-6 text-center"
+        className="relative mx-auto grid max-w-[980px] gap-5 text-center"
         initial="hidden"
         animate="show"
-        variants={{ show: { transition: { staggerChildren: 0.08 } } }}
+        variants={{ show: { transition: { staggerChildren: reduceMotion ? 0 : 0.08 } } }}
       >
         <motion.p
           variants={fadeUp}
           className="mx-auto inline-flex items-center gap-2 rounded-full border border-[rgba(var(--kw-accent-rgb),0.2)] bg-white/65 px-3 py-1 text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)]"
         >
           <Sparkles size={14} />
-          Authentic daily rhythm for recitation and retention
+          Calm daily Qur&apos;an companion
         </motion.p>
 
         <motion.h1
           variants={fadeUp}
-          className="kw-marketing-display kw-gradient-headline mx-auto max-w-[11ch] text-balance text-[clamp(2.5rem,7vw,4.5rem)] leading-[0.9]"
+          className="kw-marketing-display kw-gradient-headline mx-auto max-w-[15ch] text-balance text-[clamp(2.2rem,5.4vw,4.2rem)] leading-[0.94]"
         >
-          Recite the Qur&apos;an. It will intercede for you.
+          A calmer way to return to the Qur&apos;an every day.
         </motion.h1>
 
         <motion.p
           variants={fadeUp}
-          className="mx-auto max-w-[56ch] text-pretty text-base leading-7 text-[color:var(--kw-muted)] md:text-lg"
+          className="mx-auto max-w-[62ch] text-pretty text-base leading-7 text-[color:var(--kw-muted)] md:text-lg"
         >
-          Return to the Book every day. In the remembrance of Allah, hearts find rest, and
-          consistent recitation keeps your Hifz steady.
-          <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
-            Sahih Muslim 804a
-          </span>
-          <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
-            Qur&apos;an 13:28
-          </span>
+          Hifzer keeps Hifz, Qur&apos;an reading, and dua in their own clear lanes so you can keep
+          your place, protect your rhythm, and come back with intention when life gets crowded.
         </motion.p>
 
         <motion.div variants={fadeUp} className="mt-1 flex flex-wrap items-center justify-center gap-3">
@@ -121,25 +130,49 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
         </motion.div>
 
         {!isSignedIn ? (
-        <motion.div variants={fadeUp}>
-          <PublicAuthLink
-            signedInHref="/today"
-            signedOutHref="/quran-preview"
-            onClick={() => {
-              trackGaEvent("landing.secondary_start_free_click", { placement: "hero-secondary" });
-            }}
-            className="text-sm font-semibold text-[color:var(--kw-muted)] underline underline-offset-2 transition hover:text-[color:var(--kw-ink)]"
-          >
-            Preview the reading flow
-          </PublicAuthLink>
-        </motion.div>
+          <motion.div variants={fadeUp}>
+            <PublicAuthLink
+              signedInHref="/today"
+              signedOutHref="/quran-preview"
+              onClick={() => {
+                trackGaEvent("landing.secondary_start_free_click", { placement: "hero-secondary" });
+              }}
+              className="text-sm font-semibold text-[color:var(--kw-muted)] underline underline-offset-2 transition hover:text-[color:var(--kw-ink)]"
+            >
+              Preview the reading flow
+            </PublicAuthLink>
+          </motion.div>
         ) : null}
 
-        {!reduceMotion ? (
-          <motion.p variants={fadeUp} className="text-xs text-[color:var(--kw-faint)]">
-            Android supports the direct install prompt. iPhone Safari needs manual Add to Home Screen steps.
-          </motion.p>
-        ) : null}
+        <motion.div
+          variants={fadeUp}
+          className="mx-auto max-w-[760px] rounded-[26px] border border-[color:var(--kw-border-2)] bg-white/72 px-5 py-4 text-left shadow-[var(--kw-shadow-soft)] backdrop-blur"
+        >
+          <p className="text-sm font-semibold leading-7 text-[color:var(--kw-ink)]">
+            &quot;Recite the Qur&apos;an, for it will come on the Day of Resurrection as an intercessor for
+            its companions.&quot;
+          </p>
+          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--kw-faint)]">
+            Sahih Muslim 804a
+          </p>
+        </motion.div>
+
+        <motion.p variants={fadeUp} className="text-xs text-[color:var(--kw-faint)]">
+          Android supports the direct install prompt. iPhone Safari needs manual Add to Home Screen
+          steps.
+        </motion.p>
+
+        <motion.div variants={fadeUp} className="grid gap-3 text-left sm:grid-cols-3">
+          {HERO_HIGHLIGHTS.map((item) => (
+            <div
+              key={item.title}
+              className="rounded-[24px] border border-[color:var(--kw-border-2)] bg-white/68 px-4 py-4 shadow-[var(--kw-shadow-soft)] backdrop-blur"
+            >
+              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{item.title}</p>
+              <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">{item.copy}</p>
+            </div>
+          ))}
+        </motion.div>
       </motion.div>
     </section>
   );

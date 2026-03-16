@@ -78,7 +78,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                   {copy.marketing.signIn}
                 </PublicAuthLink>
                 <Button asChild size="md">
-                  <PublicAuthLink signedInHref="/today" signedOutHref="/login">
+                  <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
                     {copy.marketing.getStarted}
                   </PublicAuthLink>
                 </Button>
@@ -145,7 +145,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                     {copy.marketing.signIn}
                   </PublicAuthLink>
                   <Button asChild className="w-full">
-                    <PublicAuthLink signedInHref="/today" signedOutHref="/login" onClick={() => setOpen(false)} className="flex-1">
+                    <PublicAuthLink signedInHref="/today" signedOutHref="/signup" onClick={() => setOpen(false)} className="flex-1">
                       {copy.marketing.getStarted}
                     </PublicAuthLink>
                   </Button>

@@ -7,21 +7,21 @@ import { Card } from "@/components/ui/card";
 
 const PRODUCT_OUTCOMES = [
   {
-    label: "Separate lanes",
-    value: "Qur'an and Hifz stay distinct",
-    detail: "Reading progress and memorization progress do not overwrite one another.",
+    label: "Distinct lanes",
+    value: "Hifz, reading, and dua do not collide",
+    detail: "Each part of the app keeps its own purpose, so progress stays believable and calm.",
     icon: ShieldCheck,
   },
   {
-    label: "Resume gently",
-    value: "Return to the last ayah you touched",
-    detail: "The app keeps your place ready instead of making you hunt for it again.",
+    label: "Gentle return",
+    value: "Resume from the exact place you left",
+    detail: "The app holds onto enough context that reopening it feels like continuing, not restarting.",
     icon: BookOpenText,
   },
   {
-    label: "Stay personal",
-    value: "Private reading and personal duas stay yours",
-    detail: "Tracked and untracked flows are clearly separated so the experience stays intentional.",
+    label: "Private by design",
+    value: "Personal duas and private moments stay yours",
+    detail: "Tracked and untracked worship surfaces are clearly separated when you want more privacy.",
     icon: HeartHandshake,
   },
 ] as const;
@@ -30,7 +30,7 @@ export function ProductScreenshot() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="py-10 md:py-14">
+    <section id="product-proof" className="py-10 md:py-14">
       <motion.div
         initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -42,11 +42,11 @@ export function ProductScreenshot() {
             Product proof
           </p>
           <h2 className="kw-marketing-display kw-gradient-headline mt-3 text-balance text-3xl leading-tight sm:text-4xl">
-            Your return is never lost.
+            Built so your return feels protected.
           </h2>
           <p className="mx-auto mt-3 max-w-[56ch] text-sm leading-7 text-[color:var(--kw-muted)]">
-            Even when recitation feels difficult, your reward grows. Hifzer keeps your daily return
-            visible, measurable, and steady.
+            Busy days happen. Hifzer keeps your place, your lane, and your intention intact so
+            reopening the app feels closer to resuming worship than rebuilding memory.
             <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
               Sahih Muslim 798a
             </span>
@@ -67,7 +67,7 @@ export function ProductScreenshot() {
 
           <Card className="h-full">
             <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-              Why people stay with it
+              What feels different
             </p>
 
             <div className="mt-3 grid gap-2">

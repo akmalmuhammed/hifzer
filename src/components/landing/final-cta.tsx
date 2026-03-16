@@ -49,7 +49,7 @@ export function FinalCta() {
   };
 
   return (
-    <section className="py-10 md:py-14">
+    <section id="start" className="py-10 md:py-14">
       <motion.div
         initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -59,14 +59,14 @@ export function FinalCta() {
       >
         <div className="relative mx-auto max-w-[820px] text-center">
           <p className="text-xs font-semibold uppercase tracking-wide text-[rgba(var(--kw-accent-rgb),1)]">
-            Install and begin
+            Begin gently
           </p>
           <h2 className="kw-marketing-display kw-gradient-headline mt-3 text-balance text-4xl leading-[1.02] sm:text-5xl">
-            Begin with one recitation today.
+            Open Hifzer once, and tomorrow&apos;s return gets easier.
           </h2>
           <p className="mx-auto mt-4 max-w-[56ch] text-base leading-7 text-[color:var(--kw-muted)]">
-            The most beloved deeds are consistent, even when small. Install Hifzer and keep your
-            daily return protected.
+            Start in your browser now. If the flow feels right, install it and keep a calmer Qur&apos;an
+            companion one tap away.
             <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
               Sahih al-Bukhari 6464
             </span>
@@ -100,18 +100,18 @@ export function FinalCta() {
           </div>
 
           {!isSignedIn ? (
-          <p className="mt-4">
-            <PublicAuthLink
-              signedInHref="/today"
-              signedOutHref="/quran-preview"
-              onClick={() => {
-                trackGaEvent("landing.secondary_start_free_click", { placement: "final-cta" });
-              }}
-              className="text-sm font-semibold text-[color:var(--kw-muted)] underline underline-offset-2 transition hover:text-[color:var(--kw-ink)]"
-            >
-              Preview the reading flow
-            </PublicAuthLink>
-          </p>
+            <p className="mt-4">
+              <PublicAuthLink
+                signedInHref="/today"
+                signedOutHref="/quran-preview"
+                onClick={() => {
+                  trackGaEvent("landing.secondary_start_free_click", { placement: "final-cta" });
+                }}
+                className="text-sm font-semibold text-[color:var(--kw-muted)] underline underline-offset-2 transition hover:text-[color:var(--kw-ink)]"
+              >
+                See the reading view first
+              </PublicAuthLink>
+            </p>
           ) : null}
         </div>
 
