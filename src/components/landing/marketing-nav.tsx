@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import clsx from "clsx";
-import { Menu, X } from "lucide-react";
+import { ArrowRight, Menu, X } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 import { UiLanguageSwitcher } from "@/components/app/ui-language-switcher";
 import { HifzerMark } from "@/components/brand/hifzer-mark";
@@ -22,13 +22,14 @@ export function MarketingNav(props: { authEnabled: boolean }) {
   const copy = getAppUiCopy(language);
   const showSignedIn = props.authEnabled && isSignedIn;
   const signInLabel = language === "en.sahih" ? "Return" : copy.marketing.signIn;
-  const getStartedLabel = language === "en.sahih" ? "Begin today" : copy.marketing.getStarted;
-  const openAppLabel = language === "en.sahih" ? "Return to today" : copy.marketing.openApp;
+  const getStartedLabel = language === "en.sahih" ? "It's Free - Begin" : copy.marketing.getStarted;
+  const openAppLabel = language === "en.sahih" ? "Return" : copy.marketing.openApp;
+  const brandTagline = language === "en.sahih" ? "Your tool. Your return." : copy.brandTagline;
   const links = [
-    { href: "/#return", label: "The return", key: "return" },
-    { href: "/#inside", label: "What's inside", key: "inside" },
-    { href: "/#personas", label: "Who it's for", key: "personas" },
-    { href: "/compare", label: copy.marketing.compare, key: "compare" },
+    { href: "/#features", label: "Features", key: "features" },
+    { href: "/#community", label: "Community", key: "community" },
+    { href: "/#stories", label: "Stories", key: "stories" },
+    { href: "/#roadmap", label: "Roadmap", key: "roadmap" },
   ] as const;
 
   return (
@@ -44,7 +45,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                 <span className="block text-sm font-semibold tracking-tight text-[color:var(--kw-ink)]">
                   Hifzer
                 </span>
-                <span className="block text-xs text-[color:var(--kw-muted)]">{copy.brandTagline}</span>
+                <span className="block text-xs text-[color:var(--kw-muted)]">{brandTagline}</span>
               </span>
             </TrackedLink>
 
@@ -83,10 +84,10 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                     {signInLabel}
                   </PublicAuthLink>
                   <Button asChild size="md">
-                    <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
-                      {getStartedLabel}
-                    </PublicAuthLink>
-                  </Button>
+                  <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
+                      {getStartedLabel} <ArrowRight size={16} />
+                  </PublicAuthLink>
+                </Button>
                 </>
               )}
 
@@ -142,7 +143,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                     </PublicAuthLink>
                     <Button asChild className="w-full">
                       <PublicAuthLink signedInHref="/today" signedOutHref="/signup" onClick={() => setOpen(false)}>
-                        {getStartedLabel}
+                        {getStartedLabel} <ArrowRight size={16} />
                       </PublicAuthLink>
                     </Button>
                   </div>

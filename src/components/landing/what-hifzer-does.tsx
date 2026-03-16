@@ -2,12 +2,12 @@ import { ArrowRightLeft, DoorOpen, HeartHandshake, ShieldCheck } from "lucide-re
 import { Pill } from "@/components/ui/pill";
 import styles from "./landing.module.css";
 
-const REALITY_COLUMNS = [
+const GAP_COLUMNS = [
   {
     label: "The intention",
-    title: "You really did mean to be consistent.",
+    title: "You promised yourself you would start properly.",
     copy:
-      "Read Qur'an daily. Start Hifz properly. Keep the duas you need on your tongue. Understand what you recite instead of only repeating it.",
+      "Read Qur'an daily, not only in Ramadan. Learn the duas you need in ordinary life. Understand what you recite in salah instead of only repeating it.",
     note: "The desire was real.",
     icon: HeartHandshake,
     tone: "intention" as const,
@@ -15,9 +15,9 @@ const REALITY_COLUMNS = [
   },
   {
     label: "The reality",
-    title: "Then life got loud.",
+    title: "But life happened.",
     copy:
-      "Days turned into weeks. Your place disappeared. Restarting began to feel heavier every time, and the guilt became its own barrier.",
+      "Days turned to weeks. You lost your place. Apps felt louder than they needed to be. Guilt compounded, then silence followed.",
     note: "The gap widened quietly.",
     icon: ArrowRightLeft,
     tone: "reality" as const,
@@ -27,7 +27,7 @@ const REALITY_COLUMNS = [
     label: "The truth",
     title: "The Qur'an never left you.",
     copy:
-      "Allah's door did not close. What you need now is not more shame. You need a gentler return and a clearer place to begin again.",
+      "It is not judging your absence. It is not counting the days you were gone. It is ready for your return today, at whatever page, with whatever intention you carry.",
     note: "Today still counts.",
     icon: DoorOpen,
     tone: "truth" as const,
@@ -37,31 +37,30 @@ const REALITY_COLUMNS = [
 
 export function WhatHifzerDoes() {
   return (
-    <section id="return" className="py-10 md:py-14">
+    <section id="gap" className="py-10 md:py-14">
       <div className={`${styles.sectionShell} ${styles.reflectionShell} px-5 py-6 sm:px-6 sm:py-7`}>
         <div className="grid gap-8 xl:grid-cols-[0.92fr_1.08fr] xl:items-start">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/60">
-              The spiritual reality
+              The gap
             </p>
             <h2 className="kw-marketing-display mt-4 max-w-[14ch] text-balance text-4xl leading-[0.96] tracking-[-0.05em] text-white sm:text-5xl">
-              The gap between who you are and who you want to be is not ability. It is consistency.
+              The Gap Between Who You Are and Who You Want to Be
             </h2>
             <p className="mt-4 max-w-xl text-sm leading-8 text-white/70">
-              Hifzer is built for the Muslim who keeps meaning to come back: the one who wants more
-              Qur&apos;an, more presence, more steadiness, but keeps getting pulled away by ordinary
-              life.
+              It is not about ability. It is about consistency. And consistency gets easier when
+              the return feels gentler than the delay.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-2">
               <Pill tone="brand">Gentle structure</Pill>
-              <Pill tone="accent">No shame-driven copy</Pill>
+              <Pill tone="accent">No shame-driven noise</Pill>
               <Pill tone="warn">Return-focused</Pill>
             </div>
           </div>
 
           <div className={styles.reflectionGrid}>
-            {REALITY_COLUMNS.map((item) => {
+            {GAP_COLUMNS.map((item) => {
               const Icon = item.icon;
               return (
                 <div key={item.label} className={styles.reflectionCard} data-tone={item.tone}>
@@ -91,11 +90,11 @@ export function WhatHifzerDoes() {
             </span>
             <div>
               <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
-                The return does not need to begin with intensity. It needs to begin with honesty.
+                Hifzer tries to shorten the walk back between intention and action.
               </p>
               <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                Hifzer tries to make the next step ready before motivation is fully there, so your
-                return can be built on sincerity instead of emotional pressure.
+                Not by shouting at you. Not by pretending guilt is motivation. Just by keeping the
+                next step closer than the excuse.
               </p>
             </div>
           </div>

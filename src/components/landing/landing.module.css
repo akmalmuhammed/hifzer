@@ -82,7 +82,12 @@
 .installCard,
 .footerFrame,
 .surfaceCard,
-.trustCard {
+.trustCard,
+.statCard,
+.storyCard,
+.journeyCard,
+.startCard,
+.signalCard {
   position: relative;
   overflow: hidden;
   border: 1px solid var(--kw-border);
@@ -102,7 +107,12 @@
 .trustCard,
 .installCard,
 .outcomeCard,
-.linkChip {
+.linkChip,
+.statCard,
+.storyCard,
+.journeyCard,
+.startCard,
+.signalCard {
   border-radius: 24px;
 }
 
@@ -112,11 +122,28 @@
 .heroPanel::before,
 .surfaceCard::before,
 .trustCard::before,
+.statCard::before,
+.storyCard::before,
+.journeyCard::before,
+.startCard::before,
+.signalCard::before,
 .footerFrame::before {
   background:
     radial-gradient(16rem 10rem at 12% 0%, rgba(var(--kw-accent-rgb), 0.1), transparent 72%),
     radial-gradient(14rem 10rem at 88% 100%, rgba(10, 138, 119, 0.09), transparent 76%);
   opacity: 0.85;
+}
+
+.statsStrip {
+  display: grid;
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.statCard {
+  padding: 1rem;
 }
 
 .heroSignalCard {
@@ -368,6 +395,16 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.storyGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.storyCard {
+  padding: 1rem;
+}
+
 .featureCard {
   position: relative;
   overflow: hidden;
@@ -390,6 +427,16 @@
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.journeyGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.journeyCard {
+  padding: 1rem;
 }
 
 .personaCard {
@@ -433,6 +480,26 @@
     radial-gradient(16rem 10rem at 12% 0%, rgba(var(--kw-accent-rgb), 0.08), transparent 72%),
     radial-gradient(14rem 10rem at 88% 100%, rgba(10, 138, 119, 0.07), transparent 76%);
   opacity: 0.84;
+}
+
+.startGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.startCard {
+  padding: 1rem;
+}
+
+.signalGrid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.signalCard {
+  padding: 0.95rem 1rem;
 }
 
 .sacredShell {
@@ -483,6 +550,11 @@
 :global(html[data-mode="dark"]) .asidePanel,
 :global(html[data-mode="dark"]) .surfaceCard,
 :global(html[data-mode="dark"]) .trustCard,
+:global(html[data-mode="dark"]) .statCard,
+:global(html[data-mode="dark"]) .storyCard,
+:global(html[data-mode="dark"]) .journeyCard,
+:global(html[data-mode="dark"]) .startCard,
+:global(html[data-mode="dark"]) .signalCard,
 :global(html[data-mode="dark"]) .installCard,
 :global(html[data-mode="dark"]) .outcomeCard,
 :global(html[data-mode="dark"]) .linkChip,
@@ -524,6 +596,10 @@
 }
 
 @media (max-width: 1100px) {
+  .statsStrip,
+  .storyGrid,
+  .journeyGrid,
+  .signalGrid,
   .reflectionGrid,
   .promiseGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -562,8 +638,13 @@
   }
 
   .reflectionGrid,
+  .statsStrip,
   .featureGrid,
+  .storyGrid,
+  .journeyGrid,
   .personaGrid,
+  .signalGrid,
+  .startGrid,
   .promiseGrid {
     grid-template-columns: 1fr;
   }

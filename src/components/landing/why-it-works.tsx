@@ -1,4 +1,3 @@
-import { ArrowRight } from "lucide-react";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -6,28 +5,34 @@ import styles from "./landing.module.css";
 
 const PERSONAS = [
   {
-    title: "I start strong every Ramadan, then quietly disappear.",
-    copy: "We build for the restart, not only for the ideal week.",
+    title: "The Inconsistent",
+    quote: "You start strong every Ramadan. By Shawwal, you've disappeared. You hate yourself for it, but you can't seem to change.",
+    response: "Build your own system. Use only the pieces that fit your life.",
   },
   {
-    title: "I am a busy parent trying to find five quiet minutes after everyone sleeps.",
-    copy: "Five sincere minutes still matter when the next step is clear.",
+    title: "The Busy Parent",
+    quote: "Between work and kids, your Qur'an time is whatever is left at 11pm when you are already exhausted.",
+    response: "Five minutes is enough. Make the tool work around your schedule.",
   },
   {
-    title: "I embraced Islam and still feel behind on basics everyone else seems to know.",
-    copy: "You can begin from zero without embarrassment or hidden assumptions.",
+    title: "The Revert / Convert",
+    quote: "You embraced Islam but do not know where to start. Everyone assumes you know basics you never learned.",
+    response: "Start anywhere. Explore freely. There is no wrong door in.",
   },
   {
-    title: "I want Hifz, but I feel too late to begin seriously.",
-    copy: "Gentle progress still counts when intention is alive.",
+    title: "The Aspiring Hafiz",
+    quote: "You have wanted to memorize for years. It feels impossible. You are not young anymore.",
+    response: "Your pace is the right pace when the intention is still alive.",
   },
   {
-    title: "I pray, but I want more presence, not just task completion.",
-    copy: "Reading, dua, and listening stay close when you need depth more than noise.",
+    title: "The Seeker",
+    quote: "You pray and fast, but something still feels missing. You want connection, not just compliance.",
+    response: "Dig deeper. Keep reading, dua, and reflection closer together.",
   },
   {
-    title: "I used to be consistent. I feel ashamed to come back now.",
-    copy: "The door back should feel open, not punishing.",
+    title: "The One Who Left",
+    quote: "You used to be consistent. Life happened. You are embarrassed to come back after so long.",
+    response: "The door is still open. Your space can still be here exactly as you need it.",
   },
 ] as const;
 
@@ -44,47 +49,31 @@ export function WhyItWorks() {
               If you&apos;ve ever felt this, you&apos;re in the right place.
             </h2>
             <p className="mt-4 max-w-xl text-sm leading-8 text-[color:var(--kw-muted)]">
-              Hifzer is not for perfect Muslims. It is for Muslims who are trying to come back, stay
-              steady, and build a life that sounds more like Qur&apos;an than like delay.
+              Hifzer is for the Muslim trying to come back, keep showing up, and build a routine
+              that feels more faithful than performative.
             </p>
-
-            <div className="mt-7 rounded-[24px] border border-[color:var(--kw-border)] bg-[color:var(--kw-card)] px-4 py-4 shadow-[var(--kw-shadow-soft)]">
-              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
-                Built around honest struggles, not idealized routines.
-              </p>
-              <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                The point is not to look devout inside the app. The point is to make return and
-                consistency easier in real life.
-              </p>
-            </div>
           </div>
 
           <div className={styles.personaGrid}>
             {PERSONAS.map((item) => (
               <div key={item.title} className={styles.personaCard}>
-                <p className="text-base font-semibold leading-7 tracking-tight text-[color:var(--kw-ink)]">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
                   {item.title}
                 </p>
-                <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">{item.copy}</p>
+                <p className="mt-4 text-base font-semibold leading-7 tracking-tight text-[color:var(--kw-ink)]">
+                  &ldquo;{item.quote}&rdquo;
+                </p>
+                <p className="mt-4 text-sm leading-7 text-[color:var(--kw-muted)]">{item.response}</p>
+                <div className="mt-5">
+                  <Button asChild size="md" variant="secondary">
+                    <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
+                      This is me
+                    </PublicAuthLink>
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
-        </div>
-
-        <div className="mt-7 flex flex-wrap items-center justify-between gap-4 rounded-[24px] border border-[color:var(--kw-border)] bg-[color:var(--kw-card)] px-4 py-4 shadow-[var(--kw-shadow-soft)]">
-          <div>
-            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
-              Begin where you are, with what you have.
-            </p>
-            <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-              Your return does not need to look dramatic to be sincere.
-            </p>
-          </div>
-          <Button asChild size="lg" className="gap-2">
-            <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
-              Begin today <ArrowRight size={16} />
-            </PublicAuthLink>
-          </Button>
         </div>
       </Card>
     </section>

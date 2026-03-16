@@ -2,16 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import {
-  ArrowRight,
-  BookOpenText,
-  Bookmark,
-  Download,
-  HandHeart,
-  MoonStar,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, Download, HandHeart, MoonStar, Sparkles } from "lucide-react";
 import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { Button } from "@/components/ui/button";
@@ -26,67 +17,47 @@ const fadeUp = {
   show: { opacity: 1, y: 0 },
 };
 
-const HERO_SIGNALS = [
+const HADITHS = [
   {
-    title: "For the one who keeps restarting",
-    body: "Reopen without hunting for your place or trying to rebuild motivation from zero.",
+    label: "Use your time well",
+    quote: "Take advantage of five before five: your youth before your old age, your health before your sickness, your wealth before your poverty, your free time before your work, and your life before your death.",
+    source: "Al-Hakim",
   },
   {
-    title: "For the busy and interrupted",
-    body: "The next meaningful step appears first, even when you only have a few sincere minutes.",
-  },
-  {
-    title: "For the quiet return",
-    body: "Hifz, Qur'an reading, and dua stay distinct so each act of worship keeps its own intention.",
-  },
-] as const;
-
-const HERO_FLOWS = [
-  {
-    label: "Qur'an",
-    title: "Resume from the exact ayah you left.",
-    body: "Your place, reader view, and reciter stay nearby so returning feels softer.",
-    icon: BookOpenText,
-    tone: "accent" as const,
-  },
-  {
-    label: "Hifz",
-    title: "Protect what you already memorized.",
-    body: "Warm-up, review, and new portions appear in an order that respects retention.",
-    icon: Bookmark,
-    tone: "brand" as const,
-  },
-  {
-    label: "Dua",
-    title: "Keep taught words close.",
-    body: "Open sourced duas and guided worship modules when the day feels heavy or scattered.",
-    icon: HandHeart,
-    tone: "warn" as const,
-  },
-  {
-    label: "Rhythm",
-    title: "Stay close through reminders and seasons.",
-    body: "Gentle nudges, progress, and Ramadan surfaces help the return stay lived, not imagined.",
-    icon: MoonStar,
-    tone: "neutral" as const,
-  },
-] as const;
-
-const HERO_HADITHS = [
-  {
-    label: "For consistency",
-    quote: "The most beloved deeds to Allah are those done regularly, even if they are small.",
+    label: "Stay regular",
+    quote: "The most beloved deed to Allah is the most regular and constant, even if it is small.",
     source: "Bukhari & Muslim",
   },
   {
-    label: "For the Qur'an",
-    quote: "Recite the Qur'an, for it will come on the Day of Resurrection as an intercessor for its companions.",
-    source: "Sahih Muslim",
+    label: "One letter at a time",
+    quote: "Whoever recites a letter from the Book of Allah will receive a good deed, and the good deed will be multiplied by ten.",
+    source: "Tirmidhi",
   },
   {
-    label: "For one letter at a time",
-    quote: "Whoever recites a letter from the Book of Allah receives a good deed, and that good deed is multiplied by ten.",
-    source: "Tirmidhi",
+    label: "Think beyond this life",
+    quote: "When a man dies, his deeds come to an end except for three things: ongoing charity, beneficial knowledge, or a righteous child who prays for him.",
+    source: "Sahih Muslim",
+  },
+] as const;
+
+const WAYS_TO_USE = [
+  {
+    label: "For Hifz",
+    body: "Use it as the place that keeps review honest and lets new memorization arrive with more calm.",
+    icon: Sparkles,
+    tone: "brand" as const,
+  },
+  {
+    label: "For reading",
+    body: "Use it as the home that keeps your place in the mushaf ready whenever you come back.",
+    icon: MoonStar,
+    tone: "accent" as const,
+  },
+  {
+    label: "For dua",
+    body: "Use it when you need taught words close and quieter worship space without the noise.",
+    icon: HandHeart,
+    tone: "warn" as const,
   },
 ] as const;
 
@@ -104,8 +75,8 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
     }
 
     const timerId = window.setInterval(() => {
-      setHadithIndex((current) => (current + 1) % HERO_HADITHS.length);
-    }, 5200);
+      setHadithIndex((current) => (current + 1) % HADITHS.length);
+    }, 5600);
 
     return () => {
       window.clearInterval(timerId);
@@ -144,7 +115,7 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
     });
   };
 
-  const activeHadith = HERO_HADITHS[hadithIndex] ?? HERO_HADITHS[0];
+  const activeHadith = HADITHS[hadithIndex] ?? HADITHS[0];
 
   return (
     <section id="hero" className="py-8 md:py-12">
@@ -154,32 +125,41 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
         animate="show"
         variants={{ show: { transition: { staggerChildren: reduceMotion ? 0 : 0.08 } } }}
       >
-        <div className="grid gap-8 xl:grid-cols-[minmax(0,1.04fr)_420px] xl:items-start">
+        <div className="grid gap-8 xl:grid-cols-[minmax(0,1.05fr)_400px] xl:items-start">
           <div className="min-w-0">
             <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-2">
-              <Pill tone="brand">
-                <Sparkles size={14} />
-                Qur&apos;an-first
-              </Pill>
-              <Pill tone="accent">Built by Muslims</Pill>
+              <Pill tone="brand">Core app free to use</Pill>
+              <Pill tone="accent">Optional one-time support</Pill>
               <Pill tone="neutral">Quiet by design</Pill>
             </motion.div>
 
             <motion.h1
               variants={fadeUp}
-              className="kw-marketing-display mt-5 max-w-[14ch] text-balance text-[clamp(2.6rem,6vw,5.4rem)] leading-[0.92] tracking-[-0.05em] text-[color:var(--kw-ink)]"
+              className="kw-marketing-display mt-5 max-w-[15ch] text-balance text-[clamp(2.6rem,6vw,5.2rem)] leading-[0.92] tracking-[-0.05em] text-[color:var(--kw-ink)]"
             >
-              The Qur&apos;an you keep meaning to return to is still waiting.
+              Tomorrow. Next week. After Ramadan. When things calm down.
+              <span className="mt-3 block text-[rgba(var(--kw-accent-rgb),1)]">
+                What if today was the day you stopped delaying?
+              </span>
             </motion.h1>
 
             <motion.p
               variants={fadeUp}
               className="mt-5 max-w-[62ch] text-pretty text-base leading-8 text-[color:var(--kw-muted)] md:text-[1.05rem]"
             >
-              Hifz, Qur&apos;an reading, guided duas, recitation audio, Ramadan support, and gentle
-              reminders in one calm companion that helps you come back today, not just promise
-              yourself you will start tomorrow.
+              Hifz. Qur&apos;an reading. Daily duas. Recitation audio. Progress and reminders - all
+              in one place. Yours to explore, build, and use however you need. Free to use.
             </motion.p>
+
+            <motion.div variants={fadeUp} className={`${styles.returnBanner} mt-6 px-4 py-4`}>
+              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
+                No subscription. No trial. Core app free to use.
+              </p>
+              <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+                Optional one-time support helps fund hosting, audio, and continued product work. The
+                main experience does not hide behind a paid wall.
+              </p>
+            </motion.div>
 
             <motion.div variants={fadeUp} className="mt-7 flex flex-wrap items-center gap-3">
               <Button asChild size="lg">
@@ -193,7 +173,7 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
                     });
                   }}
                 >
-                  {isSignedIn ? "Return to today's page" : "Start your return"} <ArrowRight size={18} />
+                  {isSignedIn ? "Return" : "It&apos;s Free - Begin"} <ArrowRight size={18} />
                 </PublicAuthLink>
               </Button>
               {primaryIntent === "install" && install.canShowCta ? (
@@ -211,35 +191,18 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
               ) : null}
             </motion.div>
 
-            {!isSignedIn ? (
-              <motion.div variants={fadeUp} className="mt-4">
-                <PublicAuthLink
-                  signedInHref="/today"
-                  signedOutHref="/quran-preview"
-                  onClick={() => {
-                    trackGaEvent("landing.secondary_start_free_click", { placement: "hero-secondary" });
-                  }}
-                  className="text-sm font-semibold text-[color:var(--kw-muted)] underline underline-offset-4 transition hover:text-[color:var(--kw-ink)]"
-                >
-                  Preview the Qur&apos;an reader first
-                </PublicAuthLink>
-              </motion.div>
-            ) : null}
-
-            <motion.p
-              variants={fadeUp}
-              className="mt-4 text-sm leading-7 text-[color:var(--kw-muted)]"
-            >
-              No ads. No noise. Just you, your intention, and a clearer next step.
+            <motion.p variants={fadeUp} className="mt-4 text-sm leading-7 text-[color:var(--kw-muted)]">
+              No payment wall. Create your space and start.
             </motion.p>
 
-            <motion.div variants={fadeUp} className="mt-7 grid gap-3 md:grid-cols-3">
-              {HERO_SIGNALS.map((item) => (
-                <div key={item.title} className={`${styles.heroSignalCard} px-4 py-4`}>
-                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{item.title}</p>
-                  <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">{item.body}</p>
-                </div>
-              ))}
+            <motion.div variants={fadeUp} className="mt-3">
+              <PublicAuthLink
+                signedInHref="/today"
+                signedOutHref="/login"
+                className="text-sm font-semibold text-[color:var(--kw-muted)] underline underline-offset-4 transition hover:text-[color:var(--kw-ink)]"
+              >
+                Already using it? Return to your space
+              </PublicAuthLink>
             </motion.div>
 
             <motion.div
@@ -248,7 +211,7 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
             >
               <div className="flex flex-wrap items-center gap-2">
                 <Pill tone="neutral">{activeHadith.label}</Pill>
-                <Pill tone="accent">Words that steady the heart</Pill>
+                <Pill tone="accent">Hadith reminder</Pill>
               </div>
               <AnimatePresence mode="wait">
                 <motion.div
@@ -270,22 +233,22 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
           </div>
 
           <motion.div variants={fadeUp} className={`${styles.heroPanel} px-4 py-4 sm:px-5 sm:py-5`}>
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
-                  What waits inside
+                  We built it. You own it.
                 </p>
-                <p className="mt-2 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                  A companion that helps you return without starting from shame.
+                <p className="mt-3 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                  There is no single correct way to use Hifzer.
                 </p>
               </div>
               <span className="grid h-11 w-11 place-items-center rounded-[18px] border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.1)] text-[rgba(var(--kw-accent-rgb),1)]">
-                <ShieldCheck size={18} />
+                <Sparkles size={18} />
               </span>
             </div>
 
             <div className="mt-5 space-y-3">
-              {HERO_FLOWS.map((item) => {
+              {WAYS_TO_USE.map((item) => {
                 const Icon = item.icon;
                 return (
                   <div
@@ -298,10 +261,7 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
                       </span>
                       <div className="min-w-0">
                         <Pill tone={item.tone}>{item.label}</Pill>
-                        <p className="mt-3 text-base font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                          {item.title}
-                        </p>
-                        <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">{item.body}</p>
+                        <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">{item.body}</p>
                       </div>
                     </div>
                   </div>
@@ -310,12 +270,11 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
             </div>
 
             <div className="mt-5 rounded-[22px] border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-4 py-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
-                A quieter promise
+              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
+                We built the space. You decide what it becomes for you.
               </p>
               <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                Hifzer is only the tool. Allah is the Guide. Our job is to reduce friction, protect
-                your place, and make the next return gentler than the last.
+                Explore every corner. Keep only what serves your worship. Ask for what is missing.
               </p>
             </div>
           </motion.div>
