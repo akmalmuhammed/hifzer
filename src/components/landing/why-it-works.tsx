@@ -1,75 +1,90 @@
+import { ArrowRight } from "lucide-react";
+import { PublicAuthLink } from "@/components/landing/public-auth-link";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { TrackedLink } from "@/components/telemetry/tracked-link";
+import styles from "./landing.module.css";
 
-const REASONS = [
+const PERSONAS = [
   {
-    title: "The next step is obvious",
-    copy: "You are not dropped into clutter. Hifzer brings today's next move forward so returning feels lighter.",
+    title: "I start strong every Ramadan, then quietly disappear.",
+    copy: "We build for the restart, not only for the ideal week.",
   },
   {
-    title: "The lanes stay honest",
-    copy: "Reading, Hifz, and dua do not overwrite each other just to make the app look busier than it is.",
+    title: "I am a busy parent trying to find five quiet minutes after everyone sleeps.",
+    copy: "Five sincere minutes still matter when the next step is clear.",
   },
   {
-    title: "Trust stays close",
-    copy: "Guided modules and source notes are nearby when you want them without turning the page into noise.",
+    title: "I embraced Islam and still feel behind on basics everyone else seems to know.",
+    copy: "You can begin from zero without embarrassment or hidden assumptions.",
+  },
+  {
+    title: "I want Hifz, but I feel too late to begin seriously.",
+    copy: "Gentle progress still counts when intention is alive.",
+  },
+  {
+    title: "I pray, but I want more presence, not just task completion.",
+    copy: "Reading, dua, and listening stay close when you need depth more than noise.",
+  },
+  {
+    title: "I used to be consistent. I feel ashamed to come back now.",
+    copy: "The door back should feel open, not punishing.",
   },
 ] as const;
 
 export function WhyItWorks() {
   return (
-    <section id="why-hifzer" className="py-10 md:py-12">
-      <Card>
-        <div className="grid gap-6 md:grid-cols-[0.92fr_1.08fr] md:items-start">
+    <section id="personas" className="py-10 md:py-14">
+      <Card className={`${styles.sectionShell} px-5 py-6 sm:px-6 sm:py-7`}>
+        <div className="grid gap-8 xl:grid-cols-[0.88fr_1.12fr] xl:items-start">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-              Why it feels calmer
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
+              Who this is for
             </p>
-            <h2 className="kw-marketing-display mt-3 text-balance text-3xl leading-tight text-[color:var(--kw-ink)] sm:text-4xl">
-              Less religious clutter. More honest return.
+            <h2 className="kw-marketing-display mt-4 max-w-[14ch] text-balance text-4xl leading-[0.98] tracking-[-0.05em] text-[color:var(--kw-ink)] sm:text-5xl">
+              If you&apos;ve ever felt this, you&apos;re in the right place.
             </h2>
-            <p className="mt-4 max-w-xl text-sm leading-7 text-[color:var(--kw-muted)]">
-              Hifzer is trying to reduce friction, not manufacture hype. The product stays lighter
-              because it helps you continue what matters instead of making you manage more digital noise.
+            <p className="mt-4 max-w-xl text-sm leading-8 text-[color:var(--kw-muted)]">
+              Hifzer is not for perfect Muslims. It is for Muslims who are trying to come back, stay
+              steady, and build a life that sounds more like Qur&apos;an than like delay.
             </p>
+
+            <div className="mt-7 rounded-[24px] border border-[color:var(--kw-border)] bg-[color:var(--kw-card)] px-4 py-4 shadow-[var(--kw-shadow-soft)]">
+              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
+                Built around honest struggles, not idealized routines.
+              </p>
+              <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+                The point is not to look devout inside the app. The point is to make return and
+                consistency easier in real life.
+              </p>
+            </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3 md:grid-cols-1">
-            {REASONS.map((item) => (
-              <div
-                key={item.title}
-                className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/72 px-4 py-4"
-              >
-                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{item.title}</p>
-                <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">{item.copy}</p>
+          <div className={styles.personaGrid}>
+            {PERSONAS.map((item) => (
+              <div key={item.title} className={styles.personaCard}>
+                <p className="text-base font-semibold leading-7 tracking-tight text-[color:var(--kw-ink)]">
+                  {item.title}
+                </p>
+                <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">{item.copy}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="mt-5 flex flex-wrap items-center gap-3 text-sm">
-          <span className="font-semibold text-[color:var(--kw-ink)]">Explore before you commit.</span>
-          <TrackedLink
-            href="/compare"
-            telemetryName="landing.why.compare"
-            className="font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline"
-          >
-            Compare Hifzer
-          </TrackedLink>
-          <TrackedLink
-            href="/legal/sources"
-            telemetryName="landing.why.science"
-            className="font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline"
-          >
-            Read source notes
-          </TrackedLink>
-          <TrackedLink
-            href="/motivation"
-            telemetryName="landing.motivation_link"
-            className="font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline"
-          >
-            Browse daily motivation
-          </TrackedLink>
+        <div className="mt-7 flex flex-wrap items-center justify-between gap-4 rounded-[24px] border border-[color:var(--kw-border)] bg-[color:var(--kw-card)] px-4 py-4 shadow-[var(--kw-shadow-soft)]">
+          <div>
+            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
+              Begin where you are, with what you have.
+            </p>
+            <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+              Your return does not need to look dramatic to be sincere.
+            </p>
+          </div>
+          <Button asChild size="lg" className="gap-2">
+            <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
+              Begin today <ArrowRight size={16} />
+            </PublicAuthLink>
+          </Button>
         </div>
       </Card>
     </section>
