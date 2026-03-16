@@ -1,3 +1,5 @@
+import { beautifulNamesModuleDefinition } from "@/hifzer/ramadan/beautiful-names";
+
 export type SourceLink = {
   label: string;
   href: string;
@@ -5,11 +7,21 @@ export type SourceLink = {
 
 export type JourneyKind = "authentic" | "guided" | "personal";
 
-export type DuaModuleId = "laylat-al-qadr" | "repentance";
+export type DuaModuleId = "laylat-al-qadr" | "repentance" | "beautiful-names";
 
 export const DEFAULT_DUA_MODULE_ID: DuaModuleId = "laylat-al-qadr";
 
+export type StepSpotlight = {
+  arabic: string;
+  transliteration: string;
+  meaning: string;
+  category: string;
+  anchorType: "Direct dua" | "Prayer line" | "Qur'an name line" | "Meaning anchor";
+};
+
 export type JourneyDua = {
+  label?: string;
+  intro?: string;
   arabic?: string | null;
   transliteration?: string | null;
   translation: string;
@@ -49,6 +61,8 @@ export type JourneyStep = {
   eyebrow: string;
   title: string;
   summary: string;
+  tags?: string[];
+  spotlight?: StepSpotlight;
   practice: string[];
   actionLine?: string;
   reflectionPrompt?: string;
@@ -776,6 +790,7 @@ const MODULE_DEFINITIONS: DuaJourneyModuleDefinition[] = [
     deckSteps: repentanceDeckSteps,
     completionSteps: repentanceCompletionSteps,
   },
+  beautifulNamesModuleDefinition,
 ];
 
 type OrderedDeckStep = JourneyStep & {
@@ -941,6 +956,15 @@ export function buildLaylatAlQadrJourney(input?: {
 }
 
 export const laylatAlQadrJourney = buildLaylatAlQadrJourney();
+
+export function buildBeautifulNamesJourney(input?: {
+  customDuas?: readonly CustomDuaSnapshot[];
+  deckOrders?: readonly DuaDeckOrderSnapshot[];
+}): DuaJourneyModule {
+  return getDuaModule("beautiful-names", input);
+}
+
+export const beautifulNamesJourney = buildBeautifulNamesJourney();
 
 const featuredLaylatDua = laylatDeckSteps[0];
 

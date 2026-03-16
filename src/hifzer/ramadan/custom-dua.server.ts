@@ -78,7 +78,7 @@ function normalizeModuleId(input: string | null | undefined): DuaModuleId {
   if (!input) {
     return DEFAULT_DUA_MODULE_ID;
   }
-  if (DUA_MODULE_IDS.includes(input as DuaModuleId)) {
+  if ((DUA_MODULE_IDS as readonly string[]).includes(input)) {
     return input as DuaModuleId;
   }
   throw new DuaDeckError("Invalid dua module.", 400, "VALIDATION_ERROR");

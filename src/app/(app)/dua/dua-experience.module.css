@@ -7,6 +7,7 @@
 .homeHeroCard,
 .moduleOverviewCard,
 .focusHero,
+.explorerCard,
 .stageCard,
 .toolCard,
 .studyCard,
@@ -24,6 +25,7 @@
 .moduleOverviewTop,
 .moduleOverviewActions,
 .focusHeroTop,
+.explorerTop,
 .focusHeroActions,
 .focusMetaRow,
 .stageActions,
@@ -42,7 +44,8 @@
 
 .moduleOverviewActions,
 .toolActions,
-.actionCluster {
+.actionCluster,
+.filterRow {
   justify-content: flex-start;
 }
 
@@ -230,6 +233,12 @@
   color: var(--kw-ember-600);
 }
 
+.moduleIcon[data-tone="success"] {
+  border-color: rgba(22, 163, 74, 0.18);
+  background: rgba(22, 163, 74, 0.12);
+  color: var(--kw-lime-600);
+}
+
 .moduleCount,
 .counterValue {
   font-family:
@@ -292,6 +301,53 @@
 
 .stepShell {
   overflow: hidden;
+}
+
+.explorerCard {
+  gap: 16px;
+}
+
+.searchField,
+.nameCopy {
+  display: grid;
+  gap: 8px;
+}
+
+.searchInput,
+.filterChip {
+  border-radius: 16px;
+  border: 1px solid var(--kw-border-2);
+  background: var(--kw-surface);
+  color: var(--kw-ink);
+}
+
+.searchInput {
+  min-width: min(100%, 360px);
+  padding: 12px 14px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filterChip {
+  padding: 10px 14px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  transition:
+    color 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.filterChip[data-active="1"] {
+  border-color: rgba(var(--kw-accent-rgb), 0.22);
+  background: rgba(var(--kw-accent-rgb), 0.12);
+  color: var(--kw-ink);
 }
 
 .stepRail {
@@ -361,6 +417,28 @@
   color: var(--kw-ink);
 }
 
+.stepArabic {
+  display: block;
+  margin-top: 6px;
+  font-family:
+    var(--font-kw-quran),
+    "KFGQPC Uthmanic Script HAFS",
+    "Scheherazade New",
+    "Amiri",
+    "Noto Naskh Arabic",
+    serif;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: var(--kw-ink);
+}
+
+.stepMeaning,
+.nameTransliteration {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--kw-muted);
+}
+
 .focusStage {
   display: grid;
   gap: 16px;
@@ -378,6 +456,45 @@
   margin-top: 8px;
   font-size: clamp(1.9rem, 4vw, 2.9rem);
   line-height: 1.04;
+}
+
+.nameCard,
+.nameCopy {
+  align-items: start;
+}
+
+.nameCard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(22, 163, 74, 0.16);
+  background:
+    radial-gradient(320px 140px at 100% -10%, rgba(22, 163, 74, 0.08), transparent 60%),
+    linear-gradient(180deg, var(--kw-card-strong), var(--kw-surface-strong));
+}
+
+.nameArabic {
+  font-family:
+    var(--font-kw-quran),
+    "KFGQPC Uthmanic Script HAFS",
+    "Scheherazade New",
+    "Amiri",
+    "Noto Naskh Arabic",
+    serif;
+  font-size: clamp(1.9rem, 4vw, 2.5rem);
+  line-height: 1.9;
+  color: var(--kw-ink);
+}
+
+.nameMeaning {
+  color: var(--kw-ink);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
 }
 
 .actionBand,
@@ -633,6 +750,11 @@
 
   .stepRail {
     grid-auto-columns: minmax(270px, 85vw);
+  }
+
+  .explorerTop,
+  .nameCard {
+    display: grid;
   }
 
   .formGrid,

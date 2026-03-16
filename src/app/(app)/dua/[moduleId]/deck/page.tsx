@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { DuaExperienceClient } from "../../dua-experience-client";
 import { loadDuaPageData, resolveDuaModuleId } from "../../dua-page-data";
+import { buildDuaModules } from "@/hifzer/ramadan/laylat-al-qadr";
 
 type DuaDeckPageProps = {
   params: Promise<{ moduleId: string }>;
@@ -10,6 +11,10 @@ export default async function DuaDeckPage(props: DuaDeckPageProps) {
   const { moduleId } = await props.params;
   const resolvedModuleId = resolveDuaModuleId(moduleId);
   if (!resolvedModuleId) {
+    notFound();
+  }
+  const journeyModule = buildDuaModules().find((entry) => entry.id === resolvedModuleId);
+  if (!journeyModule?.supportsCustomDeck) {
     notFound();
   }
 
