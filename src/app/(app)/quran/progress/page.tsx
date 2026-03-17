@@ -35,26 +35,26 @@ export default async function QuranSurahProgressPage() {
       <div className="mt-6">
         <Pill tone="neutral">Qur&apos;an progress</Pill>
         <h1 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
-          Track every surah you finish and every surah you are still inside.
+          See every surah you have finished and where you are now.
         </h1>
         <p className="mt-4 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
-          Completed surahs stay softly highlighted, and the current surah keeps its live percentage so you can return without guessing where you stopped.
+          Finished surahs stay softly highlighted, and the surah you are reading keeps its percentage so you can return without guessing where you stopped.
         </p>
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
         <Pill tone="accent">Completed surahs: {completedCount}</Pill>
-        <Pill tone="neutral">Current / in progress: {currentCount}</Pill>
+        <Pill tone="neutral">Reading now: {currentCount}</Pill>
       </div>
 
       <div className="mt-8">
         <SurahProgressSection
           title="Full Qur&apos;an surah list"
-          subtitle="Completion badges use tracked surah-end passes, while the current surah percentage stays anchored to your saved Qur&apos;an lane."
+          subtitle="Finished surahs stay marked clearly, while the surah you are reading keeps its percentage so your place stays easy to find."
           items={items}
           defaultExpanded
-          emptyTitle="No Qur&apos;an surahs tracked yet"
-          emptyBody="Read in tracked mode and your current surah plus completed surahs will appear here."
+          emptyTitle="No Qur&apos;an surahs yet"
+          emptyBody="Start reading and your current and finished surahs will appear here."
         />
       </div>
     </div>

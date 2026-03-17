@@ -24,6 +24,7 @@ import {
 import { SupportTextPanel } from "@/components/quran/support-text-panel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { DisclosureCard } from "@/components/ui/disclosure-card";
 import { Pill } from "@/components/ui/pill";
 import {
   DEFAULT_DUA_MODULE_ID,
@@ -549,6 +550,12 @@ export function DuaExperienceClient({
       : null;
   const namesMatchCount = isNamesModule ? matchedStepIndexes.length : visibleStepIndexes.length;
   const namesShowingFallback = isNamesModule && hasNamesFilter && matchedStepIndexes.length === 0;
+  const practiceCuePreview = currentStep?.actionLine ?? currentStep?.practice[0] ?? "Return gently to this step.";
+  const supportSummaryParts = [
+    visibilityPrefs.showTransliteration && currentStepHasTransliteration ? "Transliteration on" : null,
+    visibilityPrefs.showTranslation ? "Translation on" : null,
+    currentStep?.dua ? `${currentRepetitions} reps` : null,
+  ].filter(Boolean) as string[];
 
   function setModuleProgress(moduleId: DuaModuleId, updater: (previous: ModuleProgressState) => ModuleProgressState) {
     setExperienceState((previous) => {
@@ -825,8 +832,7 @@ export function DuaExperienceClient({
               <p className={styles.homeEyebrow}>Dua</p>
               <h1 className={styles.homeTitle}>Focused guided dua experiences</h1>
               <p className={styles.homeSubtitle}>
-                Choose a module, move one step at a time, open study support only when you need context, and keep
-                private dua management separate from the worship flow.
+                Choose a module, move one step at a time, and open support only when you need it.
               </p>
             </div>
             <div className={styles.homeActions}>
@@ -844,34 +850,10 @@ export function DuaExperienceClient({
             </div>
           </div>
 
-          <div className={styles.principleGrid}>
-            <div className={styles.principleCard}>
-              <span className={styles.principleIcon}>
-                <HandHeart size={16} />
-              </span>
-              <div>
-                <p className={styles.principleTitle}>Guided first</p>
-                <p className={styles.principleText}>The main experience stays centered on one current step and one clear action.</p>
-              </div>
-            </div>
-            <div className={styles.principleCard}>
-              <span className={styles.principleIcon}>
-                <BookOpenText size={16} />
-              </span>
-              <div>
-                <p className={styles.principleTitle}>Study when needed</p>
-                <p className={styles.principleText}>Reflection prompts, authenticity notes, and sources stay secondary instead of competing with the dua.</p>
-              </div>
-            </div>
-            <div className={styles.principleCard}>
-              <span className={styles.principleIcon}>
-                <Sparkles size={16} />
-              </span>
-              <div>
-                <p className={styles.principleTitle}>Private management apart</p>
-                <p className={styles.principleText}>Custom duas and deck order live in a dedicated surface so worship mode stays calm.</p>
-              </div>
-            </div>
+          <div className={styles.homePrincipleRow}>
+            <span className={styles.metricChip}>Guided first</span>
+            <span className={styles.metricChip}>Support on demand</span>
+            <span className={styles.metricChip}>Private deck separate</span>
           </div>
         </Card>
 
@@ -1221,14 +1203,6 @@ export function DuaExperienceClient({
               {namesMatchCount} {namesMatchCount === 1 ? "match" : "matches"}
             </span>
           ) : null}
-          <button
-            type="button"
-            className={styles.focusMetaPill}
-            data-interactive="1"
-            onClick={() => setShowStudySupport((previous) => !previous)}
-          >
-            {showStudySupport ? "Hide study support" : "Open study support"}
-          </button>
         </div>
       </Card>
 
@@ -1339,18 +1313,6 @@ export function DuaExperienceClient({
             </div>
           ) : null}
 
-          {currentStep.actionLine ? (
-            <div className={styles.actionBand}>
-              <span className={styles.actionIcon}>
-                <HandHeart size={16} />
-              </span>
-              <div>
-                <p className={styles.sectionLabel}>Do this now</p>
-                <p className={styles.actionText}>{currentStep.actionLine}</p>
-              </div>
-            </div>
-          ) : null}
-
           {currentStep.dua ? (
             <div className={styles.duaCard}>
               <div>
@@ -1386,18 +1348,6 @@ export function DuaExperienceClient({
               )}
             </div>
           ) : null}
-
-          <section className={styles.practiceSection}>
-            <p className={styles.sectionLabel}>Stay with this step</p>
-            <div className={styles.practiceList}>
-              {currentStep.practice.map((item) => (
-                <div key={item} className={styles.practiceItem}>
-                  <span className={styles.practiceDot} />
-                  <p>{item}</p>
-                </div>
-              ))}
-            </div>
-          </section>
 
           <div className={styles.stageActions}>
             <Button
@@ -1445,8 +1395,57 @@ export function DuaExperienceClient({
           </div>
         </Card>
 
+        {currentStep.actionLine || currentStep.practice.length > 0 ? (
+          <DisclosureCard
+            className={styles.compactCard}
+            summary={(
+              <div>
+                <p className={styles.sectionLabel}>Practice cues</p>
+                <p className={styles.compactSummary}>{practiceCuePreview}</p>
+              </div>
+            )}
+          >
+            <div className={styles.practiceDisclosureBody}>
+              {currentStep.actionLine ? (
+                <div className={styles.actionBand}>
+                  <span className={styles.actionIcon}>
+                    <HandHeart size={16} />
+                  </span>
+                  <div>
+                    <p className={styles.sectionLabel}>Do this now</p>
+                    <p className={styles.actionText}>{currentStep.actionLine}</p>
+                  </div>
+                </div>
+              ) : null}
+
+              <section className={styles.practiceSection}>
+                <div className={styles.practiceList}>
+                  {currentStep.practice.map((item) => (
+                    <div key={item} className={styles.practiceItem}>
+                      <span className={styles.practiceDot} />
+                      <p>{item}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+          </DisclosureCard>
+        ) : null}
+
         {currentStep.dua ? (
-          <Card className={styles.toolCard}>
+          <DisclosureCard
+            className={styles.toolCard}
+            summary={(
+              <div>
+                <p className={styles.sectionLabel}>Practice tools</p>
+                <p className={styles.compactSummary}>
+                  {supportSummaryParts.length > 0
+                    ? supportSummaryParts.join(" | ")
+                    : "Reveal support copy only when it helps."}
+                </p>
+              </div>
+            )}
+          >
             <div className={styles.toolTop}>
               <div>
                 <p className={styles.sectionLabel}>Practice tools</p>
@@ -1509,7 +1508,7 @@ export function DuaExperienceClient({
                 </button>
               </div>
             </div>
-          </Card>
+          </DisclosureCard>
         ) : null}
 
         <Card className={styles.studyCard}>
@@ -1571,7 +1570,7 @@ export function DuaExperienceClient({
             </div>
           ) : (
             <p className={styles.studyClosed}>
-              Keep the page centered on worship. Open study support when you want authenticity notes, reflection, or sources.
+              Open this only when you want reflection, authenticity notes, or sources.
             </p>
           )}
         </Card>

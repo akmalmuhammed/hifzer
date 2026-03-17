@@ -56,10 +56,10 @@ export default function LegalSourcesPage() {
             <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
               <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Metadata and transliteration</p>
               <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                Surah/page metadata and transliteration are bundled locally and now tracked through the same registry.
+                Surah/page metadata and transliteration are bundled locally and included in the same source set.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <Pill tone="accent">Tracked</Pill>
+                <Pill tone="accent">Included</Pill>
                 <Pill tone="neutral">Local bundle</Pill>
               </div>
             </div>

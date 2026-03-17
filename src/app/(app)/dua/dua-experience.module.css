@@ -42,6 +42,12 @@
   gap: 12px;
 }
 
+.homePrincipleRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .moduleOverviewActions,
 .toolActions,
 .actionCluster,
@@ -270,19 +276,6 @@
 
 .focusMetaPill {
   border-radius: 999px;
-}
-
-.focusMetaPill[data-interactive="1"] {
-  cursor: pointer;
-  transition:
-    color 180ms ease,
-    border-color 180ms ease,
-    background-color 180ms ease;
-}
-
-.focusMetaPill[data-interactive="1"]:hover {
-  border-color: rgba(var(--kw-accent-rgb), 0.18);
-  color: var(--kw-ink);
 }
 
 .progressTrack {
@@ -585,6 +578,21 @@
   gap: 16px;
 }
 
+.compactCard {
+  gap: 0;
+}
+
+.compactSummary {
+  margin-top: 4px;
+  color: var(--kw-muted);
+  line-height: 1.6;
+}
+
+.practiceDisclosureBody {
+  display: grid;
+  gap: 14px;
+}
+
 .counterPanel {
   gap: 16px;
   padding-top: 16px;
@@ -748,8 +756,75 @@
     padding-top: 1.75rem;
   }
 
+  .homeTitle,
+  .focusTitle,
+  .stageTitle {
+    text-wrap: balance;
+  }
+
+  .homeSubtitle,
+  .moduleDescription,
+  .focusSubtitle,
+  .stageSummary,
+  .duaIntro,
+  .toolSummary,
+  .studyClosed,
+  .compactSummary {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+  }
+
+  .homeSubtitle,
+  .focusSubtitle,
+  .studyClosed {
+    -webkit-line-clamp: 2;
+  }
+
+  .moduleDescription,
+  .stageSummary,
+  .duaIntro,
+  .toolSummary,
+  .compactSummary {
+    -webkit-line-clamp: 3;
+  }
+
+  .homeActions,
+  .moduleOverviewActions,
+  .focusHeroActions,
+  .stageActions,
+  .actionCluster,
+  .toolActions {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .homeActions :global(a),
+  .moduleOverviewActions :global(a),
+  .focusHeroActions :global(a),
+  .stageActions :global(a),
+  .actionCluster :global(a) {
+    width: 100%;
+  }
+
+  .homeActions :global(.inline-flex),
+  .moduleOverviewActions :global(.inline-flex),
+  .focusHeroActions :global(.inline-flex),
+  .stageActions :global(.inline-flex),
+  .actionCluster :global(.inline-flex),
+  .toolActions :global(.inline-flex) {
+    width: 100%;
+  }
+
+  .metricChip,
+  .focusMetaPill {
+    padding: 8px 10px;
+    font-size: 0.76rem;
+  }
+
   .stepRail {
-    grid-auto-columns: minmax(270px, 85vw);
+    grid-auto-columns: minmax(220px, 82vw);
   }
 
   .explorerTop,
@@ -757,9 +832,18 @@
     display: grid;
   }
 
+  .stepMeaning {
+    display: none;
+  }
+
   .formGrid,
   .deckOrderRow {
     grid-template-columns: 1fr;
+  }
+
+  .duaCard {
+    padding: 16px;
+    gap: 14px;
   }
 
   .duaArabic {

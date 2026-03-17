@@ -51,7 +51,7 @@ function ProgressRow({ item }: { item: SurahProgressItem }) {
             {item.surahName}
           </p>
           <p className="mt-1 text-xs uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
-            Surah {item.surahNumber} · {item.completedAyahCount}/{item.ayahCount} ayahs
+            Surah {item.surahNumber} - {item.completedAyahCount}/{item.ayahCount} ayahs
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -81,7 +81,7 @@ function ProgressRow({ item }: { item: SurahProgressItem }) {
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm">
         <span className="text-[color:var(--kw-muted)]">
           {item.isCompleted
-            ? `Completion tracked ${item.completionCount} time${item.completionCount === 1 ? "" : "s"}`
+            ? `Completed ${item.completionCount} time${item.completionCount === 1 ? "" : "s"}`
             : `${item.completionPct}% complete`}
         </span>
         {touchedAt ? (
@@ -98,7 +98,7 @@ export function SurahProgressSection({
   items,
   viewAllHref,
   emptyTitle = "No surah progress yet",
-  emptyBody = "Start reciting to build your first tracked surah list.",
+  emptyBody = "Keep going and your surahs will appear here.",
   defaultExpanded = false,
 }: Props) {
   const inProgress = items.filter((item) => item.isCurrent || !item.isCompleted);
@@ -117,7 +117,7 @@ export function SurahProgressSection({
               <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">{subtitle}</p>
             </div>
             <div className="flex items-center gap-2">
-              <Pill tone="neutral">{items.length} tracked</Pill>
+              <Pill tone="neutral">{items.length} surahs</Pill>
               <span className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]">
                 <span className="group-open:hidden">Show</span>
                 <span className="hidden group-open:inline">Hide</span>
@@ -134,7 +134,7 @@ export function SurahProgressSection({
                 href={viewAllHref}
                 className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
               >
-                View full list <ArrowRight size={15} />
+                See all surahs <ArrowRight size={15} />
               </Link>
             </div>
           ) : null}
@@ -151,7 +151,7 @@ export function SurahProgressSection({
                   <div className="flex items-center gap-2">
                     <Pill tone="neutral">In progress</Pill>
                     <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">
-                      Current and partial surahs
+                      Where you are now
                     </span>
                   </div>
                   <div className="mt-3 grid gap-3 xl:grid-cols-2">
@@ -167,7 +167,7 @@ export function SurahProgressSection({
                   <div className="flex items-center gap-2">
                     <Pill tone="accent">Completed</Pill>
                     <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">
-                      Subtly highlighted for fast scanning
+                      Finished surahs
                     </span>
                   </div>
                   <div className="mt-3 grid gap-3 xl:grid-cols-2">

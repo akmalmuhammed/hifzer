@@ -231,7 +231,7 @@ export default async function PracticePage() {
             href={overview?.reviewHealth.dueNow ? "/hifz?focus=review" : "/hifz"}
             className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
           >
-            {overview?.reviewHealth.dueNow ? "Open review lane" : "Open Hifz"} <ArrowRight size={14} />
+            {overview?.reviewHealth.dueNow ? "Open review" : "Open Hifz"} <ArrowRight size={14} />
           </Link>
         </div>
       </Card>

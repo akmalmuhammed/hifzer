@@ -261,14 +261,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-html[data-distraction-free="1"] .kw-public-beta-banner {
-  display: none;
-}
-
-html[data-distraction-free="1"] .kw-distraction-hide {
-  display: none !important;
-}
-
 ::selection {
   background: rgba(var(--kw-accent-rgb), 0.22);
 }

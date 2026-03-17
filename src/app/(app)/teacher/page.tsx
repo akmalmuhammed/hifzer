@@ -144,7 +144,7 @@ export default async function TeacherPage() {
         <Card>
           <div className="flex items-center gap-2">
             <Users size={16} className="text-[color:var(--kw-faint)]" />
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Current learning lanes</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Current memorization places</p>
           </div>
           {lanes.length ? (
             <div className="mt-4 space-y-3">
@@ -156,7 +156,7 @@ export default async function TeacherPage() {
                     <Pill tone="neutral">{lane.progressPct}%</Pill>
                   </div>
                   <p className="mt-2 text-xs text-[color:var(--kw-muted)]">
-                    {lane.lastTouchedAt ? `Last touched ${new Date(lane.lastTouchedAt).toLocaleString()}` : "Active memorization lane"}
+                    {lane.lastTouchedAt ? `Last touched ${new Date(lane.lastTouchedAt).toLocaleString()}` : "Current memorization focus"}
                   </p>
                 </div>
               ))}
@@ -164,8 +164,8 @@ export default async function TeacherPage() {
           ) : (
             <div className="mt-4">
               <EmptyState
-                title="No active learning lanes yet"
-                message="Lanes appear once sessions and review events create memorization history."
+                title="No memorization places yet"
+                message="These will appear once sessions and review create memorization history."
                 icon={<Users size={18} />}
               />
             </div>

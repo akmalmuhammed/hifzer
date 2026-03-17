@@ -898,7 +898,7 @@ export function DashboardClient() {
                   <QuickActionCard
                     href="/quran/read?view=compact"
                     eyebrow="Qur'an"
-                    title="Continue your reading lane"
+                    title="Continue reading"
                     note={`${overview.quran.currentSurahName} | ${overview.quran.cursorRef}`}
                     icon={BookOpenText}
                   />
@@ -938,7 +938,7 @@ export function DashboardClient() {
               <div className={styles.spotlightPanel}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">System score</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Overall score</p>
                     <p className="mt-1 text-sm leading-6 text-[color:var(--kw-muted)]">
                       Weighted from practice consistency, retention quality, and Qur&apos;an coverage.
                     </p>
@@ -1046,7 +1046,7 @@ export function DashboardClient() {
                 </div>
                 <div className="mt-4 grid gap-2 sm:grid-cols-3">
                   <div className={`${styles.kpiTile} px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Tracked ayahs</p>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Ayahs in review</p>
                     <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{overview.kpis.trackedAyahs}</p>
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-2`}>
@@ -1134,7 +1134,7 @@ export function DashboardClient() {
                 <SectionHeader
                   eyebrow="Qur&apos;an compass"
                   title={`${overview.quran.currentSurahName} | ${overview.quran.cursorRef}`}
-                  description="Reading progress stays separate from Hifz, but it still belongs in the same command view."
+                  description="Reading progress stays separate from Hifz, while still living in the same calm daily view."
                   icon={BookOpenText}
                   tone="accent"
                   meta={<Pill tone="accent">Ayah #{overview.quran.cursorAyahId}</Pill>}
@@ -1156,8 +1156,8 @@ export function DashboardClient() {
                     </div>
                     <div className="flex flex-wrap gap-2 pt-1">
                       <Pill tone="neutral">Khatmah x{overview.quran.completedKhatmahCount}</Pill>
-                      <Pill tone="neutral">Browse ayahs (7d): {overview.quran.browseRecitedAyahs7d}</Pill>
-                      <Pill tone="neutral">Surahs active (14d): {overview.quran.uniqueSurahsRecited14d}</Pill>
+                      <Pill tone="neutral">Read in 7 days: {overview.quran.browseRecitedAyahs7d}</Pill>
+                      <Pill tone="neutral">Surahs read in 14 days: {overview.quran.uniqueSurahsRecited14d}</Pill>
                     </div>
                   </div>
                 </div>

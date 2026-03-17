@@ -43,9 +43,9 @@ export default async function ProgressMapPage() {
         <>
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
-              <Pill tone="accent">Tracked surahs</Pill>
+              <Pill tone="accent">Surahs scored</Pill>
               <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{intelligence.heatmap.length}</p>
-              <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Surahs with real Hifz tracking and enough history to score confidence.</p>
+              <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Surahs with enough Hifz history to score confidence.</p>
             </Card>
             <Card>
               <Pill tone="warn">Fragile ayahs</Pill>
@@ -87,7 +87,7 @@ export default async function ProgressMapPage() {
                         </p>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        <Pill tone="neutral">Tracked {row.trackedAyahs}</Pill>
+                        <Pill tone="neutral">Reviewed {row.trackedAyahs}</Pill>
                         <Pill tone="warn">Due {row.dueNow}</Pill>
                         <Pill tone="warn">Fragile {row.fragileAyahs}</Pill>
                         <Pill tone="neutral">Seams {row.weakTransitions}</Pill>

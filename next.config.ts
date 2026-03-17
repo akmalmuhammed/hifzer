@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-import { withSentryConfig } from "@sentry/nextjs";
 import bundleAnalyzer from "@next/bundle-analyzer";
 
 const withBundleAnalyzer = bundleAnalyzer({
@@ -139,6 +138,8 @@ const cspScriptSrc = unique([
   ...clerkAccountOrigins,
   "https://challenges.cloudflare.com",
   "https://www.googletagmanager.com",
+  "https://cdn.paddle.com",
+  "https://public.profitwell.com",
 ]);
 const cspStyleSrc = unique([
   "'self'",
@@ -148,6 +149,7 @@ const cspStyleSrc = unique([
   "https://*.clerk.accounts.dev",
   ...clerkOrigins,
   ...clerkAccountOrigins,
+  "https://cdn.paddle.com",
 ]);
 const cspFontSrc = unique([
   "'self'",
@@ -167,9 +169,11 @@ const cspConnectSrc = unique([
   "https://clerk-telemetry.com",
   "https://*.clerk-telemetry.com",
   "https://sentry.io",
-  "https://o*.ingest.sentry.io",
+  "https://*.ingest.sentry.io",
   "https://www.googletagmanager.com",
   "https://www.google-analytics.com",
+  "https://*.paddle.com",
+  "https://*.paddle.io",
 ]);
 const cspImgSrc = unique([
   "'self'",
@@ -187,6 +191,8 @@ const cspFrameSrc = unique([
   "https://challenges.cloudflare.com",
   ...clerkOrigins,
   ...clerkAccountOrigins,
+  "https://*.paddle.com",
+  "https://*.paddle.io",
 ]);
 
 const nextConfig: NextConfig = {
@@ -268,11 +274,4 @@ const nextConfig: NextConfig = {
   ],
 };
 
-export default withBundleAnalyzer(withSentryConfig(nextConfig, {
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-  silent: true,
-  sourcemaps: {
-    disable: true,
-  },
-}));
+export default withBundleAnalyzer(nextConfig);

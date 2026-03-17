@@ -10,7 +10,10 @@ export function clerkEnabled(): boolean {
   // SECURITY: Auth bypass is only allowed in non-production environments.
   // Setting this in production would expose every protected route publicly.
   if (process.env.HIFZER_TEST_AUTH_BYPASS === "1") {
-    if (process.env.NODE_ENV === "production") {
+    const isHostedProduction =
+      process.env.NODE_ENV === "production" &&
+      (process.env.VERCEL_ENV === "production" || process.env.CF_PAGES === "1");
+    if (isHostedProduction) {
       throw new Error(
         "HIFZER_TEST_AUTH_BYPASS=1 is not permitted in production. " +
           "Remove this environment variable from your production deployment."

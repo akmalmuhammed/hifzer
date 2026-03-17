@@ -142,7 +142,7 @@ export function TeacherCirclesClient({ initialHub }: { initialHub: TeacherCircle
         <Card>
           <Pill tone="neutral">Members</Pill>
           <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{totalMembers}</p>
-          <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Students, parents, and supervisors being tracked this week.</p>
+          <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Students, parents, and supervisors active this week.</p>
         </Card>
         <Card>
           <Pill tone="success">Attendance</Pill>

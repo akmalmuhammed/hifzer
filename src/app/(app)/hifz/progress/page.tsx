@@ -38,23 +38,23 @@ export default async function HifzSurahProgressPage() {
           See every memorized surah and every surah still in progress.
         </h1>
         <p className="mt-4 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
-          Completed Hifz surahs stay marked clearly, while the active surah keeps its live memorization percentage based on your current Hifz cursor.
+          Finished Hifz surahs stay marked clearly, while the surah you are working on keeps its percentage so you can return easily.
         </p>
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
         <Pill tone="accent">Completed surahs: {completedCount}</Pill>
-        <Pill tone="neutral">Current / in progress: {currentCount}</Pill>
+        <Pill tone="neutral">Working on now: {currentCount}</Pill>
       </div>
 
       <div className="mt-8">
         <SurahProgressSection
           title="Full Hifz surah list"
-          subtitle="The current surah reflects your present memorization lane, while completed surahs stay visible so you can review what is already closed."
+          subtitle="The surah you are memorizing stays easy to spot, while finished surahs remain visible for review."
           items={items}
           defaultExpanded
-          emptyTitle="No Hifz surahs tracked yet"
-          emptyBody="Complete Hifz sessions and the current plus completed surahs will appear here."
+          emptyTitle="No Hifz surahs yet"
+          emptyBody="Complete Hifz sessions and your current and finished surahs will appear here."
         />
       </div>
     </div>

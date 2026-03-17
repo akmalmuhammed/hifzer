@@ -48,14 +48,14 @@ export default async function MilestonesPage() {
               <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
                 {overview.kpis.quranCompletionPct.toFixed(1)}%
               </p>
-              <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Tracked reading coverage across the entire Qur&apos;an.</p>
+              <p className="mt-2 text-sm text-[color:var(--kw-muted)]">How much of the Qur&apos;an you have read so far.</p>
             </Card>
             <Card>
               <Pill tone="neutral">Khatmah</Pill>
               <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
                 {overview.quran.completedKhatmahCount}
               </p>
-              <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Completed tracked khatmah cycles so far.</p>
+              <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Completed khatmahs so far.</p>
             </Card>
             <Card>
               <Pill tone="warn">Current streak</Pill>

@@ -618,7 +618,7 @@ export function TodayClient({
                     {progressSummary ? `${progressSummary.quranCompletionPct.toFixed(1)}%` : `${data.quran.completionPct.toFixed(1)}%`}
                   </p>
                   <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
-                    Qur&apos;an coverage across tracked reading.
+                    How much of the Qur&apos;an you have read so far.
                   </p>
                 </div>
                 <span className="grid h-11 w-11 place-items-center rounded-[18px] border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.08)] text-[rgba(var(--kw-accent-rgb),1)]">
@@ -634,14 +634,14 @@ export function TodayClient({
                   </p>
                   <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
                     {progressSummary
-                      ? `${progressSummary.currentSurahProgressPct}% through current surah`
+                      ? `${progressSummary.currentSurahProgressPct}% through this surah`
                       : `Continue from ${data.quran.currentRef}`}
                   </p>
                 </div>
                 <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3.5 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Coverage signals</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Reading this week</p>
                   <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
-                    {progressSummary?.trackedAyahs ?? 0} tracked ayahs
+                    {progressSummary?.trackedAyahs ?? 0} ayahs read
                   </p>
                   <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
                     {progressSummary?.browseRecitedAyahs7d ?? 0} ayahs read in the last 7 days

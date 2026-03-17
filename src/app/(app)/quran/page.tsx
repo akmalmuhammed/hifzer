@@ -104,11 +104,11 @@ export default async function QuranIndexPage() {
       <div className="mt-8">
         <SurahProgressSection
           title="Surah progress"
-          subtitle="Completed surahs are softly highlighted in green, while the current surah keeps its live percentage so refreshes and returns stay anchored to the same Qur'an lane."
+          subtitle="Finished surahs stay marked in green, and the surah you are reading keeps its percentage so you can return to the same place easily."
           items={surahProgressItems.slice(0, 8)}
           viewAllHref="/quran/progress"
-          emptyTitle="No tracked surah progress yet"
-          emptyBody="Open the tracked reader and your current surah plus completed surahs will start appearing here."
+          emptyTitle="No surah progress yet"
+          emptyBody="Start reading and your current and finished surahs will appear here."
         />
       </div>
 
@@ -116,12 +116,9 @@ export default async function QuranIndexPage() {
         <DisclosureCard
           summary={(
             <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">More reading tools</p>
-                <Pill tone="neutral">Collapsed by default</Pill>
-              </div>
+              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">More reading tools</p>
               <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
-                Open bookmarks, jump by surah or juz, log outside reading, or revisit the dua and progress utilities when needed.
+                Open bookmarks, jump by surah or juz, save reading done elsewhere, or revisit the dua and progress pages when needed.
               </p>
             </div>
           )}
@@ -140,7 +137,7 @@ export default async function QuranIndexPage() {
                 <MoonStar size={14} />
               </Link>
               <Link href="/quran/progress" className={toolLinkClass}>
-                Open full surah progress
+                See all surahs
                 <ArrowRight size={14} />
               </Link>
             </div>
@@ -151,7 +148,7 @@ export default async function QuranIndexPage() {
                   <Compass size={16} className="text-[color:var(--kw-faint)]" />
                   <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Quick jump</p>
                 </div>
-                <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Start compact reading from any surah.</p>
+                <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Start reading from any surah.</p>
                 <form className="mt-4 flex flex-wrap items-center gap-2" method="get" action="/quran/read">
                   <input type="hidden" name="view" value="compact" />
                   <label className="sr-only" htmlFor="quran-jump-surah">
@@ -183,7 +180,7 @@ export default async function QuranIndexPage() {
                   <Compass size={16} className="text-[color:var(--kw-faint)]" />
                   <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Jump by juz</p>
                 </div>
-                <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Start compact reading from any juz range.</p>
+                <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Start reading from any juz.</p>
                 <form className="mt-4 flex flex-wrap items-center gap-2" method="get" action="/quran/read">
                   <input type="hidden" name="view" value="compact" />
                   <label className="sr-only" htmlFor="quran-jump-juz">

@@ -111,7 +111,6 @@ export default async function RootLayout({
         data-mode="light"
         data-theme="standard"
         data-accent="teal"
-        data-distraction-free={distractionFree ? "1" : "0"}
         className={`${inter.variable} ${mono.variable} ${amiri.variable} ${marketingDisplay.variable}`}
       >
       <body className="kw-canvas min-h-dvh bg-[color:var(--kw-bg)] text-[color:var(--kw-ink)] antialiased">

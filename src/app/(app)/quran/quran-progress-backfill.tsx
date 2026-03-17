@@ -40,8 +40,6 @@ export function QuranProgressBackfill(props: Props) {
   const safeFrom = clamp(Math.floor(fromAyah || 1), 1, selected?.ayahCount ?? 1);
   const safeTo = clamp(Math.floor(toAyah || 1), 1, selected?.ayahCount ?? 1);
   const rangeError = safeFrom > safeTo ? "Start ayah must be less than or equal to end ayah." : null;
-  const rangeEndAyahId = (selected?.startAyahId ?? 1) + (safeTo - 1);
-
   async function markRangeCompleted() {
     if (!selected) {
       return;
@@ -82,26 +80,26 @@ export function QuranProgressBackfill(props: Props) {
         if (res.status === 503) {
           pushToast({
             title: "Database unavailable",
-            message: `Could not sync Surah ${selected.surahNumber}:${safeFrom}-${safeTo}. Try again when database access is restored.`,
+            message: `Could not save Surah ${selected.surahNumber}:${safeFrom}-${safeTo}. Try again when database access is restored.`,
             tone: "warning",
           });
           return;
         }
-        throw new Error(payload.error || "Failed to import progress range.");
+        throw new Error(payload.error || "Failed to save reading range.");
       }
 
       pushToast({
-        title: payload.movedCursor ? "Progress tracker updated" : "Range logged",
+        title: "Reading saved",
         message: payload.movedCursor
-          ? `Tracked ${payload.tracking?.recordedAyahCount ?? 0}/${payload.tracking?.totalAyahCount ?? (safeTo - safeFrom + 1)} ayahs in Surah ${selected.surahNumber}:${safeFrom}-${safeTo}. Resume cursor also advanced.`
-          : `Tracked ${payload.tracking?.recordedAyahCount ?? 0}/${payload.tracking?.totalAyahCount ?? (safeTo - safeFrom + 1)} ayahs in Surah ${selected.surahNumber}:${safeFrom}-${safeTo}. Resume cursor was already ahead.`,
+          ? `Saved ${payload.tracking?.recordedAyahCount ?? 0} ayahs in Surah ${selected.surahNumber}:${safeFrom}-${safeTo}. Your reading place also moved forward.`
+          : `Saved ${payload.tracking?.recordedAyahCount ?? 0} ayahs in Surah ${selected.surahNumber}:${safeFrom}-${safeTo}. Your reading place was already further ahead.`,
         tone: "success",
       });
       router.refresh();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Could not update progress.";
+      const message = error instanceof Error ? error.message : "Could not save reading.";
       pushToast({
-        title: "Update failed",
+        title: "Save failed",
         message,
         tone: "warning",
       });
@@ -114,17 +112,17 @@ export function QuranProgressBackfill(props: Props) {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Pill tone="accent">Backfill tracker</Pill>
+          <Pill tone="accent">Mark past reading</Pill>
           <span className="inline-flex items-center gap-1 rounded-full border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.08)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[rgba(var(--kw-accent-rgb),1)]">
             <Import size={12} />
-            External reading
+            Outside Hifzer
           </span>
         </div>
-        <p className="text-xs text-[color:var(--kw-faint)]">Useful if you recited from a physical mushaf or another app.</p>
+        <p className="text-xs text-[color:var(--kw-faint)]">Useful if you read from a physical mushaf or another app.</p>
       </div>
 
       <p className="mt-3 text-sm text-[color:var(--kw-muted)]">
-        Mark only the exact Surah ayah range as read. Ayahs before the selected range are not auto-completed.
+        Save only the ayahs you actually finished. We do not fill in the ayahs before them automatically.
       </p>
 
       <div className="mt-4 grid gap-3 md:grid-cols-4">
@@ -184,7 +182,7 @@ export function QuranProgressBackfill(props: Props) {
                 : "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)] hover:bg-[rgba(var(--kw-accent-rgb),0.16)]"
             }`}
           >
-            {saving ? "Updating..." : "Mark as completed"}
+            {saving ? "Saving..." : "Save reading"}
           </button>
         </div>
       </div>
@@ -197,7 +195,7 @@ export function QuranProgressBackfill(props: Props) {
       ) : (
         <p className="mt-3 inline-flex items-center gap-2 text-xs text-[color:var(--kw-faint)]">
           <CheckCircle2 size={14} />
-          Range to sync: Surah {selected?.surahNumber}:{safeFrom}-{safeTo} (global end ayah #{rangeEndAyahId}).
+          Ready to save: Surah {selected?.surahNumber}:{safeFrom}-{safeTo}.
         </p>
       )}
     </div>

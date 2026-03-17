@@ -71,7 +71,7 @@ export default async function RamadanPage() {
               <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{ayahsPerDay}</p>
               <p className="mt-1 text-sm text-[color:var(--kw-muted)]">Ayahs per day</p>
               <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-                Roughly {pagesPerDay} page{pagesPerDay === 1 ? "" : "s"} per day from your current tracked position.
+                Roughly {pagesPerDay} page{pagesPerDay === 1 ? "" : "s"} per day from your current place.
               </p>
             </Card>
           );

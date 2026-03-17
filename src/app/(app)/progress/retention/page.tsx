@@ -52,7 +52,7 @@ export default async function RetentionPage() {
               <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Ayahs due within the next 6 hours.</p>
             </Card>
             <Card>
-              <Pill tone="neutral">Tracked ayahs</Pill>
+              <Pill tone="neutral">Ayahs in review</Pill>
               <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
                 {overview.kpis.trackedAyahs}
               </p>
