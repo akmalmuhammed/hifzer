@@ -2,7 +2,7 @@ import { HifzerMark } from "@/components/brand/hifzer-mark";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { Pill } from "@/components/ui/pill";
-import styles from "./landing.module.css";
+import styles from "./landing-home.module.css";
 
 export function MarketingFooter() {
   const supportEmail = process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@hifzer.com";
@@ -12,7 +12,7 @@ export function MarketingFooter() {
     <footer className="mt-12">
       <div className="mx-auto max-w-[1200px] px-4">
         <div className={`${styles.footerFrame} px-5 py-8 sm:px-6 md:px-8`}>
-          <div className="grid gap-8 md:grid-cols-[1.1fr_0.8fr_0.8fr_0.8fr]">
+          <div className="grid gap-8 md:grid-cols-[1.2fr_0.8fr_0.8fr]">
             <div>
               <div className="flex items-center gap-3">
                 <span className="grid h-11 w-11 place-items-center rounded-[18px] border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[color:var(--kw-surface)] text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)]">
@@ -21,75 +21,33 @@ export function MarketingFooter() {
                 <div>
                   <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Hifzer</p>
                   <p className="text-xs text-[color:var(--kw-muted)]">
-                    Built by Muslims, for Muslims - and kept free to use at the core.
+                    A quieter Qur&apos;an companion.
                   </p>
                 </div>
               </div>
 
               <p className="mt-4 max-w-md text-sm leading-7 text-[color:var(--kw-muted)]">
-                Your tool. Your practice. Your relationship with Allah. We just build and maintain
-                the space with care, keep the core experience free to use, and stay open to what the
-                community actually needs next.
+                A calm space for reading, hifz, dua, and private reflection. Start in the browser,
+                and sign in when you want your place and progress saved to your account.
               </p>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                <Pill tone="brand">Core app free to use</Pill>
-                <Pill tone="accent">Open roadmap</Pill>
+                <Pill tone="brand">Core app free</Pill>
+                <Pill tone="accent">Saved to your account</Pill>
                 <Pill tone="warn">Quiet by design</Pill>
               </div>
             </div>
 
             <div className="grid gap-2 text-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
-                Explore
+                Start
               </p>
-              <TrackedLink
-                href="/#features"
-                telemetryName="footer.features"
-                className="font-semibold text-[color:var(--kw-ink)] hover:underline"
-              >
-                Features
-              </TrackedLink>
-              <TrackedLink
-                href="/#stories"
-                telemetryName="footer.stories"
-                className="font-semibold text-[color:var(--kw-ink)] hover:underline"
-              >
-                Stories
-              </TrackedLink>
-              <TrackedLink
-                href="/#how-it-works"
-                telemetryName="footer.how-it-works"
-                className="font-semibold text-[color:var(--kw-ink)] hover:underline"
-              >
-                How it works
-              </TrackedLink>
               <TrackedLink
                 href="/quran-preview"
-                telemetryName="footer.quran-preview"
+                telemetryName="footer.preview"
                 className="font-semibold text-[color:var(--kw-ink)] hover:underline"
               >
-                Qur&apos;an preview
-              </TrackedLink>
-            </div>
-
-            <div className="grid gap-2 text-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
-                Build With Us
-              </p>
-              <TrackedLink
-                href="/#community"
-                telemetryName="footer.community"
-                className="font-semibold text-[color:var(--kw-ink)] hover:underline"
-              >
-                Community
-              </TrackedLink>
-              <TrackedLink
-                href="/#roadmap"
-                telemetryName="footer.roadmap"
-                className="font-semibold text-[color:var(--kw-ink)] hover:underline"
-              >
-                Roadmap
+                Preview the reader
               </TrackedLink>
               <a href={featureRequestHref} className="font-semibold text-[color:var(--kw-ink)] hover:underline">
                 Request a feature
@@ -101,13 +59,6 @@ export function MarketingFooter() {
               >
                 Create my free space
               </PublicAuthLink>
-              <TrackedLink
-                href="/compare"
-                telemetryName="footer.compare"
-                className="font-semibold text-[color:var(--kw-ink)] hover:underline"
-              >
-                Compare
-              </TrackedLink>
             </div>
 
             <div className="grid gap-2 text-sm">
@@ -143,8 +94,7 @@ export function MarketingFooter() {
                 Refund policy
               </TrackedLink>
               <p className="pt-2 text-xs text-[color:var(--kw-faint)]">
-                © {new Date().getFullYear()} Hifzer. Your tool. Your practice. Your relationship
-                with Allah. We just maintain the space - free to use at the core.
+                (c) {new Date().getFullYear()} Hifzer. Calm, honest tools for reading, hifz, and dua.
               </p>
             </div>
           </div>

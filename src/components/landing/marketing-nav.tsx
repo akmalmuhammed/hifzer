@@ -7,13 +7,13 @@ import { UserButton } from "@clerk/nextjs";
 import { UiLanguageSwitcher } from "@/components/app/ui-language-switcher";
 import { HifzerMark } from "@/components/brand/hifzer-mark";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
+import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { useUiLanguage } from "@/components/providers/ui-language-provider";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
-import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
-import styles from "./landing.module.css";
+import styles from "./landing-home.module.css";
 
 export function MarketingNav(props: { authEnabled: boolean }) {
   const [open, setOpen] = useState(false);
@@ -22,14 +22,14 @@ export function MarketingNav(props: { authEnabled: boolean }) {
   const copy = getAppUiCopy(language);
   const showSignedIn = props.authEnabled && isSignedIn;
   const signInLabel = language === "en.sahih" ? "Return" : copy.marketing.signIn;
-  const getStartedLabel = language === "en.sahih" ? "It's Free - Begin" : copy.marketing.getStarted;
+  const getStartedLabel = language === "en.sahih" ? "Begin free" : copy.marketing.getStarted;
   const openAppLabel = language === "en.sahih" ? "Return" : copy.marketing.openApp;
-  const brandTagline = language === "en.sahih" ? "Your tool. Your return." : copy.brandTagline;
+  const brandTagline =
+    language === "en.sahih" ? "A quieter Qur'an companion" : copy.brandTagline;
   const links = [
-    { href: "/#features", label: "Features", key: "features" },
-    { href: "/#community", label: "Community", key: "community" },
-    { href: "/#stories", label: "Stories", key: "stories" },
-    { href: "/#roadmap", label: "Roadmap", key: "roadmap" },
+    { href: "/#experience", label: "Experience", key: "experience" },
+    { href: "/#flow", label: "Flow", key: "flow" },
+    { href: "/quran-preview", label: "Preview", key: "preview" },
   ] as const;
 
   return (
@@ -49,7 +49,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
               </span>
             </TrackedLink>
 
-            <nav className="hidden items-center gap-2 lg:flex">
+            <nav className="hidden items-center gap-1 lg:flex">
               {links.map((link) => (
                 <TrackedLink
                   key={link.href}
@@ -84,10 +84,10 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                     {signInLabel}
                   </PublicAuthLink>
                   <Button asChild size="md">
-                  <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
+                    <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
                       {getStartedLabel} <ArrowRight size={16} />
-                  </PublicAuthLink>
-                </Button>
+                    </PublicAuthLink>
+                  </Button>
                 </>
               )}
 
@@ -123,14 +123,21 @@ export function MarketingNav(props: { authEnabled: boolean }) {
 
               <div className="grid gap-2 pt-2">
                 {showSignedIn ? (
-                  <TrackedLink
-                    href="/today"
-                    telemetryName="marketing.mobile-open-app"
-                    onClick={() => setOpen(false)}
-                    className="rounded-[18px] border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 py-2.5 text-center text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]"
-                  >
-                    {openAppLabel}
-                  </TrackedLink>
+                  <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                    <TrackedLink
+                      href="/today"
+                      telemetryName="marketing.mobile-open-app"
+                      onClick={() => setOpen(false)}
+                      className="rounded-[18px] border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 py-2.5 text-center text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]"
+                    >
+                      {openAppLabel}
+                    </TrackedLink>
+                    <div className="flex justify-center sm:justify-end">
+                      <div className="grid h-11 w-11 place-items-center rounded-[16px] border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] shadow-[var(--kw-shadow-soft)]">
+                        <UserButton afterSignOutUrl="/" />
+                      </div>
+                    </div>
+                  </div>
                 ) : (
                   <div className="grid gap-2 sm:grid-cols-2">
                     <PublicAuthLink
@@ -142,7 +149,11 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                       {signInLabel}
                     </PublicAuthLink>
                     <Button asChild className="w-full">
-                      <PublicAuthLink signedInHref="/today" signedOutHref="/signup" onClick={() => setOpen(false)}>
+                      <PublicAuthLink
+                        signedInHref="/today"
+                        signedOutHref="/signup"
+                        onClick={() => setOpen(false)}
+                      >
                         {getStartedLabel} <ArrowRight size={16} />
                       </PublicAuthLink>
                     </Button>
