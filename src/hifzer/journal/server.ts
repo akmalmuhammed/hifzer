@@ -7,14 +7,19 @@ import {
   type JournalEntry,
   type JournalEntryType,
   type JournalLinkedAyah,
+  type JournalLinkedDua,
 } from "@/hifzer/journal/local-store";
+import { Prisma } from "@prisma/client";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { db, dbConfigured } from "@/lib/db";
 
 const MAX_CONTENT_LENGTH = 12000;
 const MAX_SURAH_NAME_LENGTH = 120;
+const MAX_DUA_TEXT_LENGTH = 6000;
+const MAX_DUA_META_LENGTH = 160;
 const MAX_IMPORT_ENTRIES = 200;
 const DUA_STATUSES = ["ongoing", "answered", "accepted_differently"] satisfies readonly JournalDuaStatus[];
+const JOURNAL_DUA_MODULE_IDS = ["laylat-al-qadr", "repentance", "beautiful-names"] as const;
 
 type JournalUpsertInput = {
   id?: string | null;
@@ -24,6 +29,7 @@ type JournalUpsertInput = {
   pinned?: boolean | null;
   createdAt?: string | null;
   linkedAyah?: JournalLinkedAyah | null;
+  linkedDua?: JournalLinkedDua | null;
   duaStatus?: JournalDuaStatus | string | null;
   autoDeleteAt?: string | null;
 };
@@ -112,8 +118,72 @@ function sanitizeLinkedAyah(value: JournalLinkedAyah | null | undefined): Journa
   };
 }
 
-function hasMeaningfulContent(input: { content: string; tags: string[]; linkedAyah: JournalLinkedAyah | null }): boolean {
-  return Boolean(input.content.trim().length > 0 || input.tags.length > 0 || input.linkedAyah);
+function sanitizeLinkedDua(value: JournalLinkedDua | null | undefined): JournalLinkedDua | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const moduleId = sanitizeOptionalText(value.moduleId, MAX_DUA_META_LENGTH);
+  const stepId = sanitizeOptionalText(value.stepId, MAX_DUA_META_LENGTH);
+  const title = sanitizeOptionalText(value.title, MAX_DUA_META_LENGTH);
+  const label = sanitizeOptionalText(value.label, MAX_DUA_META_LENGTH) ?? "Dua";
+  const translation = sanitizeOptionalText(value.translation, MAX_DUA_TEXT_LENGTH);
+  if (
+    !moduleId ||
+    !JOURNAL_DUA_MODULE_IDS.includes(moduleId as (typeof JOURNAL_DUA_MODULE_IDS)[number]) ||
+    !stepId ||
+    !title ||
+    !translation
+  ) {
+    return null;
+  }
+
+  return {
+    moduleId,
+    moduleLabel: sanitizeOptionalText(value.moduleLabel, MAX_DUA_META_LENGTH) ?? "Dua",
+    stepId,
+    title,
+    label,
+    arabic: sanitizeOptionalText(value.arabic ?? null, MAX_DUA_TEXT_LENGTH),
+    transliteration: sanitizeOptionalText(value.transliteration ?? null, MAX_DUA_TEXT_LENGTH),
+    translation,
+    sourceLabel: sanitizeOptionalText(value.sourceLabel ?? null, MAX_DUA_META_LENGTH),
+    sourceHref: sanitizeOptionalText(value.sourceHref ?? null, 500),
+  };
+}
+
+function parseLinkedDuaJson(value: unknown): JournalLinkedDua | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+  return sanitizeLinkedDua(value as JournalLinkedDua);
+}
+
+function toLinkedDuaJsonValue(value: JournalLinkedDua | null): Prisma.InputJsonValue | typeof Prisma.DbNull {
+  if (!value) {
+    return Prisma.DbNull;
+  }
+  return {
+    moduleId: value.moduleId,
+    moduleLabel: value.moduleLabel,
+    stepId: value.stepId,
+    title: value.title,
+    label: value.label,
+    arabic: value.arabic ?? null,
+    transliteration: value.transliteration ?? null,
+    translation: value.translation,
+    sourceLabel: value.sourceLabel ?? null,
+    sourceHref: value.sourceHref ?? null,
+  };
+}
+
+function hasMeaningfulContent(input: {
+  content: string;
+  tags: string[];
+  linkedAyah: JournalLinkedAyah | null;
+  linkedDua: JournalLinkedDua | null;
+}): boolean {
+  return Boolean(input.content.trim().length > 0 || input.tags.length > 0 || input.linkedAyah || input.linkedDua);
 }
 
 function toSnapshot(row: {
@@ -129,6 +199,7 @@ function toSnapshot(row: {
   linkedAyahNumber: number | null;
   linkedSurahNameArabic: string | null;
   linkedSurahNameTransliteration: string | null;
+  linkedDuaJson: unknown;
   duaStatus: JournalDuaStatus | null;
   autoDeleteAt: Date | null;
 }): JournalEntry {
@@ -150,6 +221,7 @@ function toSnapshot(row: {
             surahNameTransliteration: row.linkedSurahNameTransliteration ?? "",
           }
         : null,
+    linkedDua: parseLinkedDuaJson(row.linkedDuaJson),
     duaStatus: row.duaStatus ?? null,
     autoDeleteAt: row.autoDeleteAt ? row.autoDeleteAt.toISOString() : null,
   };
@@ -226,7 +298,8 @@ export async function savePrivateJournalEntry(
     const content = sanitizeOptionalText(input.content, MAX_CONTENT_LENGTH) ?? "";
     const tags = normalizeJournalTags(Array.isArray(input.tags) ? input.tags : existing?.tags ?? []);
     const linkedAyah = sanitizeLinkedAyah(input.linkedAyah ?? null);
-    if (!hasMeaningfulContent({ content, tags, linkedAyah })) {
+    const linkedDua = sanitizeLinkedDua(input.linkedDua ?? null);
+    if (!hasMeaningfulContent({ content, tags, linkedAyah, linkedDua })) {
       throw new JournalStorageError("Write something first before saving.", 400, "EMPTY_ENTRY");
     }
 
@@ -260,6 +333,7 @@ export async function savePrivateJournalEntry(
             linkedAyahNumber: linkedAyah?.ayahNumber ?? null,
             linkedSurahNameArabic: linkedAyah?.surahNameArabic ?? null,
             linkedSurahNameTransliteration: linkedAyah?.surahNameTransliteration ?? null,
+            linkedDuaJson: toLinkedDuaJsonValue(linkedDua),
             duaStatus,
             autoDeleteAt,
           },
@@ -276,6 +350,7 @@ export async function savePrivateJournalEntry(
             linkedAyahNumber: linkedAyah?.ayahNumber ?? null,
             linkedSurahNameArabic: linkedAyah?.surahNameArabic ?? null,
             linkedSurahNameTransliteration: linkedAyah?.surahNameTransliteration ?? null,
+            linkedDuaJson: toLinkedDuaJsonValue(linkedDua),
             duaStatus,
             autoDeleteAt,
             createdAt,
@@ -330,7 +405,8 @@ export async function importPrivateJournalEntries(
         const content = sanitizeOptionalText(entry.content, MAX_CONTENT_LENGTH) ?? "";
         const tags = normalizeJournalTags(entry.tags);
         const linkedAyah = sanitizeLinkedAyah(entry.linkedAyah ?? null);
-        if (!hasMeaningfulContent({ content, tags, linkedAyah })) {
+        const linkedDua = sanitizeLinkedDua(entry.linkedDua ?? null);
+        if (!hasMeaningfulContent({ content, tags, linkedAyah, linkedDua })) {
           return null;
         }
 
@@ -348,6 +424,7 @@ export async function importPrivateJournalEntries(
           tags,
           pinned: entry.pinned === true,
           linkedAyah,
+          linkedDua,
           duaStatus: type === "dua" ? normalizeDuaStatus(entry.duaStatus) : null,
           autoDeleteAt,
           createdAt,
@@ -386,6 +463,7 @@ export async function importPrivateJournalEntries(
         linkedAyahNumber: entry.linkedAyah?.ayahNumber ?? null,
         linkedSurahNameArabic: entry.linkedAyah?.surahNameArabic ?? null,
         linkedSurahNameTransliteration: entry.linkedAyah?.surahNameTransliteration ?? null,
+        linkedDuaJson: toLinkedDuaJsonValue(entry.linkedDua),
         duaStatus: entry.duaStatus,
         autoDeleteAt: entry.autoDeleteAt,
         createdAt: entry.createdAt,

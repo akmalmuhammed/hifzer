@@ -6,7 +6,7 @@ import {
   listPrivateJournalEntries,
   savePrivateJournalEntry,
 } from "@/hifzer/journal/server";
-import type { JournalLinkedAyah } from "@/hifzer/journal/local-store";
+import type { JournalLinkedAyah, JournalLinkedDua } from "@/hifzer/journal/local-store";
 
 type SavePayload = {
   id?: unknown;
@@ -16,6 +16,7 @@ type SavePayload = {
   pinned?: unknown;
   createdAt?: unknown;
   linkedAyah?: unknown;
+  linkedDua?: unknown;
   duaStatus?: unknown;
   autoDeleteAt?: unknown;
 };
@@ -51,6 +52,13 @@ function asLinkedAyah(input: unknown): JournalLinkedAyah | null {
     return null;
   }
   return input as JournalLinkedAyah;
+}
+
+function asLinkedDua(input: unknown): JournalLinkedDua | null {
+  if (!input || typeof input !== "object") {
+    return null;
+  }
+  return input as JournalLinkedDua;
 }
 
 function handleError(error: unknown) {
@@ -99,6 +107,7 @@ export async function POST(req: Request) {
       pinned: asOptionalBoolean(payload.pinned),
       createdAt: asOptionalString(payload.createdAt),
       linkedAyah: asLinkedAyah(payload.linkedAyah),
+      linkedDua: asLinkedDua(payload.linkedDua),
       duaStatus: asOptionalString(payload.duaStatus),
       autoDeleteAt: asOptionalString(payload.autoDeleteAt),
     });

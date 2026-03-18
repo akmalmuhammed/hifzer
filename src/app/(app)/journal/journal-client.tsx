@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   ArrowRight,
   BookOpenText,
+  Heart,
   Pin,
   Plus,
   Save,
@@ -20,10 +21,13 @@ import {
   type KeyboardEvent,
 } from "react";
 import clsx from "clsx";
+import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Pill } from "@/components/ui/pill";
 import { Input, Textarea } from "@/components/ui/input";
+import { SupportTextPanel } from "@/components/quran/support-text-panel";
 import { useToast } from "@/components/ui/toast";
 import {
   JOURNAL_ENTRY_TYPES,
@@ -31,7 +35,9 @@ import {
   type JournalEntry,
   type JournalEntryType,
   type JournalLinkedAyah,
+  type JournalLinkedDua,
   buildLinkedAyahHref,
+  buildLinkedDuaHref,
   clearJournalEntries,
   createJournalEntryId,
   deleteJournalEntry,
@@ -60,8 +66,19 @@ type JournalDraft = {
   pinned: boolean;
   createdAt: string | null;
   linkedAyah: JournalLinkedAyah | null;
+  linkedDua: JournalLinkedDua | null;
   duaStatus: JournalDuaStatus;
   autoDeletePreset: "" | "1" | "3" | "7" | "30";
+};
+
+type AyahCardData = {
+  id: number;
+  surahNumber: number;
+  ayahNumber: number;
+  textUthmani: string;
+  translation: string | null;
+  surahNameArabic: string;
+  surahNameTransliteration: string;
 };
 
 const TYPE_META: Record<
@@ -154,6 +171,7 @@ function createEmptyDraft(type: JournalEntryType = "reflection"): JournalDraft {
     pinned: false,
     createdAt: null,
     linkedAyah: null,
+    linkedDua: null,
     duaStatus: "ongoing",
     autoDeletePreset: "",
   };
@@ -184,30 +202,36 @@ function draftFromEntry(entry: JournalEntry): JournalDraft {
     pinned: entry.pinned,
     createdAt: entry.createdAt,
     linkedAyah: entry.linkedAyah ?? null,
+    linkedDua: entry.linkedDua ?? null,
     duaStatus: entry.duaStatus ?? "ongoing",
     autoDeletePreset: inferAutoDeletePreset(entry),
   };
 }
 
-function buildPreview(content: string): string {
-  const trimmed = content.trim();
+function buildPreview(entry: Pick<JournalEntry, "content" | "linkedAyah" | "linkedDua">): string {
+  const trimmed = entry.content.trim();
   if (!trimmed) {
+    if (entry.linkedDua?.translation) {
+      return entry.linkedDua.translation.length > 180
+        ? `${entry.linkedDua.translation.slice(0, 177)}...`
+        : entry.linkedDua.translation;
+    }
+    if (entry.linkedAyah) {
+      return `Attached ayah from ${entry.linkedAyah.surahNameTransliteration} ${entry.linkedAyah.surahNumber}:${entry.linkedAyah.ayahNumber}.`;
+    }
     return "Nothing written yet.";
   }
   return trimmed.length > 180 ? `${trimmed.slice(0, 177)}...` : trimmed;
 }
 
 function hasMeaningfulDraftContent(draft: JournalDraft): boolean {
-  return Boolean(
-    draft.content.trim().length > 0 ||
-      draft.tags.length > 0 ||
-      draft.linkedAyah,
-  );
+  return Boolean(draft.content.trim().length > 0 || draft.tags.length > 0 || draft.linkedAyah || draft.linkedDua);
 }
 
 function shouldShowAdvancedOptions(draft: JournalDraft): boolean {
   return Boolean(
     draft.linkedAyah ||
+      draft.linkedDua ||
       draft.tags.length > 0 ||
       draft.type === "dua" ||
       draft.type === "repentance",
@@ -251,6 +275,10 @@ function buildLinkedAyah(surahs: SurahOption[], surahNumber: number, ayahNumber:
   };
 }
 
+function buildDuaOptionValue(linkedDua: Pick<JournalLinkedDua, "moduleId" | "stepId">): string {
+  return `${linkedDua.moduleId}::${linkedDua.stepId}`;
+}
+
 function sortEntries(entries: JournalEntry[]): JournalEntry[] {
   return [...entries].sort((a, b) => {
     if (a.pinned !== b.pinned) {
@@ -270,8 +298,12 @@ async function readApiJson<T>(response: Response): Promise<T> {
 
 export function JournalClient(props: {
   surahs: SurahOption[];
+  duaOptions: JournalLinkedDua[];
   initialEntries: JournalEntry[];
   syncEnabled: boolean;
+  reciterId: string;
+  translationDir: "ltr" | "rtl";
+  translationAlignClass: string;
 }) {
   const { pushToast } = useToast();
   const didAttemptLegacyImportRef = useRef(false);
@@ -289,14 +321,25 @@ export function JournalClient(props: {
     surahNumber: props.surahs[0]?.surahNumber ?? 1,
     ayahNumber: 1,
   }));
+  const [duaFormValue, setDuaFormValue] = useState(() =>
+    props.duaOptions[0] ? buildDuaOptionValue(props.duaOptions[0]) : "",
+  );
+  const [ayahCardById, setAyahCardById] = useState<Record<number, AyahCardData>>({});
+  const [ayahCardErrorById, setAyahCardErrorById] = useState<Record<number, string>>({});
+  const [ayahCardLoadingId, setAyahCardLoadingId] = useState<number | null>(null);
   const deferredSearch = useDeferredValue(search.trim().toLowerCase());
 
   const activeTypeMeta = TYPE_META[draft.type];
   const selectedSurah = props.surahs.find((surah) => surah.surahNumber === ayahForm.surahNumber) ?? props.surahs[0];
+  const selectedDuaOption =
+    props.duaOptions.find((option) => buildDuaOptionValue(option) === duaFormValue) ?? props.duaOptions[0] ?? null;
   const hasDraftContent = hasMeaningfulDraftContent(draft);
   const canSave = hasDraftContent && (!draft.id || isDirty);
   const isBusy = isSaving || isDeleting;
   const pinnedCount = entries.filter((entry) => entry.pinned).length;
+  const currentAyahCard = draft.linkedAyah ? ayahCardById[draft.linkedAyah.ayahId] ?? null : null;
+  const currentAyahCardError = draft.linkedAyah ? ayahCardErrorById[draft.linkedAyah.ayahId] ?? null : null;
+  const isCurrentAyahCardLoading = draft.linkedAyah ? ayahCardLoadingId === draft.linkedAyah.ayahId : false;
 
   const filteredEntries = entries.filter((entry) => {
     if (!deferredSearch) {
@@ -307,6 +350,10 @@ export function JournalClient(props: {
       entry.tags.join(" "),
       entry.linkedAyah?.surahNameTransliteration ?? "",
       entry.linkedAyah ? `${entry.linkedAyah.surahNumber}:${entry.linkedAyah.ayahNumber}` : "",
+      entry.linkedDua?.title ?? "",
+      entry.linkedDua?.label ?? "",
+      entry.linkedDua?.translation ?? "",
+      entry.linkedDua?.moduleLabel ?? "",
     ]
       .join(" ")
       .toLowerCase();
@@ -374,6 +421,7 @@ export function JournalClient(props: {
       createdAt: draft.createdAt ?? now.toISOString(),
       updatedAt: now.toISOString(),
       linkedAyah: draft.linkedAyah,
+      linkedDua: draft.linkedDua,
       duaStatus: draft.type === "dua" ? draft.duaStatus : null,
       autoDeleteAt,
     };
@@ -409,6 +457,13 @@ export function JournalClient(props: {
       surahNumber: savedEntry.linkedAyah?.surahNumber ?? (props.surahs[0]?.surahNumber ?? 1),
       ayahNumber: savedEntry.linkedAyah?.ayahNumber ?? 1,
     });
+    setDuaFormValue(
+      savedEntry.linkedDua
+        ? buildDuaOptionValue(savedEntry.linkedDua)
+        : props.duaOptions[0]
+          ? buildDuaOptionValue(props.duaOptions[0])
+          : "",
+    );
     setIsDirty(false);
     if (!quiet) {
       pushToast({
@@ -487,6 +542,54 @@ export function JournalClient(props: {
     };
   }, [props.syncEnabled, pushToast]);
 
+  useEffect(() => {
+    const ayahId = draft.linkedAyah?.ayahId;
+    if (!ayahId || ayahCardById[ayahId] || ayahCardLoadingId === ayahId) {
+      return;
+    }
+
+    let cancelled = false;
+    setAyahCardLoadingId(ayahId);
+
+    void (async () => {
+      try {
+        const response = await fetch(`/api/quran/ayah-card?ayahId=${encodeURIComponent(String(ayahId))}`);
+        const payload = await readApiJson<{ ok: true; ayah: AyahCardData }>(response);
+        if (cancelled) {
+          return;
+        }
+        setAyahCardById((current) => ({
+          ...current,
+          [ayahId]: payload.ayah,
+        }));
+        setAyahCardErrorById((current) => {
+          if (!(ayahId in current)) {
+            return current;
+          }
+          const next = { ...current };
+          delete next[ayahId];
+          return next;
+        });
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+        setAyahCardErrorById((current) => ({
+          ...current,
+          [ayahId]: error instanceof Error ? error.message : "Could not load this ayah right now.",
+        }));
+      } finally {
+        if (!cancelled) {
+          setAyahCardLoadingId((current) => (current === ayahId ? null : current));
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [ayahCardById, ayahCardLoadingId, draft.linkedAyah?.ayahId]);
+
   const updateDraft = (updater: (current: JournalDraft) => JournalDraft) => {
     startTransition(() => {
       setDraft((current) => updater(current));
@@ -505,6 +608,7 @@ export function JournalClient(props: {
         surahNumber: props.surahs[0]?.surahNumber ?? 1,
         ayahNumber: 1,
       });
+      setDuaFormValue(props.duaOptions[0] ? buildDuaOptionValue(props.duaOptions[0]) : "");
       setTagInput("");
       setShowAdvanced(false);
       setIsDirty(false);
@@ -523,6 +627,13 @@ export function JournalClient(props: {
         surahNumber: entry.linkedAyah?.surahNumber ?? (props.surahs[0]?.surahNumber ?? 1),
         ayahNumber: entry.linkedAyah?.ayahNumber ?? 1,
       });
+      setDuaFormValue(
+        entry.linkedDua
+          ? buildDuaOptionValue(entry.linkedDua)
+          : props.duaOptions[0]
+            ? buildDuaOptionValue(props.duaOptions[0])
+            : "",
+      );
       setTagInput("");
       setShowAdvanced(shouldShowAdvancedOptions(nextDraft));
       setIsDirty(false);
@@ -560,6 +671,7 @@ export function JournalClient(props: {
       surahNumber: props.surahs[0]?.surahNumber ?? 1,
       ayahNumber: 1,
     });
+    setDuaFormValue(props.duaOptions[0] ? buildDuaOptionValue(props.duaOptions[0]) : "");
     setTagInput("");
     setShowAdvanced(false);
     setIsDirty(false);
@@ -614,6 +726,27 @@ export function JournalClient(props: {
 
   const removeLinkedAyah = () => {
     updateDraft((current) => ({ ...current, linkedAyah: null }));
+  };
+
+  const attachDua = () => {
+    if (!selectedDuaOption) {
+      pushToast({
+        tone: "warning",
+        title: "No dua available",
+        message: "There is no attachable dua card in your library yet.",
+      });
+      return;
+    }
+    updateDraft((current) => ({ ...current, linkedDua: selectedDuaOption }));
+    pushToast({
+      tone: "success",
+      title: "Dua attached",
+      message: `${selectedDuaOption.title} is now attached to this entry.`,
+    });
+  };
+
+  const removeLinkedDua = () => {
+    updateDraft((current) => ({ ...current, linkedDua: null }));
   };
 
   const scrollToComposer = () => {
@@ -822,26 +955,141 @@ export function JournalClient(props: {
                   </div>
 
                   {draft.linkedAyah ? (
-                    <div className={styles.linkedCard}>
-                      <div>
-                        <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
-                          {draft.linkedAyah.surahNameTransliteration} {draft.linkedAyah.surahNumber}:
-                          {draft.linkedAyah.ayahNumber}
-                        </p>
-                        <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
-                          {draft.linkedAyah.surahNameArabic}
-                        </p>
+                    <div className={styles.richAttachmentCard}>
+                      <div className={styles.attachmentHeader}>
+                        <div className={styles.attachmentPills}>
+                          <Pill tone="accent">Ayah card</Pill>
+                          <Pill tone="neutral">
+                            {draft.linkedAyah.surahNameTransliteration} {draft.linkedAyah.surahNumber}:
+                            {draft.linkedAyah.ayahNumber}
+                          </Pill>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Link
+                            href={buildLinkedAyahHref(draft.linkedAyah)}
+                            className="inline-flex items-center gap-2 rounded-[14px] border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.1)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+                          >
+                            Open in reader <ArrowRight size={14} />
+                          </Link>
+                          <Button variant="ghost" onClick={removeLinkedAyah}>
+                            Remove
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Link
-                          href={buildLinkedAyahHref(draft.linkedAyah)}
-                          className="inline-flex items-center gap-2 rounded-[14px] border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.1)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+
+                      <div className={styles.attachmentBody}>
+                        <div>
+                          <p className={styles.attachmentTitle}>
+                            {draft.linkedAyah.surahNameTransliteration} {draft.linkedAyah.surahNumber}:
+                            {draft.linkedAyah.ayahNumber}
+                          </p>
+                          <p className={styles.attachmentSubtle}>{draft.linkedAyah.surahNameArabic}</p>
+                        </div>
+
+                        <div dir="rtl" className={styles.ayahArabic}>
+                          {currentAyahCard?.textUthmani ??
+                            (isCurrentAyahCardLoading ? "Loading ayah..." : "Ayah text unavailable right now.")}
+                        </div>
+
+                        <AyahAudioPlayer
+                          ayahId={draft.linkedAyah.ayahId}
+                          reciterId={props.reciterId}
+                          speedPrefKey="hifzer_journal_ayah_audio_speed_v1"
+                          className={styles.ayahAudio}
+                        />
+
+                        <SupportTextPanel
+                          kind="translation"
+                          dir={props.translationDir}
+                          alignClassName={props.translationAlignClass}
                         >
-                          Open ayah <ArrowRight size={14} />
-                        </Link>
-                        <Button variant="ghost" onClick={removeLinkedAyah}>
-                          Remove
-                        </Button>
+                          {currentAyahCard?.translation ??
+                            currentAyahCardError ??
+                            (isCurrentAyahCardLoading
+                              ? "Loading translation..."
+                              : "Translation unavailable right now.")}
+                        </SupportTextPanel>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className={styles.quietCard}>
+                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Attach a dua card</p>
+                  {props.duaOptions.length > 0 ? (
+                    <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                      <select
+                        value={duaFormValue}
+                        onChange={(event) => setDuaFormValue(event.target.value)}
+                        className="h-11 w-full rounded-2xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] transition focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus:bg-[color:var(--kw-surface-strong)] focus:outline-none"
+                      >
+                        {props.duaOptions.map((option) => (
+                          <option key={buildDuaOptionValue(option)} value={buildDuaOptionValue(option)}>
+                            {option.moduleLabel}: {option.title}
+                          </option>
+                        ))}
+                      </select>
+                      <Button variant="secondary" onClick={attachDua}>
+                        <Heart size={16} />
+                        Add dua
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
+                      Open the Dua section first if you want more attachable cards here.
+                    </p>
+                  )}
+
+                  {draft.linkedDua ? (
+                    <div className={styles.richAttachmentCard}>
+                      <div className={styles.attachmentHeader}>
+                        <div className={styles.attachmentPills}>
+                          <Pill tone="warn">Dua card</Pill>
+                          <Pill tone="neutral">{draft.linkedDua.moduleLabel}</Pill>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Link
+                            href={buildLinkedDuaHref(draft.linkedDua)}
+                            className="inline-flex items-center gap-2 rounded-[14px] border border-[rgba(245,158,11,0.24)] bg-[rgba(245,158,11,0.12)] px-3 py-2 text-sm font-semibold text-[rgba(180,83,9,1)]"
+                          >
+                            Open module <ArrowRight size={14} />
+                          </Link>
+                          <Button variant="ghost" onClick={removeLinkedDua}>
+                            Remove
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className={styles.attachmentBody}>
+                        <div>
+                          <p className={styles.attachmentTitle}>{draft.linkedDua.title}</p>
+                          <p className={styles.attachmentSubtle}>{draft.linkedDua.label}</p>
+                        </div>
+
+                        {draft.linkedDua.arabic ? (
+                          <div dir="rtl" className={styles.duaArabic}>
+                            {draft.linkedDua.arabic}
+                          </div>
+                        ) : null}
+
+                        {draft.linkedDua.transliteration ? (
+                          <SupportTextPanel kind="transliteration">
+                            {draft.linkedDua.transliteration}
+                          </SupportTextPanel>
+                        ) : null}
+
+                        <SupportTextPanel kind="translation">
+                          {draft.linkedDua.translation}
+                        </SupportTextPanel>
+
+                        {draft.linkedDua.sourceLabel && draft.linkedDua.sourceHref ? (
+                          <p className={styles.attachmentSource}>
+                            Source:{" "}
+                            <Link href={draft.linkedDua.sourceHref} className={styles.inlineLink}>
+                              {draft.linkedDua.sourceLabel}
+                            </Link>
+                          </p>
+                        ) : null}
                       </div>
                     </div>
                   ) : null}
@@ -966,13 +1214,20 @@ export function JournalClient(props: {
                           {entry.pinned ? <Pin size={14} className={styles.entryPin} /> : null}
                         </div>
 
-                        <p className={styles.entryPreview}>{buildPreview(entry.content)}</p>
+                        <p className={styles.entryPreview}>{buildPreview(entry)}</p>
 
-                        {entry.linkedAyah ? (
-                          <p className={styles.entryAyah}>
-                            {entry.linkedAyah.surahNameTransliteration} {entry.linkedAyah.surahNumber}:
-                            {entry.linkedAyah.ayahNumber}
-                          </p>
+                        {entry.linkedAyah || entry.linkedDua ? (
+                          <div className={styles.entryAttachmentRow}>
+                            {entry.linkedAyah ? (
+                              <span className={styles.entryAttachmentPill}>
+                                Ayah: {entry.linkedAyah.surahNameTransliteration} {entry.linkedAyah.surahNumber}:
+                                {entry.linkedAyah.ayahNumber}
+                              </span>
+                            ) : null}
+                            {entry.linkedDua ? (
+                              <span className={styles.entryAttachmentPill}>Dua: {entry.linkedDua.title}</span>
+                            ) : null}
+                          </div>
                         ) : null}
 
                         <div className={styles.entryMeta}>

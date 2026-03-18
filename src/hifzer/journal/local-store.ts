@@ -17,6 +17,19 @@ export type JournalLinkedAyah = {
   surahNameTransliteration: string;
 };
 
+export type JournalLinkedDua = {
+  moduleId: string;
+  moduleLabel: string;
+  stepId: string;
+  title: string;
+  label: string;
+  arabic?: string | null;
+  transliteration?: string | null;
+  translation: string;
+  sourceLabel?: string | null;
+  sourceHref?: string | null;
+};
+
 export type JournalEntry = {
   id: string;
   type: JournalEntryType;
@@ -26,6 +39,7 @@ export type JournalEntry = {
   createdAt: string;
   updatedAt: string;
   linkedAyah?: JournalLinkedAyah | null;
+  linkedDua?: JournalLinkedDua | null;
   duaStatus?: JournalDuaStatus | null;
   autoDeleteAt?: string | null;
 };
@@ -70,6 +84,20 @@ function normalizeEntry(entry: JournalEntry): JournalEntry {
           ayahNumber: Number(entry.linkedAyah.ayahNumber),
           surahNameArabic: entry.linkedAyah.surahNameArabic ?? "",
           surahNameTransliteration: entry.linkedAyah.surahNameTransliteration ?? "",
+        }
+      : null,
+    linkedDua: entry.linkedDua
+      ? {
+          moduleId: entry.linkedDua.moduleId ?? "",
+          moduleLabel: entry.linkedDua.moduleLabel ?? "",
+          stepId: entry.linkedDua.stepId ?? "",
+          title: entry.linkedDua.title ?? "",
+          label: entry.linkedDua.label ?? "",
+          arabic: entry.linkedDua.arabic ?? null,
+          transliteration: entry.linkedDua.transliteration ?? null,
+          translation: entry.linkedDua.translation ?? "",
+          sourceLabel: entry.linkedDua.sourceLabel ?? null,
+          sourceHref: entry.linkedDua.sourceHref ?? null,
         }
       : null,
     duaStatus:
@@ -247,6 +275,10 @@ export function formatAutoDeleteCountdown(entry: JournalEntry, now: Date = new D
 
 export function buildLinkedAyahHref(linkedAyah: JournalLinkedAyah): string {
   return `/quran/read?view=compact&surah=${linkedAyah.surahNumber}&cursor=${linkedAyah.ayahId}`;
+}
+
+export function buildLinkedDuaHref(linkedDua: JournalLinkedDua): string {
+  return `/dua/${linkedDua.moduleId}`;
 }
 
 export function privacyStatusLabel(entry: JournalEntry): string {

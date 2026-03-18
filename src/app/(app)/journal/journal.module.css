@@ -169,6 +169,24 @@
   font-weight: 600;
 }
 
+.entryAttachmentRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.entryAttachmentPill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--kw-border-2);
+  background: var(--kw-surface-soft);
+  padding: 7px 11px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--kw-muted);
+}
+
 .entryMeta {
   display: flex;
   flex-wrap: wrap;
@@ -206,6 +224,86 @@
   margin-top: 16px;
   border-radius: 18px;
   padding: 14px 16px;
+}
+
+.richAttachmentCard {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+  border: 1px solid var(--kw-border-2);
+  border-radius: 22px;
+  background:
+    radial-gradient(440px 120px at 100% -10%, rgba(var(--kw-accent-rgb), 0.08), transparent 64%),
+    var(--kw-surface-soft);
+  padding: 18px;
+  box-shadow: var(--kw-shadow-soft);
+}
+
+.attachmentHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.attachmentPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.attachmentBody {
+  display: grid;
+  gap: 14px;
+}
+
+.attachmentTitle {
+  color: var(--kw-ink);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.attachmentSubtle {
+  margin-top: 4px;
+  color: var(--kw-muted);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.ayahArabic,
+.duaArabic {
+  border-radius: 20px;
+  border: 1px solid var(--kw-border-2);
+  background: rgba(255, 255, 255, 0.42);
+  padding: 16px 18px;
+  color: var(--kw-ink);
+  font-size: clamp(1.45rem, 2.2vw, 1.9rem);
+  line-height: 2.05;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.duaArabic {
+  font-size: clamp(1.3rem, 2vw, 1.7rem);
+}
+
+.ayahAudio {
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.attachmentSource {
+  color: var(--kw-muted);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.inlineLink {
+  color: rgba(var(--kw-accent-rgb), 1);
+  font-weight: 700;
+}
+
+.inlineLink:hover {
+  text-decoration: underline;
 }
 
 .editorHeader {
@@ -355,6 +453,16 @@
   .entryPreview {
     font-size: 1rem;
     line-height: 1.65;
+  }
+
+  .richAttachmentCard {
+    padding: 16px;
+  }
+
+  .ayahArabic,
+  .duaArabic {
+    padding: 14px 16px;
+    font-size: 1.32rem;
   }
 
   .editorTitle {

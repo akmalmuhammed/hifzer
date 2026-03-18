@@ -225,6 +225,7 @@ model PrivateJournalEntry {
   linkedAyahNumber            Int?
   linkedSurahNameArabic       String?
   linkedSurahNameTransliteration String?
+  linkedDuaJson               Json?
   duaStatus                   PrivateJournalDuaStatus?
   autoDeleteAt                DateTime?
   createdAt                   DateTime                 @default(now())
