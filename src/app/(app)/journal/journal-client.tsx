@@ -17,7 +17,6 @@ import {
   startTransition,
   useDeferredValue,
   useEffect,
-  useRef,
   useState,
   type ChangeEvent,
   type KeyboardEvent,
@@ -38,13 +37,10 @@ import {
   buildLinkedAyahHref,
   createJournalEntryId,
   deleteJournalEntry,
-  describeJournalMoment,
   formatAutoDeleteCountdown,
-  formatJournalHijri,
   formatJournalTimestamp,
   listJournalEntries,
   normalizeJournalTags,
-  privacyStatusLabel,
   upsertJournalEntry,
 } from "@/hifzer/journal/local-store";
 import styles from "./journal.module.css";
@@ -83,49 +79,49 @@ const TYPE_META: Record<
   reflection: {
     label: "Reflection",
     tone: "accent",
-    promptLabel: "Contemplative",
+    promptLabel: "Reflective",
     prompts: [
       "This ayah reminded me that...",
       "Today I realized...",
       "A question I still carry is...",
     ],
-    detail: "Thoughts on Qur'an, learning, and what is unfolding in your heart.",
+    detail: "Thoughts, lessons, and what you are noticing.",
   },
   dua: {
-    label: "Dua request",
+    label: "Dua",
     tone: "warn",
-    promptLabel: "Hopeful",
+    promptLabel: "Prayerful",
     prompts: [
       "Ya Allah, I ask You for...",
       "Please guide me in...",
       "Make a way for me through...",
     ],
-    detail: "Private duas, answered prayers, and the requests you keep returning to.",
+    detail: "Private requests, hopes, and answered duas.",
   },
   repentance: {
     label: "Repentance",
     tone: "danger",
-    promptLabel: "Protected",
+    promptLabel: "Private",
     prompts: [
       "Ya Allah, I seek Your forgiveness for...",
       "I am struggling with...",
       "Help me leave behind...",
     ],
-    detail: "A quieter place for tawbah, confessions, and burdens you need to set down.",
+    detail: "For tawbah, struggle, and what you want to leave behind.",
   },
   gratitude: {
     label: "Gratitude",
     tone: "success",
-    promptLabel: "Bright",
+    promptLabel: "Thankful",
     prompts: [
       "Alhamdulillah for...",
       "Today I am grateful that...",
       "Allah opened a door for me through...",
     ],
-    detail: "Blessings, answered duas, and the mercies you do not want to miss.",
+    detail: "Blessings, mercies, and answered duas you do not want to miss.",
   },
   free: {
-    label: "Free entry",
+    label: "Free note",
     tone: "neutral",
     promptLabel: "Open",
     prompts: [
@@ -133,12 +129,12 @@ const TYPE_META: Record<
       "What do I need to say honestly?",
       "What should I not leave unspoken today?",
     ],
-    detail: "A blank page for anything that does not need a category first.",
+    detail: "A blank note for anything that does not need a category first.",
   },
 };
 
 const AUTO_DELETE_PRESETS: Array<{ value: JournalDraft["autoDeletePreset"]; label: string }> = [
-  { value: "", label: "Keep" },
+  { value: "", label: "Keep it" },
   { value: "1", label: "1 day" },
   { value: "3", label: "3 days" },
   { value: "7", label: "7 days" },
@@ -146,9 +142,9 @@ const AUTO_DELETE_PRESETS: Array<{ value: JournalDraft["autoDeletePreset"]; labe
 ];
 
 const DUA_STATUS_OPTIONS: Array<{ value: JournalDuaStatus; label: string }> = [
-  { value: "ongoing", label: "Ongoing" },
+  { value: "ongoing", label: "Still making this dua" },
   { value: "answered", label: "Answered" },
-  { value: "accepted_differently", label: "Accepted differently" },
+  { value: "accepted_differently", label: "Answered differently" },
 ];
 
 function createEmptyDraft(type: JournalEntryType = "reflection"): JournalDraft {
@@ -228,7 +224,6 @@ function buildLinkedAyah(surahs: SurahOption[], surahNumber: number, ayahNumber:
 
 export function JournalClient(props: { surahs: SurahOption[] }) {
   const { pushToast } = useToast();
-  const typingTimerRef = useRef<number | null>(null);
 
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [draft, setDraft] = useState<JournalDraft>(() => createEmptyDraft());
@@ -242,11 +237,13 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
     surahNumber: props.surahs[0]?.surahNumber ?? 1,
     ayahNumber: 1,
   }));
-  const [isSanctuaryMode, setIsSanctuaryMode] = useState(false);
+  const isSanctuaryMode = false;
   const deferredSearch = useDeferredValue(search.trim().toLowerCase());
 
   const activeTypeMeta = TYPE_META[draft.type];
   const selectedSurah = props.surahs.find((surah) => surah.surahNumber === ayahForm.surahNumber) ?? props.surahs[0];
+  const hasDraftContent = hasMeaningfulDraftContent(draft);
+  const canSave = hasDraftContent && (!draft.id || isDirty);
   const pinnedCount = entries.filter((entry) => entry.pinned).length;
   const activeDuaCount = entries.filter(
     (entry) => entry.type === "dua" && (entry.duaStatus ?? "ongoing") === "ongoing",
@@ -274,29 +271,8 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
     return haystack.includes(deferredSearch);
   });
 
-  const enterSanctuaryMode = () => {
-    if (draft.content.trim().length < 12) {
-      return;
-    }
-    setIsSanctuaryMode(true);
-  };
-
-  const scheduleSanctuaryMode = () => {
-    if (typingTimerRef.current) {
-      window.clearTimeout(typingTimerRef.current);
-    }
-    typingTimerRef.current = window.setTimeout(() => {
-      enterSanctuaryMode();
-    }, 5000);
-  };
-
-  const resetSanctuaryMode = () => {
-    if (typingTimerRef.current) {
-      window.clearTimeout(typingTimerRef.current);
-      typingTimerRef.current = null;
-    }
-    setIsSanctuaryMode(false);
-  };
+  const scheduleSanctuaryMode = () => {};
+  const resetSanctuaryMode = () => {};
 
   const persistDraft = (quiet = false): JournalEntry | null => {
     if (!hasMeaningfulDraftContent(draft)) {
@@ -369,14 +345,6 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
     }
     setIsLoaded(true);
   }, [props.surahs]);
-
-  useEffect(() => {
-    return () => {
-      if (typingTimerRef.current) {
-        window.clearTimeout(typingTimerRef.current);
-      }
-    };
-  }, []);
 
   const updateDraft = (updater: (current: JournalDraft) => JournalDraft) => {
     startTransition(() => {
@@ -493,16 +461,16 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
       <PageHeader
         eyebrow="Tool"
         title="Private journal"
-        subtitle="A quieter place for reflections, private duas, gratitude, and repentance. Everything here stays local to this browser for now."
+        subtitle="Write private notes and duas. Everything here stays on this device for now."
         right={(
           <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" onClick={() => handleCreateNew("reflection")}>
+            <Button variant="secondary" onClick={() => handleCreateNew(draft.type)}>
               <Plus size={16} />
-              New entry
+              New note
             </Button>
-            <Button onClick={() => persistDraft(false)} disabled={!isDirty && Boolean(draft.id)}>
+            <Button onClick={() => persistDraft(false)} disabled={!canSave}>
               <Save size={16} />
-              Save entry
+              Save
             </Button>
           </div>
         )}
@@ -514,57 +482,55 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
         <div className={styles.heroGrid}>
           <div className="relative">
             <div className="flex flex-wrap items-center gap-2">
-              <Pill tone="neutral">Private journal beta</Pill>
-              <Pill tone="brand">Local only</Pill>
-              <Pill tone="warn">No cloud sync yet</Pill>
+              <Pill tone="brand">Saved on this device</Pill>
+              <Pill tone="neutral">Simple flow</Pill>
             </div>
             <h2 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-3xl tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
-              The conversation between you and Him stays closer, calmer, and harder to lose.
+              A simpler way to use your journal.
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
-              This first version gives you private writing lanes, ayah linking by reference, search,
-              tags, pins, and repentance auto-delete. End-to-end sync, export, and device locks are
-              not live yet, so the journal is explicit about what it can protect today.
+              Start with the note type, write what you need to write, then save it. If ayah links,
+              tags, or delete-later settings help, use them. If not, ignore them.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
-              <Pill tone="accent">5 entry types</Pill>
-              <Pill tone="success">Pins and search</Pill>
-              <Pill tone="danger">Repentance release timers</Pill>
+              <Pill tone="accent">1. Pick a type</Pill>
+              <Pill tone="success">2. Write</Pill>
+              <Pill tone="warn">3. Save</Pill>
             </div>
           </div>
 
           <div className={styles.statGrid}>
             <div className={styles.statCard}>
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
-                Entries
+                Saved notes
               </p>
               <p className="mt-2 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
                 {entries.length}
               </p>
               <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">
-                Reflections, duas, gratitude, repentance, and open writing in one quiet place.
+                Write on the left, then save the notes you want to keep.
               </p>
             </div>
             <div className={styles.statCard}>
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
-                Active duas
+                Ongoing duas
               </p>
               <p className="mt-2 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
                 {activeDuaCount}
               </p>
               <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">
-                Requests still being carried, kept close without turning them into a public feed.
+                Dua notes can stay marked as ongoing until you want to update them.
               </p>
             </div>
             <div className={styles.statCard}>
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
-                Scheduled release
+                Delete-later notes
               </p>
               <p className="mt-2 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
                 {scheduledReleaseCount}
               </p>
               <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">
-                Entries with auto-delete reminders, useful when something needs to be said and then let go.
+                Repentance notes can be set to disappear later if that helps.
               </p>
             </div>
           </div>
@@ -580,11 +546,17 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <Pill tone={activeTypeMeta.tone}>{activeTypeMeta.label}</Pill>
-                <Pill tone="neutral">{activeTypeMeta.promptLabel}</Pill>
+                <Pill tone="neutral">{draft.id ? "Saved note" : "New note"}</Pill>
                 {draft.pinned ? <Pill tone="accent">Pinned</Pill> : null}
               </div>
               <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-                {activeTypeMeta.detail}
+                {draft.id
+                  ? isDirty
+                    ? "You have changes that are not saved yet."
+                    : "This note is already saved."
+                  : hasDraftContent
+                    ? "This is a new note. Save it when you are ready."
+                    : "Pick a note type, write what you need to write, and save it if you want to keep it."}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -599,11 +571,11 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
                     onClick={() => updateDraft((current) => ({ ...current, pinned: !current.pinned }))}
                   >
                     <Pin size={16} />
-                    {draft.pinned ? "Unpin" : "Pin"}
+                    {draft.pinned ? "Unpin" : "Pin note"}
                   </Button>
                   <Button variant="danger" onClick={handleDeleteCurrent}>
                     <Trash2 size={16} />
-                    Delete
+                    {draft.id ? "Delete" : "Clear"}
                   </Button>
                 </>
               )}
@@ -642,7 +614,7 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
 
               <div className="mt-6">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
-                  Prompt to begin
+                  Start with one of these if it helps
                 </p>
                 <div className={styles.promptRail}>
                   {activeTypeMeta.prompts.map((prompt) => (
@@ -680,7 +652,7 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
             >
               {isSanctuaryMode
                 ? "Sanctuary mode active. Tap restore when you want the tools back."
-                : "After a few quiet seconds of typing, the writing surface fades into sanctuary mode."}
+                : "You can ignore every extra control below and simply write."}
             </p>
           </div>
 
@@ -690,8 +662,8 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
                 <div className="space-y-4">
                   <div className={styles.quietCard}>
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Link this entry to an ayah</p>
-                      <Pill tone="accent">Open in reader</Pill>
+                      <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Link this note to an ayah</p>
+                      <Pill tone="accent">Optional</Pill>
                     </div>
                     <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_120px_auto]">
                       <select
@@ -724,7 +696,7 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
                       />
                       <Button variant="secondary" onClick={attachAyah}>
                         <BookOpenText size={16} />
-                        Attach ayah
+                        Add ayah
                       </Button>
                     </div>
 
@@ -757,7 +729,7 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
                   <div className={styles.quietCard}>
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Tags</p>
-                      <Pill tone="neutral">Up to 5</Pill>
+                      <Pill tone="neutral">Optional</Pill>
                     </div>
                     <div className="mt-4 flex flex-wrap gap-2">
                       {draft.tags.map((tag) => (
@@ -818,9 +790,9 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
                           <LockKeyhole size={16} />
                         </span>
                         <div>
-                          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Release this entry later</p>
+                          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Delete this later</p>
                           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                            Repentance can be written, held gently for a while, then allowed to disappear from this browser.
+                            Repentance notes can be written, kept for a while, then removed from this browser later.
                           </p>
                         </div>
                       </div>
@@ -846,9 +818,9 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
                         <ShieldCheck size={16} />
                       </span>
                       <div>
-                        <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Privacy, honestly stated</p>
+                        <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Privacy note</p>
                         <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                          The journal is private to this browser today. Cross-device sync, encrypted export, and biometric re-locking are still future work, so nothing here pretends otherwise.
+                          Everything here stays in this browser for now. It does not sync across devices yet.
                         </p>
                       </div>
                     </div>
@@ -859,22 +831,22 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
               <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-[20px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-4 py-4">
                 <div>
                   <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
-                    {draft.id ? "Editing a saved entry" : "New entry not saved yet"}
+                    {draft.id ? "Editing a saved note" : "This new note is not saved yet"}
                   </p>
                   <p className="mt-1 text-sm leading-6 text-[color:var(--kw-muted)]">
                     {draft.id
-                      ? "Save again when your wording settles."
-                      : "Switching entries will quietly save anything meaningful you already wrote."}
+                      ? "Save again when you want to keep your latest changes."
+                      : "Tap Save when you want to keep this note."}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Button variant="secondary" onClick={() => handleCreateNew(draft.type)}>
                     <Plus size={16} />
-                    Fresh page
+                    New note
                   </Button>
-                  <Button onClick={() => persistDraft(false)}>
+                  <Button onClick={() => persistDraft(false)} disabled={!canSave}>
                     <Save size={16} />
-                    Save entry
+                    Save
                   </Button>
                 </div>
               </div>
@@ -885,20 +857,20 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
         <Card className={clsx("kw-fade-in", styles.listShell)}>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Entry library</p>
+              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Saved notes</p>
               <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                Search quietly, filter by spiritual state, and keep your most important notes pinned near the top.
+                Search your notes, open one to keep writing, or start a new one.
               </p>
             </div>
-            <Button variant="secondary" onClick={() => handleCreateNew("reflection")}>
+            <Button variant="secondary" onClick={() => handleCreateNew(draft.type)}>
               <Plus size={16} />
-              New
+              New note
             </Button>
           </div>
 
           <div className="mt-5">
             <label className="sr-only" htmlFor="journal-search">
-              Search quietly
+              Search your notes
             </label>
             <div className="relative">
               <Search
@@ -909,7 +881,7 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
                 id="journal-search"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search quietly..."
+                placeholder="Search your notes"
                 className="pl-9"
               />
             </div>
@@ -952,9 +924,9 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
               </div>
             ) : filteredEntries.length === 0 ? (
               <div className={styles.emptyCard}>
-                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Nothing matches this view yet.</p>
+                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">No saved note matches this search or filter.</p>
                 <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                  Start a new entry, clear the search, or open a different entry type.
+                  Clear the search, change the filter, or start a new note.
                 </p>
               </div>
             ) : (
@@ -978,7 +950,7 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
                           {entry.pinned ? <Pill tone="accent">Pinned</Pill> : null}
                         </div>
                         <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[color:var(--kw-faint)]">
-                          {privacyStatusLabel(entry)}
+                          Local only
                         </p>
                       </div>
 
@@ -1005,9 +977,7 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
 
                       <div className={`${styles.metaStrip} mt-4`}>
                         <p>{formatJournalTimestamp(entry.updatedAt)}</p>
-                        <p>{formatJournalHijri(entry.updatedAt)}</p>
-                        <p>{describeJournalMoment(entry.updatedAt)}</p>
-                        {entry.autoDeleteAt ? <p>{formatAutoDeleteCountdown(entry)}</p> : null}
+                        {entry.autoDeleteAt ? <p>Deletes in {formatAutoDeleteCountdown(entry)}</p> : null}
                       </div>
                     </div>
                   </button>
@@ -1022,11 +992,10 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
                 <HandHeart size={16} />
               </span>
               <div>
-                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">What ships today</p>
+                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Quick note</p>
                 <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                  Private local writing, type-based prompts, ayah references, tags, pins, search,
-                  and release timers for repentance. Voice notes, encrypted sync, and locked exports
-                  are still ahead.
+                  If this page ever feels busy, ignore the extras and use it like a plain private notebook:
+                  pick a type, write, and save.
                 </p>
               </div>
             </div>

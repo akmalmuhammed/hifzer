@@ -42,7 +42,7 @@
   position: relative;
   display: grid;
   gap: 18px;
-  align-items: end;
+  align-items: start;
   grid-template-columns: minmax(0, 1.08fr) 320px;
 }
 
