@@ -7,16 +7,34 @@
   content: "";
   position: absolute;
   inset: 0 0 auto;
-  height: 72rem;
+  height: 80rem;
   pointer-events: none;
   background:
-    radial-gradient(42rem 26rem at 4% 8%, rgba(10, 138, 119, 0.18), transparent 68%),
-    radial-gradient(36rem 24rem at 92% 12%, rgba(var(--kw-accent-rgb), 0.16), transparent 68%),
-    radial-gradient(28rem 20rem at 52% 42%, rgba(234, 88, 12, 0.1), transparent 72%);
-  opacity: 0.92;
-  filter: blur(2px);
+    radial-gradient(48rem 30rem at 6% 8%, rgba(10, 138, 119, 0.18), transparent 68%),
+    radial-gradient(34rem 24rem at 92% 12%, rgba(var(--kw-accent-rgb), 0.16), transparent 68%),
+    radial-gradient(28rem 20rem at 52% 36%, rgba(234, 88, 12, 0.08), transparent 74%);
+  filter: blur(4px);
+  opacity: 0.94;
   z-index: 0;
-  animation: landingAura 18s ease-in-out infinite alternate;
+  animation: landingAura 20s ease-in-out infinite alternate;
+}
+
+.page::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent, rgba(var(--kw-accent-rgb), 0.03), transparent),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 92px,
+      rgba(11, 18, 32, 0.035) 92px,
+      rgba(11, 18, 32, 0.035) 93px
+    );
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.56), transparent 82%);
+  z-index: 0;
 }
 
 .page > * {
@@ -33,14 +51,16 @@
 .navFrame,
 .footerFrame,
 .heroShell,
-.flowShell,
-.finalShell,
+.promiseCard,
+.studioShell,
+.manuscriptCard,
+.compassCard,
 .laneCard,
-.factCard,
-.previewCard,
-.signalCard,
-.metricCard,
-.flowCard {
+.accountCard,
+.flowShell,
+.flowCard,
+.memoryCard,
+.memoryItem {
   position: relative;
   overflow: hidden;
   border: 1px solid var(--kw-border);
@@ -51,7 +71,7 @@
 .navFrame {
   border-radius: 26px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.68));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.72));
 }
 
 .navFrame::before,
@@ -67,75 +87,98 @@
 
 .navFrame::before {
   background:
-    linear-gradient(120deg, rgba(10, 138, 119, 0.08), transparent 28%),
-    linear-gradient(290deg, rgba(var(--kw-accent-rgb), 0.1), transparent 24%);
+    radial-gradient(22rem 10rem at 10% 0%, rgba(10, 138, 119, 0.1), transparent 72%),
+    radial-gradient(18rem 10rem at 90% 0%, rgba(var(--kw-accent-rgb), 0.1), transparent 70%);
 }
 
 .footerFrame {
   border-radius: 30px 30px 0 0;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.66));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.68));
 }
 
 .footerFrame::before {
   background:
-    radial-gradient(18rem 10rem at 10% 0%, rgba(10, 138, 119, 0.12), transparent 72%),
-    radial-gradient(18rem 10rem at 90% 100%, rgba(var(--kw-accent-rgb), 0.08), transparent 72%);
+    radial-gradient(18rem 10rem at 12% 0%, rgba(10, 138, 119, 0.12), transparent 72%),
+    radial-gradient(18rem 10rem at 88% 100%, rgba(var(--kw-accent-rgb), 0.08), transparent 72%);
 }
 
 .heroShell {
-  border-radius: 36px;
+  border-radius: 40px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.72));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.76));
   box-shadow: var(--kw-shadow);
-  padding: clamp(1.3rem, 3vw, 2.2rem);
+  padding: clamp(1.35rem, 3vw, 2.4rem);
 }
 
 .heroShell::before {
   background:
     radial-gradient(32rem 22rem at 8% 8%, rgba(10, 138, 119, 0.14), transparent 70%),
-    radial-gradient(28rem 20rem at 94% 12%, rgba(var(--kw-accent-rgb), 0.14), transparent 68%),
-    radial-gradient(24rem 18rem at 78% 100%, rgba(234, 88, 12, 0.08), transparent 72%);
-  opacity: 0.9;
+    radial-gradient(24rem 20rem at 92% 14%, rgba(var(--kw-accent-rgb), 0.14), transparent 70%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.24), transparent 40%);
+}
+
+.heroShell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 24%),
+    repeating-linear-gradient(
+      135deg,
+      rgba(11, 18, 32, 0.018) 0,
+      rgba(11, 18, 32, 0.018) 1px,
+      transparent 1px,
+      transparent 18px
+    );
+  opacity: 0.46;
 }
 
 .heroGrid {
   display: grid;
-  gap: clamp(1.5rem, 3vw, 2.5rem);
-  align-items: center;
+  gap: clamp(1.4rem, 3vw, 2.5rem);
+  align-items: start;
 }
 
-.factGrid,
-.laneGrid,
-.flowGrid {
+.heroCopy {
+  min-width: 0;
+}
+
+.eyebrow {
+  margin-top: 1.15rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--kw-faint);
+}
+
+.heroCaption {
+  margin-top: 1rem;
+  max-width: 40rem;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--kw-muted);
+}
+
+.promiseGrid {
   display: grid;
   gap: 1rem;
+  margin-top: 1.7rem;
 }
 
-.factGrid {
-  margin-top: 1.5rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.factCard,
-.laneCard,
-.previewCard,
-.signalCard,
-.metricCard,
-.flowCard {
-  border-radius: 26px;
-  background: rgba(255, 255, 255, 0.74);
-}
-
-.factCard {
+.promiseCard {
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.76);
   padding: 1rem;
 }
 
-.factIcon,
-.laneIcon {
+.promiseIcon,
+.laneIcon,
+.accountIcon,
+.memoryIcon {
   display: inline-grid;
-  height: 2.75rem;
-  width: 2.75rem;
   place-items: center;
   border-radius: 18px;
   border: 1px solid rgba(var(--kw-accent-rgb), 0.2);
@@ -143,58 +186,141 @@
   color: rgba(var(--kw-accent-rgb), 1);
 }
 
-.previewShell {
-  position: relative;
-  min-height: 35rem;
-  overflow: hidden;
-  border: 1px solid rgba(var(--kw-accent-rgb), 0.18);
+.promiseIcon,
+.laneIcon {
+  width: 2.9rem;
+  height: 2.9rem;
+}
+
+.accountIcon,
+.memoryIcon {
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 14px;
+}
+
+.promiseTitle,
+.accountTitle,
+.memoryItemTitle,
+.laneEyebrow,
+.studioEyebrow,
+.compassLabel,
+.manuscriptMeta {
+  letter-spacing: 0.01em;
+}
+
+.promiseTitle {
+  margin-top: 0.9rem;
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--kw-ink);
+}
+
+.promiseBody,
+.accountBody,
+.memoryItemBody {
+  margin-top: 0.35rem;
+  font-size: 0.9rem;
+  line-height: 1.75;
+  color: var(--kw-muted);
+}
+
+.studioShell {
+  min-height: 100%;
   border-radius: 34px;
+  border-color: rgba(var(--kw-accent-rgb), 0.18);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.2));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.24));
   box-shadow: var(--kw-shadow);
   padding: 1rem;
 }
 
-.previewGlow {
+.studioShell::before {
+  content: "";
   position: absolute;
-  inset: auto auto -15% -10%;
-  width: 24rem;
-  height: 24rem;
-  border-radius: 999px;
-  background: radial-gradient(circle, rgba(10, 138, 119, 0.16), transparent 70%);
-  filter: blur(14px);
-  opacity: 0.95;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 26%),
+    radial-gradient(26rem 16rem at 0% 100%, rgba(10, 138, 119, 0.08), transparent 72%);
 }
 
-.previewLines {
+.studioAura {
   position: absolute;
-  inset: auto -28% -16% auto;
-  height: 85%;
-  width: 130%;
-  opacity: 0.46;
+  right: -5rem;
+  top: -4rem;
+  width: 18rem;
+  height: 18rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(var(--kw-accent-rgb), 0.16), transparent 70%);
+  filter: blur(12px);
+  opacity: 0.9;
+}
+
+.studioHeader,
+.modeRail,
+.compassGrid {
+  position: relative;
+  z-index: 1;
+}
+
+.studioHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.studioEyebrow,
+.laneEyebrow,
+.compassLabel,
+.manuscriptMeta {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.studioEyebrow,
+.laneEyebrow,
+.compassLabel {
+  color: var(--kw-faint);
+}
+
+.studioHeading {
+  margin-top: 0.55rem;
+  max-width: 16ch;
+  font-family:
+    var(--font-kw-display),
+    var(--font-kw-sans),
+    sans-serif;
+  font-size: clamp(1.65rem, 4vw, 2.35rem);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.05em;
+  color: var(--kw-ink);
 }
 
 .modeRail {
-  position: relative;
-  z-index: 2;
   display: flex;
   flex-wrap: wrap;
   gap: 0.55rem;
+  margin-top: 1rem;
 }
 
 .modeButton {
   display: inline-flex;
+  min-height: 2.35rem;
   align-items: center;
   justify-content: center;
-  min-height: 2.25rem;
-  padding: 0.55rem 0.9rem;
-  border: 1px solid var(--kw-border);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.42);
+  border: 1px solid var(--kw-border);
+  background: rgba(255, 255, 255, 0.48);
+  padding: 0.55rem 0.95rem;
   color: var(--kw-ink-2);
   font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-weight: 700;
   transition:
     transform 180ms ease,
     border-color 180ms ease,
@@ -212,92 +338,135 @@
   color: var(--kw-ink);
 }
 
-.previewCard {
-  z-index: 2;
+.manuscriptCard {
+  z-index: 1;
   margin-top: 1rem;
-  padding: 1.2rem;
-  box-shadow: var(--kw-shadow);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.7));
+  padding: 1.25rem;
 }
 
-.signalGrid {
+.manuscriptMeta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.6rem;
+  color: var(--kw-faint);
+}
+
+.manuscriptTitle,
+.laneTitle,
+.memoryTitle,
+.flowTitle {
+  font-family:
+    var(--font-kw-display),
+    var(--font-kw-sans),
+    sans-serif;
+  color: var(--kw-ink);
+}
+
+.manuscriptTitle {
+  margin-top: 0.9rem;
+  max-width: 12ch;
+  font-size: clamp(1.8rem, 4vw, 2.55rem);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.055em;
+}
+
+.manuscriptBody {
+  margin-top: 0.85rem;
+  max-width: 34rem;
+  font-size: 0.95rem;
+  line-height: 1.85;
+  color: var(--kw-muted);
+}
+
+.threadList {
   display: grid;
   gap: 0.75rem;
-  margin-top: 1.25rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 1.2rem;
 }
 
-.signalCard {
+.threadRow {
   display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  min-height: 4.25rem;
+  min-height: 4rem;
+  align-items: start;
+  gap: 0.75rem;
+  border-radius: 18px;
+  border: 1px solid var(--kw-border-2);
+  background: rgba(255, 255, 255, 0.68);
   padding: 0.9rem;
 }
 
-.signalDot {
+.threadRow p {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.65;
+  color: var(--kw-ink);
+}
+
+.threadMarker {
   display: inline-block;
-  height: 0.6rem;
-  width: 0.6rem;
+  width: 0.7rem;
+  height: 0.7rem;
   flex-shrink: 0;
   border-radius: 999px;
   background: rgba(var(--kw-accent-rgb), 0.95);
   box-shadow: 0 0 0 6px rgba(var(--kw-accent-rgb), 0.12);
+  margin-top: 0.32rem;
 }
 
-.metricGrid {
+.compassGrid {
   display: grid;
-  gap: 0.75rem;
-  margin-top: 1rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 0.95rem;
 }
 
-.metricCard {
-  padding: 0.9rem;
+.compassCard {
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 1rem;
 }
 
-.floatingChip,
-.floatingChipAlt {
-  position: absolute;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.4rem;
-  padding: 0.6rem 0.95rem;
-  border: 1px solid var(--kw-border);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.78);
-  color: var(--kw-ink);
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  box-shadow: var(--kw-shadow-soft);
-}
-
-.floatingChip {
-  left: 1rem;
-  bottom: 1rem;
-}
-
-.floatingChipAlt {
-  top: 1rem;
-  right: 1rem;
+.compassBody {
+  margin-top: 0.55rem;
+  font-size: 0.92rem;
+  line-height: 1.75;
+  color: var(--kw-muted);
 }
 
 .section {
-  margin-top: clamp(1.4rem, 3vw, 2.2rem);
+  margin-top: clamp(1.5rem, 3vw, 2.4rem);
 }
 
 .sectionLead {
   max-width: 44rem;
 }
 
-.laneGrid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.experienceGrid,
+.accountStrip,
+.flowGrid,
+.promiseGrid,
+.compassGrid {
+  display: grid;
+}
+
+.experienceGrid {
+  gap: 1rem;
+  margin-top: 1.3rem;
 }
 
 .laneCard {
-  padding: 1.2rem;
+  display: grid;
+  gap: 1rem;
   min-height: 18rem;
+  border-radius: 30px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.7));
+  padding: 1.25rem;
 }
 
 .laneCard::before {
@@ -306,7 +475,7 @@
   inset: 0 auto auto 0;
   width: 100%;
   height: 3px;
-  opacity: 0.95;
+  opacity: 0.96;
 }
 
 .laneCard[data-tone="brand"]::before {
@@ -314,120 +483,238 @@
 }
 
 .laneCard[data-tone="accent"]::before {
-  background: linear-gradient(90deg, rgba(var(--kw-accent-rgb), 0.95), rgba(var(--kw-accent-rgb), 0.3));
+  background:
+    linear-gradient(90deg, rgba(var(--kw-accent-rgb), 0.95), rgba(var(--kw-accent-rgb), 0.3));
 }
 
 .laneCard[data-tone="warn"]::before {
   background: linear-gradient(90deg, rgba(234, 88, 12, 0.95), rgba(234, 88, 12, 0.28));
 }
 
+.laneTop {
+  display: grid;
+  gap: 0.95rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+}
+
+.laneTitle {
+  margin-top: 0.38rem;
+  font-size: 1.55rem;
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+}
+
+.laneBody {
+  font-size: 0.96rem;
+  line-height: 1.8;
+  color: var(--kw-muted);
+}
+
 .tagRail {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.55rem;
-  margin-top: 1.15rem;
+  gap: 0.6rem;
+  margin-top: auto;
 }
 
 .tagChip {
   display: inline-flex;
+  min-height: 2.15rem;
   align-items: center;
-  min-height: 2.1rem;
-  padding: 0.45rem 0.75rem;
-  border: 1px solid var(--kw-border);
   border-radius: 999px;
+  border: 1px solid var(--kw-border);
   background: rgba(11, 18, 32, 0.04);
+  padding: 0.45rem 0.78rem;
   color: var(--kw-ink-2);
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 700;
+}
+
+.laneNote {
+  margin-top: 0.1rem;
+  border-top: 1px solid var(--kw-border-2);
+  padding-top: 0.95rem;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--kw-ink-2);
+}
+
+.accountStrip {
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+
+.accountCard {
+  display: grid;
+  gap: 0.85rem;
+  align-items: start;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.74);
+  padding: 1rem;
+}
+
+.accountTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--kw-ink);
 }
 
 .flowShell {
-  border-radius: 34px;
+  border-radius: 36px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.72));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.75));
   box-shadow: var(--kw-shadow);
-  padding: clamp(1.3rem, 3vw, 2rem);
+  padding: clamp(1.3rem, 3vw, 2.15rem);
 }
 
 .flowShell::before {
   background:
-    radial-gradient(22rem 14rem at 10% 8%, rgba(10, 138, 119, 0.12), transparent 72%),
-    radial-gradient(18rem 14rem at 90% 8%, rgba(var(--kw-accent-rgb), 0.1), transparent 72%);
+    radial-gradient(24rem 16rem at 10% 8%, rgba(10, 138, 119, 0.11), transparent 72%),
+    radial-gradient(20rem 14rem at 92% 10%, rgba(var(--kw-accent-rgb), 0.1), transparent 72%);
 }
 
 .flowGrid {
+  gap: 1rem;
   margin-top: 1.3rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .flowCard {
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.76);
   padding: 1rem;
 }
 
 .flowIndex {
   display: inline-flex;
+  min-width: 2.45rem;
+  height: 2.45rem;
   align-items: center;
   justify-content: center;
-  min-width: 2.35rem;
-  height: 2.35rem;
   border-radius: 999px;
   border: 1px solid rgba(var(--kw-accent-rgb), 0.22);
   background: rgba(var(--kw-accent-rgb), 0.12);
   color: rgba(var(--kw-accent-rgb), 1);
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.02em;
 }
 
-.flowQuote {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.7rem;
+.flowTitle {
   margin-top: 1rem;
-  padding: 1rem;
-  border: 1px dashed rgba(var(--kw-accent-rgb), 0.26);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.46);
-  color: rgba(var(--kw-accent-rgb), 1);
+  font-size: 1.24rem;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+}
+
+.flowBody {
+  margin-top: 0.7rem;
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: var(--kw-muted);
+}
+
+.memoryCard {
+  border-radius: 30px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.72));
+  padding: 1.15rem;
+}
+
+.memoryTitle {
+  margin-top: 0.85rem;
+  max-width: 12ch;
+  font-size: 1.85rem;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+}
+
+.memoryLead {
+  margin-top: 0.7rem;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--kw-muted);
+}
+
+.memoryList {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.memoryItem {
+  display: grid;
+  gap: 0.75rem;
+  align-items: start;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.68);
+  padding: 0.85rem;
 }
 
 .finalShell {
-  border-radius: 34px;
-  border-color: rgba(var(--kw-accent-rgb), 0.2);
+  position: relative;
+  overflow: hidden;
+  border-radius: 38px;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.2);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.74));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.78));
   box-shadow: var(--kw-shadow);
-  padding: clamp(1.3rem, 3vw, 2.2rem);
+  padding: clamp(1.35rem, 3vw, 2.35rem);
 }
 
 .finalShell::before {
   background:
-    radial-gradient(26rem 16rem at 8% 0%, rgba(10, 138, 119, 0.14), transparent 72%),
-    radial-gradient(22rem 16rem at 96% 12%, rgba(var(--kw-accent-rgb), 0.14), transparent 72%);
+    radial-gradient(30rem 16rem at 8% 0%, rgba(10, 138, 119, 0.14), transparent 72%),
+    radial-gradient(24rem 16rem at 96% 12%, rgba(var(--kw-accent-rgb), 0.14), transparent 72%);
 }
 
 .finalGrid {
+  position: relative;
+  z-index: 1;
   display: grid;
-  gap: 1.2rem;
+  gap: 1.25rem;
   align-items: center;
 }
 
+.finalActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 :global(html[data-mode="dark"]) .page::before {
-  opacity: 0.74;
+  opacity: 0.78;
+}
+
+:global(html[data-mode="dark"]) .page::after {
+  background:
+    linear-gradient(90deg, transparent, rgba(var(--kw-accent-rgb), 0.04), transparent),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 92px,
+      rgba(248, 250, 252, 0.04) 92px,
+      rgba(248, 250, 252, 0.04) 93px
+    );
 }
 
 :global(html[data-mode="dark"]) .navFrame,
 :global(html[data-mode="dark"]) .footerFrame,
 :global(html[data-mode="dark"]) .heroShell,
-:global(html[data-mode="dark"]) .flowShell,
-:global(html[data-mode="dark"]) .finalShell,
-:global(html[data-mode="dark"]) .previewShell,
+:global(html[data-mode="dark"]) .promiseCard,
+:global(html[data-mode="dark"]) .studioShell,
+:global(html[data-mode="dark"]) .manuscriptCard,
+:global(html[data-mode="dark"]) .compassCard,
 :global(html[data-mode="dark"]) .laneCard,
-:global(html[data-mode="dark"]) .factCard,
-:global(html[data-mode="dark"]) .previewCard,
-:global(html[data-mode="dark"]) .signalCard,
-:global(html[data-mode="dark"]) .metricCard,
-:global(html[data-mode="dark"]) .flowCard {
+:global(html[data-mode="dark"]) .accountCard,
+:global(html[data-mode="dark"]) .flowShell,
+:global(html[data-mode="dark"]) .flowCard,
+:global(html[data-mode="dark"]) .memoryCard,
+:global(html[data-mode="dark"]) .memoryItem,
+:global(html[data-mode="dark"]) .finalShell {
   border-color: rgba(148, 163, 184, 0.14);
 }
 
@@ -437,28 +724,24 @@
 :global(html[data-mode="dark"]) .flowShell,
 :global(html[data-mode="dark"]) .finalShell {
   background:
-    linear-gradient(180deg, rgba(8, 14, 26, 0.9), rgba(12, 18, 31, 0.82));
+    linear-gradient(180deg, rgba(8, 14, 26, 0.92), rgba(12, 18, 31, 0.84));
 }
 
-:global(html[data-mode="dark"]) .previewShell {
-  background:
-    linear-gradient(180deg, rgba(6, 12, 22, 0.9), rgba(11, 18, 32, 0.76));
-}
-
+:global(html[data-mode="dark"]) .promiseCard,
+:global(html[data-mode="dark"]) .manuscriptCard,
+:global(html[data-mode="dark"]) .compassCard,
 :global(html[data-mode="dark"]) .laneCard,
-:global(html[data-mode="dark"]) .factCard,
-:global(html[data-mode="dark"]) .previewCard,
-:global(html[data-mode="dark"]) .signalCard,
-:global(html[data-mode="dark"]) .metricCard,
-:global(html[data-mode="dark"]) .flowCard {
+:global(html[data-mode="dark"]) .accountCard,
+:global(html[data-mode="dark"]) .flowCard,
+:global(html[data-mode="dark"]) .memoryCard,
+:global(html[data-mode="dark"]) .memoryItem,
+:global(html[data-mode="dark"]) .studioShell {
   background: rgba(15, 23, 42, 0.78);
 }
 
 :global(html[data-mode="dark"]) .modeButton,
 :global(html[data-mode="dark"]) .tagChip,
-:global(html[data-mode="dark"]) .floatingChip,
-:global(html[data-mode="dark"]) .floatingChipAlt,
-:global(html[data-mode="dark"]) .flowQuote {
+:global(html[data-mode="dark"]) .threadRow {
   border-color: rgba(148, 163, 184, 0.16);
   background: rgba(15, 23, 42, 0.78);
 }
@@ -467,7 +750,7 @@
   background: rgba(var(--kw-accent-rgb), 0.22);
 }
 
-:global(html[data-mode="dark"]) .signalDot {
+:global(html[data-mode="dark"]) .threadMarker {
   box-shadow: 0 0 0 6px rgba(var(--kw-accent-rgb), 0.18);
 }
 
@@ -477,25 +760,63 @@
   }
 
   100% {
-    transform: translate3d(0, 1.5rem, 0) scale(1.04);
+    transform: translate3d(0, 1.2rem, 0) scale(1.04);
   }
 }
 
-@media (min-width: 1080px) {
-  .heroGrid {
-    grid-template-columns: minmax(0, 0.96fr) minmax(360px, 470px);
+@media (min-width: 720px) {
+  .promiseGrid,
+  .compassGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .accountCard,
+  .memoryItem {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .accountStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (min-width: 960px) {
+  .flowGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .memoryCard {
+    grid-column: span 2;
+  }
+
   .finalGrid {
     grid-template-columns: minmax(0, 1fr) auto;
   }
 }
 
-@media (max-width: 959px) {
-  .previewShell {
-    min-height: auto;
+@media (min-width: 1080px) {
+  .heroGrid {
+    grid-template-columns: minmax(0, 0.97fr) minmax(360px, 470px);
+  }
+
+  .promiseGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .experienceGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .accountStrip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .flowGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .memoryCard {
+    grid-column: span 1;
   }
 }
 
@@ -505,35 +826,17 @@
   }
 
   .page::before {
-    height: 58rem;
+    height: 60rem;
   }
 
   .heroShell,
+  .studioShell,
   .flowShell,
-  .finalShell,
-  .previewShell {
-    border-radius: 28px;
+  .finalShell {
+    border-radius: 30px;
   }
 
   .footerFrame {
     border-radius: 28px 28px 0 0;
-  }
-
-  .factGrid,
-  .laneGrid,
-  .flowGrid,
-  .signalGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .metricGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .floatingChipAlt {
-    right: auto;
-    left: 1rem;
-    top: auto;
-    bottom: 4.1rem;
   }
 }
