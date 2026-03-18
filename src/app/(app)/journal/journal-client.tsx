@@ -4,13 +4,10 @@ import Link from "next/link";
 import {
   ArrowRight,
   BookOpenText,
-  HandHeart,
-  LockKeyhole,
   Pin,
   Plus,
   Save,
   Search,
-  ShieldCheck,
   Trash2,
 } from "lucide-react";
 import {
@@ -26,7 +23,6 @@ import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Textarea } from "@/components/ui/input";
-import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
 import {
   JOURNAL_ENTRY_TYPES,
@@ -207,6 +203,37 @@ function hasMeaningfulDraftContent(draft: JournalDraft): boolean {
   );
 }
 
+function shouldShowAdvancedOptions(draft: JournalDraft): boolean {
+  return Boolean(
+    draft.linkedAyah ||
+      draft.tags.length > 0 ||
+      draft.type === "dua" ||
+      draft.type === "repentance",
+  );
+}
+
+function buildEntrySections(entries: JournalEntry[]): Array<{ label: string; entries: JournalEntry[] }> {
+  const sections = new Map<string, JournalEntry[]>();
+  const now = Date.now();
+
+  for (const entry of entries) {
+    const updatedAt = new Date(entry.updatedAt).getTime();
+    const isRecent = !Number.isNaN(updatedAt) && now - updatedAt <= 7 * 24 * 60 * 60 * 1000;
+    const label = isRecent ? "This week" : "Earlier";
+    const bucket = sections.get(label);
+    if (bucket) {
+      bucket.push(entry);
+    } else {
+      sections.set(label, [entry]);
+    }
+  }
+
+  return Array.from(sections, ([label, sectionEntries]) => ({
+    label,
+    entries: sectionEntries,
+  }));
+}
+
 function buildLinkedAyah(surahs: SurahOption[], surahNumber: number, ayahNumber: number): JournalLinkedAyah | null {
   const surah = surahs.find((item) => item.surahNumber === surahNumber);
   if (!surah) {
@@ -230,14 +257,12 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
   const [isDirty, setIsDirty] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState<"all" | JournalEntryType>("all");
-  const [showPinnedOnly, setShowPinnedOnly] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [ayahForm, setAyahForm] = useState(() => ({
     surahNumber: props.surahs[0]?.surahNumber ?? 1,
     ayahNumber: 1,
   }));
-  const isSanctuaryMode = false;
   const deferredSearch = useDeferredValue(search.trim().toLowerCase());
 
   const activeTypeMeta = TYPE_META[draft.type];
@@ -245,18 +270,8 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
   const hasDraftContent = hasMeaningfulDraftContent(draft);
   const canSave = hasDraftContent && (!draft.id || isDirty);
   const pinnedCount = entries.filter((entry) => entry.pinned).length;
-  const activeDuaCount = entries.filter(
-    (entry) => entry.type === "dua" && (entry.duaStatus ?? "ongoing") === "ongoing",
-  ).length;
-  const scheduledReleaseCount = entries.filter((entry) => Boolean(entry.autoDeleteAt)).length;
 
   const filteredEntries = entries.filter((entry) => {
-    if (showPinnedOnly && !entry.pinned) {
-      return false;
-    }
-    if (typeFilter !== "all" && entry.type !== typeFilter) {
-      return false;
-    }
     if (!deferredSearch) {
       return true;
     }
@@ -270,9 +285,7 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
       .toLowerCase();
     return haystack.includes(deferredSearch);
   });
-
-  const scheduleSanctuaryMode = () => {};
-  const resetSanctuaryMode = () => {};
+  const entrySections = buildEntrySections(filteredEntries);
 
   const persistDraft = (quiet = false): JournalEntry | null => {
     if (!hasMeaningfulDraftContent(draft)) {
@@ -335,14 +348,6 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
   useEffect(() => {
     const loadedEntries = listJournalEntries();
     setEntries(loadedEntries);
-    if (loadedEntries[0]) {
-      const first = loadedEntries[0];
-      setDraft(draftFromEntry(first));
-      setAyahForm({
-        surahNumber: first.linkedAyah?.surahNumber ?? (props.surahs[0]?.surahNumber ?? 1),
-        ayahNumber: first.linkedAyah?.ayahNumber ?? 1,
-      });
-    }
     setIsLoaded(true);
   }, [props.surahs]);
 
@@ -355,7 +360,6 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
 
   const handleCreateNew = (type: JournalEntryType = draft.type) => {
     maybePersistBeforeSwitch();
-    resetSanctuaryMode();
     startTransition(() => {
       setDraft(createEmptyDraft(type));
       setAyahForm({
@@ -363,20 +367,22 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
         ayahNumber: 1,
       });
       setTagInput("");
+      setShowAdvanced(false);
       setIsDirty(false);
     });
   };
 
   const handleSelectEntry = (entry: JournalEntry) => {
     maybePersistBeforeSwitch();
-    resetSanctuaryMode();
+    const nextDraft = draftFromEntry(entry);
     startTransition(() => {
-      setDraft(draftFromEntry(entry));
+      setDraft(nextDraft);
       setAyahForm({
         surahNumber: entry.linkedAyah?.surahNumber ?? (props.surahs[0]?.surahNumber ?? 1),
         ayahNumber: entry.linkedAyah?.ayahNumber ?? 1,
       });
       setTagInput("");
+      setShowAdvanced(shouldShowAdvancedOptions(nextDraft));
       setIsDirty(false);
     });
   };
@@ -388,22 +394,14 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
     }
     const nextEntries = deleteJournalEntry(draft.id);
     setEntries(nextEntries);
-    const next = nextEntries[0];
-    if (next) {
-      setDraft(draftFromEntry(next));
-      setAyahForm({
-        surahNumber: next.linkedAyah?.surahNumber ?? (props.surahs[0]?.surahNumber ?? 1),
-        ayahNumber: next.linkedAyah?.ayahNumber ?? 1,
-      });
-    } else {
-      setDraft(createEmptyDraft(draft.type));
-      setAyahForm({
-        surahNumber: props.surahs[0]?.surahNumber ?? 1,
-        ayahNumber: 1,
-      });
-    }
+    setDraft(createEmptyDraft(draft.type));
+    setAyahForm({
+      surahNumber: props.surahs[0]?.surahNumber ?? 1,
+      ayahNumber: 1,
+    });
+    setTagInput("");
+    setShowAdvanced(false);
     setIsDirty(false);
-    resetSanctuaryMode();
     pushToast({
       tone: "warning",
       title: "Entry removed",
@@ -427,7 +425,6 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
   const handleContentChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     const value = event.target.value;
     updateDraft((current) => ({ ...current, content: value }));
-    scheduleSanctuaryMode();
   };
 
   const applyPrompt = (prompt: string) => {
@@ -456,281 +453,226 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
     updateDraft((current) => ({ ...current, linkedAyah: null }));
   };
 
+  const scrollToComposer = () => {
+    window.setTimeout(() => {
+      document.getElementById("journal-composer")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 0);
+  };
+
+  const handleStartWriting = (type: JournalEntryType = "reflection") => {
+    handleCreateNew(type);
+    scrollToComposer();
+  };
+
+  const handleOpenEntry = (entry: JournalEntry) => {
+    handleSelectEntry(entry);
+    scrollToComposer();
+  };
+
   return (
     <div className={styles.page}>
       <PageHeader
-        eyebrow="Tool"
-        title="Private journal"
-        subtitle="Write private notes and duas. Everything here stays on this device for now."
-        right={(
-          <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" onClick={() => handleCreateNew(draft.type)}>
-              <Plus size={16} />
-              New note
-            </Button>
-            <Button onClick={() => persistDraft(false)} disabled={!canSave}>
-              <Save size={16} />
-              Save
-            </Button>
-          </div>
-        )}
+        eyebrow="Private"
+        title="Journal"
+        subtitle="Search your notes or write a new one. Everything stays on this device for now."
       />
 
-      <Card className={`kw-fade-in ${styles.hero}`}>
-        <div className={styles.orbA} />
-        <div className={styles.orbB} />
-        <div className={styles.heroGrid}>
-          <div className="relative">
-            <div className="flex flex-wrap items-center gap-2">
-              <Pill tone="brand">Saved on this device</Pill>
-              <Pill tone="neutral">Simple flow</Pill>
-            </div>
-            <h2 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-3xl tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
-              A simpler way to use your journal.
-            </h2>
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
-              Start with the note type, write what you need to write, then save it. If ayah links,
-              tags, or delete-later settings help, use them. If not, ignore them.
-            </p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              <Pill tone="accent">1. Pick a type</Pill>
-              <Pill tone="success">2. Write</Pill>
-              <Pill tone="warn">3. Save</Pill>
-            </div>
-          </div>
-
-          <div className={styles.statGrid}>
-            <div className={styles.statCard}>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
-                Saved notes
-              </p>
-              <p className="mt-2 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                {entries.length}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">
-                Write on the left, then save the notes you want to keep.
-              </p>
-            </div>
-            <div className={styles.statCard}>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
-                Ongoing duas
-              </p>
-              <p className="mt-2 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                {activeDuaCount}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">
-                Dua notes can stay marked as ongoing until you want to update them.
-              </p>
-            </div>
-            <div className={styles.statCard}>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
-                Delete-later notes
-              </p>
-              <p className="mt-2 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                {scheduledReleaseCount}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">
-                Repentance notes can be set to disappear later if that helps.
-              </p>
-            </div>
-          </div>
-        </div>
-      </Card>
+      <div className={styles.searchBar}>
+        <label className="sr-only" htmlFor="journal-search">
+          Search entries
+        </label>
+        <Search
+          size={18}
+          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[color:var(--kw-faint)]"
+        />
+        <Input
+          id="journal-search"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Search entries..."
+          className="pl-12"
+        />
+      </div>
 
       <div className={styles.layout}>
-        <Card
-          className={clsx("kw-fade-in", styles.editorShell)}
-          data-distraction={isSanctuaryMode ? "1" : "0"}
-        >
-          <div className="flex flex-wrap items-start justify-between gap-3">
+        <Card id="journal-composer" className={clsx("kw-fade-in", styles.editorShell)}>
+          <div className={styles.editorHeader}>
             <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Pill tone={activeTypeMeta.tone}>{activeTypeMeta.label}</Pill>
-                <Pill tone="neutral">{draft.id ? "Saved note" : "New note"}</Pill>
-                {draft.pinned ? <Pill tone="accent">Pinned</Pill> : null}
-              </div>
-              <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
+              <p className={styles.editorEyebrow}>{draft.id ? "Open note" : "New note"}</p>
+              <h2 className={styles.editorTitle}>{draft.id ? "Keep writing" : "Write something quietly"}</h2>
+              <p className={styles.editorText}>
                 {draft.id
                   ? isDirty
                     ? "You have changes that are not saved yet."
-                    : "This note is already saved."
+                    : "This note is already saved on this device."
                   : hasDraftContent
                     ? "This is a new note. Save it when you are ready."
-                    : "Pick a note type, write what you need to write, and save it if you want to keep it."}
+                    : "Pick a type, write what you need to write, then save it."}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              {isSanctuaryMode ? (
-                <Button variant="secondary" onClick={resetSanctuaryMode}>
-                  Restore controls
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    variant="secondary"
-                    onClick={() => updateDraft((current) => ({ ...current, pinned: !current.pinned }))}
-                  >
-                    <Pin size={16} />
-                    {draft.pinned ? "Unpin" : "Pin note"}
-                  </Button>
-                  <Button variant="danger" onClick={handleDeleteCurrent}>
-                    <Trash2 size={16} />
-                    {draft.id ? "Delete" : "Clear"}
-                  </Button>
-                </>
-              )}
+              <Button
+                variant="secondary"
+                onClick={() => updateDraft((current) => ({ ...current, pinned: !current.pinned }))}
+              >
+                <Pin size={16} />
+                {draft.pinned ? "Unpin" : "Pin"}
+              </Button>
+              <Button variant="danger" onClick={handleDeleteCurrent}>
+                <Trash2 size={16} />
+                {draft.id ? "Delete" : "Clear"}
+              </Button>
             </div>
           </div>
 
-          {!isSanctuaryMode ? (
-            <>
-              <div className={`${styles.typeGrid} mt-6`}>
-                {JOURNAL_ENTRY_TYPES.map((type) => {
-                  const meta = TYPE_META[type];
-                  const active = draft.type === type;
-                  return (
-                    <button
-                      key={type}
-                      type="button"
-                      data-active={active ? "1" : "0"}
-                      data-tone={type}
-                      className={styles.typeButton}
-                      onClick={() => {
-                        updateDraft((current) => ({
-                          ...current,
-                          type,
-                          duaStatus: type === "dua" ? current.duaStatus : "ongoing",
-                          autoDeletePreset: type === "repentance" ? current.autoDeletePreset : "",
-                        }));
-                      }}
-                    >
-                      <span className={styles.typeAccent} />
-                      <span className="text-sm font-semibold text-[color:var(--kw-ink)]">{meta.label}</span>
-                      <span className="mt-1 text-sm leading-6 text-[color:var(--kw-muted)]">{meta.detail}</span>
-                    </button>
-                  );
-                })}
-              </div>
+          <div className={styles.typeRow}>
+            {JOURNAL_ENTRY_TYPES.map((type) => {
+              const meta = TYPE_META[type];
+              const active = draft.type === type;
 
-              <div className="mt-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
-                  Start with one of these if it helps
-                </p>
-                <div className={styles.promptRail}>
-                  {activeTypeMeta.prompts.map((prompt) => (
-                    <button
-                      key={prompt}
-                      type="button"
-                      className={styles.promptButton}
-                      onClick={() => applyPrompt(prompt)}
-                    >
-                      {prompt}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          ) : null}
-
-          <div className={clsx("mt-6", isSanctuaryMode && "mt-10")}>
-            <Textarea
-              value={draft.content}
-              onChange={handleContentChange}
-              onFocus={scheduleSanctuaryMode}
-              placeholder={activeTypeMeta.prompts[0]}
-              className={clsx(
-                "min-h-[280px] text-[15px] leading-8 sm:min-h-[340px]",
-                isSanctuaryMode &&
-                  "min-h-[440px] border-transparent bg-transparent px-0 py-0 text-base text-white placeholder:text-slate-400 shadow-none focus:border-transparent focus:bg-transparent",
-              )}
-            />
-            <p
-              className={clsx(
-                "mt-3 text-xs font-semibold uppercase tracking-[0.14em]",
-                isSanctuaryMode ? "text-slate-400" : "text-[color:var(--kw-faint)]",
-              )}
-            >
-              {isSanctuaryMode
-                ? "Sanctuary mode active. Tap restore when you want the tools back."
-                : "You can ignore every extra control below and simply write."}
-            </p>
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  data-active={active ? "1" : "0"}
+                  className={styles.typeButton}
+                  onClick={() => {
+                    setShowAdvanced((current) =>
+                      current || type === "dua" || type === "repentance" || shouldShowAdvancedOptions(draft),
+                    );
+                    updateDraft((current) => ({
+                      ...current,
+                      type,
+                      duaStatus: type === "dua" ? current.duaStatus : "ongoing",
+                      autoDeletePreset: type === "repentance" ? current.autoDeletePreset : "",
+                    }));
+                  }}
+                >
+                  <span className={styles.entryDot} data-tone={type} />
+                  <span>{meta.label}</span>
+                </button>
+              );
+            })}
           </div>
 
-          {!isSanctuaryMode ? (
-            <>
-              <div className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-                <div className="space-y-4">
-                  <div className={styles.quietCard}>
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Link this note to an ayah</p>
-                      <Pill tone="accent">Optional</Pill>
-                    </div>
-                    <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_120px_auto]">
-                      <select
-                        value={ayahForm.surahNumber}
-                        onChange={(event) =>
-                          setAyahForm({
-                            surahNumber: Number(event.target.value),
-                            ayahNumber: 1,
-                          })
-                        }
-                        className="h-11 w-full rounded-2xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] transition focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus:bg-[color:var(--kw-surface-strong)] focus:outline-none"
-                      >
-                        {props.surahs.map((surah) => (
-                          <option key={surah.surahNumber} value={surah.surahNumber}>
-                            {surah.surahNumber}. {surah.nameTransliteration}
-                          </option>
-                        ))}
-                      </select>
-                      <Input
-                        type="number"
-                        min={1}
-                        max={selectedSurah?.ayahCount ?? 286}
-                        value={String(ayahForm.ayahNumber)}
-                        onChange={(event) =>
-                          setAyahForm((current) => ({
-                            ...current,
-                            ayahNumber: Number(event.target.value || 1),
-                          }))
-                        }
-                      />
-                      <Button variant="secondary" onClick={attachAyah}>
-                        <BookOpenText size={16} />
-                        Add ayah
-                      </Button>
-                    </div>
+          {draft.content.trim().length === 0 ? (
+            <div className={styles.promptRail}>
+              {activeTypeMeta.prompts.map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  className={styles.promptButton}
+                  onClick={() => applyPrompt(prompt)}
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          ) : null}
 
-                    {draft.linkedAyah ? (
-                      <div className={`${styles.linkedCard} mt-4`}>
-                        <div>
-                          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
-                            {draft.linkedAyah.surahNameTransliteration} {draft.linkedAyah.surahNumber}:
-                            {draft.linkedAyah.ayahNumber}
-                          </p>
-                          <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
-                            {draft.linkedAyah.surahNameArabic}
-                          </p>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          <Link
-                            href={buildLinkedAyahHref(draft.linkedAyah)}
-                            className="inline-flex items-center gap-2 rounded-[14px] border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.1)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
-                          >
-                            Open ayah <ArrowRight size={14} />
-                          </Link>
-                          <Button variant="ghost" onClick={removeLinkedAyah}>
-                            Remove
-                          </Button>
-                        </div>
-                      </div>
-                    ) : null}
+          <Textarea
+            value={draft.content}
+            onChange={handleContentChange}
+            placeholder={activeTypeMeta.prompts[0]}
+            className="min-h-[280px] text-[15px] leading-8 sm:min-h-[340px]"
+          />
+
+          <div className={styles.editorActions}>
+            <p className={styles.privacyNote}>Private. Saved only in this browser for now.</p>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="secondary" onClick={() => handleStartWriting("reflection")}>
+                <Plus size={16} />
+                Start fresh
+              </Button>
+              <Button onClick={() => persistDraft(false)} disabled={!canSave}>
+                <Save size={16} />
+                Save note
+              </Button>
+            </div>
+          </div>
+
+          <div className={styles.advancedShell}>
+            <button
+              type="button"
+              className={styles.advancedToggle}
+              onClick={() => setShowAdvanced((current) => !current)}
+            >
+              {showAdvanced ? "Hide extra options" : "More options"}
+            </button>
+
+            {showAdvanced ? (
+              <div className={styles.advancedBody}>
+                <p className={styles.advancedHint}>Use these only if they help. You can ignore them.</p>
+
+                <div className={styles.quietCard}>
+                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Attach an ayah</p>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_120px_auto]">
+                    <select
+                      value={ayahForm.surahNumber}
+                      onChange={(event) =>
+                        setAyahForm({
+                          surahNumber: Number(event.target.value),
+                          ayahNumber: 1,
+                        })
+                      }
+                      className="h-11 w-full rounded-2xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] transition focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus:bg-[color:var(--kw-surface-strong)] focus:outline-none"
+                    >
+                      {props.surahs.map((surah) => (
+                        <option key={surah.surahNumber} value={surah.surahNumber}>
+                          {surah.surahNumber}. {surah.nameTransliteration}
+                        </option>
+                      ))}
+                    </select>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={selectedSurah?.ayahCount ?? 286}
+                      value={String(ayahForm.ayahNumber)}
+                      onChange={(event) =>
+                        setAyahForm((current) => ({
+                          ...current,
+                          ayahNumber: Number(event.target.value || 1),
+                        }))
+                      }
+                    />
+                    <Button variant="secondary" onClick={attachAyah}>
+                      <BookOpenText size={16} />
+                      Add ayah
+                    </Button>
                   </div>
 
-                  <div className={styles.quietCard}>
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Tags</p>
-                      <Pill tone="neutral">Optional</Pill>
+                  {draft.linkedAyah ? (
+                    <div className={styles.linkedCard}>
+                      <div>
+                        <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
+                          {draft.linkedAyah.surahNameTransliteration} {draft.linkedAyah.surahNumber}:
+                          {draft.linkedAyah.ayahNumber}
+                        </p>
+                        <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
+                          {draft.linkedAyah.surahNameArabic}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Link
+                          href={buildLinkedAyahHref(draft.linkedAyah)}
+                          className="inline-flex items-center gap-2 rounded-[14px] border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.1)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+                        >
+                          Open ayah <ArrowRight size={14} />
+                        </Link>
+                        <Button variant="ghost" onClick={removeLinkedAyah}>
+                          Remove
+                        </Button>
+                      </div>
                     </div>
+                  ) : null}
+                </div>
+
+                <div className={styles.quietCard}>
+                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Tags</p>
+                  {draft.tags.length > 0 ? (
                     <div className="mt-4 flex flex-wrap gap-2">
                       {draft.tags.map((tag) => (
                         <button
@@ -748,260 +690,133 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
                         </button>
                       ))}
                     </div>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <Input
-                        value={tagInput}
-                        onChange={(event) => setTagInput(event.target.value)}
-                        onKeyDown={handleTagInputKeyDown}
-                        placeholder="Add tags like patience, family, tawakkul"
-                        className="min-w-[220px] flex-1"
-                      />
-                      <Button variant="secondary" onClick={handleTagAdd}>
-                        Add tag
-                      </Button>
-                    </div>
+                  ) : null}
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Input
+                      value={tagInput}
+                      onChange={(event) => setTagInput(event.target.value)}
+                      onKeyDown={handleTagInputKeyDown}
+                      placeholder="Add a tag like family or sabr"
+                      className="min-w-[220px] flex-1"
+                    />
+                    <Button variant="secondary" onClick={handleTagAdd}>
+                      Add tag
+                    </Button>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  {draft.type === "dua" ? (
-                    <div className={styles.quietCard}>
-                      <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Dua status</p>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {DUA_STATUS_OPTIONS.map((option) => (
-                          <button
-                            key={option.value}
-                            type="button"
-                            data-active={draft.duaStatus === option.value ? "1" : "0"}
-                            className={styles.filterChip}
-                            onClick={() => updateDraft((current) => ({ ...current, duaStatus: option.value }))}
-                          >
-                            {option.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {draft.type === "repentance" ? (
-                    <div className={styles.quietCard}>
-                      <div className="flex items-start gap-3">
-                        <span className="grid h-10 w-10 place-items-center rounded-[16px] border border-[rgba(225,29,72,0.18)] bg-[rgba(225,29,72,0.1)] text-rose-600">
-                          <LockKeyhole size={16} />
-                        </span>
-                        <div>
-                          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Delete this later</p>
-                          <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                            Repentance notes can be written, kept for a while, then removed from this browser later.
-                          </p>
-                        </div>
-                      </div>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {AUTO_DELETE_PRESETS.map((preset) => (
-                          <button
-                            key={preset.value || "keep"}
-                            type="button"
-                            data-active={draft.autoDeletePreset === preset.value ? "1" : "0"}
-                            className={styles.filterChip}
-                            onClick={() => updateDraft((current) => ({ ...current, autoDeletePreset: preset.value }))}
-                          >
-                            {preset.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-
+                {draft.type === "dua" ? (
                   <div className={styles.quietCard}>
-                    <div className="flex items-start gap-3">
-                      <span className="grid h-10 w-10 place-items-center rounded-[16px] border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[rgba(var(--kw-accent-rgb),0.1)] text-[rgba(var(--kw-accent-rgb),1)]">
-                        <ShieldCheck size={16} />
-                      </span>
-                      <div>
-                        <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Privacy note</p>
-                        <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                          Everything here stays in this browser for now. It does not sync across devices yet.
-                        </p>
-                      </div>
+                    <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Dua status</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {DUA_STATUS_OPTIONS.map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          data-active={draft.duaStatus === option.value ? "1" : "0"}
+                          className={styles.filterChip}
+                          onClick={() => updateDraft((current) => ({ ...current, duaStatus: option.value }))}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                </div>
-              </div>
+                ) : null}
 
-              <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-[20px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-4 py-4">
-                <div>
-                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
-                    {draft.id ? "Editing a saved note" : "This new note is not saved yet"}
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-[color:var(--kw-muted)]">
-                    {draft.id
-                      ? "Save again when you want to keep your latest changes."
-                      : "Tap Save when you want to keep this note."}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="secondary" onClick={() => handleCreateNew(draft.type)}>
-                    <Plus size={16} />
-                    New note
-                  </Button>
-                  <Button onClick={() => persistDraft(false)} disabled={!canSave}>
-                    <Save size={16} />
-                    Save
-                  </Button>
-                </div>
+                {draft.type === "repentance" ? (
+                  <div className={styles.quietCard}>
+                    <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Delete this later</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {AUTO_DELETE_PRESETS.map((preset) => (
+                        <button
+                          key={preset.value || "keep"}
+                          type="button"
+                          data-active={draft.autoDeletePreset === preset.value ? "1" : "0"}
+                          className={styles.filterChip}
+                          onClick={() => updateDraft((current) => ({ ...current, autoDeletePreset: preset.value }))}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </div>
-            </>
-          ) : null}
+            ) : null}
+          </div>
         </Card>
 
         <Card className={clsx("kw-fade-in", styles.listShell)}>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Saved notes</p>
+          {!isLoaded ? (
+            <div className={styles.emptyCard}>
+              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Loading your journal...</p>
+            </div>
+          ) : filteredEntries.length === 0 ? (
+            <div className={styles.emptyCard}>
+              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
+                {search.trim().length > 0 ? "Nothing matches that search yet." : "No notes yet."}
+              </p>
               <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                Search your notes, open one to keep writing, or start a new one.
+                {search.trim().length > 0
+                  ? "Try a different word or start a new note."
+                  : "Tap the add button and write your first note."}
               </p>
             </div>
-            <Button variant="secondary" onClick={() => handleCreateNew(draft.type)}>
-              <Plus size={16} />
-              New note
-            </Button>
-          </div>
+          ) : (
+            entrySections.map((section) => (
+              <section key={section.label} className={styles.section}>
+                <p className={styles.sectionLabel}>{section.label}</p>
+                <div className={styles.entryList}>
+                  {section.entries.map((entry) => {
+                    const meta = TYPE_META[entry.type];
+                    const active = draft.id === entry.id;
 
-          <div className="mt-5">
-            <label className="sr-only" htmlFor="journal-search">
-              Search your notes
-            </label>
-            <div className="relative">
-              <Search
-                size={16}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--kw-faint)]"
-              />
-              <Input
-                id="journal-search"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search your notes"
-                className="pl-9"
-              />
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              type="button"
-              data-active={typeFilter === "all" ? "1" : "0"}
-              className={styles.filterChip}
-              onClick={() => startTransition(() => setTypeFilter("all"))}
-            >
-              All entries
-            </button>
-            {JOURNAL_ENTRY_TYPES.map((type) => (
-              <button
-                key={type}
-                type="button"
-                data-active={typeFilter === type ? "1" : "0"}
-                className={styles.filterChip}
-                onClick={() => startTransition(() => setTypeFilter(type))}
-              >
-                {TYPE_META[type].label}
-              </button>
-            ))}
-            <button
-              type="button"
-              data-active={showPinnedOnly ? "1" : "0"}
-              className={styles.filterChip}
-              onClick={() => startTransition(() => setShowPinnedOnly((current) => !current))}
-            >
-              Pinned only
-            </button>
-          </div>
-
-          <div className={`${styles.entryList} mt-6`}>
-            {!isLoaded ? (
-              <div className={styles.emptyCard}>
-                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Loading your journal...</p>
-              </div>
-            ) : filteredEntries.length === 0 ? (
-              <div className={styles.emptyCard}>
-                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">No saved note matches this search or filter.</p>
-                <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                  Clear the search, change the filter, or start a new note.
-                </p>
-              </div>
-            ) : (
-              filteredEntries.map((entry) => {
-                const meta = TYPE_META[entry.type];
-                const active = draft.id === entry.id;
-                return (
-                  <button
-                    key={entry.id}
-                    type="button"
-                    data-active={active ? "1" : "0"}
-                    data-tone={entry.type}
-                    className={styles.entryButton}
-                    onClick={() => handleSelectEntry(entry)}
-                  >
-                    <span className={styles.entryAccent} />
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Pill tone={meta.tone}>{meta.label}</Pill>
-                          {entry.pinned ? <Pill tone="accent">Pinned</Pill> : null}
+                    return (
+                      <button
+                        key={entry.id}
+                        type="button"
+                        data-active={active ? "1" : "0"}
+                        className={styles.entryButton}
+                        onClick={() => handleOpenEntry(entry)}
+                      >
+                        <div className={styles.entryHeader}>
+                          <div className={styles.entryType}>
+                            <span className={styles.entryDot} data-tone={entry.type} />
+                            <span>{meta.label}</span>
+                          </div>
+                          {entry.pinned ? <Pin size={14} className={styles.entryPin} /> : null}
                         </div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[color:var(--kw-faint)]">
-                          Local only
-                        </p>
-                      </div>
 
-                      {entry.linkedAyah ? (
-                        <p className="mt-3 text-sm font-semibold text-[color:var(--kw-ink)]">
-                          {entry.linkedAyah.surahNameTransliteration} {entry.linkedAyah.surahNumber}:
-                          {entry.linkedAyah.ayahNumber}
-                        </p>
-                      ) : null}
+                        <p className={styles.entryPreview}>{buildPreview(entry.content)}</p>
 
-                      <p className="mt-3 text-sm leading-7 text-[color:var(--kw-ink)]">
-                        {buildPreview(entry.content)}
-                      </p>
+                        {entry.linkedAyah ? (
+                          <p className={styles.entryAyah}>
+                            {entry.linkedAyah.surahNameTransliteration} {entry.linkedAyah.surahNumber}:
+                            {entry.linkedAyah.ayahNumber}
+                          </p>
+                        ) : null}
 
-                      {entry.tags.length > 0 ? (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {entry.tags.map((tag) => (
-                            <span key={tag} className={styles.tagPill}>
-                              #{tag}
-                            </span>
-                          ))}
+                        <div className={styles.entryMeta}>
+                          <span>{formatJournalTimestamp(entry.updatedAt)}</span>
+                          {entry.autoDeleteAt ? (
+                            <span>Auto-deletes in {formatAutoDeleteCountdown(entry)}</span>
+                          ) : null}
                         </div>
-                      ) : null}
-
-                      <div className={`${styles.metaStrip} mt-4`}>
-                        <p>{formatJournalTimestamp(entry.updatedAt)}</p>
-                        {entry.autoDeleteAt ? <p>Deletes in {formatAutoDeleteCountdown(entry)}</p> : null}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })
-            )}
-          </div>
-
-          <div className="mt-6 rounded-[20px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-4 py-4">
-            <div className="flex items-start gap-3">
-              <span className="grid h-10 w-10 place-items-center rounded-[16px] border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[rgba(var(--kw-accent-rgb),0.1)] text-[rgba(var(--kw-accent-rgb),1)]">
-                <HandHeart size={16} />
-              </span>
-              <div>
-                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Quick note</p>
-                <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                  If this page ever feels busy, ignore the extras and use it like a plain private notebook:
-                  pick a type, write, and save.
-                </p>
-              </div>
-            </div>
-          </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            ))
+          )}
         </Card>
       </div>
+
+      <button type="button" className={styles.fab} onClick={() => handleStartWriting("reflection")}>
+        <Plus size={24} />
+        <span className="sr-only">New note</span>
+      </button>
     </div>
   );
 }
