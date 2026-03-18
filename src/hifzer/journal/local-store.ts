@@ -89,6 +89,13 @@ function writeEntries(entries: JournalEntry[]) {
   window.localStorage.setItem(JOURNAL_STORAGE_KEY, JSON.stringify(entries.sort(compareEntries)));
 }
 
+export function clearJournalEntries() {
+  if (!isBrowser()) {
+    return;
+  }
+  window.localStorage.removeItem(JOURNAL_STORAGE_KEY);
+}
+
 function pruneExpired(entries: JournalEntry[], now: Date): JournalEntry[] {
   return entries.filter((entry) => {
     if (!entry.autoDeleteAt) {

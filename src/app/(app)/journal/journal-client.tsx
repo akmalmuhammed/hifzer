@@ -14,6 +14,7 @@ import {
   startTransition,
   useDeferredValue,
   useEffect,
+  useRef,
   useState,
   type ChangeEvent,
   type KeyboardEvent,
@@ -31,6 +32,7 @@ import {
   type JournalEntryType,
   type JournalLinkedAyah,
   buildLinkedAyahHref,
+  clearJournalEntries,
   createJournalEntryId,
   deleteJournalEntry,
   formatAutoDeleteCountdown,
@@ -249,13 +251,37 @@ function buildLinkedAyah(surahs: SurahOption[], surahNumber: number, ayahNumber:
   };
 }
 
-export function JournalClient(props: { surahs: SurahOption[] }) {
-  const { pushToast } = useToast();
+function sortEntries(entries: JournalEntry[]): JournalEntry[] {
+  return [...entries].sort((a, b) => {
+    if (a.pinned !== b.pinned) {
+      return a.pinned ? -1 : 1;
+    }
+    return b.updatedAt.localeCompare(a.updatedAt);
+  });
+}
 
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
+async function readApiJson<T>(response: Response): Promise<T> {
+  const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+  if (!response.ok) {
+    throw new Error(payload?.error ?? "Something went wrong.");
+  }
+  return payload as T;
+}
+
+export function JournalClient(props: {
+  surahs: SurahOption[];
+  initialEntries: JournalEntry[];
+  syncEnabled: boolean;
+}) {
+  const { pushToast } = useToast();
+  const didAttemptLegacyImportRef = useRef(false);
+
+  const [entries, setEntries] = useState<JournalEntry[]>(() => sortEntries(props.initialEntries));
   const [draft, setDraft] = useState<JournalDraft>(() => createEmptyDraft());
   const [isDirty, setIsDirty] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(() => props.syncEnabled);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [search, setSearch] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [tagInput, setTagInput] = useState("");
@@ -269,6 +295,7 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
   const selectedSurah = props.surahs.find((surah) => surah.surahNumber === ayahForm.surahNumber) ?? props.surahs[0];
   const hasDraftContent = hasMeaningfulDraftContent(draft);
   const canSave = hasDraftContent && (!draft.id || isDirty);
+  const isBusy = isSaving || isDeleting;
   const pinnedCount = entries.filter((entry) => entry.pinned).length;
 
   const filteredEntries = entries.filter((entry) => {
@@ -287,7 +314,38 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
   });
   const entrySections = buildEntrySections(filteredEntries);
 
-  const persistDraft = (quiet = false): JournalEntry | null => {
+  const saveSyncedEntry = async (entry: Omit<JournalEntry, "id"> & { id: string | null }) => {
+    const response = await fetch("/api/journal", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(entry),
+    });
+    const payload = await readApiJson<{ ok: true; entry: JournalEntry }>(response);
+    return payload.entry;
+  };
+
+  const importLegacyEntries = async (legacyEntries: JournalEntry[]) => {
+    const response = await fetch("/api/journal/import", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ entries: legacyEntries }),
+    });
+    const payload = await readApiJson<{ ok: true; entries: JournalEntry[] }>(response);
+    return payload.entries;
+  };
+
+  const removeSyncedEntry = async (entryId: string) => {
+    const response = await fetch(`/api/journal/${encodeURIComponent(entryId)}`, {
+      method: "DELETE",
+    });
+    await readApiJson<{ ok: true }>(response);
+  };
+
+  const persistDraft = async (quiet = false): Promise<JournalEntry | null> => {
     if (!hasMeaningfulDraftContent(draft)) {
       setIsDirty(false);
       return null;
@@ -307,8 +365,8 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
         ? new Date(now.getTime() + Number(draft.autoDeletePreset) * 24 * 60 * 60 * 1000).toISOString()
         : null;
 
-    const nextEntry: JournalEntry = {
-      id: draft.id ?? createJournalEntryId(now),
+    const nextEntry = {
+      id: draft.id,
       type: draft.type,
       content: draft.content,
       tags: draft.tags,
@@ -320,36 +378,114 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
       autoDeleteAt,
     };
 
-    const nextEntries = upsertJournalEntry(nextEntry, now);
-    setEntries(nextEntries);
-    setDraft(draftFromEntry(nextEntry));
+    let savedEntry: JournalEntry;
+    if (props.syncEnabled) {
+      setIsSaving(true);
+      try {
+        savedEntry = await saveSyncedEntry(nextEntry);
+      } catch (error) {
+        pushToast({
+          tone: "warning",
+          title: "Could not save note",
+          message: error instanceof Error ? error.message : "Please try again.",
+        });
+        return null;
+      } finally {
+        setIsSaving(false);
+      }
+      setEntries((current) => sortEntries([...current.filter((entry) => entry.id !== savedEntry.id), savedEntry]));
+    } else {
+      const localEntry: JournalEntry = {
+        ...nextEntry,
+        id: nextEntry.id ?? createJournalEntryId(now),
+      };
+      const nextEntries = upsertJournalEntry(localEntry, now);
+      setEntries(nextEntries);
+      savedEntry = localEntry;
+    }
+
+    setDraft(draftFromEntry(savedEntry));
     setAyahForm({
-      surahNumber: nextEntry.linkedAyah?.surahNumber ?? (props.surahs[0]?.surahNumber ?? 1),
-      ayahNumber: nextEntry.linkedAyah?.ayahNumber ?? 1,
+      surahNumber: savedEntry.linkedAyah?.surahNumber ?? (props.surahs[0]?.surahNumber ?? 1),
+      ayahNumber: savedEntry.linkedAyah?.ayahNumber ?? 1,
     });
     setIsDirty(false);
     if (!quiet) {
       pushToast({
         tone: "success",
         title: draft.id ? "Entry updated" : "Entry saved",
-        message: "Your writing stays in this browser unless you remove it.",
+        message: props.syncEnabled
+          ? "This note is now saved to your account."
+          : "Your writing stays in this browser unless you remove it.",
       });
     }
-    return nextEntry;
+    return savedEntry;
   };
 
-  const maybePersistBeforeSwitch = () => {
+  const maybePersistBeforeSwitch = async () => {
     if (!isDirty) {
-      return;
+      return true;
     }
-    persistDraft(true);
+    if (!hasMeaningfulDraftContent(draft)) {
+      setIsDirty(false);
+      return true;
+    }
+    const savedEntry = await persistDraft(true);
+    return savedEntry !== null;
   };
 
   useEffect(() => {
+    if (props.syncEnabled) {
+      setEntries(sortEntries(props.initialEntries));
+      setIsLoaded(true);
+      return;
+    }
     const loadedEntries = listJournalEntries();
     setEntries(loadedEntries);
     setIsLoaded(true);
-  }, [props.surahs]);
+  }, [props.initialEntries, props.syncEnabled]);
+
+  useEffect(() => {
+    if (!props.syncEnabled || didAttemptLegacyImportRef.current) {
+      return;
+    }
+
+    const legacyEntries = listJournalEntries();
+    didAttemptLegacyImportRef.current = true;
+    if (legacyEntries.length === 0) {
+      return;
+    }
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        const importedEntries = await importLegacyEntries(legacyEntries);
+        if (cancelled) {
+          return;
+        }
+        clearJournalEntries();
+        setEntries(sortEntries(importedEntries));
+        pushToast({
+          tone: "success",
+          title: "Notes moved to your account",
+          message: "Your older browser-only notes are now saved to your account.",
+        });
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+        pushToast({
+          tone: "warning",
+          title: "Could not import old local notes",
+          message: error instanceof Error ? error.message : "Those older notes are still in this browser for now.",
+        });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [props.syncEnabled, pushToast]);
 
   const updateDraft = (updater: (current: JournalDraft) => JournalDraft) => {
     startTransition(() => {
@@ -358,8 +494,11 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
     });
   };
 
-  const handleCreateNew = (type: JournalEntryType = draft.type) => {
-    maybePersistBeforeSwitch();
+  const handleCreateNew = async (type: JournalEntryType = draft.type) => {
+    const shouldContinue = await maybePersistBeforeSwitch();
+    if (!shouldContinue) {
+      return;
+    }
     startTransition(() => {
       setDraft(createEmptyDraft(type));
       setAyahForm({
@@ -372,8 +511,11 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
     });
   };
 
-  const handleSelectEntry = (entry: JournalEntry) => {
-    maybePersistBeforeSwitch();
+  const handleSelectEntry = async (entry: JournalEntry) => {
+    const shouldContinue = await maybePersistBeforeSwitch();
+    if (!shouldContinue) {
+      return;
+    }
     const nextDraft = draftFromEntry(entry);
     startTransition(() => {
       setDraft(nextDraft);
@@ -387,13 +529,32 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
     });
   };
 
-  const handleDeleteCurrent = () => {
+  const handleDeleteCurrent = async () => {
     if (!draft.id) {
-      handleCreateNew(draft.type);
+      await handleCreateNew(draft.type);
       return;
     }
-    const nextEntries = deleteJournalEntry(draft.id);
-    setEntries(nextEntries);
+
+    if (props.syncEnabled) {
+      setIsDeleting(true);
+      try {
+        await removeSyncedEntry(draft.id);
+        setEntries((current) => current.filter((entry) => entry.id !== draft.id));
+      } catch (error) {
+        pushToast({
+          tone: "warning",
+          title: "Could not delete note",
+          message: error instanceof Error ? error.message : "Please try again.",
+        });
+        return;
+      } finally {
+        setIsDeleting(false);
+      }
+    } else {
+      const nextEntries = deleteJournalEntry(draft.id);
+      setEntries(nextEntries);
+    }
+
     setDraft(createEmptyDraft(draft.type));
     setAyahForm({
       surahNumber: props.surahs[0]?.surahNumber ?? 1,
@@ -405,7 +566,9 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
     pushToast({
       tone: "warning",
       title: "Entry removed",
-      message: "That journal entry was removed from this browser.",
+      message: props.syncEnabled
+        ? "That journal entry was removed from your account."
+        : "That journal entry was removed from this browser.",
     });
   };
 
@@ -462,13 +625,13 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
     }, 0);
   };
 
-  const handleStartWriting = (type: JournalEntryType = "reflection") => {
-    handleCreateNew(type);
+  const handleStartWriting = async (type: JournalEntryType = "reflection") => {
+    await handleCreateNew(type);
     scrollToComposer();
   };
 
-  const handleOpenEntry = (entry: JournalEntry) => {
-    handleSelectEntry(entry);
+  const handleOpenEntry = async (entry: JournalEntry) => {
+    await handleSelectEntry(entry);
     scrollToComposer();
   };
 
@@ -477,7 +640,11 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
       <PageHeader
         eyebrow="Private"
         title="Journal"
-        subtitle="Search your notes or write a new one. Everything stays on this device for now."
+        subtitle={
+          props.syncEnabled
+            ? "Search your notes or write a new one. Saved to your account and available on your devices."
+            : "Search your notes or write a new one. Everything stays on this device for now."
+        }
       />
 
       <div className={styles.searchBar}>
@@ -507,21 +674,26 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
                 {draft.id
                   ? isDirty
                     ? "You have changes that are not saved yet."
-                    : "This note is already saved on this device."
+                    : props.syncEnabled
+                      ? "This note is already saved to your account."
+                      : "This note is already saved on this device."
                   : hasDraftContent
                     ? "This is a new note. Save it when you are ready."
-                    : "Pick a type, write what you need to write, then save it."}
+                    : props.syncEnabled
+                      ? "Pick a type, write what you need to write, then save it to your account."
+                      : "Pick a type, write what you need to write, then save it."}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <Button
                 variant="secondary"
+                disabled={isBusy}
                 onClick={() => updateDraft((current) => ({ ...current, pinned: !current.pinned }))}
               >
                 <Pin size={16} />
                 {draft.pinned ? "Unpin" : "Pin"}
               </Button>
-              <Button variant="danger" onClick={handleDeleteCurrent}>
+              <Button variant="danger" disabled={isBusy} onClick={() => void handleDeleteCurrent()}>
                 <Trash2 size={16} />
                 {draft.id ? "Delete" : "Clear"}
               </Button>
@@ -538,6 +710,7 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
                   key={type}
                   type="button"
                   data-active={active ? "1" : "0"}
+                  disabled={isBusy}
                   className={styles.typeButton}
                   onClick={() => {
                     setShowAdvanced((current) =>
@@ -581,15 +754,19 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
           />
 
           <div className={styles.editorActions}>
-            <p className={styles.privacyNote}>Private. Saved only in this browser for now.</p>
+            <p className={styles.privacyNote}>
+              {props.syncEnabled
+                ? "Private. Saved to your account so it is there on your other devices."
+                : "Private. Saved only in this browser for now."}
+            </p>
             <div className="flex flex-wrap gap-2">
-              <Button variant="secondary" onClick={() => handleStartWriting("reflection")}>
+              <Button variant="secondary" disabled={isBusy} onClick={() => void handleStartWriting("reflection")}>
                 <Plus size={16} />
                 Start fresh
               </Button>
-              <Button onClick={() => persistDraft(false)} disabled={!canSave}>
+              <Button onClick={() => void persistDraft(false)} disabled={!canSave || isBusy}>
                 <Save size={16} />
-                Save note
+                {isSaving ? "Saving..." : "Save note"}
               </Button>
             </div>
           </div>
@@ -777,8 +954,9 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
                         key={entry.id}
                         type="button"
                         data-active={active ? "1" : "0"}
+                        disabled={isBusy}
                         className={styles.entryButton}
-                        onClick={() => handleOpenEntry(entry)}
+                        onClick={() => void handleOpenEntry(entry)}
                       >
                         <div className={styles.entryHeader}>
                           <div className={styles.entryType}>
@@ -813,7 +991,7 @@ export function JournalClient(props: { surahs: SurahOption[] }) {
         </Card>
       </div>
 
-      <button type="button" className={styles.fab} onClick={() => handleStartWriting("reflection")}>
+      <button type="button" className={styles.fab} onClick={() => void handleStartWriting("reflection")}>
         <Plus size={24} />
         <span className="sr-only">New note</span>
       </button>
