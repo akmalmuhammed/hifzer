@@ -4,12 +4,16 @@ import Link from "next/link";
 import {
   ArrowRight,
   BookOpenText,
+  ChevronDown,
   Heart,
   Pin,
   Plus,
   Save,
   Search,
+  Sparkles,
   Trash2,
+  Type,
+  X,
 } from "lucide-react";
 import {
   startTransition,
@@ -17,7 +21,6 @@ import {
   useEffect,
   useRef,
   useState,
-  type ChangeEvent,
   type KeyboardEvent,
 } from "react";
 import clsx from "clsx";
@@ -25,26 +28,35 @@ import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Pill } from "@/components/ui/pill";
 import { Input, Textarea } from "@/components/ui/input";
+import { Pill } from "@/components/ui/pill";
 import { SupportTextPanel } from "@/components/quran/support-text-panel";
 import { useToast } from "@/components/ui/toast";
 import {
   JOURNAL_ENTRY_TYPES,
-  type JournalDuaStatus,
-  type JournalEntry,
-  type JournalEntryType,
-  type JournalLinkedAyah,
-  type JournalLinkedDua,
   buildLinkedAyahHref,
   buildLinkedDuaHref,
   clearJournalEntries,
+  createAyahBlock,
+  createDuaBlock,
   createJournalEntryId,
+  createTextBlock,
   deleteJournalEntry,
+  deriveJournalContent,
+  findPrimaryLinkedAyah,
+  findPrimaryLinkedDua,
   formatAutoDeleteCountdown,
   formatJournalTimestamp,
+  hasMeaningfulJournalBlocks,
   listJournalEntries,
   normalizeJournalTags,
+  type JournalAyahBlock,
+  type JournalAyahSnapshot,
+  type JournalBlock,
+  type JournalDuaStatus,
+  type JournalEntry,
+  type JournalEntryType,
+  type JournalLinkedDua,
   upsertJournalEntry,
 } from "@/hifzer/journal/local-store";
 import styles from "./journal.module.css";
@@ -61,17 +73,26 @@ type SurahOption = {
 type JournalDraft = {
   id: string | null;
   type: JournalEntryType;
-  content: string;
+  title: string;
+  blocks: JournalBlock[];
   tags: string[];
   pinned: boolean;
   createdAt: string | null;
-  linkedAyah: JournalLinkedAyah | null;
-  linkedDua: JournalLinkedDua | null;
   duaStatus: JournalDuaStatus;
   autoDeletePreset: "" | "1" | "3" | "7" | "30";
 };
 
-type AyahCardData = {
+type InsertDraft = {
+  afterBlockId: string | null;
+  kind: "ayah" | "dua";
+  title: string;
+  surahNumber: number;
+  ayahNumber: number;
+  duaValue: string;
+  loading: boolean;
+};
+
+type AyahCardResponse = {
   id: number;
   surahNumber: number;
   ayahNumber: number;
@@ -79,73 +100,6 @@ type AyahCardData = {
   translation: string | null;
   surahNameArabic: string;
   surahNameTransliteration: string;
-};
-
-const TYPE_META: Record<
-  JournalEntryType,
-  {
-    label: string;
-    tone: "accent" | "warn" | "danger" | "success" | "neutral";
-    promptLabel: string;
-    prompts: readonly string[];
-    detail: string;
-  }
-> = {
-  reflection: {
-    label: "Reflection",
-    tone: "accent",
-    promptLabel: "Reflective",
-    prompts: [
-      "This ayah reminded me that...",
-      "Today I realized...",
-      "A question I still carry is...",
-    ],
-    detail: "Thoughts, lessons, and what you are noticing.",
-  },
-  dua: {
-    label: "Dua",
-    tone: "warn",
-    promptLabel: "Prayerful",
-    prompts: [
-      "Ya Allah, I ask You for...",
-      "Please guide me in...",
-      "Make a way for me through...",
-    ],
-    detail: "Private requests, hopes, and answered duas.",
-  },
-  repentance: {
-    label: "Repentance",
-    tone: "danger",
-    promptLabel: "Private",
-    prompts: [
-      "Ya Allah, I seek Your forgiveness for...",
-      "I am struggling with...",
-      "Help me leave behind...",
-    ],
-    detail: "For tawbah, struggle, and what you want to leave behind.",
-  },
-  gratitude: {
-    label: "Gratitude",
-    tone: "success",
-    promptLabel: "Thankful",
-    prompts: [
-      "Alhamdulillah for...",
-      "Today I am grateful that...",
-      "Allah opened a door for me through...",
-    ],
-    detail: "Blessings, mercies, and answered duas you do not want to miss.",
-  },
-  free: {
-    label: "Free note",
-    tone: "neutral",
-    promptLabel: "Open",
-    prompts: [
-      "What is sitting on my heart tonight?",
-      "What do I need to say honestly?",
-      "What should I not leave unspoken today?",
-    ],
-    detail: "A blank note for anything that does not need a category first.",
-  },
 };
 
 const AUTO_DELETE_PRESETS: Array<{ value: JournalDraft["autoDeletePreset"]; label: string }> = [
@@ -162,19 +116,8 @@ const DUA_STATUS_OPTIONS: Array<{ value: JournalDuaStatus; label: string }> = [
   { value: "accepted_differently", label: "Answered differently" },
 ];
 
-function createEmptyDraft(type: JournalEntryType = "reflection"): JournalDraft {
-  return {
-    id: null,
-    type,
-    content: "",
-    tags: [],
-    pinned: false,
-    createdAt: null,
-    linkedAyah: null,
-    linkedDua: null,
-    duaStatus: "ongoing",
-    autoDeletePreset: "",
-  };
+function buildDuaOptionValue(linkedDua: Pick<JournalLinkedDua, "moduleId" | "stepId">): string {
+  return `${linkedDua.moduleId}::${linkedDua.stepId}`;
 }
 
 function inferAutoDeletePreset(entry: JournalEntry): JournalDraft["autoDeletePreset"] {
@@ -193,90 +136,32 @@ function inferAutoDeletePreset(entry: JournalEntry): JournalDraft["autoDeletePre
   return "";
 }
 
+function createEmptyDraft(type: JournalEntryType = "reflection"): JournalDraft {
+  return {
+    id: null,
+    type,
+    title: "",
+    blocks: [createTextBlock("")],
+    tags: [],
+    pinned: false,
+    createdAt: null,
+    duaStatus: "ongoing",
+    autoDeletePreset: "",
+  };
+}
+
 function draftFromEntry(entry: JournalEntry): JournalDraft {
   return {
     id: entry.id,
     type: entry.type,
-    content: entry.content,
+    title: entry.title ?? "",
+    blocks: entry.blocks && entry.blocks.length > 0 ? entry.blocks : [createTextBlock(entry.content)],
     tags: entry.tags,
     pinned: entry.pinned,
     createdAt: entry.createdAt,
-    linkedAyah: entry.linkedAyah ?? null,
-    linkedDua: entry.linkedDua ?? null,
     duaStatus: entry.duaStatus ?? "ongoing",
     autoDeletePreset: inferAutoDeletePreset(entry),
   };
-}
-
-function buildPreview(entry: Pick<JournalEntry, "content" | "linkedAyah" | "linkedDua">): string {
-  const trimmed = entry.content.trim();
-  if (!trimmed) {
-    if (entry.linkedDua?.translation) {
-      return entry.linkedDua.translation.length > 180
-        ? `${entry.linkedDua.translation.slice(0, 177)}...`
-        : entry.linkedDua.translation;
-    }
-    if (entry.linkedAyah) {
-      return `Attached ayah from ${entry.linkedAyah.surahNameTransliteration} ${entry.linkedAyah.surahNumber}:${entry.linkedAyah.ayahNumber}.`;
-    }
-    return "Nothing written yet.";
-  }
-  return trimmed.length > 180 ? `${trimmed.slice(0, 177)}...` : trimmed;
-}
-
-function hasMeaningfulDraftContent(draft: JournalDraft): boolean {
-  return Boolean(draft.content.trim().length > 0 || draft.tags.length > 0 || draft.linkedAyah || draft.linkedDua);
-}
-
-function shouldShowAdvancedOptions(draft: JournalDraft): boolean {
-  return Boolean(
-    draft.linkedAyah ||
-      draft.linkedDua ||
-      draft.tags.length > 0 ||
-      draft.type === "dua" ||
-      draft.type === "repentance",
-  );
-}
-
-function buildEntrySections(entries: JournalEntry[]): Array<{ label: string; entries: JournalEntry[] }> {
-  const sections = new Map<string, JournalEntry[]>();
-  const now = Date.now();
-
-  for (const entry of entries) {
-    const updatedAt = new Date(entry.updatedAt).getTime();
-    const isRecent = !Number.isNaN(updatedAt) && now - updatedAt <= 7 * 24 * 60 * 60 * 1000;
-    const label = isRecent ? "This week" : "Earlier";
-    const bucket = sections.get(label);
-    if (bucket) {
-      bucket.push(entry);
-    } else {
-      sections.set(label, [entry]);
-    }
-  }
-
-  return Array.from(sections, ([label, sectionEntries]) => ({
-    label,
-    entries: sectionEntries,
-  }));
-}
-
-function buildLinkedAyah(surahs: SurahOption[], surahNumber: number, ayahNumber: number): JournalLinkedAyah | null {
-  const surah = surahs.find((item) => item.surahNumber === surahNumber);
-  if (!surah) {
-    return null;
-  }
-  const boundedAyah = Math.min(Math.max(ayahNumber, 1), surah.ayahCount);
-  return {
-    ayahId: surah.startAyahId + boundedAyah - 1,
-    surahNumber: surah.surahNumber,
-    ayahNumber: boundedAyah,
-    surahNameArabic: surah.nameArabic,
-    surahNameTransliteration: surah.nameTransliteration,
-  };
-}
-
-function buildDuaOptionValue(linkedDua: Pick<JournalLinkedDua, "moduleId" | "stepId">): string {
-  return `${linkedDua.moduleId}::${linkedDua.stepId}`;
 }
 
 function sortEntries(entries: JournalEntry[]): JournalEntry[] {
@@ -286,6 +171,79 @@ function sortEntries(entries: JournalEntry[]): JournalEntry[] {
     }
     return b.updatedAt.localeCompare(a.updatedAt);
   });
+}
+
+function buildSearchText(entry: JournalEntry): string {
+  return [
+    entry.title ?? "",
+    entry.content,
+    entry.tags.join(" "),
+    ...(entry.blocks ?? []).flatMap((block) => {
+      if (block.kind === "text") {
+        return [block.content];
+      }
+      if (block.kind === "ayah") {
+        return [
+          block.title,
+          block.ayah?.translation ?? "",
+          block.ayah?.textUthmani ?? "",
+          block.ayah ? `${block.ayah.surahNameTransliteration} ${block.ayah.surahNumber}:${block.ayah.ayahNumber}` : "",
+        ];
+      }
+      return [block.title, block.dua?.title ?? "", block.dua?.translation ?? ""];
+    }),
+  ]
+    .join(" ")
+    .toLowerCase();
+}
+
+function buildEntryPreview(entry: JournalEntry): string {
+  const firstText = (entry.blocks ?? []).find(
+    (block): block is Extract<JournalBlock, { kind: "text" }> => block.kind === "text" && block.content.trim().length > 0,
+  );
+  if (firstText) {
+    const preview = firstText.content.trim();
+    return preview.length > 180 ? `${preview.slice(0, 177)}...` : preview;
+  }
+
+  const firstAyah = (entry.blocks ?? []).find(
+    (block): block is Extract<JournalBlock, { kind: "ayah" }> => block.kind === "ayah" && Boolean(block.ayah),
+  );
+  if (firstAyah?.ayah) {
+    return `${firstAyah.title || "Ayah card"} • ${firstAyah.ayah.surahNameTransliteration} ${firstAyah.ayah.surahNumber}:${firstAyah.ayah.ayahNumber}`;
+  }
+
+  const firstDua = (entry.blocks ?? []).find(
+    (block): block is Extract<JournalBlock, { kind: "dua" }> => block.kind === "dua" && Boolean(block.dua),
+  );
+  if (firstDua?.dua) {
+    return `${firstDua.title || "Dua card"} • ${firstDua.dua.translation}`;
+  }
+
+  return "Untitled note";
+}
+
+function countAttachmentBlocks(blocks: JournalBlock[]): number {
+  return blocks.filter((block) => block.kind !== "text").length;
+}
+
+function hasMeaningfulDraftContent(draft: JournalDraft): boolean {
+  return Boolean(draft.title.trim().length > 0 || draft.tags.length > 0 || hasMeaningfulJournalBlocks(draft.blocks));
+}
+
+function insertBlockAfter(blocks: JournalBlock[], afterBlockId: string | null, block: JournalBlock): JournalBlock[] {
+  if (afterBlockId === null) {
+    return [block, ...blocks];
+  }
+  const index = blocks.findIndex((item) => item.id === afterBlockId);
+  if (index < 0) {
+    return [...blocks, block];
+  }
+  return [...blocks.slice(0, index + 1), block, ...blocks.slice(index + 1)];
+}
+
+function ensureTextBlock(blocks: JournalBlock[]): JournalBlock[] {
+  return blocks.length > 0 ? blocks : [createTextBlock("")];
 }
 
 async function readApiJson<T>(response: Response): Promise<T> {
@@ -309,57 +267,35 @@ export function JournalClient(props: {
   const didAttemptLegacyImportRef = useRef(false);
 
   const [entries, setEntries] = useState<JournalEntry[]>(() => sortEntries(props.initialEntries));
-  const [draft, setDraft] = useState<JournalDraft>(() => createEmptyDraft());
+  const [draft, setDraft] = useState<JournalDraft | null>(null);
+  const [expandedEntryId, setExpandedEntryId] = useState<string | "new" | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const [isLoaded, setIsLoaded] = useState(() => props.syncEnabled);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [search, setSearch] = useState("");
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [tagInput, setTagInput] = useState("");
-  const [ayahForm, setAyahForm] = useState(() => ({
-    surahNumber: props.surahs[0]?.surahNumber ?? 1,
-    ayahNumber: 1,
-  }));
-  const [duaFormValue, setDuaFormValue] = useState(() =>
-    props.duaOptions[0] ? buildDuaOptionValue(props.duaOptions[0]) : "",
-  );
-  const [ayahCardById, setAyahCardById] = useState<Record<number, AyahCardData>>({});
+  const [insertDraft, setInsertDraft] = useState<InsertDraft | null>(null);
+  const [ayahCardById, setAyahCardById] = useState<Record<number, AyahCardResponse>>({});
   const [ayahCardErrorById, setAyahCardErrorById] = useState<Record<number, string>>({});
-  const [ayahCardLoadingId, setAyahCardLoadingId] = useState<number | null>(null);
+  const [hydratingAyahIds, setHydratingAyahIds] = useState<number[]>([]);
   const deferredSearch = useDeferredValue(search.trim().toLowerCase());
 
-  const activeTypeMeta = TYPE_META[draft.type];
-  const selectedSurah = props.surahs.find((surah) => surah.surahNumber === ayahForm.surahNumber) ?? props.surahs[0];
-  const selectedDuaOption =
-    props.duaOptions.find((option) => buildDuaOptionValue(option) === duaFormValue) ?? props.duaOptions[0] ?? null;
-  const hasDraftContent = hasMeaningfulDraftContent(draft);
-  const canSave = hasDraftContent && (!draft.id || isDirty);
+  const defaultDuaValue = props.duaOptions[0] ? buildDuaOptionValue(props.duaOptions[0]) : "";
+  const currentEntry = draft?.id ? entries.find((entry) => entry.id === draft.id) ?? null : null;
+  const canSave = Boolean(draft && hasMeaningfulDraftContent(draft) && (!draft.id || isDirty));
   const isBusy = isSaving || isDeleting;
   const pinnedCount = entries.filter((entry) => entry.pinned).length;
-  const currentAyahCard = draft.linkedAyah ? ayahCardById[draft.linkedAyah.ayahId] ?? null : null;
-  const currentAyahCardError = draft.linkedAyah ? ayahCardErrorById[draft.linkedAyah.ayahId] ?? null : null;
-  const isCurrentAyahCardLoading = draft.linkedAyah ? ayahCardLoadingId === draft.linkedAyah.ayahId : false;
 
   const filteredEntries = entries.filter((entry) => {
     if (!deferredSearch) {
       return true;
     }
-    const haystack = [
-      entry.content,
-      entry.tags.join(" "),
-      entry.linkedAyah?.surahNameTransliteration ?? "",
-      entry.linkedAyah ? `${entry.linkedAyah.surahNumber}:${entry.linkedAyah.ayahNumber}` : "",
-      entry.linkedDua?.title ?? "",
-      entry.linkedDua?.label ?? "",
-      entry.linkedDua?.translation ?? "",
-      entry.linkedDua?.moduleLabel ?? "",
-    ]
-      .join(" ")
-      .toLowerCase();
-    return haystack.includes(deferredSearch);
+    if (draft?.id === entry.id) {
+      return true;
+    }
+    return buildSearchText(entry).includes(deferredSearch);
   });
-  const entrySections = buildEntrySections(filteredEntries);
 
   const saveSyncedEntry = async (entry: Omit<JournalEntry, "id"> & { id: string | null }) => {
     const response = await fetch("/api/journal", {
@@ -392,17 +328,49 @@ export function JournalClient(props: {
     await readApiJson<{ ok: true }>(response);
   };
 
+  const fetchAyahCard = async (ayahId: number) => {
+    const response = await fetch(`/api/quran/ayah-card?ayahId=${encodeURIComponent(String(ayahId))}`);
+    const payload = await readApiJson<{ ok: true; ayah: AyahCardResponse }>(response);
+    return payload.ayah;
+  };
+
+  const updateDraft = (updater: (current: JournalDraft) => JournalDraft) => {
+    startTransition(() => {
+      setDraft((current) => (current ? updater(current) : current));
+      setIsDirty(true);
+    });
+  };
+
+  const updateBlock = (blockId: string, updater: (block: JournalBlock) => JournalBlock) => {
+    updateDraft((current) => ({
+      ...current,
+      blocks: current.blocks.map((block) => (block.id === blockId ? updater(block) : block)),
+    }));
+  };
+
+  const removeBlock = (blockId: string) => {
+    updateDraft((current) => ({
+      ...current,
+      blocks: ensureTextBlock(current.blocks.filter((block) => block.id !== blockId)),
+    }));
+  };
+
   const persistDraft = async (quiet = false): Promise<JournalEntry | null> => {
+    if (!draft) {
+      return null;
+    }
+
     if (!hasMeaningfulDraftContent(draft)) {
       setIsDirty(false);
       return null;
     }
+
     const now = new Date();
-    if (draft.pinned && pinnedCount >= 10 && !entries.find((entry) => entry.id === draft.id)?.pinned) {
+    if (draft.pinned && pinnedCount >= 10 && !currentEntry?.pinned) {
       pushToast({
         tone: "warning",
         title: "Pin limit reached",
-        message: "Keep at most 10 pinned entries so the top of the journal stays useful.",
+        message: "Keep at most 10 pinned notes so the journal stays calm.",
       });
       return null;
     }
@@ -411,17 +379,19 @@ export function JournalClient(props: {
       draft.type === "repentance" && draft.autoDeletePreset
         ? new Date(now.getTime() + Number(draft.autoDeletePreset) * 24 * 60 * 60 * 1000).toISOString()
         : null;
-
+    const content = deriveJournalContent(draft.title, draft.blocks);
     const nextEntry = {
       id: draft.id,
       type: draft.type,
-      content: draft.content,
+      title: draft.title,
+      content,
+      blocks: draft.blocks,
       tags: draft.tags,
       pinned: draft.pinned,
       createdAt: draft.createdAt ?? now.toISOString(),
       updatedAt: now.toISOString(),
-      linkedAyah: draft.linkedAyah,
-      linkedDua: draft.linkedDua,
+      linkedAyah: findPrimaryLinkedAyah(draft.blocks),
+      linkedDua: findPrimaryLinkedDua(draft.blocks),
       duaStatus: draft.type === "dua" ? draft.duaStatus : null,
       autoDeleteAt,
     };
@@ -453,32 +423,22 @@ export function JournalClient(props: {
     }
 
     setDraft(draftFromEntry(savedEntry));
-    setAyahForm({
-      surahNumber: savedEntry.linkedAyah?.surahNumber ?? (props.surahs[0]?.surahNumber ?? 1),
-      ayahNumber: savedEntry.linkedAyah?.ayahNumber ?? 1,
-    });
-    setDuaFormValue(
-      savedEntry.linkedDua
-        ? buildDuaOptionValue(savedEntry.linkedDua)
-        : props.duaOptions[0]
-          ? buildDuaOptionValue(props.duaOptions[0])
-          : "",
-    );
+    setExpandedEntryId(savedEntry.id);
     setIsDirty(false);
     if (!quiet) {
       pushToast({
         tone: "success",
-        title: draft.id ? "Entry updated" : "Entry saved",
+        title: draft.id ? "Note updated" : "Note saved",
         message: props.syncEnabled
-          ? "This note is now saved to your account."
-          : "Your writing stays in this browser unless you remove it.",
+          ? "This note is saved to your account."
+          : "This note is saved in this browser.",
       });
     }
     return savedEntry;
   };
 
   const maybePersistBeforeSwitch = async () => {
-    if (!isDirty) {
+    if (!draft || !isDirty) {
       return true;
     }
     if (!hasMeaningfulDraftContent(draft)) {
@@ -543,44 +503,74 @@ export function JournalClient(props: {
   }, [props.syncEnabled, pushToast]);
 
   useEffect(() => {
-    const ayahId = draft.linkedAyah?.ayahId;
-    if (!ayahId || ayahCardById[ayahId] || ayahCardLoadingId === ayahId) {
+    if (!draft) {
+      return;
+    }
+
+    const missingAyahs = draft.blocks
+      .filter((block): block is JournalAyahBlock => block.kind === "ayah" && Boolean(block.ayah))
+      .map((block) => block.ayah as JournalAyahSnapshot)
+      .filter((ayah) => !ayah.textUthmani || !ayah.translation)
+      .filter((ayah) => !ayahCardById[ayah.ayahId] && !hydratingAyahIds.includes(ayah.ayahId));
+
+    if (missingAyahs.length === 0) {
+      return;
+    }
+
+    const nextAyahId = missingAyahs[0]?.ayahId;
+    if (!nextAyahId) {
       return;
     }
 
     let cancelled = false;
-    setAyahCardLoadingId(ayahId);
+    setHydratingAyahIds((current) => [...current, nextAyahId]);
 
     void (async () => {
       try {
-        const response = await fetch(`/api/quran/ayah-card?ayahId=${encodeURIComponent(String(ayahId))}`);
-        const payload = await readApiJson<{ ok: true; ayah: AyahCardData }>(response);
+        const ayah = await fetchAyahCard(nextAyahId);
         if (cancelled) {
           return;
         }
-        setAyahCardById((current) => ({
-          ...current,
-          [ayahId]: payload.ayah,
-        }));
+        setAyahCardById((current) => ({ ...current, [nextAyahId]: ayah }));
         setAyahCardErrorById((current) => {
-          if (!(ayahId in current)) {
+          if (!(nextAyahId in current)) {
             return current;
           }
           const next = { ...current };
-          delete next[ayahId];
+          delete next[nextAyahId];
           return next;
         });
+        updateDraft((current) => ({
+          ...current,
+          blocks: current.blocks.map((block) => {
+            if (block.kind !== "ayah" || !block.ayah || block.ayah.ayahId !== nextAyahId) {
+              return block;
+            }
+            return {
+              ...block,
+              ayah: {
+                ayahId: ayah.id,
+                surahNumber: ayah.surahNumber,
+                ayahNumber: ayah.ayahNumber,
+                surahNameArabic: ayah.surahNameArabic,
+                surahNameTransliteration: ayah.surahNameTransliteration,
+                textUthmani: ayah.textUthmani,
+                translation: ayah.translation,
+              },
+            };
+          }),
+        }));
       } catch (error) {
         if (cancelled) {
           return;
         }
         setAyahCardErrorById((current) => ({
           ...current,
-          [ayahId]: error instanceof Error ? error.message : "Could not load this ayah right now.",
+          [nextAyahId]: error instanceof Error ? error.message : "Could not load this ayah right now.",
         }));
       } finally {
         if (!cancelled) {
-          setAyahCardLoadingId((current) => (current === ayahId ? null : current));
+          setHydratingAyahIds((current) => current.filter((id) => id !== nextAyahId));
         }
       }
     })();
@@ -588,61 +578,46 @@ export function JournalClient(props: {
     return () => {
       cancelled = true;
     };
-  }, [ayahCardById, ayahCardLoadingId, draft.linkedAyah?.ayahId]);
+  }, [ayahCardById, draft, hydratingAyahIds]);
 
-  const updateDraft = (updater: (current: JournalDraft) => JournalDraft) => {
-    startTransition(() => {
-      setDraft((current) => updater(current));
-      setIsDirty(true);
-    });
-  };
-
-  const handleCreateNew = async (type: JournalEntryType = draft.type) => {
+  const handleCreateNew = async (type: JournalEntryType = "reflection") => {
     const shouldContinue = await maybePersistBeforeSwitch();
     if (!shouldContinue) {
       return;
     }
     startTransition(() => {
       setDraft(createEmptyDraft(type));
-      setAyahForm({
-        surahNumber: props.surahs[0]?.surahNumber ?? 1,
-        ayahNumber: 1,
-      });
-      setDuaFormValue(props.duaOptions[0] ? buildDuaOptionValue(props.duaOptions[0]) : "");
+      setExpandedEntryId("new");
       setTagInput("");
-      setShowAdvanced(false);
+      setInsertDraft(null);
       setIsDirty(false);
     });
   };
 
-  const handleSelectEntry = async (entry: JournalEntry) => {
+  const handleOpenEntry = async (entry: JournalEntry) => {
     const shouldContinue = await maybePersistBeforeSwitch();
     if (!shouldContinue) {
       return;
     }
-    const nextDraft = draftFromEntry(entry);
     startTransition(() => {
-      setDraft(nextDraft);
-      setAyahForm({
-        surahNumber: entry.linkedAyah?.surahNumber ?? (props.surahs[0]?.surahNumber ?? 1),
-        ayahNumber: entry.linkedAyah?.ayahNumber ?? 1,
-      });
-      setDuaFormValue(
-        entry.linkedDua
-          ? buildDuaOptionValue(entry.linkedDua)
-          : props.duaOptions[0]
-            ? buildDuaOptionValue(props.duaOptions[0])
-            : "",
-      );
+      setDraft(draftFromEntry(entry));
+      setExpandedEntryId(entry.id);
       setTagInput("");
-      setShowAdvanced(shouldShowAdvancedOptions(nextDraft));
+      setInsertDraft(null);
       setIsDirty(false);
     });
   };
 
   const handleDeleteCurrent = async () => {
+    if (!draft) {
+      return;
+    }
+
     if (!draft.id) {
-      await handleCreateNew(draft.type);
+      setDraft(null);
+      setExpandedEntryId(null);
+      setInsertDraft(null);
+      setIsDirty(false);
       return;
     }
 
@@ -666,25 +641,23 @@ export function JournalClient(props: {
       setEntries(nextEntries);
     }
 
-    setDraft(createEmptyDraft(draft.type));
-    setAyahForm({
-      surahNumber: props.surahs[0]?.surahNumber ?? 1,
-      ayahNumber: 1,
-    });
-    setDuaFormValue(props.duaOptions[0] ? buildDuaOptionValue(props.duaOptions[0]) : "");
-    setTagInput("");
-    setShowAdvanced(false);
+    setDraft(null);
+    setExpandedEntryId(null);
+    setInsertDraft(null);
     setIsDirty(false);
     pushToast({
       tone: "warning",
-      title: "Entry removed",
+      title: "Note removed",
       message: props.syncEnabled
-        ? "That journal entry was removed from your account."
-        : "That journal entry was removed from this browser.",
+        ? "That note was removed from your account."
+        : "That note was removed from this browser.",
     });
   };
 
   const handleTagAdd = () => {
+    if (!draft) {
+      return;
+    }
     const normalized = normalizeJournalTags([...draft.tags, ...tagInput.split(",")]);
     updateDraft((current) => ({ ...current, tags: normalized }));
     setTagInput("");
@@ -697,75 +670,552 @@ export function JournalClient(props: {
     }
   };
 
-  const handleContentChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    const value = event.target.value;
-    updateDraft((current) => ({ ...current, content: value }));
-  };
-
-  const applyPrompt = (prompt: string) => {
-    updateDraft((current) => {
-      const nextContent = current.content.trim().length
-        ? `${current.content.trim()}\n\n${prompt}`
-        : prompt;
-      return { ...current, content: nextContent };
+  const openInsertComposer = (afterBlockId: string | null, kind: InsertDraft["kind"]) => {
+    setInsertDraft({
+      afterBlockId,
+      kind,
+      title: "",
+      surahNumber: props.surahs[0]?.surahNumber ?? 1,
+      ayahNumber: 1,
+      duaValue: defaultDuaValue,
+      loading: false,
     });
   };
 
-  const attachAyah = () => {
-    const linkedAyah = buildLinkedAyah(props.surahs, ayahForm.surahNumber, ayahForm.ayahNumber);
-    if (!linkedAyah) {
+  const handleInsertTextBlock = (afterBlockId: string | null) => {
+    updateDraft((current) => ({
+      ...current,
+      blocks: insertBlockAfter(current.blocks, afterBlockId, createTextBlock("")),
+    }));
+    setInsertDraft(null);
+  };
+
+  const handleInsertAyahBlock = async () => {
+    if (!draft || !insertDraft || insertDraft.kind !== "ayah") {
       return;
     }
-    updateDraft((current) => ({ ...current, linkedAyah }));
-    pushToast({
-      tone: "success",
-      title: "Ayah linked",
-      message: `${linkedAyah.surahNameTransliteration} ${linkedAyah.surahNumber}:${linkedAyah.ayahNumber} is now attached to this entry.`,
-    });
-  };
 
-  const removeLinkedAyah = () => {
-    updateDraft((current) => ({ ...current, linkedAyah: null }));
-  };
+    const selectedSurah = props.surahs.find((surah) => surah.surahNumber === insertDraft.surahNumber);
+    const boundedAyahNumber = Math.min(Math.max(insertDraft.ayahNumber, 1), selectedSurah?.ayahCount ?? 286);
+    const ayahId = (selectedSurah?.startAyahId ?? 1) + boundedAyahNumber - 1;
 
-  const attachDua = () => {
-    if (!selectedDuaOption) {
+    setInsertDraft((current) => (current ? { ...current, loading: true } : current));
+    try {
+      const ayah = await fetchAyahCard(ayahId);
+      const block = createAyahBlock({
+        title: insertDraft.title.trim() || `${ayah.surahNameTransliteration} ${ayah.surahNumber}:${ayah.ayahNumber}`,
+        ayah: {
+          ayahId: ayah.id,
+          surahNumber: ayah.surahNumber,
+          ayahNumber: ayah.ayahNumber,
+          surahNameArabic: ayah.surahNameArabic,
+          surahNameTransliteration: ayah.surahNameTransliteration,
+          textUthmani: ayah.textUthmani,
+          translation: ayah.translation,
+        },
+      });
+      updateDraft((current) => ({
+        ...current,
+        blocks: insertBlockAfter(current.blocks, insertDraft.afterBlockId, block),
+      }));
+      setAyahCardById((current) => ({ ...current, [ayah.id]: ayah }));
+      setInsertDraft(null);
+    } catch (error) {
       pushToast({
         tone: "warning",
-        title: "No dua available",
-        message: "There is no attachable dua card in your library yet.",
+        title: "Could not load ayah",
+        message: error instanceof Error ? error.message : "Please try again.",
+      });
+      setInsertDraft((current) => (current ? { ...current, loading: false } : current));
+    }
+  };
+
+  const handleInsertDuaBlock = () => {
+    if (!draft || !insertDraft || insertDraft.kind !== "dua") {
+      return;
+    }
+
+    const selectedDua =
+      props.duaOptions.find((option) => buildDuaOptionValue(option) === insertDraft.duaValue) ?? null;
+    if (!selectedDua) {
+      pushToast({
+        tone: "warning",
+        title: "Choose a dua first",
+        message: "Pick a dua card before inserting it into the note.",
       });
       return;
     }
-    updateDraft((current) => ({ ...current, linkedDua: selectedDuaOption }));
-    pushToast({
-      tone: "success",
-      title: "Dua attached",
-      message: `${selectedDuaOption.title} is now attached to this entry.`,
+
+    const block = createDuaBlock({
+      title: insertDraft.title.trim() || selectedDua.title,
+      dua: selectedDua,
     });
+    updateDraft((current) => ({
+      ...current,
+      blocks: insertBlockAfter(current.blocks, insertDraft.afterBlockId, block),
+    }));
+    setInsertDraft(null);
   };
 
-  const removeLinkedDua = () => {
-    updateDraft((current) => ({ ...current, linkedDua: null }));
+  const renderInsertRow = (afterBlockId: string | null) => {
+    const isOpen = insertDraft?.afterBlockId === afterBlockId;
+
+    return (
+      <div className={styles.insertZone}>
+        <div className={styles.insertActions}>
+          <button type="button" className={styles.insertChip} onClick={() => handleInsertTextBlock(afterBlockId)}>
+            <Type size={14} />
+            Text
+          </button>
+          <button type="button" className={styles.insertChip} onClick={() => openInsertComposer(afterBlockId, "ayah")}>
+            <BookOpenText size={14} />
+            Ayah card
+          </button>
+          <button type="button" className={styles.insertChip} onClick={() => openInsertComposer(afterBlockId, "dua")}>
+            <Heart size={14} />
+            Dua card
+          </button>
+        </div>
+
+        {isOpen && insertDraft ? (
+          <div className={styles.insertPanel}>
+            <div className={styles.insertPanelHeader}>
+              <p className={styles.insertPanelTitle}>
+                {insertDraft.kind === "ayah" ? "Insert an ayah card" : "Insert a dua card"}
+              </p>
+              <button type="button" className={styles.closeInlineButton} onClick={() => setInsertDraft(null)}>
+                <X size={14} />
+              </button>
+            </div>
+
+            <Input
+              value={insertDraft.title}
+              onChange={(event) =>
+                setInsertDraft((current) => (current ? { ...current, title: event.target.value } : current))
+              }
+              placeholder={insertDraft.kind === "ayah" ? "Card title" : "Card title"}
+            />
+
+            {insertDraft.kind === "ayah" ? (
+              <div className={styles.insertGrid}>
+                <select
+                  value={insertDraft.surahNumber}
+                  onChange={(event) =>
+                    setInsertDraft((current) =>
+                      current
+                        ? {
+                            ...current,
+                            surahNumber: Number(event.target.value),
+                            ayahNumber: 1,
+                          }
+                        : current,
+                    )
+                  }
+                  className={styles.inlineSelect}
+                >
+                  {props.surahs.map((surah) => (
+                    <option key={surah.surahNumber} value={surah.surahNumber}>
+                      {surah.surahNumber}. {surah.nameTransliteration}
+                    </option>
+                  ))}
+                </select>
+                <Input
+                  type="number"
+                  min={1}
+                  max={props.surahs.find((surah) => surah.surahNumber === insertDraft.surahNumber)?.ayahCount ?? 286}
+                  value={String(insertDraft.ayahNumber)}
+                  onChange={(event) =>
+                    setInsertDraft((current) =>
+                      current
+                        ? {
+                            ...current,
+                            ayahNumber: Number(event.target.value || 1),
+                          }
+                        : current,
+                    )
+                  }
+                />
+                <Button onClick={() => void handleInsertAyahBlock()} disabled={insertDraft.loading}>
+                  <Sparkles size={16} />
+                  {insertDraft.loading ? "Loading..." : "Insert ayah"}
+                </Button>
+              </div>
+            ) : (
+              <div className={styles.insertGrid}>
+                <select
+                  value={insertDraft.duaValue}
+                  onChange={(event) =>
+                    setInsertDraft((current) => (current ? { ...current, duaValue: event.target.value } : current))
+                  }
+                  className={styles.inlineSelect}
+                >
+                  {props.duaOptions.map((option) => (
+                    <option key={buildDuaOptionValue(option)} value={buildDuaOptionValue(option)}>
+                      {option.moduleLabel}: {option.title}
+                    </option>
+                  ))}
+                </select>
+                <Button onClick={handleInsertDuaBlock} disabled={!props.duaOptions.length}>
+                  <Sparkles size={16} />
+                  Insert dua
+                </Button>
+              </div>
+            )}
+          </div>
+        ) : null}
+      </div>
+    );
   };
 
-  const scrollToComposer = () => {
-    window.setTimeout(() => {
-      document.getElementById("journal-composer")?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }, 0);
+  const renderExpandedCard = (noteDraft: JournalDraft, isNew: boolean) => {
+    return (
+      <Card className={clsx("kw-fade-in", styles.noteCard, styles.noteCardExpanded)}>
+        <div className={styles.noteHeader}>
+          <div className={styles.noteTopRow}>
+            <div className={styles.typeRow}>
+              {JOURNAL_ENTRY_TYPES.map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  data-active={noteDraft.type === type ? "1" : "0"}
+                  className={styles.typeButton}
+                  onClick={() =>
+                    updateDraft((current) => ({
+                      ...current,
+                      type,
+                      duaStatus: type === "dua" ? current.duaStatus : "ongoing",
+                      autoDeletePreset: type === "repentance" ? current.autoDeletePreset : "",
+                    }))
+                  }
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="secondary"
+                disabled={isBusy}
+                onClick={() => updateDraft((current) => ({ ...current, pinned: !current.pinned }))}
+              >
+                <Pin size={16} />
+                {noteDraft.pinned ? "Unpin" : "Pin"}
+              </Button>
+              <Button variant="danger" disabled={isBusy} onClick={() => void handleDeleteCurrent()}>
+                <Trash2 size={16} />
+                {isNew ? "Discard" : "Delete"}
+              </Button>
+            </div>
+          </div>
+
+          <Input
+            value={noteDraft.title}
+            onChange={(event) => updateDraft((current) => ({ ...current, title: event.target.value }))}
+            placeholder="Give this note a short title"
+            className={styles.noteTitleInput}
+          />
+
+          <div className={styles.noteMetaRow}>
+            <span>{noteDraft.id ? "Editing inside the note card." : "This note is still unsaved."}</span>
+            <span>{countAttachmentBlocks(noteDraft.blocks)} cards inside</span>
+          </div>
+        </div>
+
+        <div className={styles.blockList}>
+          {renderInsertRow(null)}
+          {noteDraft.blocks.map((block) => {
+            if (block.kind === "text") {
+              return (
+                <div key={block.id} className={styles.blockShell}>
+                  <Textarea
+                    value={block.content}
+                    onChange={(event) =>
+                      updateBlock(block.id, () => ({
+                        ...block,
+                        content: event.target.value,
+                      }))
+                    }
+                    placeholder="Write quietly..."
+                    className={styles.textBlock}
+                  />
+                  <div className={styles.blockActions}>
+                    {noteDraft.blocks.length > 1 ? (
+                      <button type="button" className={styles.blockActionButton} onClick={() => removeBlock(block.id)}>
+                        Remove block
+                      </button>
+                    ) : null}
+                  </div>
+                  {renderInsertRow(block.id)}
+                </div>
+              );
+            }
+
+            if (block.kind === "ayah") {
+              const ayah = block.ayah
+                ? ayahCardById[block.ayah.ayahId]
+                  ? {
+                      ...block.ayah,
+                      textUthmani: ayahCardById[block.ayah.ayahId].textUthmani,
+                      translation: ayahCardById[block.ayah.ayahId].translation,
+                    }
+                  : block.ayah
+                : null;
+              const ayahError = block.ayah ? ayahCardErrorById[block.ayah.ayahId] : null;
+
+              return (
+                <div key={block.id} className={styles.blockShell}>
+                  <div className={styles.richCardBlock}>
+                    <div className={styles.richCardHeader}>
+                      <div className={styles.richCardPills}>
+                        <Pill tone="accent">Ayah card</Pill>
+                        {ayah ? (
+                          <Pill tone="neutral">
+                            {ayah.surahNameTransliteration} {ayah.surahNumber}:{ayah.ayahNumber}
+                          </Pill>
+                        ) : null}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {ayah ? (
+                          <Link href={buildLinkedAyahHref(ayah)} className={styles.inlineLinkButton}>
+                            Open ayah <ArrowRight size={14} />
+                          </Link>
+                        ) : null}
+                        <button type="button" className={styles.blockActionButton} onClick={() => removeBlock(block.id)}>
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+
+                    <Input
+                      value={block.title}
+                      onChange={(event) =>
+                        updateBlock(block.id, () => ({
+                          ...block,
+                          title: event.target.value,
+                        }))
+                      }
+                      placeholder="Card title"
+                    />
+
+                    {ayah ? (
+                      <>
+                        <div dir="rtl" className={styles.arabicCard}>
+                          {ayah.textUthmani ?? "Loading ayah..."}
+                        </div>
+                        <AyahAudioPlayer
+                          ayahId={ayah.ayahId}
+                          reciterId={props.reciterId}
+                          speedPrefKey="hifzer_journal_ayah_audio_speed_v2"
+                          className={styles.ayahAudio}
+                        />
+                        <SupportTextPanel
+                          kind="translation"
+                          dir={props.translationDir}
+                          alignClassName={props.translationAlignClass}
+                        >
+                          {ayah.translation ?? ayahError ?? "Translation unavailable right now."}
+                        </SupportTextPanel>
+                      </>
+                    ) : (
+                      <p className={styles.inlineHint}>This ayah card needs to be reinserted.</p>
+                    )}
+                  </div>
+                  {renderInsertRow(block.id)}
+                </div>
+              );
+            }
+
+            return (
+              <div key={block.id} className={styles.blockShell}>
+                <div className={styles.richCardBlock}>
+                  <div className={styles.richCardHeader}>
+                    <div className={styles.richCardPills}>
+                      <Pill tone="warn">Dua card</Pill>
+                      {block.dua ? <Pill tone="neutral">{block.dua.moduleLabel}</Pill> : null}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {block.dua ? (
+                        <Link href={buildLinkedDuaHref(block.dua)} className={styles.inlineWarnButton}>
+                          Open dua <ArrowRight size={14} />
+                        </Link>
+                      ) : null}
+                      <button type="button" className={styles.blockActionButton} onClick={() => removeBlock(block.id)}>
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+
+                  <Input
+                    value={block.title}
+                    onChange={(event) =>
+                      updateBlock(block.id, () => ({
+                        ...block,
+                        title: event.target.value,
+                      }))
+                    }
+                    placeholder="Card title"
+                  />
+
+                  {block.dua ? (
+                    <>
+                      {block.dua.arabic ? (
+                        <div dir="rtl" className={styles.arabicCard}>
+                          {block.dua.arabic}
+                        </div>
+                      ) : null}
+                      {block.dua.transliteration ? (
+                        <SupportTextPanel kind="transliteration">
+                          {block.dua.transliteration}
+                        </SupportTextPanel>
+                      ) : null}
+                      <SupportTextPanel kind="translation">
+                        {block.dua.translation}
+                      </SupportTextPanel>
+                    </>
+                  ) : (
+                    <p className={styles.inlineHint}>This dua card needs to be reinserted.</p>
+                  )}
+                </div>
+                {renderInsertRow(block.id)}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className={styles.noteFooter}>
+          <div className={styles.noteFooterSection}>
+            <p className={styles.toolsLabel}>Tags</p>
+            {noteDraft.tags.length > 0 ? (
+              <div className={styles.tagRow}>
+                {noteDraft.tags.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    className={styles.tagPill}
+                    onClick={() =>
+                      updateDraft((current) => ({
+                        ...current,
+                        tags: current.tags.filter((item) => item !== tag),
+                      }))
+                    }
+                  >
+                    #{tag}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            <div className={styles.tagComposer}>
+              <Input
+                value={tagInput}
+                onChange={(event) => setTagInput(event.target.value)}
+                onKeyDown={handleTagInputKeyDown}
+                placeholder="Add a tag like family or sabr"
+              />
+              <Button variant="secondary" onClick={handleTagAdd}>
+                Add tag
+              </Button>
+            </div>
+          </div>
+
+          {noteDraft.type === "dua" ? (
+            <div className={styles.noteFooterSection}>
+              <p className={styles.toolsLabel}>Dua status</p>
+              <div className={styles.toolChipRow}>
+                {DUA_STATUS_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    data-active={noteDraft.duaStatus === option.value ? "1" : "0"}
+                    className={styles.filterChip}
+                    onClick={() => updateDraft((current) => ({ ...current, duaStatus: option.value }))}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {noteDraft.type === "repentance" ? (
+            <div className={styles.noteFooterSection}>
+              <p className={styles.toolsLabel}>Delete later</p>
+              <div className={styles.toolChipRow}>
+                {AUTO_DELETE_PRESETS.map((preset) => (
+                  <button
+                    key={preset.value || "keep"}
+                    type="button"
+                    data-active={noteDraft.autoDeletePreset === preset.value ? "1" : "0"}
+                    className={styles.filterChip}
+                    onClick={() => updateDraft((current) => ({ ...current, autoDeletePreset: preset.value }))}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <div className={styles.noteSaveRow}>
+          <p className={styles.privacyNote}>
+            {props.syncEnabled
+              ? "Private. Saved to your account so it follows you across devices."
+              : "Private. Saved only in this browser for now."}
+          </p>
+          <Button onClick={() => void persistDraft(false)} disabled={!canSave || isBusy}>
+            <Save size={16} />
+            {isSaving ? "Saving..." : "Save note"}
+          </Button>
+        </div>
+      </Card>
+    );
   };
 
-  const handleStartWriting = async (type: JournalEntryType = "reflection") => {
-    await handleCreateNew(type);
-    scrollToComposer();
-  };
+  const renderCollapsedCard = (entry: JournalEntry) => {
+    const pillTone =
+      entry.type === "dua"
+        ? "warn"
+        : entry.type === "repentance"
+          ? "danger"
+          : entry.type === "gratitude"
+            ? "success"
+            : "accent";
 
-  const handleOpenEntry = async (entry: JournalEntry) => {
-    await handleSelectEntry(entry);
-    scrollToComposer();
+    return (
+      <button
+        key={entry.id}
+        type="button"
+        disabled={isBusy}
+        className={styles.noteCardButton}
+        onClick={() => void handleOpenEntry(entry)}
+      >
+        <Card className={styles.noteCard}>
+          <div className={styles.noteHeader}>
+            <div className={styles.noteTopRow}>
+              <div className={styles.richCardPills}>
+                <Pill tone={pillTone}>{entry.type}</Pill>
+                {entry.pinned ? <Pill tone="neutral">Pinned</Pill> : null}
+              </div>
+              <span className={styles.expandHint}>
+                Open <ChevronDown size={14} />
+              </span>
+            </div>
+
+            <div>
+              <h2 className={styles.noteTitle}>{entry.title?.trim() || "Untitled note"}</h2>
+              <p className={styles.notePreview}>{buildEntryPreview(entry)}</p>
+            </div>
+          </div>
+
+          <div className={styles.noteMetaRow}>
+            <span>{formatJournalTimestamp(entry.updatedAt)}</span>
+            <span>{countAttachmentBlocks(entry.blocks ?? [])} cards</span>
+            {entry.autoDeleteAt ? <span>Auto-deletes in {formatAutoDeleteCountdown(entry)}</span> : null}
+          </div>
+        </Card>
+      </button>
+    );
   };
 
   return (
@@ -775,14 +1225,14 @@ export function JournalClient(props: {
         title="Journal"
         subtitle={
           props.syncEnabled
-            ? "Search your notes or write a new one. Saved to your account and available on your devices."
-            : "Search your notes or write a new one. Everything stays on this device for now."
+            ? "A quieter journal where each note opens in place and your cards live inside the note."
+            : "A quieter journal where each note opens in place and stays on this device for now."
         }
       />
 
       <div className={styles.searchBar}>
         <label className="sr-only" htmlFor="journal-search">
-          Search entries
+          Search notes
         </label>
         <Search
           size={18}
@@ -792,461 +1242,41 @@ export function JournalClient(props: {
           id="journal-search"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search entries..."
+          placeholder="Search notes..."
           className="pl-12"
         />
       </div>
 
-      <div className={styles.layout}>
-        <Card id="journal-composer" className={clsx("kw-fade-in", styles.editorShell)}>
-          <div className={styles.editorHeader}>
-            <div>
-              <p className={styles.editorEyebrow}>{draft.id ? "Open note" : "New note"}</p>
-              <h2 className={styles.editorTitle}>{draft.id ? "Keep writing" : "Write something quietly"}</h2>
-              <p className={styles.editorText}>
-                {draft.id
-                  ? isDirty
-                    ? "You have changes that are not saved yet."
-                    : props.syncEnabled
-                      ? "This note is already saved to your account."
-                      : "This note is already saved on this device."
-                  : hasDraftContent
-                    ? "This is a new note. Save it when you are ready."
-                    : props.syncEnabled
-                      ? "Pick a type, write what you need to write, then save it to your account."
-                      : "Pick a type, write what you need to write, then save it."}
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="secondary"
-                disabled={isBusy}
-                onClick={() => updateDraft((current) => ({ ...current, pinned: !current.pinned }))}
-              >
-                <Pin size={16} />
-                {draft.pinned ? "Unpin" : "Pin"}
-              </Button>
-              <Button variant="danger" disabled={isBusy} onClick={() => void handleDeleteCurrent()}>
-                <Trash2 size={16} />
-                {draft.id ? "Delete" : "Clear"}
-              </Button>
-            </div>
-          </div>
+      <div className={styles.noteList}>
+        {!isLoaded ? (
+          <Card className={styles.emptyCard}>
+            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Loading your journal...</p>
+          </Card>
+        ) : null}
 
-          <div className={styles.typeRow}>
-            {JOURNAL_ENTRY_TYPES.map((type) => {
-              const meta = TYPE_META[type];
-              const active = draft.type === type;
+        {isLoaded && expandedEntryId === "new" && draft ? renderExpandedCard(draft, true) : null}
 
-              return (
-                <button
-                  key={type}
-                  type="button"
-                  data-active={active ? "1" : "0"}
-                  disabled={isBusy}
-                  className={styles.typeButton}
-                  onClick={() => {
-                    setShowAdvanced((current) =>
-                      current || type === "dua" || type === "repentance" || shouldShowAdvancedOptions(draft),
-                    );
-                    updateDraft((current) => ({
-                      ...current,
-                      type,
-                      duaStatus: type === "dua" ? current.duaStatus : "ongoing",
-                      autoDeletePreset: type === "repentance" ? current.autoDeletePreset : "",
-                    }));
-                  }}
-                >
-                  <span className={styles.entryDot} data-tone={type} />
-                  <span>{meta.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {draft.content.trim().length === 0 ? (
-            <div className={styles.promptRail}>
-              {activeTypeMeta.prompts.map((prompt) => (
-                <button
-                  key={prompt}
-                  type="button"
-                  className={styles.promptButton}
-                  onClick={() => applyPrompt(prompt)}
-                >
-                  {prompt}
-                </button>
-              ))}
-            </div>
-          ) : null}
-
-          <Textarea
-            value={draft.content}
-            onChange={handleContentChange}
-            placeholder={activeTypeMeta.prompts[0]}
-            className="min-h-[280px] text-[15px] leading-8 sm:min-h-[340px]"
-          />
-
-          <div className={styles.editorActions}>
-            <p className={styles.privacyNote}>
-              {props.syncEnabled
-                ? "Private. Saved to your account so it is there on your other devices."
-                : "Private. Saved only in this browser for now."}
+        {isLoaded && filteredEntries.length === 0 && expandedEntryId !== "new" ? (
+          <Card className={styles.emptyCard}>
+            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
+              {search.trim().length > 0 ? "Nothing matches that search yet." : "No notes yet."}
             </p>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="secondary" disabled={isBusy} onClick={() => void handleStartWriting("reflection")}>
-                <Plus size={16} />
-                Start fresh
-              </Button>
-              <Button onClick={() => void persistDraft(false)} disabled={!canSave || isBusy}>
-                <Save size={16} />
-                {isSaving ? "Saving..." : "Save note"}
-              </Button>
-            </div>
-          </div>
+            <p className={styles.emptyText}>
+              {search.trim().length > 0
+                ? "Try a different word or start a new note."
+                : "Start a note, then add text, ayah cards, and dua cards inside it."}
+            </p>
+          </Card>
+        ) : null}
 
-          <div className={styles.advancedShell}>
-            <button
-              type="button"
-              className={styles.advancedToggle}
-              onClick={() => setShowAdvanced((current) => !current)}
-            >
-              {showAdvanced ? "Hide extra options" : "More options"}
-            </button>
-
-            {showAdvanced ? (
-              <div className={styles.advancedBody}>
-                <p className={styles.advancedHint}>Use these only if they help. You can ignore them.</p>
-
-                <div className={styles.quietCard}>
-                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Attach an ayah</p>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_120px_auto]">
-                    <select
-                      value={ayahForm.surahNumber}
-                      onChange={(event) =>
-                        setAyahForm({
-                          surahNumber: Number(event.target.value),
-                          ayahNumber: 1,
-                        })
-                      }
-                      className="h-11 w-full rounded-2xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] transition focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus:bg-[color:var(--kw-surface-strong)] focus:outline-none"
-                    >
-                      {props.surahs.map((surah) => (
-                        <option key={surah.surahNumber} value={surah.surahNumber}>
-                          {surah.surahNumber}. {surah.nameTransliteration}
-                        </option>
-                      ))}
-                    </select>
-                    <Input
-                      type="number"
-                      min={1}
-                      max={selectedSurah?.ayahCount ?? 286}
-                      value={String(ayahForm.ayahNumber)}
-                      onChange={(event) =>
-                        setAyahForm((current) => ({
-                          ...current,
-                          ayahNumber: Number(event.target.value || 1),
-                        }))
-                      }
-                    />
-                    <Button variant="secondary" onClick={attachAyah}>
-                      <BookOpenText size={16} />
-                      Add ayah
-                    </Button>
-                  </div>
-
-                  {draft.linkedAyah ? (
-                    <div className={styles.richAttachmentCard}>
-                      <div className={styles.attachmentHeader}>
-                        <div className={styles.attachmentPills}>
-                          <Pill tone="accent">Ayah card</Pill>
-                          <Pill tone="neutral">
-                            {draft.linkedAyah.surahNameTransliteration} {draft.linkedAyah.surahNumber}:
-                            {draft.linkedAyah.ayahNumber}
-                          </Pill>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          <Link
-                            href={buildLinkedAyahHref(draft.linkedAyah)}
-                            className="inline-flex items-center gap-2 rounded-[14px] border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.1)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
-                          >
-                            Open in reader <ArrowRight size={14} />
-                          </Link>
-                          <Button variant="ghost" onClick={removeLinkedAyah}>
-                            Remove
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className={styles.attachmentBody}>
-                        <div>
-                          <p className={styles.attachmentTitle}>
-                            {draft.linkedAyah.surahNameTransliteration} {draft.linkedAyah.surahNumber}:
-                            {draft.linkedAyah.ayahNumber}
-                          </p>
-                          <p className={styles.attachmentSubtle}>{draft.linkedAyah.surahNameArabic}</p>
-                        </div>
-
-                        <div dir="rtl" className={styles.ayahArabic}>
-                          {currentAyahCard?.textUthmani ??
-                            (isCurrentAyahCardLoading ? "Loading ayah..." : "Ayah text unavailable right now.")}
-                        </div>
-
-                        <AyahAudioPlayer
-                          ayahId={draft.linkedAyah.ayahId}
-                          reciterId={props.reciterId}
-                          speedPrefKey="hifzer_journal_ayah_audio_speed_v1"
-                          className={styles.ayahAudio}
-                        />
-
-                        <SupportTextPanel
-                          kind="translation"
-                          dir={props.translationDir}
-                          alignClassName={props.translationAlignClass}
-                        >
-                          {currentAyahCard?.translation ??
-                            currentAyahCardError ??
-                            (isCurrentAyahCardLoading
-                              ? "Loading translation..."
-                              : "Translation unavailable right now.")}
-                        </SupportTextPanel>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-
-                <div className={styles.quietCard}>
-                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Attach a dua card</p>
-                  {props.duaOptions.length > 0 ? (
-                    <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-                      <select
-                        value={duaFormValue}
-                        onChange={(event) => setDuaFormValue(event.target.value)}
-                        className="h-11 w-full rounded-2xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] transition focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus:bg-[color:var(--kw-surface-strong)] focus:outline-none"
-                      >
-                        {props.duaOptions.map((option) => (
-                          <option key={buildDuaOptionValue(option)} value={buildDuaOptionValue(option)}>
-                            {option.moduleLabel}: {option.title}
-                          </option>
-                        ))}
-                      </select>
-                      <Button variant="secondary" onClick={attachDua}>
-                        <Heart size={16} />
-                        Add dua
-                      </Button>
-                    </div>
-                  ) : (
-                    <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-                      Open the Dua section first if you want more attachable cards here.
-                    </p>
-                  )}
-
-                  {draft.linkedDua ? (
-                    <div className={styles.richAttachmentCard}>
-                      <div className={styles.attachmentHeader}>
-                        <div className={styles.attachmentPills}>
-                          <Pill tone="warn">Dua card</Pill>
-                          <Pill tone="neutral">{draft.linkedDua.moduleLabel}</Pill>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          <Link
-                            href={buildLinkedDuaHref(draft.linkedDua)}
-                            className="inline-flex items-center gap-2 rounded-[14px] border border-[rgba(245,158,11,0.24)] bg-[rgba(245,158,11,0.12)] px-3 py-2 text-sm font-semibold text-[rgba(180,83,9,1)]"
-                          >
-                            Open module <ArrowRight size={14} />
-                          </Link>
-                          <Button variant="ghost" onClick={removeLinkedDua}>
-                            Remove
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className={styles.attachmentBody}>
-                        <div>
-                          <p className={styles.attachmentTitle}>{draft.linkedDua.title}</p>
-                          <p className={styles.attachmentSubtle}>{draft.linkedDua.label}</p>
-                        </div>
-
-                        {draft.linkedDua.arabic ? (
-                          <div dir="rtl" className={styles.duaArabic}>
-                            {draft.linkedDua.arabic}
-                          </div>
-                        ) : null}
-
-                        {draft.linkedDua.transliteration ? (
-                          <SupportTextPanel kind="transliteration">
-                            {draft.linkedDua.transliteration}
-                          </SupportTextPanel>
-                        ) : null}
-
-                        <SupportTextPanel kind="translation">
-                          {draft.linkedDua.translation}
-                        </SupportTextPanel>
-
-                        {draft.linkedDua.sourceLabel && draft.linkedDua.sourceHref ? (
-                          <p className={styles.attachmentSource}>
-                            Source:{" "}
-                            <Link href={draft.linkedDua.sourceHref} className={styles.inlineLink}>
-                              {draft.linkedDua.sourceLabel}
-                            </Link>
-                          </p>
-                        ) : null}
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-
-                <div className={styles.quietCard}>
-                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Tags</p>
-                  {draft.tags.length > 0 ? (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {draft.tags.map((tag) => (
-                        <button
-                          key={tag}
-                          type="button"
-                          className={styles.tagPill}
-                          onClick={() =>
-                            updateDraft((current) => ({
-                              ...current,
-                              tags: current.tags.filter((item) => item !== tag),
-                            }))
-                          }
-                        >
-                          #{tag}
-                        </button>
-                      ))}
-                    </div>
-                  ) : null}
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <Input
-                      value={tagInput}
-                      onChange={(event) => setTagInput(event.target.value)}
-                      onKeyDown={handleTagInputKeyDown}
-                      placeholder="Add a tag like family or sabr"
-                      className="min-w-[220px] flex-1"
-                    />
-                    <Button variant="secondary" onClick={handleTagAdd}>
-                      Add tag
-                    </Button>
-                  </div>
-                </div>
-
-                {draft.type === "dua" ? (
-                  <div className={styles.quietCard}>
-                    <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Dua status</p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {DUA_STATUS_OPTIONS.map((option) => (
-                        <button
-                          key={option.value}
-                          type="button"
-                          data-active={draft.duaStatus === option.value ? "1" : "0"}
-                          className={styles.filterChip}
-                          onClick={() => updateDraft((current) => ({ ...current, duaStatus: option.value }))}
-                        >
-                          {option.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-
-                {draft.type === "repentance" ? (
-                  <div className={styles.quietCard}>
-                    <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Delete this later</p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {AUTO_DELETE_PRESETS.map((preset) => (
-                        <button
-                          key={preset.value || "keep"}
-                          type="button"
-                          data-active={draft.autoDeletePreset === preset.value ? "1" : "0"}
-                          className={styles.filterChip}
-                          onClick={() => updateDraft((current) => ({ ...current, autoDeletePreset: preset.value }))}
-                        >
-                          {preset.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
-        </Card>
-
-        <Card className={clsx("kw-fade-in", styles.listShell)}>
-          {!isLoaded ? (
-            <div className={styles.emptyCard}>
-              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Loading your journal...</p>
-            </div>
-          ) : filteredEntries.length === 0 ? (
-            <div className={styles.emptyCard}>
-              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
-                {search.trim().length > 0 ? "Nothing matches that search yet." : "No notes yet."}
-              </p>
-              <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                {search.trim().length > 0
-                  ? "Try a different word or start a new note."
-                  : "Tap the add button and write your first note."}
-              </p>
-            </div>
-          ) : (
-            entrySections.map((section) => (
-              <section key={section.label} className={styles.section}>
-                <p className={styles.sectionLabel}>{section.label}</p>
-                <div className={styles.entryList}>
-                  {section.entries.map((entry) => {
-                    const meta = TYPE_META[entry.type];
-                    const active = draft.id === entry.id;
-
-                    return (
-                      <button
-                        key={entry.id}
-                        type="button"
-                        data-active={active ? "1" : "0"}
-                        disabled={isBusy}
-                        className={styles.entryButton}
-                        onClick={() => void handleOpenEntry(entry)}
-                      >
-                        <div className={styles.entryHeader}>
-                          <div className={styles.entryType}>
-                            <span className={styles.entryDot} data-tone={entry.type} />
-                            <span>{meta.label}</span>
-                          </div>
-                          {entry.pinned ? <Pin size={14} className={styles.entryPin} /> : null}
-                        </div>
-
-                        <p className={styles.entryPreview}>{buildPreview(entry)}</p>
-
-                        {entry.linkedAyah || entry.linkedDua ? (
-                          <div className={styles.entryAttachmentRow}>
-                            {entry.linkedAyah ? (
-                              <span className={styles.entryAttachmentPill}>
-                                Ayah: {entry.linkedAyah.surahNameTransliteration} {entry.linkedAyah.surahNumber}:
-                                {entry.linkedAyah.ayahNumber}
-                              </span>
-                            ) : null}
-                            {entry.linkedDua ? (
-                              <span className={styles.entryAttachmentPill}>Dua: {entry.linkedDua.title}</span>
-                            ) : null}
-                          </div>
-                        ) : null}
-
-                        <div className={styles.entryMeta}>
-                          <span>{formatJournalTimestamp(entry.updatedAt)}</span>
-                          {entry.autoDeleteAt ? (
-                            <span>Auto-deletes in {formatAutoDeleteCountdown(entry)}</span>
-                          ) : null}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </section>
-            ))
-          )}
-        </Card>
+        {filteredEntries.map((entry) =>
+          draft && expandedEntryId === entry.id && draft.id === entry.id
+            ? renderExpandedCard(draft, false)
+            : renderCollapsedCard(entry),
+        )}
       </div>
 
-      <button type="button" className={styles.fab} onClick={() => void handleStartWriting("reflection")}>
+      <button type="button" className={styles.fab} onClick={() => void handleCreateNew("reflection")}>
         <Plus size={24} />
         <span className="sr-only">New note</span>
       </button>

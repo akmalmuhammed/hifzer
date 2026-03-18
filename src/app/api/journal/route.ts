@@ -6,12 +6,14 @@ import {
   listPrivateJournalEntries,
   savePrivateJournalEntry,
 } from "@/hifzer/journal/server";
-import type { JournalLinkedAyah, JournalLinkedDua } from "@/hifzer/journal/local-store";
+import type { JournalBlock, JournalLinkedAyah, JournalLinkedDua } from "@/hifzer/journal/local-store";
 
 type SavePayload = {
   id?: unknown;
   type?: unknown;
+  title?: unknown;
   content?: unknown;
+  blocks?: unknown;
   tags?: unknown;
   pinned?: unknown;
   createdAt?: unknown;
@@ -45,6 +47,13 @@ function asStringArray(input: unknown): string[] | null {
     return null;
   }
   return input.filter((item): item is string => typeof item === "string");
+}
+
+function asBlocks(input: unknown): JournalBlock[] | null {
+  if (!Array.isArray(input)) {
+    return null;
+  }
+  return input as JournalBlock[];
 }
 
 function asLinkedAyah(input: unknown): JournalLinkedAyah | null {
@@ -102,7 +111,9 @@ export async function POST(req: Request) {
     const entry = await savePrivateJournalEntry(userId, {
       id: asOptionalString(payload.id),
       type: asOptionalString(payload.type),
+      title: asOptionalString(payload.title),
       content: asOptionalString(payload.content),
+      blocks: asBlocks(payload.blocks),
       tags: asStringArray(payload.tags),
       pinned: asOptionalBoolean(payload.pinned),
       createdAt: asOptionalString(payload.createdAt),

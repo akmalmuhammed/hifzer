@@ -2,7 +2,13 @@ import "server-only";
 
 import {
   JOURNAL_ENTRY_TYPES,
+  buildLegacyJournalBlocks,
+  deriveJournalContent,
+  findPrimaryLinkedAyah,
+  findPrimaryLinkedDua,
+  hasMeaningfulJournalBlocks,
   normalizeJournalTags,
+  type JournalBlock,
   type JournalDuaStatus,
   type JournalEntry,
   type JournalEntryType,
@@ -14,9 +20,12 @@ import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { db, dbConfigured } from "@/lib/db";
 
 const MAX_CONTENT_LENGTH = 12000;
+const MAX_ENTRY_TITLE_LENGTH = 120;
 const MAX_SURAH_NAME_LENGTH = 120;
 const MAX_DUA_TEXT_LENGTH = 6000;
 const MAX_DUA_META_LENGTH = 160;
+const MAX_BLOCKS = 40;
+const MAX_BLOCK_TITLE_LENGTH = 120;
 const MAX_IMPORT_ENTRIES = 200;
 const DUA_STATUSES = ["ongoing", "answered", "accepted_differently"] satisfies readonly JournalDuaStatus[];
 const JOURNAL_DUA_MODULE_IDS = ["laylat-al-qadr", "repentance", "beautiful-names"] as const;
@@ -24,7 +33,9 @@ const JOURNAL_DUA_MODULE_IDS = ["laylat-al-qadr", "repentance", "beautiful-names
 type JournalUpsertInput = {
   id?: string | null;
   type?: JournalEntryType | string | null;
+  title?: string | null;
   content?: string | null;
+  blocks?: JournalBlock[] | null;
   tags?: string[] | null;
   pinned?: boolean | null;
   createdAt?: string | null;
@@ -32,6 +43,26 @@ type JournalUpsertInput = {
   linkedDua?: JournalLinkedDua | null;
   duaStatus?: JournalDuaStatus | string | null;
   autoDeleteAt?: string | null;
+};
+
+type JournalEntryRow = {
+  id: string;
+  type: JournalEntryType;
+  title: string | null;
+  content: string;
+  blocksJson: unknown;
+  tags: string[];
+  pinned: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  linkedAyahId: number | null;
+  linkedSurahNumber: number | null;
+  linkedAyahNumber: number | null;
+  linkedSurahNameArabic: string | null;
+  linkedSurahNameTransliteration: string | null;
+  linkedDuaJson: unknown;
+  duaStatus: JournalDuaStatus | null;
+  autoDeleteAt: Date | null;
 };
 
 export class JournalStorageError extends Error {
@@ -152,6 +183,93 @@ function sanitizeLinkedDua(value: JournalLinkedDua | null | undefined): JournalL
   };
 }
 
+function sanitizeBlockId(value: unknown, index: number): string {
+  if (typeof value === "string" && value.trim()) {
+    return value.trim().slice(0, 80);
+  }
+  return `block_${index + 1}`;
+}
+
+function sanitizeJournalBlocks(
+  value: unknown,
+  fallback?: {
+    content?: string | null;
+    linkedAyah?: JournalLinkedAyah | null;
+    linkedDua?: JournalLinkedDua | null;
+  },
+): JournalBlock[] {
+  if (!Array.isArray(value)) {
+    return buildLegacyJournalBlocks({
+      content: fallback?.content ?? "",
+      linkedAyah: fallback?.linkedAyah ?? null,
+      linkedDua: fallback?.linkedDua ?? null,
+    });
+  }
+
+  const blocks: JournalBlock[] = [];
+
+  for (const [index, rawBlock] of value.entries()) {
+    if (!rawBlock || typeof rawBlock !== "object") {
+      continue;
+    }
+
+    const block = rawBlock as Record<string, unknown>;
+    const id = sanitizeBlockId(block.id, index);
+    const kind = block.kind;
+
+    if (kind === "text") {
+      blocks.push({
+        id,
+        kind: "text",
+        content: sanitizeOptionalText(typeof block.content === "string" ? block.content : "", MAX_CONTENT_LENGTH) ?? "",
+      });
+      continue;
+    }
+
+    if (kind === "ayah") {
+      const ayah = sanitizeLinkedAyah(block.ayah ?? null);
+      const rawAyah = block.ayah as Record<string, unknown> | null | undefined;
+      blocks.push({
+        id,
+        kind: "ayah",
+        title: sanitizeOptionalText(typeof block.title === "string" ? block.title : "", MAX_BLOCK_TITLE_LENGTH) ?? "",
+        ayah:
+          ayah
+            ? {
+                ...ayah,
+                textUthmani: sanitizeOptionalText(typeof rawAyah?.textUthmani === "string" ? rawAyah.textUthmani : null, MAX_DUA_TEXT_LENGTH),
+                translation: sanitizeOptionalText(typeof rawAyah?.translation === "string" ? rawAyah.translation : null, MAX_DUA_TEXT_LENGTH),
+              }
+            : null,
+      });
+      continue;
+    }
+
+    if (kind === "dua") {
+      blocks.push({
+        id,
+        kind: "dua",
+        title: sanitizeOptionalText(typeof block.title === "string" ? block.title : "", MAX_BLOCK_TITLE_LENGTH) ?? "",
+        dua: sanitizeLinkedDua(block.dua as JournalLinkedDua | null | undefined),
+      });
+    }
+
+    if (blocks.length >= MAX_BLOCKS) {
+      break;
+    }
+  }
+
+  if (blocks.length === 0) {
+    return buildLegacyJournalBlocks({
+      content: fallback?.content ?? "",
+      linkedAyah: fallback?.linkedAyah ?? null,
+      linkedDua: fallback?.linkedDua ?? null,
+    });
+  }
+
+  return blocks;
+}
+
 function parseLinkedDuaJson(value: unknown): JournalLinkedDua | null {
   if (!value || typeof value !== "object") {
     return null;
@@ -177,51 +295,109 @@ function toLinkedDuaJsonValue(value: JournalLinkedDua | null): Prisma.InputJsonV
   };
 }
 
-function hasMeaningfulContent(input: {
-  content: string;
-  tags: string[];
-  linkedAyah: JournalLinkedAyah | null;
-  linkedDua: JournalLinkedDua | null;
-}): boolean {
-  return Boolean(input.content.trim().length > 0 || input.tags.length > 0 || input.linkedAyah || input.linkedDua);
+function toBlocksJsonValue(blocks: JournalBlock[]): Prisma.InputJsonValue | typeof Prisma.DbNull {
+  if (blocks.length === 0) {
+    return Prisma.DbNull;
+  }
+
+  return blocks.map((block) => {
+    if (block.kind === "text") {
+      return {
+        id: block.id,
+        kind: "text",
+        content: block.content,
+      };
+    }
+
+    if (block.kind === "ayah") {
+      return {
+        id: block.id,
+        kind: "ayah",
+        title: block.title,
+        ayah: block.ayah
+          ? {
+              ayahId: block.ayah.ayahId,
+              surahNumber: block.ayah.surahNumber,
+              ayahNumber: block.ayah.ayahNumber,
+              surahNameArabic: block.ayah.surahNameArabic,
+              surahNameTransliteration: block.ayah.surahNameTransliteration,
+              textUthmani: block.ayah.textUthmani ?? null,
+              translation: block.ayah.translation ?? null,
+            }
+          : null,
+      };
+    }
+
+    return {
+      id: block.id,
+      kind: "dua",
+      title: block.title,
+      dua: block.dua
+        ? {
+            moduleId: block.dua.moduleId,
+            moduleLabel: block.dua.moduleLabel,
+            stepId: block.dua.stepId,
+            title: block.dua.title,
+            label: block.dua.label,
+            arabic: block.dua.arabic ?? null,
+            transliteration: block.dua.transliteration ?? null,
+            translation: block.dua.translation,
+            sourceLabel: block.dua.sourceLabel ?? null,
+            sourceHref: block.dua.sourceHref ?? null,
+          }
+        : null,
+    };
+  });
 }
 
-function toSnapshot(row: {
-  id: string;
-  type: JournalEntryType;
-  content: string;
+function parseBlocksJson(
+  value: unknown,
+  legacy: {
+    content: string;
+    linkedAyah: JournalLinkedAyah | null;
+    linkedDua: JournalLinkedDua | null;
+  },
+): JournalBlock[] {
+  return sanitizeJournalBlocks(value, legacy);
+}
+
+function hasMeaningfulContent(input: {
   tags: string[];
-  pinned: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  linkedAyahId: number | null;
-  linkedSurahNumber: number | null;
-  linkedAyahNumber: number | null;
-  linkedSurahNameArabic: string | null;
-  linkedSurahNameTransliteration: string | null;
-  linkedDuaJson: unknown;
-  duaStatus: JournalDuaStatus | null;
-  autoDeleteAt: Date | null;
-}): JournalEntry {
+  blocks: JournalBlock[];
+}): boolean {
+  return Boolean(input.tags.length > 0 || hasMeaningfulJournalBlocks(input.blocks));
+}
+
+function toSnapshot(row: JournalEntryRow): JournalEntry {
+  const legacyLinkedAyah =
+    row.linkedAyahId && row.linkedSurahNumber && row.linkedAyahNumber
+      ? {
+          ayahId: row.linkedAyahId,
+          surahNumber: row.linkedSurahNumber,
+          ayahNumber: row.linkedAyahNumber,
+          surahNameArabic: row.linkedSurahNameArabic ?? "",
+          surahNameTransliteration: row.linkedSurahNameTransliteration ?? "",
+        }
+      : null;
+  const legacyLinkedDua = parseLinkedDuaJson(row.linkedDuaJson);
+  const blocks = parseBlocksJson(row.blocksJson, {
+    content: row.content,
+    linkedAyah: legacyLinkedAyah,
+    linkedDua: legacyLinkedDua,
+  });
+
   return {
     id: row.id,
     type: row.type,
-    content: row.content,
+    title: row.title ?? "",
+    content: deriveJournalContent(row.title ?? "", blocks) || row.content,
+    blocks,
     tags: row.tags,
     pinned: row.pinned,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
-    linkedAyah:
-      row.linkedAyahId && row.linkedSurahNumber && row.linkedAyahNumber
-        ? {
-            ayahId: row.linkedAyahId,
-            surahNumber: row.linkedSurahNumber,
-            ayahNumber: row.linkedAyahNumber,
-            surahNameArabic: row.linkedSurahNameArabic ?? "",
-            surahNameTransliteration: row.linkedSurahNameTransliteration ?? "",
-          }
-        : null,
-    linkedDua: parseLinkedDuaJson(row.linkedDuaJson),
+    linkedAyah: legacyLinkedAyah ?? findPrimaryLinkedAyah(blocks),
+    linkedDua: legacyLinkedDua ?? findPrimaryLinkedDua(blocks),
     duaStatus: row.duaStatus ?? null,
     autoDeleteAt: row.autoDeleteAt ? row.autoDeleteAt.toISOString() : null,
   };
@@ -269,7 +445,7 @@ async function listEntriesForUserId(userId: string, now: Date): Promise<JournalE
     orderBy: [{ pinned: "desc" }, { updatedAt: "desc" }],
   });
 
-  return rows.map((row) => toSnapshot(row));
+  return rows.map((row) => toSnapshot(row as JournalEntryRow));
 }
 
 export async function listPrivateJournalEntries(clerkUserId: string, now: Date = new Date()): Promise<JournalEntry[]> {
@@ -295,11 +471,33 @@ export async function savePrivateJournalEntry(
         : null;
 
     const type = normalizeEntryType(input.type, existing?.type ?? "reflection");
-    const content = sanitizeOptionalText(input.content, MAX_CONTENT_LENGTH) ?? "";
+    const title = sanitizeOptionalText(input.title, MAX_ENTRY_TITLE_LENGTH) ?? sanitizeOptionalText(existing?.title ?? null, MAX_ENTRY_TITLE_LENGTH) ?? "";
+    const legacyLinkedAyah = sanitizeLinkedAyah(input.linkedAyah ?? null);
+    const legacyLinkedDua = sanitizeLinkedDua(input.linkedDua ?? null);
+    const fallbackContent = sanitizeOptionalText(input.content, MAX_CONTENT_LENGTH) ?? existing?.content ?? "";
+    const blocks = sanitizeJournalBlocks(
+      input.blocks ?? existing?.blocksJson ?? null,
+      {
+        content: fallbackContent,
+        linkedAyah: legacyLinkedAyah ??
+          (existing?.linkedAyahId && existing.linkedSurahNumber && existing.linkedAyahNumber
+            ? {
+                ayahId: existing.linkedAyahId,
+                surahNumber: existing.linkedSurahNumber,
+                ayahNumber: existing.linkedAyahNumber,
+                surahNameArabic: existing.linkedSurahNameArabic ?? "",
+                surahNameTransliteration: existing.linkedSurahNameTransliteration ?? "",
+              }
+            : null),
+        linkedDua: legacyLinkedDua ?? parseLinkedDuaJson(existing?.linkedDuaJson),
+      },
+    );
+    const content = deriveJournalContent(title, blocks).slice(0, MAX_CONTENT_LENGTH);
     const tags = normalizeJournalTags(Array.isArray(input.tags) ? input.tags : existing?.tags ?? []);
-    const linkedAyah = sanitizeLinkedAyah(input.linkedAyah ?? null);
-    const linkedDua = sanitizeLinkedDua(input.linkedDua ?? null);
-    if (!hasMeaningfulContent({ content, tags, linkedAyah, linkedDua })) {
+    const primaryLinkedAyah = findPrimaryLinkedAyah(blocks);
+    const primaryLinkedDua = findPrimaryLinkedDua(blocks);
+
+    if (!hasMeaningfulContent({ tags, blocks })) {
       throw new JournalStorageError("Write something first before saving.", 400, "EMPTY_ENTRY");
     }
 
@@ -325,15 +523,17 @@ export async function savePrivateJournalEntry(
           where: { id: existing.id },
           data: {
             type,
+            title: title || null,
             content,
+            blocksJson: toBlocksJsonValue(blocks),
             tags,
             pinned,
-            linkedAyahId: linkedAyah?.ayahId ?? null,
-            linkedSurahNumber: linkedAyah?.surahNumber ?? null,
-            linkedAyahNumber: linkedAyah?.ayahNumber ?? null,
-            linkedSurahNameArabic: linkedAyah?.surahNameArabic ?? null,
-            linkedSurahNameTransliteration: linkedAyah?.surahNameTransliteration ?? null,
-            linkedDuaJson: toLinkedDuaJsonValue(linkedDua),
+            linkedAyahId: primaryLinkedAyah?.ayahId ?? null,
+            linkedSurahNumber: primaryLinkedAyah?.surahNumber ?? null,
+            linkedAyahNumber: primaryLinkedAyah?.ayahNumber ?? null,
+            linkedSurahNameArabic: primaryLinkedAyah?.surahNameArabic ?? null,
+            linkedSurahNameTransliteration: primaryLinkedAyah?.surahNameTransliteration ?? null,
+            linkedDuaJson: toLinkedDuaJsonValue(primaryLinkedDua),
             duaStatus,
             autoDeleteAt,
           },
@@ -342,22 +542,24 @@ export async function savePrivateJournalEntry(
           data: {
             userId: profile.id,
             type,
+            title: title || null,
             content,
+            blocksJson: toBlocksJsonValue(blocks),
             tags,
             pinned,
-            linkedAyahId: linkedAyah?.ayahId ?? null,
-            linkedSurahNumber: linkedAyah?.surahNumber ?? null,
-            linkedAyahNumber: linkedAyah?.ayahNumber ?? null,
-            linkedSurahNameArabic: linkedAyah?.surahNameArabic ?? null,
-            linkedSurahNameTransliteration: linkedAyah?.surahNameTransliteration ?? null,
-            linkedDuaJson: toLinkedDuaJsonValue(linkedDua),
+            linkedAyahId: primaryLinkedAyah?.ayahId ?? null,
+            linkedSurahNumber: primaryLinkedAyah?.surahNumber ?? null,
+            linkedAyahNumber: primaryLinkedAyah?.ayahNumber ?? null,
+            linkedSurahNameArabic: primaryLinkedAyah?.surahNameArabic ?? null,
+            linkedSurahNameTransliteration: primaryLinkedAyah?.surahNameTransliteration ?? null,
+            linkedDuaJson: toLinkedDuaJsonValue(primaryLinkedDua),
             duaStatus,
             autoDeleteAt,
             createdAt,
           },
         });
 
-    return toSnapshot(row);
+    return toSnapshot(row as JournalEntryRow);
   });
 }
 
@@ -402,14 +604,22 @@ export async function importPrivateJournalEntries(
       .slice(0, MAX_IMPORT_ENTRIES)
       .map((entry) => {
         const type = normalizeEntryType(entry.type, "reflection");
-        const content = sanitizeOptionalText(entry.content, MAX_CONTENT_LENGTH) ?? "";
-        const tags = normalizeJournalTags(entry.tags);
+        const title = sanitizeOptionalText(entry.title ?? null, MAX_ENTRY_TITLE_LENGTH) ?? "";
         const linkedAyah = sanitizeLinkedAyah(entry.linkedAyah ?? null);
         const linkedDua = sanitizeLinkedDua(entry.linkedDua ?? null);
-        if (!hasMeaningfulContent({ content, tags, linkedAyah, linkedDua })) {
+        const blocks = sanitizeJournalBlocks(entry.blocks ?? null, {
+          content: entry.content,
+          linkedAyah,
+          linkedDua,
+        });
+        const content = deriveJournalContent(title, blocks).slice(0, MAX_CONTENT_LENGTH);
+        const tags = normalizeJournalTags(entry.tags);
+        if (!hasMeaningfulContent({ tags, blocks })) {
           return null;
         }
 
+        const primaryLinkedAyah = findPrimaryLinkedAyah(blocks);
+        const primaryLinkedDua = findPrimaryLinkedDua(blocks);
         const createdAt = parseIsoDate(entry.createdAt) ?? now;
         const updatedAt = parseIsoDate(entry.updatedAt) ?? createdAt;
         const autoDeleteAt = type === "repentance" ? parseIsoDate(entry.autoDeleteAt ?? null) : null;
@@ -420,11 +630,13 @@ export async function importPrivateJournalEntries(
         return {
           clientEntryId: typeof entry.id === "string" && entry.id.trim() ? entry.id.trim() : null,
           type,
+          title,
           content,
+          blocks,
           tags,
           pinned: entry.pinned === true,
-          linkedAyah,
-          linkedDua,
+          linkedAyah: primaryLinkedAyah,
+          linkedDua: primaryLinkedDua,
           duaStatus: type === "dua" ? normalizeDuaStatus(entry.duaStatus) : null,
           autoDeleteAt,
           createdAt,
@@ -455,7 +667,9 @@ export async function importPrivateJournalEntries(
         userId: profile.id,
         clientEntryId: entry.clientEntryId,
         type: entry.type,
+        title: entry.title || null,
         content: entry.content,
+        blocksJson: toBlocksJsonValue(entry.blocks),
         tags: entry.tags,
         pinned,
         linkedAyahId: entry.linkedAyah?.ayahId ?? null,

@@ -217,7 +217,9 @@ model PrivateJournalEntry {
   userId                      String
   clientEntryId               String?
   type                        PrivateJournalEntryType
+  title                       String?
   content                     String
+  blocksJson                  Json?
   tags                        String[]                 @default([])
   pinned                      Boolean                  @default(false)
   linkedAyahId                Int?
