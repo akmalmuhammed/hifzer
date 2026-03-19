@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ClipboardCopy, Mail, MessageSquareText, ShieldCheck } from "lucide-react";
+import { ArrowRight, ClipboardCopy, Mail, ShieldCheck } from "lucide-react";
 import { SupportCheckoutCard } from "@/components/billing/support-checkout-card";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
@@ -13,15 +12,18 @@ import styles from "./support.module.css";
 
 const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@hifzer.com";
 const DEVELOPER_EMAIL = process.env.NEXT_PUBLIC_DEVELOPER_EMAIL ?? "akmal@hifzer.com";
-
-type Category = "bug" | "feature" | "billing" | "feedback";
-
-const CATEGORY_SUBJECT: Record<Category, string> = {
-  bug: "Hifzer bug report",
-  feature: "Hifzer feature request",
-  billing: "Hifzer billing support",
-  feedback: "Hifzer product feedback",
-};
+const DEFAULT_SUBJECT = "Hifzer support";
+const DEFAULT_BODY = [
+  "Assalamu alaikum,",
+  "",
+  "What do you need help with?",
+  "",
+  "Route / page:",
+  "",
+  "Device / browser:",
+  "",
+  "Anything else we should know:",
+].join("\n");
 
 function encodeMailto(text: string): string {
   return encodeURIComponent(text).replace(/%20/g, "+");
@@ -29,33 +31,8 @@ function encodeMailto(text: string): string {
 
 export function SupportClient(props: { hasPortal?: boolean }) {
   const { pushToast } = useToast();
-  const [category, setCategory] = useState<Category>("bug");
-  const [subject, setSubject] = useState(CATEGORY_SUBJECT.bug);
-  const [message, setMessage] = useState(
-    [
-      "Assalamu alaikum,",
-      "",
-      "Issue summary:",
-      "",
-      "Expected behavior:",
-      "",
-      "What happened instead:",
-      "",
-      "Route / page:",
-      "",
-      "Screenshots or logs:",
-    ].join("\n"),
-  );
-
-  const mailtoHref = useMemo(() => {
-    const finalSubject = subject.trim() || CATEGORY_SUBJECT[category];
-    const finalBody = message.trim();
-    return `mailto:${SUPPORT_EMAIL}?subject=${encodeMailto(finalSubject)}&body=${encodeMailto(finalBody)}`;
-  }, [category, message, subject]);
-
-  const developerMailtoHref = useMemo(() => {
-    return `mailto:${DEVELOPER_EMAIL}?subject=${encodeMailto("Hifzer developer contact")}`;
-  }, []);
+  const mailtoHref = `mailto:${SUPPORT_EMAIL}?subject=${encodeMailto(DEFAULT_SUBJECT)}&body=${encodeMailto(DEFAULT_BODY)}`;
+  const developerMailtoHref = `mailto:${DEVELOPER_EMAIL}?subject=${encodeMailto("Hifzer developer contact")}`;
 
   async function copyEmail() {
     try {
@@ -97,8 +74,8 @@ export function SupportClient(props: { hasPortal?: boolean }) {
     <div className="space-y-6">
       <PageHeader
         eyebrow="Support"
-        title="Talk to the Dev"
-        subtitle="Send feedback, report issues, or request features directly."
+        title="Support"
+        subtitle="Report issues, ask for help, or request paid product work directly."
         right={(
           <div className="flex flex-wrap gap-2">
             <Link href="/roadmap">
@@ -141,79 +118,12 @@ export function SupportClient(props: { hasPortal?: boolean }) {
         </div>
       </section>
 
-      <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid gap-4 xl:grid-cols-2">
         <div className="kw-fade-in" style={{ animationDelay: "50ms" }}>
-          <Card className={`${styles.panel} px-4 py-4`}>
-            <div className="flex items-center gap-2">
-              <MessageSquareText size={16} className="text-[color:var(--kw-ink-2)]" />
-              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Prepare your message</p>
-            </div>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                Category
-                <select
-                  value={category}
-                  onChange={(event) => {
-                    const next = event.target.value as Category;
-                    setCategory(next);
-                    setSubject(CATEGORY_SUBJECT[next]);
-                  }}
-                  className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3 text-sm text-[color:var(--kw-ink)]"
-                >
-                  <option value="bug">Bug report</option>
-                  <option value="feature">Feature request</option>
-                  <option value="billing">Billing support</option>
-                  <option value="feedback">General feedback</option>
-                </select>
-              </label>
-
-              <label className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                Subject
-                <input
-                  value={subject}
-                  onChange={(event) => setSubject(event.target.value)}
-                  className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3 text-sm text-[color:var(--kw-ink)]"
-                />
-              </label>
-            </div>
-
-            <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-              Message
-              <textarea
-                value={message}
-                onChange={(event) => setMessage(event.target.value)}
-                rows={12}
-                className="mt-1 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3 py-2 text-sm text-[color:var(--kw-ink)]"
-              />
-            </label>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              <a href={mailtoHref}>
-                <Button className="gap-2">
-                  Send via email <Mail size={15} />
-                </Button>
-              </a>
-              <Button variant="secondary" className="gap-2" onClick={copyEmail}>
-                Copy email <ClipboardCopy size={15} />
-              </Button>
-            </div>
-          </Card>
+          {renderSupportPayment()}
         </div>
 
-        <div className="kw-fade-in space-y-4" style={{ animationDelay: "100ms" }}>
-          {renderSupportPayment()}
-
-          <Card className={`${styles.panel} px-4 py-4`}>
-            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">What helps us solve fast</p>
-            <ul className="mt-3 space-y-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-              <li>Route URL and the exact action you clicked.</li>
-              <li>Expected behavior vs actual behavior.</li>
-              <li>Device and browser details.</li>
-              <li>Screenshot or short screen recording when possible.</li>
-            </ul>
-          </Card>
-
+        <div className="kw-fade-in" style={{ animationDelay: "100ms" }}>
           <Card className={`${styles.panel} px-4 py-4`}>
             <div className="flex items-center gap-2">
               <ShieldCheck size={16} className="text-[color:var(--kw-ink-2)]" />
@@ -221,11 +131,13 @@ export function SupportClient(props: { hasPortal?: boolean }) {
             </div>
             <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
               Broken experiences are handled first. Feature requests are reviewed against clarity,
-              usefulness, and how much they help people return to the app consistently.
+              usefulness, and whether they help people return to Hifzer consistently. When you write
+              in, include the route, what you expected, and a screenshot if you have one.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Pill tone="accent">Bug fixes first</Pill>
               <Pill tone="neutral">Roadmap-driven features</Pill>
+              <Pill tone="neutral">Direct email support</Pill>
             </div>
             <div className="mt-4 border-t border-[color:var(--kw-border-2)] pt-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Developer direct</p>

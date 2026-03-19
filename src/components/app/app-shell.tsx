@@ -1,18 +1,17 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import clsx from "clsx";
 import {
   BookOpenText,
   CalendarDays,
   ChevronDown,
-  MoonStar,
-  GraduationCap,
   House,
   LifeBuoy,
   LibraryBig,
   Map,
+  MoonStar,
   PlayCircle,
   Settings,
   SquarePen,
@@ -38,8 +37,7 @@ type NavKey =
   | "support"
   | "settings";
 
-type ShellNavKey = NavKey | "teacher";
-type NavItem = { href: string; key: ShellNavKey; icon: typeof House; label?: string };
+type NavItem = { href: string; key: NavKey; icon: typeof House; label?: string };
 
 const PRIMARY: NavItem[] = [
   { href: "/", key: "home", icon: House },
@@ -55,7 +53,6 @@ const INSIGHTS: NavItem[] = [
 ];
 
 const PLATFORM: NavItem[] = [
-  { href: "/teacher", key: "teacher", icon: GraduationCap, label: "Teacher" },
   { href: "/roadmap", key: "roadmap", icon: Map },
   { href: "/support", key: "support", icon: LifeBuoy },
 ];
@@ -82,9 +79,6 @@ function isActive(pathname: string, href: string): boolean {
   }
   if (href === "/support") {
     return pathname === "/support";
-  }
-  if (href === "/teacher") {
-    return pathname === "/teacher" || pathname.startsWith("/teacher/");
   }
   if (href === "/journal") {
     return pathname === "/journal" || pathname.startsWith("/journal/");
@@ -117,9 +111,7 @@ function NavLink(props: { item: NavItem; pathname: string; copy: ReturnType<type
   const { item, pathname, copy } = props;
   const active = isActive(pathname, item.href);
   const Icon = item.icon;
-  const label =
-    item.label ??
-    (item.key === "teacher" ? "Teacher" : item.key === "journal" ? "Journal" : copy.nav[item.key]);
+  const label = item.label ?? (item.key === "journal" ? "Journal" : copy.nav[item.key]);
   return (
     <TrackedLink
       key={item.href}
@@ -147,10 +139,49 @@ function NavLink(props: { item: NavItem; pathname: string; copy: ReturnType<type
 
 export function AppShell(props: { children: React.ReactNode; streakEnabled?: boolean }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [insightsOpen, setInsightsOpen] = useState(true);
   const [platformOpen, setPlatformOpen] = useState(true);
   const { language } = useUiLanguage();
   const copy = getAppUiCopy(language);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const routes = Array.from(
+      new Set([
+        ...PRIMARY.map((item) => item.href),
+        ...INSIGHTS.map((item) => item.href),
+        ...PLATFORM.map((item) => item.href),
+        "/settings",
+      ]),
+    ).filter((href) => href !== pathname);
+
+    const prefetchRoutes = () => {
+      routes.forEach((href) => router.prefetch(href));
+    };
+
+    const requestIdle =
+      typeof window.requestIdleCallback === "function"
+        ? window.requestIdleCallback.bind(window)
+        : null;
+
+    if (requestIdle) {
+      const idleHandle = requestIdle(() => {
+        prefetchRoutes();
+      });
+      return () => {
+        window.cancelIdleCallback?.(idleHandle);
+      };
+    }
+
+    const timeoutId = globalThis.setTimeout(prefetchRoutes, 120);
+    return () => {
+      globalThis.clearTimeout(timeoutId);
+    };
+  }, [pathname, router]);
 
   return (
     <div className="min-h-dvh overflow-x-clip">
@@ -240,9 +271,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
           {MOBILE_NAV.map((item) => {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;
-            const label =
-              item.label ??
-              (item.key === "teacher" ? "Teacher" : item.key === "journal" ? "Journal" : copy.nav[item.key]);
+            const label = item.label ?? (item.key === "journal" ? "Journal" : copy.nav[item.key]);
             return (
               <TrackedLink
                 key={item.href}

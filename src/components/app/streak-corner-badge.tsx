@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 import { Flame } from "lucide-react";
 import { InstallAppButton } from "@/components/pwa/install-app-button";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { readSessionCache, writeSessionCache } from "@/lib/client-session-cache";
 
 type StreakPayload = {
   ok: boolean;
@@ -23,9 +23,13 @@ function badgeNumber(days: number): string {
   return String(Math.max(0, days));
 }
 
+const STREAK_BADGE_CACHE_KEY = "hifzer.streak.badge.v1";
+const STREAK_BADGE_CACHE_TTL_MS = 5 * 60 * 1000;
+
 export function StreakCornerBadge(props: { enabled: boolean }) {
-  const pathname = usePathname();
-  const [data, setData] = useState<StreakPayload | null>(null);
+  const [data, setData] = useState<StreakPayload | null>(() =>
+    readSessionCache<StreakPayload>(STREAK_BADGE_CACHE_KEY, STREAK_BADGE_CACHE_TTL_MS),
+  );
 
   useEffect(() => {
     if (!props.enabled) {
@@ -42,6 +46,7 @@ export function StreakCornerBadge(props: { enabled: boolean }) {
         const payload = (await res.json()) as StreakPayload;
         if (!cancelled) {
           setData(payload);
+          writeSessionCache(STREAK_BADGE_CACHE_KEY, payload);
         }
       } catch {
         // Fail open: badge simply hides when streak summary is unavailable.
@@ -70,7 +75,7 @@ export function StreakCornerBadge(props: { enabled: boolean }) {
       document.removeEventListener("visibilitychange", onVisible);
       window.clearInterval(interval);
     };
-  }, [pathname, props.enabled]);
+  }, [props.enabled]);
 
   const showThemeToggle = true;
   const showStreakBadge = props.enabled && Boolean(data?.onboardingEligible);

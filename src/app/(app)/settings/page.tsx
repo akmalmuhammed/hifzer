@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell, Eye, GraduationCap, Languages, LifeBuoy, Map, Palette, SlidersHorizontal, Target, UserRound, Volume2 } from "lucide-react";
+import { Bell, Eye, Languages, LifeBuoy, Map, Palette, SlidersHorizontal, Target, UserRound, Volume2 } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
@@ -67,13 +67,6 @@ function getItems(copy: ReturnType<typeof getAppUiCopy>) {
       desc: "Adjust how your review labels feel during practice.",
       icon: <Target size={18} />,
       tone: "brand" as const,
-    },
-    {
-      href: "/settings/teacher",
-      title: "Teacher",
-      desc: "Keep family or teacher support connected to your journey.",
-      icon: <GraduationCap size={18} />,
-      tone: "neutral" as const,
     },
     {
       href: "/settings/thresholds",

@@ -210,14 +210,14 @@ function buildEntryPreview(entry: JournalEntry): string {
     (block): block is Extract<JournalBlock, { kind: "ayah" }> => block.kind === "ayah" && Boolean(block.ayah),
   );
   if (firstAyah?.ayah) {
-    return `${firstAyah.title || "Ayah card"} • ${firstAyah.ayah.surahNameTransliteration} ${firstAyah.ayah.surahNumber}:${firstAyah.ayah.ayahNumber}`;
+    return `${firstAyah.title || "Ayah card"} - ${firstAyah.ayah.surahNameTransliteration} ${firstAyah.ayah.surahNumber}:${firstAyah.ayah.ayahNumber}`;
   }
 
   const firstDua = (entry.blocks ?? []).find(
     (block): block is Extract<JournalBlock, { kind: "dua" }> => block.kind === "dua" && Boolean(block.dua),
   );
   if (firstDua?.dua) {
-    return `${firstDua.title || "Dua card"} • ${firstDua.dua.translation}`;
+    return `${firstDua.title || "Dua card"} - ${firstDua.dua.translation}`;
   }
 
   return "Untitled note";
@@ -912,13 +912,13 @@ export function JournalClient(props: {
           <Input
             value={noteDraft.title}
             onChange={(event) => updateDraft((current) => ({ ...current, title: event.target.value }))}
-            placeholder="Give this note a short title"
+            placeholder="Name this note"
             className={styles.noteTitleInput}
           />
 
           <div className={styles.noteMetaRow}>
-            <span>{noteDraft.id ? "Editing inside the note card." : "This note is still unsaved."}</span>
-            <span>{countAttachmentBlocks(noteDraft.blocks)} cards inside</span>
+            <span>{noteDraft.id ? "Editing inside this note." : "This note is still unsaved."}</span>
+            <span>{countAttachmentBlocks(noteDraft.blocks)} linked cards</span>
           </div>
         </div>
 
@@ -1210,7 +1210,7 @@ export function JournalClient(props: {
 
           <div className={styles.noteMetaRow}>
             <span>{formatJournalTimestamp(entry.updatedAt)}</span>
-            <span>{countAttachmentBlocks(entry.blocks ?? [])} cards</span>
+            <span>{countAttachmentBlocks(entry.blocks ?? [])} linked cards</span>
             {entry.autoDeleteAt ? <span>Auto-deletes in {formatAutoDeleteCountdown(entry)}</span> : null}
           </div>
         </Card>
@@ -1225,8 +1225,8 @@ export function JournalClient(props: {
         title="Journal"
         subtitle={
           props.syncEnabled
-            ? "A quieter journal where each note opens in place and your cards live inside the note."
-            : "A quieter journal where each note opens in place and stays on this device for now."
+            ? "A private place for reflections, linked ayahs, and personal duas that stay with your account."
+            : "A private place for reflections, linked ayahs, and personal duas that stay on this device for now."
         }
       />
 
@@ -1242,7 +1242,7 @@ export function JournalClient(props: {
           id="journal-search"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search notes..."
+          placeholder="Search titles, tags, or note text"
           className="pl-12"
         />
       </div>
@@ -1264,7 +1264,7 @@ export function JournalClient(props: {
             <p className={styles.emptyText}>
               {search.trim().length > 0
                 ? "Try a different word or start a new note."
-                : "Start a note, then add text, ayah cards, and dua cards inside it."}
+                : "Start a note, then add text, ayah cards, or dua cards where they belong."}
             </p>
           </Card>
         ) : null}

@@ -39,9 +39,10 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
 import { laylatAlQadrGuide } from "@/hifzer/ramadan/laylat-al-qadr";
+import { readSessionCache, writeSessionCache } from "@/lib/client-session-cache";
 import styles from "./dashboard.module.css";
 
-type DashboardOverview = {
+export type DashboardOverview = {
   generatedAt: string;
   profile: {
     mode: "NORMAL" | "CONSOLIDATION" | "CATCH_UP";
@@ -109,6 +110,8 @@ type DashboardPayload = {
 };
 
 type DashboardTab = "overview" | "dua";
+const DASHBOARD_CACHE_KEY = "hifzer.dashboard.overview.v1";
+const DASHBOARD_CACHE_TTL_MS = 2 * 60 * 1000;
 
 function statusPill(status: DashboardOverview["today"]["status"]): { tone: "neutral" | "accent" | "success"; label: string } {
   if (status === "completed") {
@@ -619,14 +622,21 @@ function DashboardDuaTab() {
   );
 }
 
-export function DashboardClient() {
+function readCachedDashboardOverview() {
+  return readSessionCache<DashboardOverview>(DASHBOARD_CACHE_KEY, DASHBOARD_CACHE_TTL_MS);
+}
+
+export function DashboardClient(props: { initialOverview?: DashboardOverview | null }) {
   const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !props.initialOverview && !readCachedDashboardOverview());
   const [error, setError] = useState<string | null>(null);
-  const [overview, setOverview] = useState<DashboardOverview | null>(null);
+  const [overview, setOverview] = useState<DashboardOverview | null>(() => props.initialOverview ?? readCachedDashboardOverview());
   const [monthCursor, setMonthCursor] = useState(0);
+
   async function load() {
-    setLoading(true);
+    if (!overview) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const res = await fetch("/api/dashboard/overview", { cache: "no-store" });
@@ -635,6 +645,7 @@ export function DashboardClient() {
         throw new Error(payload.error || "Failed to load dashboard.");
       }
       setOverview(payload.overview);
+      writeSessionCache(DASHBOARD_CACHE_KEY, payload.overview);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load dashboard.");
     } finally {
@@ -643,8 +654,19 @@ export function DashboardClient() {
   }
 
   useEffect(() => {
-    void load();
-  }, []);
+    if (!props.initialOverview) {
+      void load();
+    }
+    // `load` intentionally stays local so this effect only keys off server-provided hydration.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.initialOverview]);
+
+  useEffect(() => {
+    if (!props.initialOverview) {
+      return;
+    }
+    writeSessionCache(DASHBOARD_CACHE_KEY, props.initialOverview);
+  }, [props.initialOverview]);
 
   const heroScore = useMemo(() => {
     if (!overview) {

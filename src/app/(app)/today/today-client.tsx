@@ -13,6 +13,7 @@ import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
 import { setHifzActiveSurahCursor, setOpenSession } from "@/hifzer/local/store";
 import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
+import { readSessionCache, writeSessionCache } from "@/lib/client-session-cache";
 import {
   toTodayDashboardSummary,
   type DashboardOverviewLike,
@@ -20,6 +21,19 @@ import {
   type TodayPayload,
   type LearningLane,
 } from "./today-types";
+
+const TODAY_CACHE_KEY = "hifzer.today.snapshot.v1";
+const TODAY_CACHE_TTL_MS = 90 * 1000;
+
+type TodayCacheSnapshot = {
+  data: TodayPayload | null;
+  lanes: LearningLane[];
+  overview: TodayDashboardSummary | null;
+};
+
+function readCachedTodaySnapshot() {
+  return readSessionCache<TodayCacheSnapshot>(TODAY_CACHE_KEY, TODAY_CACHE_TTL_MS);
+}
 
 function modeExplain(state: TodayPayload["state"]): { title: string; body: string; tone: "neutral" | "warn" | "accent" } {
   const debtPct = Math.round(state.debtRatio);
@@ -163,15 +177,15 @@ export function TodayClient({
   const router = useRouter();
   // When initialData is provided by the server component, start in a loaded state
   // so the skeleton is never shown to the user.
-  const [loading, setLoading] = useState(!initialData);
+  const [loading, setLoading] = useState(() => !initialData && !readCachedTodaySnapshot()?.data);
   const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<TodayPayload | null>(initialData ?? null);
+  const [data, setData] = useState<TodayPayload | null>(() => initialData ?? readCachedTodaySnapshot()?.data ?? null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [switchOpen, setSwitchOpen] = useState(false);
   const [switchingSurah, setSwitchingSurah] = useState(false);
   const [targetSurahNumber, setTargetSurahNumber] = useState(1);
-  const [learningLanes, setLearningLanes] = useState<LearningLane[]>(initialLanes ?? []);
-  const [overview, setOverview] = useState<TodayDashboardSummary | null>(initialOverview ?? null);
+  const [learningLanes, setLearningLanes] = useState<LearningLane[]>(() => initialLanes ?? readCachedTodaySnapshot()?.lanes ?? []);
+  const [overview, setOverview] = useState<TodayDashboardSummary | null>(() => initialOverview ?? readCachedTodaySnapshot()?.overview ?? null);
   const { pushToast } = useToast();
   const [modeShiftNotice, setModeShiftNotice] = useState<{
     from: TodayPayload["state"]["mode"];
@@ -181,7 +195,9 @@ export function TodayClient({
   } | null>(null);
 
   async function load() {
-    setLoading(true);
+    if (!data) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const [todayRes, lanesRes, overviewRes] = await Promise.all([
@@ -199,15 +215,25 @@ export function TodayClient({
       }
       setData(payload);
 
+      let nextLearningLanes = learningLanes;
       if (lanesRes.ok) {
         const lanesPayload = (await lanesRes.json()) as { lanes?: LearningLane[] };
-        setLearningLanes(Array.isArray(lanesPayload.lanes) ? lanesPayload.lanes : []);
+        nextLearningLanes = Array.isArray(lanesPayload.lanes) ? lanesPayload.lanes : [];
+        setLearningLanes(nextLearningLanes);
       }
 
+      let nextOverview = overview;
       if (overviewRes.ok) {
         const overviewPayload = (await overviewRes.json()) as { overview?: DashboardOverviewLike };
-        setOverview(toTodayDashboardSummary(overviewPayload.overview));
+        nextOverview = toTodayDashboardSummary(overviewPayload.overview);
+        setOverview(nextOverview);
       }
+
+      writeSessionCache(TODAY_CACHE_KEY, {
+        data: payload,
+        lanes: nextLearningLanes,
+        overview: nextOverview,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load today state.");
     } finally {
@@ -222,6 +248,17 @@ export function TodayClient({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!data) {
+      return;
+    }
+    writeSessionCache(TODAY_CACHE_KEY, {
+      data,
+      lanes: learningLanes,
+      overview,
+    });
+  }, [data, learningLanes, overview]);
 
   useEffect(() => {
     if (!data || typeof window === "undefined") {

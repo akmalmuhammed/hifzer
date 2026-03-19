@@ -50,7 +50,6 @@ const ROUTES = [
   { route: "/settings/reciter", surface: "app" },
   { route: "/settings/reminders", surface: "app" },
   { route: "/settings/scoring", surface: "app" },
-  { route: "/settings/teacher", surface: "app" },
   { route: "/settings/thresholds", surface: "app" },
   { route: "/support", surface: "app" },
   { route: "/roadmap", surface: "app" },

@@ -14,7 +14,6 @@ const isProtectedRoute = createRouteMatcher([
   "/history(.*)",
   "/roadmap(.*)",
   "/support(.*)",
-  "/teacher(.*)",
   "/progress(.*)",
   "/ramadan(.*)",
   "/settings(.*)",
