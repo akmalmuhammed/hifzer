@@ -227,7 +227,7 @@ function sanitizeJournalBlocks(
     }
 
     if (kind === "ayah") {
-      const ayah = sanitizeLinkedAyah(block.ayah ?? null);
+      const ayah = sanitizeLinkedAyah(block.ayah as JournalLinkedAyah | null | undefined);
       const rawAyah = block.ayah as Record<string, unknown> | null | undefined;
       blocks.push({
         id,
