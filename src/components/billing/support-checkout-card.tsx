@@ -2,12 +2,12 @@
 
 import { useMemo, useState } from "react";
 import clsx from "clsx";
-import { ArrowUpRight, HeartHandshake } from "lucide-react";
+import { ArrowUpRight, BriefcaseBusiness } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { usePaddle } from "@/components/billing/paddle-provider";
 
-const PRESET_AMOUNTS = [3, 10, 25, 50];
+const PRESET_AMOUNTS = [49, 99, 249, 499];
 
 type CheckoutPayload = {
   transactionId: string;
@@ -127,20 +127,20 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
             }
           }}
         >
-          Support with ${normalizedAmount || "0.00"} <ArrowUpRight size={16} />
+          Purchase for ${normalizedAmount || "0.00"} <ArrowUpRight size={16} />
         </Button>
       </div>
 
       <div className="mt-4 rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[rgba(var(--kw-accent-rgb),0.08)] p-4">
         <div className="flex items-start gap-3">
           <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-white/60 text-[rgba(var(--kw-accent-rgb),1)]">
-            <HeartHandshake size={18} />
+            <BriefcaseBusiness size={18} />
           </span>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Voluntary one-time support</p>
+            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">One-time product work</p>
             <p id="support-amount-help" className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">
-              This is not a subscription. The app stays usable for everyone. Paddle sends the receipt and
-              buyer support details after checkout.
+              Use this checkout for software-related Hifzer work like custom development, feature implementation,
+              private workflow help, or paid product requests. Paddle sends the receipt and buyer support details after checkout.
             </p>
             {props.hasPortal ? (
               <p className="mt-2 text-xs text-[color:var(--kw-faint)]">

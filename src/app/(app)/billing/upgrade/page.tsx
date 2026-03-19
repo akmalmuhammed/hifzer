@@ -11,7 +11,7 @@ import { getProfileSnapshot } from "@/hifzer/profile/server";
 import { clerkEnabled } from "@/lib/clerk-config";
 
 export const metadata = {
-  title: "Support Hifzer",
+  title: "Paid Product Work",
 };
 
 const CORE_FEATURES = [
@@ -22,10 +22,10 @@ const CORE_FEATURES = [
 ];
 
 const SUPPORT_REASONS = [
-  "Help fund hosting, audio delivery, and product upkeep",
-  "Keep the core Qur'an habit free for everyone",
-  "Support new Hifz, recitation, and teacher workflows",
-  "Pay once, any amount, only when you want to",
+  "Request custom development tied to your Hifzer workflow",
+  "Fund feature implementation or priority product work",
+  "Pay for software-related setup, guidance, or delivery",
+  "Use one-time checkout instead of a recurring subscription",
 ];
 
 export default async function BillingUpgradePage() {
@@ -46,8 +46,8 @@ export default async function BillingUpgradePage() {
     <div className="space-y-6">
       <PageHeader
         eyebrow="Billing"
-        title="Support Hifzer"
-        subtitle="There is no subscription here. If Hifzer is helping you, users can support it with any one-time amount they choose."
+        title="Paid Hifzer product work"
+        subtitle="Use one-time Paddle checkout for custom development, implementation help, or paid feature work related to Hifzer."
       />
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -59,7 +59,7 @@ export default async function BillingUpgradePage() {
                 $0
               </p>
               <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                The core Qur&apos;an and Hifz experience stays open without a paid wall.
+                Reading, hifz, and dua remain available without a subscription gate.
               </p>
             </div>
             <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)]">
@@ -80,12 +80,12 @@ export default async function BillingUpgradePage() {
         <Card>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <Pill tone="accent">Optional support</Pill>
+              <Pill tone="accent">One-time product work</Pill>
               <p className="mt-3 text-3xl font-[family-name:var(--font-kw-display)] tracking-tight text-[color:var(--kw-ink)]">
-                Any amount
+                Custom scope
               </p>
               <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                One-time support through Paddle. No recurring billing and no forced plan change.
+                One-time checkout for custom Hifzer work through Paddle. No recurring billing and no subscription plan change.
               </p>
             </div>
             <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] text-[color:var(--kw-ink)]">

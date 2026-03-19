@@ -65,20 +65,20 @@ export async function POST(req: Request) {
       },
       customData: {
         clerk_user_id: userId,
-        support_amount: normalizedAmount.display,
+        product_work_amount: normalizedAmount.display,
       },
       items: [
         {
           quantity: 1,
           price: {
-            description: "Optional one-time support payment for Hifzer.",
+            description: "One-time Hifzer product work, implementation help, or custom feature request.",
             unitPrice: {
               amount: normalizedAmount.cents,
               currencyCode: currencyCode as never,
             },
             product: {
-              name: "Support Hifzer",
-              description: `One-time support payment of ${currencyCode} ${normalizedAmount.display}.`,
+              name: "Hifzer Product Work",
+              description: `One-time Hifzer product work purchase of ${currencyCode} ${normalizedAmount.display}.`,
               taxCategory: "standard",
             },
           },
@@ -88,7 +88,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       transactionId: transaction.id,
-      successUrl: new URL("/billing/success", appPublicUrl()).toString(),
+      successUrl: new URL("/billing/thank-you", appPublicUrl()).toString(),
       customerEmail: email,
     });
   } catch (error) {

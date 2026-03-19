@@ -52,7 +52,7 @@ export default async function BillingManagePage() {
       <PageHeader
         eyebrow="Billing"
         title="Receipts and buyer help"
-        subtitle="Open Paddle buyer support when it is available for your account and review any linked payment history."
+        subtitle="Open Paddle buyer support when it is available for your account and review payment history for your one-time Hifzer product-work purchases."
       />
 
       <Card>
@@ -80,7 +80,7 @@ export default async function BillingManagePage() {
           <ManagePortalButton disabled={!hasPortal} />
           <Link href="/billing/upgrade">
             <Button variant="ghost">
-              Back to support
+              Back to checkout
             </Button>
           </Link>
         </div>
@@ -99,7 +99,7 @@ export default async function BillingManagePage() {
           <div>
             <p className="text-sm font-semibold text-[color:var(--kw-ink)]">What you can find in Paddle</p>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-              Receipt access, saved payment details, and buyer support are handled by Paddle. Since Hifzer is using one-time support payments here, there is no subscription cancellation flow.
+              Receipt access, saved payment details, and buyer support are handled by Paddle. Since Hifzer is using one-time service purchases here, there is no subscription cancellation flow.
             </p>
           </div>
         </div>

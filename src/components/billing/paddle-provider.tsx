@@ -90,7 +90,7 @@ export function PaddleProvider(props: {
       const checkoutOptions: Record<string, unknown> = {
         settings: {
           displayMode: "overlay",
-          successUrl: input.successUrl ?? `${window.location.origin}/billing/success`,
+          successUrl: input.successUrl ?? `${window.location.origin}/billing/thank-you`,
         },
       };
       if (input.transactionId) {

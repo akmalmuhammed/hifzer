@@ -38,11 +38,11 @@ export default function LegalTermsPage() {
         </Card>
 
         <Card>
-          <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">3. Billing and optional support payments</h2>
+          <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">3. Billing and one-time product work purchases</h2>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-            Hifzer may offer optional one-time support payments. These charges are processed by our
-            billing provider (currently Paddle). At the moment, this support flow is not a recurring
-            subscription.
+            Hifzer may offer one-time paid product work, implementation help, or software-related
+            service purchases. These charges are processed by our billing provider (currently Paddle).
+            At the moment, this flow is not a recurring subscription.
           </p>
           <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
             Our order process is conducted by our online reseller Paddle.com. Paddle.com is the

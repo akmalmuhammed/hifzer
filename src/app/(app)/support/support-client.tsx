@@ -80,10 +80,11 @@ export function SupportClient(props: { hasPortal?: boolean }) {
       <Card className={`${styles.panel} px-4 py-4`}>
         <div className="flex items-center gap-2">
           <ShieldCheck size={16} className="text-[color:var(--kw-ink-2)]" />
-          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Support Hifzer</p>
+          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Request paid product work</p>
         </div>
         <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-          If you want to support the product directly, you can make a one-time Paddle payment here.
+          Use this for custom development, feature implementation, private workflow help, or other
+          software-related Hifzer work tied to your account.
         </p>
         <div className="mt-4">
           <SupportCheckoutCard hasPortal={props.hasPortal} />
