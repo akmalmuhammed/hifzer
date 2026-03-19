@@ -77,11 +77,6 @@ const HERO_DETAILS: HeroDetail[] = [
     body: "Taught duas and private reflection stay close without turning into another feed.",
     icon: HandHeart,
   },
-  {
-    title: "Return on any device",
-    body: "Begin in the browser now, then add Hifzer to your phone only if it earns the space.",
-    icon: Smartphone,
-  },
 ];
 
 const MODULES: ModuleCard[] = [
@@ -220,7 +215,6 @@ export function LandingHome() {
             <div className={styles.heroCopy}>
               <motion.div variants={fadeUp} className={styles.heroIntro}>
                 <Pill tone="brand">Five modules. One daily practice.</Pill>
-                <span className={styles.heroMeta}>Calm by design</span>
               </motion.div>
 
               <motion.h1 variants={fadeUp} className={styles.heroTitle}>
@@ -254,9 +248,8 @@ export function LandingHome() {
 
             <motion.aside variants={fadeUp} className={styles.heroPanel}>
               <div className={styles.heroPanelHeader}>
-                <p className={styles.eyebrow}>A calmer home for daily return</p>
                 <h2 className={styles.heroPanelTitle}>
-                  Each lane stays separate enough to feel simple when life is full.
+                  One account. Clear continuity.
                 </h2>
               </div>
 
@@ -298,51 +291,64 @@ export function LandingHome() {
       </section>
 
       <section id="companion" className={styles.section}>
-        <div className={styles.sectionLead}>
-          <Pill tone="accent">Five modules. One daily practice.</Pill>
-          <h2 className={styles.sectionTitle}>
-            Everything you need for a consistent deen. Nothing you don&apos;t.
-          </h2>
-          <p className={styles.sectionText}>
-            Each module carries a different weight, so each one gets its own space. Nothing has to
-            compete for your attention.
-          </p>
-        </div>
+        <div className={styles.moduleShell}>
+          <div className={clsx(styles.sectionLead, styles.moduleLead)}>
+            <Pill tone="accent">Five modules. One daily practice.</Pill>
+            <h2 className={clsx(styles.sectionTitle, styles.moduleSectionTitle)}>
+              Everything you need for a consistent deen. Nothing you don&apos;t.
+            </h2>
+            <p className={clsx(styles.sectionText, styles.moduleSectionText)}>
+              A tighter system for reading, memorization, duas, guides, and private reflection.
+              Each module stays distinct, but the whole experience still feels connected.
+            </p>
+          </div>
 
-        <div className={styles.moduleGrid}>
-          {MODULES.map((module) => {
+          <div className={styles.moduleGrid}>
+            {MODULES.map((module, index) => {
             const Icon = module.icon;
 
             return (
               <motion.article
                 key={module.id}
-                className={clsx(styles.moduleCard, module.featured && styles.moduleCardFeatured)}
+                className={styles.moduleCard}
                 data-tone={module.tone}
-                whileHover={reduceMotion ? undefined : { y: -4 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
+                initial={reduceMotion ? undefined : { opacity: 0, y: 14 }}
+                whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.22 }}
+                whileHover={reduceMotion ? undefined : { x: 6 }}
+                transition={{
+                  duration: reduceMotion ? 0 : 0.28,
+                  ease: "easeOut",
+                  delay: reduceMotion ? 0 : index * 0.04,
+                }}
               >
-                <div className={styles.moduleHeader}>
-                  <span className={styles.moduleIcon}>
-                    <Icon size={18} />
-                  </span>
-                  <div>
-                    <p className={styles.moduleLabel}>{module.label}</p>
-                    <h3 className={styles.moduleTitle}>{module.headline}</h3>
-                  </div>
-                </div>
+                <div className={styles.moduleIndex}>0{index + 1}</div>
 
-                <p className={styles.moduleBody}>{module.body}</p>
-
-                <div className={styles.moduleTags}>
-                  {module.tags.map((tag) => (
-                    <span key={`${module.id}-${tag}`} className={styles.moduleTag}>
-                      {tag}
+                <div className={styles.moduleMain}>
+                  <div className={styles.moduleHeader}>
+                    <span className={styles.moduleIcon}>
+                      <Icon size={18} />
                     </span>
-                  ))}
+                    <div className={styles.moduleHeaderCopy}>
+                      <p className={styles.moduleLabel}>{module.label}</p>
+                      <h3 className={styles.moduleTitle}>{module.headline}</h3>
+                    </div>
+                  </div>
+
+                  <p className={styles.moduleBody}>{module.body}</p>
+
+                  <div className={styles.moduleTags}>
+                    {module.tags.map((tag) => (
+                      <span key={`${module.id}-${tag}`} className={styles.moduleTag}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </motion.article>
             );
-          })}
+            })}
+          </div>
         </div>
       </section>
 
