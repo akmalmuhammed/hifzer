@@ -1,18 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowRight,
+  AudioLines,
   BookOpenText,
-  Bookmark,
+  Globe2,
   HandHeart,
-  Headphones,
   LockKeyhole,
+  NotebookPen,
   RefreshCcw,
+  ScrollText,
   ShieldCheck,
-  SquarePen,
+  Smartphone,
 } from "lucide-react";
 import clsx from "clsx";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
@@ -20,183 +21,189 @@ import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { Button } from "@/components/ui/button";
 import { Pill } from "@/components/ui/pill";
+import { QURAN_TRANSLATION_OPTIONS } from "@/hifzer/quran/translation-prefs";
 import styles from "./landing-home.module.css";
 
-type Tone = "brand" | "accent" | "warn";
+type Tone = "brand" | "accent" | "warn" | "neutral";
 
-type LaneShowcase = {
+type HeroDetail = {
+  title: string;
+  body: string;
+  icon: LucideIcon;
+};
+
+type ModuleCard = {
   id: string;
   label: string;
-  eyebrow: string;
-  tone: Tone;
+  headline: string;
+  body: string;
+  tags: string[];
   icon: LucideIcon;
-  heroTitle: string;
-  heroBody: string;
-  signals: string[];
-  guideTitle: string;
-  guideBody: string;
-  laneTitle: string;
-  laneBody: string;
-  lanePoints: string[];
-  note: string;
+  tone: Tone;
+  featured?: boolean;
+};
+
+type PrincipleCard = {
+  title: string;
+  body: string;
+};
+
+type PromiseCard = {
+  title: string;
+  body: string;
+  icon: LucideIcon;
+  tone: Tone;
+  showTranslationRail?: boolean;
 };
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 22 },
+  hidden: { opacity: 0, y: 18 },
   show: { opacity: 1, y: 0 },
 };
 
-const LANES: LaneShowcase[] = [
+const HERO_DETAILS: HeroDetail[] = [
   {
-    id: "quran",
-    label: "Qur'an",
-    eyebrow: "Reading lane",
-    tone: "accent",
-    icon: BookOpenText,
-    heroTitle: "Return to the ayah that was waiting for you.",
-    heroBody:
-      "Saved place, translation, recitation audio, and bookmarks stay nearby without pulling you into a crowded study dashboard.",
-    signals: [
-      "Resume in one tap",
-      "Trusted reciters nearby",
-      "Bookmarks and translation stay close",
-    ],
-    guideTitle: "When you open it",
-    guideBody:
-      "The reader remembers your thread first, then keeps audio and translation close enough to help without competing for attention.",
-    laneTitle: "A reading space that remembers your thread.",
-    laneBody:
-      "Continue naturally from where you stopped, keep your reciter close, and avoid the friction of rebuilding your place every day.",
-    lanePoints: ["Saved place", "Translation on demand", "Audio and bookmarks"],
-    note: "Quiet enough for recitation, practical enough for real life.",
+    title: "Qur'an reading",
+    body: "Saved place, trusted reciters, bookmarks, and 7 translation options stay ready.",
+    icon: AudioLines,
   },
   {
-    id: "hifz",
-    label: "Hifz",
-    eyebrow: "Memorization lane",
-    tone: "brand",
+    title: "Hifz structure",
+    body: "Sabaq, Sabqi, and Manzil stay separate so review stays honest before you add more.",
     icon: RefreshCcw,
-    heroTitle: "Protect review before adding more.",
-    heroBody:
-      "Sabaq, Sabqi, and Manzil stay distinct so your memorization can be steady without turning into a guilt-driven scoreboard.",
-    signals: [
-      "Traditional lanes stay clear",
-      "Catch slips before they spread",
-      "Catch-up stays gentle after missed days",
-    ],
-    guideTitle: "When routine breaks",
-    guideBody:
-      "The next honest revision still stays obvious, so a missed day does not make the whole path feel lost.",
-    laneTitle: "Memorization with structure, not pressure.",
-    laneBody:
-      "Hifzer keeps the classic review lanes visible, helps you return after gaps, and avoids turning sacred work into noisy productivity theatre.",
-    lanePoints: ["Sabaq / Sabqi / Manzil", "Gentle catch-up", "Honest progress"],
-    note: "Designed to support discipline without harshness.",
   },
   {
-    id: "dua",
-    label: "Dua",
-    eyebrow: "Dua lane",
-    tone: "warn",
+    title: "Dua and journal",
+    body: "Taught duas and private reflection stay close without turning into another feed.",
     icon: HandHeart,
-    heroTitle: "Keep taught words near when the day feels heavy.",
-    heroBody:
-      "Daily duas, transliteration, and private notes can live together without making the page feel like another endless feed.",
-    signals: [
-      "Arabic, transliteration, translation",
-      "Private notes tied to your account",
-      "A calmer place to return at night",
-    ],
-    guideTitle: "When words feel far away",
-    guideBody:
-      "The duas you revisit and the reflections you save stay close without pretending to replace sincerity or presence.",
-    laneTitle: "A quieter home for dua and reflection.",
-    laneBody:
-      "Carry taught words, save the ones you revisit, and keep a private journal nearby when you want to remember what the heart was holding.",
-    lanePoints: ["Authentic duas", "Private journal", "Saved to your profile"],
-    note: "Honest about privacy and built for return, not performance.",
+  },
+  {
+    title: "Return on any device",
+    body: "Begin in the browser now, then add Hifzer to your phone only if it earns the space.",
+    icon: Smartphone,
   },
 ];
 
-const PROMISES: Array<{
-  title: string;
-  body: string;
-  icon: LucideIcon;
-}> = [
+const MODULES: ModuleCard[] = [
   {
-    title: "Core app free",
-    body: "Reading, hifz, and dua stay useful without a subscription wall around the basics.",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Your place stays with you",
-    body: "Sign in when you want your reader progress, preferences, and journal across devices.",
-    icon: Bookmark,
-  },
-  {
-    title: "Private reflection nearby",
-    body: "Keep notes close to your account without turning the whole experience into social noise.",
-    icon: LockKeyhole,
-  },
-] as const;
-
-const RHYTHM = [
-  {
-    step: "01",
-    title: "Open the lane that matches today",
-    body: "Reading, memorization, and dua stay distinct so the first choice feels obvious instead of mentally expensive.",
-  },
-  {
-    step: "02",
-    title: "Do one honest thing",
-    body: "Resume a page, protect a review, or revisit a dua. The routine only has to be real, not theatrical.",
-  },
-  {
-    step: "03",
-    title: "Leave with the thread intact",
-    body: "Tomorrow should feel like a return, not a reset. Hifzer keeps enough context that you can come back gently.",
-  },
-] as const;
-
-const COMPANION_NOTES: Array<{
-  title: string;
-  body: string;
-  icon: LucideIcon;
-}> = [
-  {
-    title: "Continue reading",
-    body: "Saved place, translation, and trusted reciters stay close.",
-    icon: BookOpenText,
-  },
-  {
-    title: "Protect review",
-    body: "Sabaq, Sabqi, and Manzil remain visibly separate.",
+    id: "hifz",
+    label: "Memorization",
+    headline: "Protect review before adding more.",
+    body:
+      "The traditional Sabaq, Sabqi, and Manzil method, supported by per-ayah review across all 6,236 ayahs. Hifzer keeps the lanes clear, catches slips early, and adapts when review debt starts growing.",
+    tags: ["Sabaq / Sabqi / Manzil", "Per-ayah tracking", "Adaptive modes"],
     icon: RefreshCcw,
+    tone: "brand",
+    featured: true,
   },
   {
-    title: "Carry dua and reflection",
-    body: "Duas and private notes remain nearby when the day changes tone.",
-    icon: SquarePen,
+    id: "quran",
+    label: "Reading",
+    headline: "Return to the ayah that was waiting for you.",
+    body:
+      "Saved place, trusted reciters, bookmarks, and translation stay close but never crowded. Resume in one tap from wherever you stopped.",
+    tags: ["7 translations", "Audio", "Bookmarks", "Reading progress"],
+    icon: BookOpenText,
+    tone: "accent",
   },
   {
-    title: "Start in the browser",
-    body: "No fake install pressure. Add it later if it truly earns a place.",
-    icon: Headphones,
+    id: "dua",
+    label: "Supplications",
+    headline: "Keep taught words near when the day gets heavy.",
+    body:
+      "Categorized duas for the moments you actually revisit. Arabic, transliteration, and translation stay together, with custom decks and private notes nearby.",
+    tags: ["Categorized", "Custom decks", "Private notes"],
+    icon: HandHeart,
+    tone: "warn",
   },
-] as const;
+  {
+    id: "guides",
+    label: "Islamic guides",
+    headline: "The basics you needed someone to just show you.",
+    body:
+      "A growing how-to space for practical worship questions and guided practice moments, written to stay clear, calm, and easy to revisit.",
+    tags: ["Practical", "Clear", "Growing library"],
+    icon: ScrollText,
+    tone: "neutral",
+  },
+  {
+    id: "journal",
+    label: "Personal",
+    headline: "A place to put what the heart is holding.",
+    body:
+      "Write intentions, gratitude, and reflections. Link entries to specific duas, keep them tied to your account, and return to them without sharing them publicly.",
+    tags: ["Private", "Linked to duas", "Synced"],
+    icon: NotebookPen,
+    tone: "accent",
+  },
+];
+
+const PRINCIPLES: PrincipleCard[] = [
+  {
+    title: "Active Recall",
+    body:
+      "Retrieval beats re-reading. Retention is built by reciting from memory, not repeatedly looking at the text.",
+  },
+  {
+    title: "Review Floor",
+    body:
+      "Review dominates new. Most daily time must protect what was already learned, or forgetting starts to win.",
+  },
+  {
+    title: "Backlog Control",
+    body:
+      "When review debt grows, new memorization has to slow down. The system protects what is already fragile before asking for more.",
+  },
+  {
+    title: "Linking",
+    body:
+      "Most \"I forgot\" moments happen at the seam between one ayah and the next. Hifzer trains those transitions explicitly.",
+  },
+];
+
+const PROMISES: PromiseCard[] = [
+  {
+    title: "Core practice stays open",
+    body:
+      "Reading, hifz, duas, and the first layer of your private space should stay useful without a subscription wall around the basics.",
+    icon: ShieldCheck,
+    tone: "brand",
+  },
+  {
+    title: "Your journal is yours",
+    body:
+      "Private reflections stay attached to your account and are never turned into a public feed or shared surface.",
+    icon: LockKeyhole,
+    tone: "accent",
+  },
+  {
+    title: "Works on any device",
+    body:
+      "Use it in the browser first. When it earns a place, add it to your home screen on phone or tablet without needing an app store.",
+    icon: Smartphone,
+    tone: "neutral",
+  },
+  {
+    title: "Built for the global ummah",
+    body:
+      "The reader already supports the languages people actually return with, and the translation layer keeps growing carefully.",
+    icon: Globe2,
+    tone: "warn",
+    showTranslationRail: true,
+  },
+];
+
+const TRANSLATION_LABELS = QURAN_TRANSLATION_OPTIONS.map((option) => option.label.split(" - ")[0] ?? option.label);
+const SCROLLING_TRANSLATIONS = [...TRANSLATION_LABELS, ...TRANSLATION_LABELS];
 
 export function LandingHome() {
   const reduceMotion = useReducedMotion();
   const { isSignedIn } = usePublicAuth();
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  const activeLane = LANES[activeIndex] ?? LANES[0];
-  const secondaryHref = isSignedIn ? "/quran" : "/quran-preview";
-  const secondaryLabel = isSignedIn ? "Open the reader" : "Preview the reader";
+  const previewHref = isSignedIn ? "/quran" : "/quran-preview";
 
   return (
     <div className={styles.page}>
-      <section className="pt-4 md:pt-6">
+      <section className={styles.heroSection}>
         <motion.div
           className={styles.heroShell}
           initial="hidden"
@@ -211,259 +218,206 @@ export function LandingHome() {
         >
           <div className={styles.heroGrid}>
             <div className={styles.heroCopy}>
-              <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-2">
-                <Pill tone="brand">Core app free</Pill>
-                <Pill tone="accent">Reading, hifz, dua</Pill>
-                <Pill tone="neutral">Built for a calmer return</Pill>
+              <motion.div variants={fadeUp} className={styles.heroIntro}>
+                <Pill tone="brand">Five modules. One daily practice.</Pill>
+                <span className={styles.heroMeta}>Calm by design</span>
               </motion.div>
 
-              <motion.p variants={fadeUp} className={styles.eyebrow}>
-                A quieter Qur&apos;an companion for real days.
-              </motion.p>
-
-              <motion.h1
-                variants={fadeUp}
-                className="kw-marketing-display mt-5 max-w-[11ch] text-balance text-[clamp(3.2rem,7vw,6.2rem)] leading-[0.88] tracking-[-0.065em] text-[color:var(--kw-ink)]"
-              >
-                The gentlest way back to Qur&apos;an on a full day.
+              <motion.h1 variants={fadeUp} className={styles.heroTitle}>
+                Your Qur&apos;an, your hifz, your dua, and your Islamic journal in one place.
               </motion.h1>
 
-              <motion.p
-                variants={fadeUp}
-                className="mt-5 max-w-[39rem] text-pretty text-base leading-8 text-[color:var(--kw-muted)] md:text-[1.06rem]"
-              >
-                Read where you stopped, protect review before adding more, and keep daily duas plus private reflection in one clear place that stays calm instead of crowded.
+              <motion.p variants={fadeUp} className={styles.heroSummary}>
+                Hifzer brings together Qur&apos;an reading, memorization, daily duas, Islamic
+                guides, and a personal journal in one space that feels clear instead of stacked.
               </motion.p>
 
-              <motion.div variants={fadeUp} className="mt-8 flex flex-wrap items-center gap-3">
+              <motion.div variants={fadeUp} className={styles.heroActions}>
                 <Button asChild size="lg">
                   <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
-                    {isSignedIn ? "Return to today" : "Begin free"} <ArrowRight size={18} />
+                    Open App <ArrowRight size={18} />
                   </PublicAuthLink>
                 </Button>
 
                 <Button asChild size="lg" variant="secondary">
-                  <TrackedLink href={secondaryHref} telemetryName="landing.hero.secondary-reader">
-                    {secondaryLabel}
+                  <TrackedLink href={previewHref} telemetryName="landing.hero.preview-reader">
+                    {isSignedIn ? "Open the reader" : "Preview the reader"}
                   </TrackedLink>
                 </Button>
               </motion.div>
 
-              <motion.p variants={fadeUp} className={styles.heroCaption}>
-                {isSignedIn
-                  ? "Your reader, review flow, and journal are ready when you are."
-                  : "Start in the browser. Sign in when you want your place, progress, and private journal kept across devices."}
+              <motion.p variants={fadeUp} className={styles.heroMicro}>
+                No subscription. No card required. Begin in the browser, then add it to your phone
+                when it genuinely earns the place.
               </motion.p>
+            </div>
 
-              <motion.div variants={fadeUp} className={styles.promiseGrid}>
-                {PROMISES.map((promise) => {
-                  const Icon = promise.icon;
+            <motion.aside variants={fadeUp} className={styles.heroPanel}>
+              <div className={styles.heroPanelHeader}>
+                <p className={styles.eyebrow}>A calmer home for daily return</p>
+                <h2 className={styles.heroPanelTitle}>
+                  Each lane stays separate enough to feel simple when life is full.
+                </h2>
+              </div>
+
+              <div className={styles.heroStatGrid}>
+                <div className={styles.heroStatCard}>
+                  <p className={styles.heroStatValue}>5</p>
+                  <p className={styles.heroStatLabel}>modules</p>
+                </div>
+                <div className={styles.heroStatCard}>
+                  <p className={styles.heroStatValue}>7</p>
+                  <p className={styles.heroStatLabel}>translation options</p>
+                </div>
+                <div className={styles.heroStatCard}>
+                  <p className={styles.heroStatValue}>6,236</p>
+                  <p className={styles.heroStatLabel}>ayahs tracked</p>
+                </div>
+              </div>
+
+              <div className={styles.heroDetailList}>
+                {HERO_DETAILS.map((detail) => {
+                  const Icon = detail.icon;
 
                   return (
-                    <article key={promise.title} className={styles.promiseCard}>
-                      <span className={styles.promiseIcon}>
-                        <Icon size={18} />
+                    <article key={detail.title} className={styles.heroDetailCard}>
+                      <span className={styles.heroDetailIcon}>
+                        <Icon size={16} />
                       </span>
-                      <h2 className={styles.promiseTitle}>{promise.title}</h2>
-                      <p className={styles.promiseBody}>{promise.body}</p>
+                      <div>
+                        <p className={styles.heroDetailTitle}>{detail.title}</p>
+                        <p className={styles.heroDetailBody}>{detail.body}</p>
+                      </div>
                     </article>
                   );
                 })}
-              </motion.div>
-            </div>
-
-            <motion.div variants={fadeUp} className={styles.studioShell}>
-              <div className={styles.studioAura} aria-hidden />
-              <div className={styles.studioHeader}>
-                <div>
-                  <p className={styles.studioEyebrow}>Today&apos;s return</p>
-                  <h2 className={styles.studioHeading}>Choose the lane that fits the moment.</h2>
-                </div>
-                <Pill tone={activeLane.tone}>{activeLane.label}</Pill>
               </div>
-
-              <div className={styles.modeRail} role="tablist" aria-label="Hifzer lanes">
-                {LANES.map((lane, index) => (
-                  <button
-                    key={lane.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={activeIndex === index}
-                    onClick={() => setActiveIndex(index)}
-                    className={clsx(
-                      styles.modeButton,
-                      activeIndex === index && styles.modeButtonActive,
-                    )}
-                  >
-                    {lane.label}
-                  </button>
-                ))}
-              </div>
-
-              <AnimatePresence mode="wait">
-                <motion.article
-                  key={activeLane.id}
-                  className={styles.manuscriptCard}
-                  initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: -18 }}
-                  transition={{ duration: reduceMotion ? 0 : 0.28, ease: "easeOut" }}
-                >
-                  <div className={styles.manuscriptMeta}>
-                    <span>{activeLane.eyebrow}</span>
-                    <span>Quiet by design</span>
-                  </div>
-
-                  <h3 className={styles.manuscriptTitle}>{activeLane.heroTitle}</h3>
-                  <p className={styles.manuscriptBody}>{activeLane.heroBody}</p>
-
-                  <div className={styles.threadList}>
-                    {activeLane.signals.map((signal) => (
-                      <div key={signal} className={styles.threadRow}>
-                        <span className={styles.threadMarker} aria-hidden />
-                        <p>{signal}</p>
-                      </div>
-                    ))}
-                  </div>
-                </motion.article>
-              </AnimatePresence>
-
-              <div className={styles.compassGrid}>
-                <article className={styles.compassCard}>
-                  <p className={styles.compassLabel}>{activeLane.guideTitle}</p>
-                  <p className={styles.compassBody}>{activeLane.guideBody}</p>
-                </article>
-
-                <article className={styles.compassCard}>
-                  <p className={styles.compassLabel}>Quiet promise</p>
-                  <p className={styles.compassBody}>{activeLane.note}</p>
-                </article>
-              </div>
-            </motion.div>
+            </motion.aside>
           </div>
         </motion.div>
       </section>
 
-      <section id="experience" className={styles.section}>
+      <section id="companion" className={styles.section}>
         <div className={styles.sectionLead}>
-          <Pill tone="neutral">Three clear doors</Pill>
-          <h2 className="kw-marketing-display mt-4 max-w-[12ch] text-balance text-[clamp(2.3rem,4.9vw,4.3rem)] leading-[0.93] tracking-[-0.055em] text-[color:var(--kw-ink)]">
-            One companion, three distinct ways to return.
+          <Pill tone="accent">Five modules. One daily practice.</Pill>
+          <h2 className={styles.sectionTitle}>
+            Everything you need for a consistent deen. Nothing you don&apos;t.
           </h2>
-          <p className="mt-4 max-w-[43rem] text-base leading-8 text-[color:var(--kw-muted)]">
-            Hifzer does not blur reading, memorization, and dua into one vague system. Each lane has a different emotional weight, so each one gets its own calm shape.
+          <p className={styles.sectionText}>
+            Each module carries a different weight, so each one gets its own space. Nothing has to
+            compete for your attention.
           </p>
         </div>
 
-        <div className={styles.experienceGrid}>
-          {LANES.map((lane) => {
-            const Icon = lane.icon;
+        <div className={styles.moduleGrid}>
+          {MODULES.map((module) => {
+            const Icon = module.icon;
 
             return (
               <motion.article
-                key={lane.id}
-                className={styles.laneCard}
-                data-tone={lane.tone}
-                whileHover={reduceMotion ? undefined : { y: -5 }}
+                key={module.id}
+                className={clsx(styles.moduleCard, module.featured && styles.moduleCardFeatured)}
+                data-tone={module.tone}
+                whileHover={reduceMotion ? undefined : { y: -4 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
               >
-                <div className={styles.laneTop}>
-                  <span className={styles.laneIcon}>
+                <div className={styles.moduleHeader}>
+                  <span className={styles.moduleIcon}>
                     <Icon size={18} />
                   </span>
                   <div>
-                    <p className={styles.laneEyebrow}>{lane.eyebrow}</p>
-                    <h3 className={styles.laneTitle}>{lane.laneTitle}</h3>
+                    <p className={styles.moduleLabel}>{module.label}</p>
+                    <h3 className={styles.moduleTitle}>{module.headline}</h3>
                   </div>
                 </div>
 
-                <p className={styles.laneBody}>{lane.laneBody}</p>
+                <p className={styles.moduleBody}>{module.body}</p>
 
-                <div className={styles.tagRail}>
-                  {lane.lanePoints.map((point) => (
-                    <span key={point} className={styles.tagChip}>
-                      {point}
+                <div className={styles.moduleTags}>
+                  {module.tags.map((tag) => (
+                    <span key={`${module.id}-${tag}`} className={styles.moduleTag}>
+                      {tag}
                     </span>
                   ))}
                 </div>
-
-                <p className={styles.laneNote}>{lane.note}</p>
               </motion.article>
-            );
-          })}
-        </div>
-
-        <div className={styles.accountStrip}>
-          {COMPANION_NOTES.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <article key={item.title} className={styles.accountCard}>
-                <span className={styles.accountIcon}>
-                  <Icon size={16} />
-                </span>
-                <div>
-                  <p className={styles.accountTitle}>{item.title}</p>
-                  <p className={styles.accountBody}>{item.body}</p>
-                </div>
-              </article>
             );
           })}
         </div>
       </section>
 
-      <section id="flow" className={styles.section}>
-        <div className={styles.flowShell}>
-          <div className={styles.sectionLead}>
-            <Pill tone="accent">Keep the return small</Pill>
-            <h2 className="kw-marketing-display mt-4 max-w-[12ch] text-balance text-[clamp(2.2rem,4.7vw,4rem)] leading-[0.94] tracking-[-0.055em] text-[color:var(--kw-ink)]">
-              A daily rhythm shaped for ordinary life.
-            </h2>
-            <p className="mt-4 max-w-[42rem] text-base leading-8 text-[color:var(--kw-muted)]">
-              The goal is not to perform spiritual ambition on a dashboard. It is to keep the next sincere step visible enough that you can keep returning.
-            </p>
-          </div>
+      <section className={styles.section}>
+        <div className={styles.gapShell}>
+          <Pill tone="brand">Why Hifzer exists</Pill>
+          <h2 className={styles.gapTitle}>The gap between who you are and who you want to be.</h2>
+          <p className={styles.gapBody}>
+            It is not about ability. It is about consistency. And consistency gets easier when
+            returning feels less costly than delaying.
+          </p>
+        </div>
+      </section>
 
-          <div className={styles.flowGrid}>
-            {RHYTHM.map((item) => (
-              <motion.article
-                key={item.step}
-                className={styles.flowCard}
-                whileHover={reduceMotion ? undefined : { y: -4 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-              >
-                <span className={styles.flowIndex}>{item.step}</span>
-                <h3 className={styles.flowTitle}>{item.title}</h3>
-                <p className={styles.flowBody}>{item.body}</p>
-              </motion.article>
-            ))}
+      <section id="method" className={styles.section}>
+        <div className={styles.sectionLead}>
+          <Pill tone="neutral">Built on tradition. Verified by science.</Pill>
+          <h2 className={styles.sectionTitle}>Hifz done the right way, and the research agrees.</h2>
+          <p className={styles.sectionText}>
+            Traditional hifz methodology and modern memory science arrive at the same foundations.
+            Hifzer is built to respect both.
+          </p>
+        </div>
 
-            <aside className={styles.memoryCard}>
-              <Pill tone="brand">What Hifzer protects</Pill>
-              <h3 className={styles.memoryTitle}>Enough memory to make tomorrow easier.</h3>
-              <p className={styles.memoryLead}>
-                Saved place, review structure, duas, and reflection stay close so you do not have to rebuild the relationship from zero every time.
-              </p>
+        <div className={styles.principleGrid}>
+          {PRINCIPLES.map((principle, index) => (
+            <motion.article
+              key={principle.title}
+              className={styles.principleCard}
+              whileHover={reduceMotion ? undefined : { y: -4 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              <span className={styles.principleIndex}>0{index + 1}</span>
+              <h3 className={styles.principleTitle}>{principle.title}</h3>
+              <p className={styles.principleBody}>{principle.body}</p>
+            </motion.article>
+          ))}
+        </div>
+      </section>
 
-              <div className={styles.memoryList}>
-                {COMPANION_NOTES.map((item) => {
-                  const Icon = item.icon;
+      <section className={styles.section}>
+        <div className={styles.sectionLead}>
+          <Pill tone="warn">Our commitments</Pill>
+          <h2 className={styles.sectionTitle}>Built around trust, not retention metrics.</h2>
+        </div>
 
-                  return (
-                    <div key={item.title} className={styles.memoryItem}>
-                      <span className={styles.memoryIcon}>
-                        <Icon size={16} />
-                      </span>
-                      <div>
-                        <p className={styles.memoryItemTitle}>{item.title}</p>
-                        <p className={styles.memoryItemBody}>{item.body}</p>
-                      </div>
+        <div className={styles.promiseGridNew}>
+          {PROMISES.map((promise) => {
+            const Icon = promise.icon;
+
+            return (
+              <article key={promise.title} className={styles.promiseCardNew} data-tone={promise.tone}>
+                <div className={styles.promiseHeaderNew}>
+                  <span className={styles.promiseIconNew}>
+                    <Icon size={17} />
+                  </span>
+                  <h3 className={styles.promiseTitleNew}>{promise.title}</h3>
+                </div>
+
+                <p className={styles.promiseBodyNew}>{promise.body}</p>
+
+                {promise.showTranslationRail ? (
+                  <div className={styles.translationRail} aria-label="Supported translation languages">
+                    <div className={styles.translationTrack}>
+                      {SCROLLING_TRANSLATIONS.map((label, index) => (
+                        <span key={`${label}-${index}`} className={styles.translationChip}>
+                          {label}
+                        </span>
+                      ))}
                     </div>
-                  );
-                })}
-              </div>
-            </aside>
-          </div>
+                  </div>
+                ) : null}
+              </article>
+            );
+          })}
         </div>
       </section>
 
@@ -472,34 +426,42 @@ export function LandingHome() {
           className={styles.finalShell}
           initial={reduceMotion ? undefined : { opacity: 0, y: 18 }}
           animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
         >
           <div className={styles.finalGrid}>
             <div>
-              <Pill tone={isSignedIn ? "brand" : "accent"}>
-                {isSignedIn ? "Continue gently" : "Begin quietly"}
-              </Pill>
-              <h2 className="kw-marketing-display mt-4 max-w-[11ch] text-balance text-[clamp(2.3rem,4.8vw,4rem)] leading-[0.94] tracking-[-0.055em] text-[color:var(--kw-ink)]">
-                {isSignedIn ? "Keep the thread alive today." : "Keep the next step small enough to keep."}
-              </h2>
-              <p className="mt-4 max-w-[40rem] text-base leading-8 text-[color:var(--kw-muted)]">
-                {isSignedIn
-                  ? "Return to your saved place, protected review, and private journal without stepping back into marketing noise."
-                  : "Begin in the browser, then let Hifzer keep your place, progress, and private reflection whenever you decide it has earned room in your routine."}
+              <Pill tone={isSignedIn ? "brand" : "accent"}>Begin today. Hifzer is yours.</Pill>
+              <h2 className={styles.finalTitle}>Start the routine you&apos;ve been putting off.</h2>
+              <p className={styles.finalBody}>
+                Begin in the browser. Your place, your progress, and your private journal stay ready
+                whenever you return. Your deen. Your pace. No drama.
+              </p>
+              <p className={styles.finalSupport}>
+                Need private features or custom product work?{" "}
+                <PublicAuthLink
+                  signedInHref="/support"
+                  signedOutHref="/login?redirect_url=%2Fsupport"
+                  className={styles.inlineLink}
+                >
+                  Request it in support
+                </PublicAuthLink>
+                .
+              </p>
+              <p className={styles.finalMicro}>
+                No subscription. No card required. Install on your phone from the browser.
               </p>
             </div>
 
             <div className={styles.finalActions}>
               <Button asChild size="lg">
                 <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
-                  {isSignedIn ? "Return to today" : "Create my free space"}{" "}
-                  <ArrowRight size={18} />
+                  {isSignedIn ? "Open App" : "Create my free space"} <ArrowRight size={18} />
                 </PublicAuthLink>
               </Button>
 
               <Button asChild size="lg" variant="secondary">
-                <TrackedLink href={secondaryHref} telemetryName="landing.final.secondary-reader">
-                  {isSignedIn ? "Open the reader" : "Preview first"}
+                <TrackedLink href={previewHref} telemetryName="landing.final.preview">
+                  {isSignedIn ? "Open the reader" : "Preview first - no account needed"}
                 </TrackedLink>
               </Button>
             </div>

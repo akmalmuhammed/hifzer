@@ -21,14 +21,14 @@ export function MarketingNav(props: { authEnabled: boolean }) {
   const { language } = useUiLanguage();
   const copy = getAppUiCopy(language);
   const showSignedIn = props.authEnabled && isSignedIn;
-  const signInLabel = language === "en.sahih" ? "Return" : copy.marketing.signIn;
-  const getStartedLabel = language === "en.sahih" ? "Begin free" : copy.marketing.getStarted;
-  const openAppLabel = language === "en.sahih" ? "Return" : copy.marketing.openApp;
+  const signInLabel = language === "en.sahih" ? "Sign in" : copy.marketing.signIn;
+  const getStartedLabel = language === "en.sahih" ? "Join Hifzer" : copy.marketing.getStarted;
+  const openAppLabel = language === "en.sahih" ? "Open App" : copy.marketing.openApp;
   const brandTagline =
     language === "en.sahih" ? "A quieter Qur'an companion" : copy.brandTagline;
   const links = [
-    { href: "/#experience", label: "Experience", key: "experience" },
-    { href: "/#flow", label: "Flow", key: "flow" },
+    { href: "/#companion", label: "Companion", key: "companion" },
+    { href: "/#method", label: "Method", key: "method" },
     { href: "/quran-preview", label: "Preview", key: "preview" },
   ] as const;
 
