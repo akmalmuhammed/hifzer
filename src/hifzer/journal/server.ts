@@ -28,7 +28,7 @@ const MAX_BLOCKS = 40;
 const MAX_BLOCK_TITLE_LENGTH = 120;
 const MAX_IMPORT_ENTRIES = 200;
 const DUA_STATUSES = ["ongoing", "answered", "accepted_differently"] satisfies readonly JournalDuaStatus[];
-const JOURNAL_DUA_MODULE_IDS = ["laylat-al-qadr", "repentance", "beautiful-names"] as const;
+const JOURNAL_DUA_MODULE_IDS = ["laylat-al-qadr", "repentance", "wealth", "ruqyah", "beautiful-names"] as const;
 
 type JournalUpsertInput = {
   id?: string | null;

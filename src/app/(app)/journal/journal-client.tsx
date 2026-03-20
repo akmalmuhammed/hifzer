@@ -950,7 +950,6 @@ export function JournalClient(props: {
                       </button>
                     ) : null}
                   </div>
-                  {renderInsertRow(block.id)}
                 </div>
               );
             }
@@ -999,7 +998,6 @@ export function JournalClient(props: {
                       <p className={styles.inlineHint}>This ayah card needs to be reinserted.</p>
                     )}
                   </div>
-                  {renderInsertRow(block.id)}
                 </div>
               );
             }
@@ -1055,7 +1053,6 @@ export function JournalClient(props: {
                     <p className={styles.inlineHint}>This dua card needs to be reinserted.</p>
                   )}
                 </div>
-                {renderInsertRow(block.id)}
               </div>
             );
           })}

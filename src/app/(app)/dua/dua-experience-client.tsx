@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleAlert,
+  Coins,
   HandHeart,
   Heart,
   Minus,
@@ -17,6 +18,7 @@ import {
   Plus,
   RefreshCcw,
   Save,
+  Shield,
   Sparkles,
   Trash2,
   type LucideIcon,
@@ -97,6 +99,12 @@ function moduleIcon(moduleId: DuaModuleId): LucideIcon {
   if (moduleId === "beautiful-names") {
     return Sparkles;
   }
+  if (moduleId === "wealth") {
+    return Coins;
+  }
+  if (moduleId === "ruqyah") {
+    return Shield;
+  }
   return Heart;
 }
 
@@ -106,6 +114,12 @@ function moduleTone(moduleId: DuaModuleId): "accent" | "warn" | "success" {
   }
   if (moduleId === "beautiful-names") {
     return "success";
+  }
+  if (moduleId === "wealth") {
+    return "success";
+  }
+  if (moduleId === "ruqyah") {
+    return "accent";
   }
   return "warn";
 }

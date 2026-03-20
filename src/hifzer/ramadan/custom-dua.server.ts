@@ -16,7 +16,7 @@ const BODY_MAX_LENGTH = 4000;
 const NOTE_MAX_LENGTH = 600;
 const SORT_ORDER_MIN = 1;
 const SORT_ORDER_MAX = 9999;
-const DUA_MODULE_IDS = ["laylat-al-qadr", "repentance"] satisfies readonly DuaModuleId[];
+const DUA_MODULE_IDS = ["laylat-al-qadr", "repentance", "wealth", "ruqyah"] satisfies readonly DuaModuleId[];
 
 export class DuaDeckError extends Error {
   status: number;

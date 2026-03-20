@@ -1,4 +1,6 @@
 import { beautifulNamesModuleDefinition } from "@/hifzer/ramadan/beautiful-names";
+import { ruqyahModuleDefinition } from "@/hifzer/ramadan/ruqyah";
+import { wealthModuleDefinition } from "@/hifzer/ramadan/wealth";
 
 export type SourceLink = {
   label: string;
@@ -7,7 +9,7 @@ export type SourceLink = {
 
 export type JourneyKind = "authentic" | "guided" | "personal";
 
-export type DuaModuleId = "laylat-al-qadr" | "repentance" | "beautiful-names";
+export type DuaModuleId = "laylat-al-qadr" | "repentance" | "wealth" | "ruqyah" | "beautiful-names";
 
 export const DEFAULT_DUA_MODULE_ID: DuaModuleId = "laylat-al-qadr";
 
@@ -790,6 +792,8 @@ const MODULE_DEFINITIONS: DuaJourneyModuleDefinition[] = [
     deckSteps: repentanceDeckSteps,
     completionSteps: repentanceCompletionSteps,
   },
+  wealthModuleDefinition,
+  ruqyahModuleDefinition,
   beautifulNamesModuleDefinition,
 ];
 
@@ -956,6 +960,24 @@ export function buildLaylatAlQadrJourney(input?: {
 }
 
 export const laylatAlQadrJourney = buildLaylatAlQadrJourney();
+
+export function buildWealthJourney(input?: {
+  customDuas?: readonly CustomDuaSnapshot[];
+  deckOrders?: readonly DuaDeckOrderSnapshot[];
+}): DuaJourneyModule {
+  return getDuaModule("wealth", input);
+}
+
+export const wealthJourney = buildWealthJourney();
+
+export function buildRuqyahJourney(input?: {
+  customDuas?: readonly CustomDuaSnapshot[];
+  deckOrders?: readonly DuaDeckOrderSnapshot[];
+}): DuaJourneyModule {
+  return getDuaModule("ruqyah", input);
+}
+
+export const ruqyahJourney = buildRuqyahJourney();
 
 export function buildBeautifulNamesJourney(input?: {
   customDuas?: readonly CustomDuaSnapshot[];
