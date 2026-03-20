@@ -1,7 +1,34 @@
 .page {
+  --journal-card-bg:
+    radial-gradient(540px 180px at 100% -15%, rgba(var(--kw-accent-rgb), 0.1), transparent 62%),
+    var(--kw-surface);
+  --journal-card-bg-expanded:
+    radial-gradient(640px 220px at 100% -15%, rgba(var(--kw-accent-rgb), 0.14), transparent 62%),
+    var(--kw-surface);
+  --journal-chip-bg: var(--kw-surface-soft);
+  --journal-chip-bg-strong: var(--kw-surface);
+  --journal-input-bg: var(--kw-surface-strong);
+  --journal-rich-card-bg: linear-gradient(180deg, var(--kw-surface-strong), var(--kw-surface-soft));
+  --journal-hover-shadow: 0 20px 40px rgba(11, 18, 32, 0.08);
+  --journal-shell-shadow: var(--kw-shadow-soft);
   display: grid;
   gap: 18px;
   padding: 1.75rem 0 calc(8rem + env(safe-area-inset-bottom));
+}
+
+:global(html[data-mode="dark"]) .page {
+  --journal-card-bg:
+    radial-gradient(560px 220px at 100% -20%, rgba(var(--kw-accent-rgb), 0.16), transparent 62%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.86));
+  --journal-card-bg-expanded:
+    radial-gradient(680px 240px at 100% -18%, rgba(var(--kw-accent-rgb), 0.2), transparent 64%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.9));
+  --journal-chip-bg: rgba(15, 23, 42, 0.82);
+  --journal-chip-bg-strong: rgba(30, 41, 59, 0.84);
+  --journal-input-bg: rgba(15, 23, 42, 0.94);
+  --journal-rich-card-bg: linear-gradient(180deg, rgba(30, 41, 59, 0.86), rgba(15, 23, 42, 0.9));
+  --journal-hover-shadow: 0 24px 56px rgba(2, 6, 23, 0.34);
+  --journal-shell-shadow: 0 18px 40px rgba(2, 6, 23, 0.28);
 }
 
 .searchBar {
@@ -12,7 +39,8 @@
 .searchBar :global(input) {
   height: 58px;
   border-radius: 22px;
-  background: var(--kw-surface-soft);
+  border-color: var(--kw-border-2);
+  background: var(--journal-input-bg);
 }
 
 .noteList {
@@ -40,10 +68,7 @@
   display: grid;
   gap: 18px;
   border: 1px solid var(--kw-border-2);
-  background:
-    radial-gradient(540px 180px at 100% -15%, rgba(var(--kw-accent-rgb), 0.1), transparent 62%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
-    var(--kw-surface);
+  background: var(--journal-card-bg);
   transition:
     transform 180ms ease,
     border-color 180ms ease,
@@ -55,16 +80,13 @@
 .noteCardButton:focus-visible .noteCard {
   transform: translateY(-2px);
   border-color: rgba(var(--kw-accent-rgb), 0.22);
-  box-shadow: 0 20px 40px rgba(11, 18, 32, 0.08);
+  box-shadow: var(--journal-hover-shadow);
 }
 
 .noteCardExpanded {
   gap: 20px;
   border-color: rgba(var(--kw-accent-rgb), 0.24);
-  background:
-    radial-gradient(640px 220px at 100% -15%, rgba(var(--kw-accent-rgb), 0.14), transparent 62%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)),
-    var(--kw-surface);
+  background: var(--journal-card-bg-expanded);
 }
 
 .noteHeader {
@@ -101,7 +123,7 @@
   gap: 8px;
   border-radius: 999px;
   border: 1px solid var(--kw-border-2);
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--journal-chip-bg);
   padding: 0 14px;
   font-size: 0.84rem;
   font-weight: 700;
@@ -169,7 +191,7 @@
 .noteMetaRow span {
   border-radius: 999px;
   border: 1px solid var(--kw-border-2);
-  background: var(--kw-surface-soft);
+  background: var(--journal-chip-bg);
   padding: 8px 12px;
   font-size: 0.76rem;
   font-weight: 700;
@@ -182,7 +204,7 @@
   font-size: 1.02rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  background: rgba(255, 255, 255, 0.88);
+  background: var(--journal-input-bg);
 }
 
 .blockList {
@@ -199,7 +221,7 @@
   min-height: 180px;
   resize: vertical;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--journal-input-bg);
   padding: 1rem 1.05rem;
   line-height: 1.75;
 }
@@ -212,7 +234,8 @@
 .blockActionButton,
 .inlineLinkButton,
 .inlineWarnButton,
-.closeInlineButton {
+.closeInlineButton,
+.iconActionButton {
   display: inline-flex;
   min-height: 36px;
   align-items: center;
@@ -220,7 +243,7 @@
   gap: 7px;
   border-radius: 999px;
   border: 1px solid var(--kw-border-2);
-  background: rgba(255, 255, 255, 0.76);
+  background: var(--journal-chip-bg);
   padding: 0 13px;
   font-size: 0.82rem;
   font-weight: 700;
@@ -257,6 +280,11 @@
   padding: 0;
 }
 
+.iconActionButton {
+  width: 36px;
+  padding: 0;
+}
+
 .insertZone {
   display: grid;
   gap: 10px;
@@ -269,7 +297,7 @@
   border: 1px solid var(--kw-border-2);
   background:
     radial-gradient(340px 100px at 100% -10%, rgba(var(--kw-accent-rgb), 0.08), transparent 62%),
-    var(--kw-surface-soft);
+    var(--journal-chip-bg-strong);
   padding: 14px;
 }
 
@@ -298,11 +326,11 @@
   width: 100%;
   border-radius: 18px;
   border: 1px solid var(--kw-border-2);
-  background: rgba(255, 255, 255, 0.84);
+  background: var(--journal-input-bg);
   padding: 0 12px;
   font-size: 0.92rem;
   color: var(--kw-ink);
-  box-shadow: var(--kw-shadow-soft);
+  box-shadow: var(--journal-shell-shadow);
   transition:
     border-color 180ms ease,
     background-color 180ms ease;
@@ -310,7 +338,7 @@
 
 .inlineSelect:focus {
   border-color: rgba(var(--kw-accent-rgb), 0.5);
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--kw-surface);
   outline: none;
 }
 
@@ -319,11 +347,9 @@
   gap: 14px;
   border-radius: 24px;
   border: 1px solid var(--kw-border-2);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.3)),
-    var(--kw-surface-soft);
+  background: var(--journal-rich-card-bg);
   padding: 16px;
-  box-shadow: var(--kw-shadow-soft);
+  box-shadow: var(--journal-shell-shadow);
 }
 
 .richCardHeader {
@@ -334,21 +360,20 @@
   gap: 12px;
 }
 
+.blockTopActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .arabicCard {
   border-radius: 22px;
   border: 1px solid var(--kw-border-2);
-  background: rgba(255, 255, 255, 0.74);
+  background: var(--journal-input-bg);
   padding: 18px 20px;
   color: var(--kw-ink);
   font-size: clamp(1.24rem, 2vw, 1.65rem);
   line-height: 2;
   text-align: right;
-}
-
-.ayahAudio {
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.84);
-  padding: 10px 12px;
 }
 
 .inlineHint {
@@ -406,7 +431,7 @@
   border: 1px dashed rgba(var(--kw-accent-rgb), 0.24);
   background:
     radial-gradient(440px 140px at 100% -10%, rgba(var(--kw-accent-rgb), 0.08), transparent 62%),
-    var(--kw-surface-soft);
+    var(--journal-chip-bg-strong);
 }
 
 .emptyText {

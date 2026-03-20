@@ -16,7 +16,6 @@ import {
   X,
 } from "lucide-react";
 import {
-  startTransition,
   useDeferredValue,
   useEffect,
   useRef,
@@ -24,7 +23,6 @@ import {
   type KeyboardEvent,
 } from "react";
 import clsx from "clsx";
-import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -34,7 +32,6 @@ import { SupportTextPanel } from "@/components/quran/support-text-panel";
 import { useToast } from "@/components/ui/toast";
 import {
   JOURNAL_ENTRY_TYPES,
-  buildLinkedAyahHref,
   buildLinkedDuaHref,
   clearJournalEntries,
   createAyahBlock,
@@ -223,10 +220,6 @@ function buildEntryPreview(entry: JournalEntry): string {
   return "Untitled note";
 }
 
-function countAttachmentBlocks(blocks: JournalBlock[]): number {
-  return blocks.filter((block) => block.kind !== "text").length;
-}
-
 function hasMeaningfulDraftContent(draft: JournalDraft): boolean {
   return Boolean(draft.title.trim().length > 0 || draft.tags.length > 0 || hasMeaningfulJournalBlocks(draft.blocks));
 }
@@ -334,11 +327,16 @@ export function JournalClient(props: {
     return payload.ayah;
   };
 
-  const updateDraft = (updater: (current: JournalDraft) => JournalDraft) => {
-    startTransition(() => {
-      setDraft((current) => (current ? updater(current) : current));
+  const updateDraft = (
+    updater: (current: JournalDraft) => JournalDraft,
+    options?: {
+      markDirty?: boolean;
+    },
+  ) => {
+    setDraft((current) => (current ? updater(current) : current));
+    if (options?.markDirty ?? true) {
       setIsDirty(true);
-    });
+    }
   };
 
   const updateBlock = (blockId: string, updater: (block: JournalBlock) => JournalBlock) => {
@@ -355,10 +353,15 @@ export function JournalClient(props: {
     }));
   };
 
-  const persistDraft = async (quiet = false): Promise<JournalEntry | null> => {
+  const persistDraft = async (options?: {
+    quiet?: boolean;
+    collapseAfterSave?: boolean;
+  }): Promise<JournalEntry | null> => {
     if (!draft) {
       return null;
     }
+    const quiet = options?.quiet ?? false;
+    const collapseAfterSave = options?.collapseAfterSave ?? false;
 
     if (!hasMeaningfulDraftContent(draft)) {
       setIsDirty(false);
@@ -422,8 +425,15 @@ export function JournalClient(props: {
       savedEntry = localEntry;
     }
 
-    setDraft(draftFromEntry(savedEntry));
-    setExpandedEntryId(savedEntry.id);
+    if (collapseAfterSave) {
+      setDraft(null);
+      setExpandedEntryId(null);
+      setInsertDraft(null);
+      setTagInput("");
+    } else {
+      setDraft(draftFromEntry(savedEntry));
+      setExpandedEntryId(savedEntry.id);
+    }
     setIsDirty(false);
     if (!quiet) {
       pushToast({
@@ -445,7 +455,7 @@ export function JournalClient(props: {
       setIsDirty(false);
       return true;
     }
-    const savedEntry = await persistDraft(true);
+    const savedEntry = await persistDraft({ quiet: true });
     return savedEntry !== null;
   };
 
@@ -540,26 +550,29 @@ export function JournalClient(props: {
           delete next[nextAyahId];
           return next;
         });
-        updateDraft((current) => ({
-          ...current,
-          blocks: current.blocks.map((block) => {
-            if (block.kind !== "ayah" || !block.ayah || block.ayah.ayahId !== nextAyahId) {
-              return block;
-            }
-            return {
-              ...block,
-              ayah: {
-                ayahId: ayah.id,
-                surahNumber: ayah.surahNumber,
-                ayahNumber: ayah.ayahNumber,
-                surahNameArabic: ayah.surahNameArabic,
-                surahNameTransliteration: ayah.surahNameTransliteration,
-                textUthmani: ayah.textUthmani,
-                translation: ayah.translation,
-              },
-            };
+        updateDraft(
+          (current) => ({
+            ...current,
+            blocks: current.blocks.map((block) => {
+              if (block.kind !== "ayah" || !block.ayah || block.ayah.ayahId !== nextAyahId) {
+                return block;
+              }
+              return {
+                ...block,
+                ayah: {
+                  ayahId: ayah.id,
+                  surahNumber: ayah.surahNumber,
+                  ayahNumber: ayah.ayahNumber,
+                  surahNameArabic: ayah.surahNameArabic,
+                  surahNameTransliteration: ayah.surahNameTransliteration,
+                  textUthmani: ayah.textUthmani,
+                  translation: ayah.translation,
+                },
+              };
+            }),
           }),
-        }));
+          { markDirty: false },
+        );
       } catch (error) {
         if (cancelled) {
           return;
@@ -585,13 +598,11 @@ export function JournalClient(props: {
     if (!shouldContinue) {
       return;
     }
-    startTransition(() => {
-      setDraft(createEmptyDraft(type));
-      setExpandedEntryId("new");
-      setTagInput("");
-      setInsertDraft(null);
-      setIsDirty(false);
-    });
+    setDraft(createEmptyDraft(type));
+    setExpandedEntryId("new");
+    setTagInput("");
+    setInsertDraft(null);
+    setIsDirty(false);
   };
 
   const handleOpenEntry = async (entry: JournalEntry) => {
@@ -599,13 +610,11 @@ export function JournalClient(props: {
     if (!shouldContinue) {
       return;
     }
-    startTransition(() => {
-      setDraft(draftFromEntry(entry));
-      setExpandedEntryId(entry.id);
-      setTagInput("");
-      setInsertDraft(null);
-      setIsDirty(false);
-    });
+    setDraft(draftFromEntry(entry));
+    setExpandedEntryId(entry.id);
+    setTagInput("");
+    setInsertDraft(null);
+    setIsDirty(false);
   };
 
   const handleDeleteCurrent = async () => {
@@ -915,11 +924,6 @@ export function JournalClient(props: {
             placeholder="Name this note"
             className={styles.noteTitleInput}
           />
-
-          <div className={styles.noteMetaRow}>
-            <span>{noteDraft.id ? "Editing inside this note." : "This note is still unsaved."}</span>
-            <span>{countAttachmentBlocks(noteDraft.blocks)} linked cards</span>
-          </div>
         </div>
 
         <div className={styles.blockList}>
@@ -966,49 +970,23 @@ export function JournalClient(props: {
               return (
                 <div key={block.id} className={styles.blockShell}>
                   <div className={styles.richCardBlock}>
-                    <div className={styles.richCardHeader}>
-                      <div className={styles.richCardPills}>
-                        <Pill tone="accent">Ayah card</Pill>
-                        {ayah ? (
-                          <Pill tone="neutral">
-                            {ayah.surahNameTransliteration} {ayah.surahNumber}:{ayah.ayahNumber}
-                          </Pill>
-                        ) : null}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {ayah ? (
-                          <Link href={buildLinkedAyahHref(ayah)} className={styles.inlineLinkButton}>
-                            Open ayah <ArrowRight size={14} />
-                          </Link>
-                        ) : null}
-                        <button type="button" className={styles.blockActionButton} onClick={() => removeBlock(block.id)}>
-                          Remove
-                        </button>
-                      </div>
+                    <div className={styles.blockTopActions}>
+                      <button
+                        type="button"
+                        className={styles.iconActionButton}
+                        onClick={() => removeBlock(block.id)}
+                        aria-label="Remove inserted ayah"
+                        title="Remove ayah"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
-
-                    <Input
-                      value={block.title}
-                      onChange={(event) =>
-                        updateBlock(block.id, () => ({
-                          ...block,
-                          title: event.target.value,
-                        }))
-                      }
-                      placeholder="Card title"
-                    />
 
                     {ayah ? (
                       <>
                         <div dir="rtl" className={styles.arabicCard}>
                           {ayah.textUthmani ?? "Loading ayah..."}
                         </div>
-                        <AyahAudioPlayer
-                          ayahId={ayah.ayahId}
-                          reciterId={props.reciterId}
-                          speedPrefKey="hifzer_journal_ayah_audio_speed_v2"
-                          className={styles.ayahAudio}
-                        />
                         <SupportTextPanel
                           kind="translation"
                           dir={props.translationDir}
@@ -1163,7 +1141,7 @@ export function JournalClient(props: {
               ? "Private. Saved to your account so it follows you across devices."
               : "Private. Saved only in this browser for now."}
           </p>
-          <Button onClick={() => void persistDraft(false)} disabled={!canSave || isBusy}>
+          <Button onClick={() => void persistDraft({ collapseAfterSave: true })} disabled={!canSave || isBusy}>
             <Save size={16} />
             {isSaving ? "Saving..." : "Save note"}
           </Button>
@@ -1210,7 +1188,6 @@ export function JournalClient(props: {
 
           <div className={styles.noteMetaRow}>
             <span>{formatJournalTimestamp(entry.updatedAt)}</span>
-            <span>{countAttachmentBlocks(entry.blocks ?? [])} linked cards</span>
             {entry.autoDeleteAt ? <span>Auto-deletes in {formatAutoDeleteCountdown(entry)}</span> : null}
           </div>
         </Card>
@@ -1230,22 +1207,24 @@ export function JournalClient(props: {
         }
       />
 
-      <div className={styles.searchBar}>
-        <label className="sr-only" htmlFor="journal-search">
-          Search notes
-        </label>
-        <Search
-          size={18}
-          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[color:var(--kw-faint)]"
-        />
-        <Input
-          id="journal-search"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search titles, tags, or note text"
-          className="pl-12"
-        />
-      </div>
+      {expandedEntryId === null ? (
+        <div className={styles.searchBar}>
+          <label className="sr-only" htmlFor="journal-search">
+            Search notes
+          </label>
+          <Search
+            size={18}
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[color:var(--kw-faint)]"
+          />
+          <Input
+            id="journal-search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search titles, tags, or note text"
+            className="pl-12"
+          />
+        </div>
+      ) : null}
 
       <div className={styles.noteList}>
         {!isLoaded ? (
