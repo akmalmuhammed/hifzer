@@ -92,6 +92,7 @@ export function FinalCta() {
   const install = useInstallApp();
   const { pushToast } = useToast();
   const featureRequestHref = `mailto:${SUPPORT_EMAIL}?subject=Hifzer+feature+request`;
+  const InstallIcon = install.canPrompt ? Download : Share;
 
   const onInstallNow = async () => {
     trackGaEvent("landing.install_primary_click", { placement: "final-cta" });
