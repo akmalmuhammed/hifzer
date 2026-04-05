@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Download, Share } from "lucide-react";
+import { ArrowRight, Download, Share, HandHeart, Sparkles, ShieldCheck, LockKeyhole, Mail } from "lucide-react";
 import { WindLines } from "@/components/brand/wind-lines";
 import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
