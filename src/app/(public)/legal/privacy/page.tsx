@@ -33,15 +33,15 @@ export default function LegalPrivacyPage() {
           <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">2. How we use data</h2>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
             We use data to provide your plan, store progress, improve reliability, secure accounts,
-            and support billing/entitlements.
+            and support optional checkout flows.
           </p>
         </Card>
 
         <Card>
           <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">3. Billing processors</h2>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-            Paid checkout is processed by third-party payment providers (currently Paddle). We do not
-            store full payment card details on Hifzer servers.
+            Optional support checkout is processed by third-party payment providers (currently Paddle).
+            We do not store full payment card details on Hifzer servers.
           </p>
         </Card>
 

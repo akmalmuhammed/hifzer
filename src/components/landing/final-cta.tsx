@@ -6,16 +6,92 @@ import { WindLines } from "@/components/brand/wind-lines";
 import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { Button } from "@/components/ui/button";
+import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
 import { useInstallApp } from "@/components/pwa/use-install-app";
 import { trackGaEvent } from "@/lib/ga/client";
+import styles from "./landing.module.css";
+
+const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@hifzer.com";
+
+const PROMISES = [
+  {
+    title: "The core app stays free to use",
+    body: [
+      "No subscription tiers across the main experience",
+      "No free-trial countdown pretending to be generosity",
+      "No paid wall before reading, Hifz, or dua can help you",
+    ],
+    promise: "Optional one-time support exists if you want to help fund the work. Help is not withheld until you pay.",
+    icon: HandHeart,
+  },
+  {
+    title: "We will not gamify your faith",
+    body: [
+      "No meaningless badges",
+      "No noisy streak guilt loops",
+      "No social comparison pretending to measure sincerity",
+    ],
+    promise: "Your progress is between you and Allah.",
+    icon: Sparkles,
+  },
+  {
+    title: "We will not force one path on you",
+    body: [
+      "No rigid onboarding tunnel",
+      "No single correct workflow to obey",
+      "No pressure to use every feature before any feature can help",
+    ],
+    promise: "Open it. Explore it. Build your own way of returning.",
+    icon: ShieldCheck,
+  },
+  {
+    title: "We will not stop building with you",
+    body: [
+      "No closed roadmap decided in secret",
+      "No worship features dropped just because a metric cooled down",
+      "No pretending the current version is the final one",
+    ],
+    promise: "If people need something that serves worship, it stays on the table.",
+    icon: Mail,
+  },
+  {
+    title: "We will not sell your spirituality",
+    body: [
+      "No ads in the middle of devotion",
+      "No selling personal data",
+      "No spam disguised as care",
+    ],
+    promise: "Privacy, trust, and restraint have to remain visible.",
+    icon: LockKeyhole,
+  },
+] as const;
+
+const TRUST_SIGNALS = [
+  {
+    title: "Core app free to use",
+    body: "Reading, Hifz, and dua do not sit behind a subscription gate.",
+  },
+  {
+    title: "Optional support is one-time",
+    body: "If you want to help keep Hifzer going, support is never required first.",
+  },
+  {
+    title: "Browser first",
+    body: "Use it on the web first. Add it to your home screen only if it earns the place.",
+  },
+  {
+    title: "Open roadmap",
+    body: "Requests and product direction stay visible instead of disappearing into a black box.",
+  },
+] as const;
 
 export function FinalCta() {
   const reduceMotion = useReducedMotion();
   const { isSignedIn } = usePublicAuth();
   const install = useInstallApp();
   const { pushToast } = useToast();
-  const InstallIcon = install.canPrompt ? Download : Share;
+  const featureRequestHref = `mailto:${SUPPORT_EMAIL}?subject=Hifzer+feature+request`;
 
   const onInstallNow = async () => {
     trackGaEvent("landing.install_primary_click", { placement: "final-cta" });
@@ -37,7 +113,7 @@ export function FinalCta() {
       pushToast({
         tone: "warning",
         title: "iPhone install",
-        message: "Tap Share, then Add to Home Screen.",
+        message: "Safari requires Share, then Add to Home Screen.",
       });
       return;
     }
@@ -50,7 +126,7 @@ export function FinalCta() {
   };
 
   return (
-    <section className="py-10 md:py-14">
+    <section id="promise" className="py-10 md:py-14">
       <motion.div
         initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}

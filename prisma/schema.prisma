@@ -100,6 +100,20 @@ enum BookmarkMutationType {
   CATEGORY_DELETE
 }
 
+enum PrivateJournalEntryType {
+  reflection
+  dua
+  repentance
+  gratitude
+  free
+}
+
+enum PrivateJournalDuaStatus {
+  ongoing
+  answered
+  accepted_differently
+}
+
 enum QuranBrowseSource {
   READER_VIEW
   AUDIO_PLAY
@@ -186,6 +200,7 @@ model UserProfile {
   bookmarkCategories    BookmarkCategory[]
   bookmarks             Bookmark[]
   bookmarkEvents        BookmarkEvent[]
+  privateJournalEntries PrivateJournalEntry[]
   quranBrowseEvents     QuranBrowseEvent[]
   customDuas           CustomDua[]
   duaDeckOrders        DuaDeckOrder[]
@@ -195,6 +210,34 @@ model UserProfile {
 
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+}
+
+model PrivateJournalEntry {
+  id                          String                   @id @default(cuid())
+  userId                      String
+  clientEntryId               String?
+  type                        PrivateJournalEntryType
+  title                       String?
+  content                     String
+  blocksJson                  Json?
+  tags                        String[]                 @default([])
+  pinned                      Boolean                  @default(false)
+  linkedAyahId                Int?
+  linkedSurahNumber           Int?
+  linkedAyahNumber            Int?
+  linkedSurahNameArabic       String?
+  linkedSurahNameTransliteration String?
+  linkedDuaJson               Json?
+  duaStatus                   PrivateJournalDuaStatus?
+  autoDeleteAt                DateTime?
+  createdAt                   DateTime                 @default(now())
+  updatedAt                   DateTime                 @updatedAt
+
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, clientEntryId])
+  @@index([userId, updatedAt])
+  @@index([userId, autoDeleteAt])
 }
 
 model EmailDispatch {

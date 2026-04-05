@@ -35,7 +35,7 @@ const MOTIVATION_TILES: MotivationTile[] = [
   { category: "Qur'an", title: "With hardship comes ease. Keep going.", source: "Qur'an 94:5-6" },
   { category: "Hifz", title: "Memorize less, but memorize with excellence.", source: "Hifzer Method" },
   { category: "Progress", title: "Delayed comfort creates lasting strength.", source: "Hifzer Principle" },
-  { category: "Qur'an", title: "The reciter's rank rises with each verse.", source: "Sunan Abi Dawud 1464" },
+  { category: "Qur'an", title: "The reciter's rank rises with each verse.", source: "Authentic hadith" },
   { category: "Hifz", title: "Your tongue repeats. Your heart records.", source: "Hifzer Method" },
   { category: "Progress", title: "Protect your rhythm and your rhythm will protect you.", source: "Hifzer Principle" },
   { category: "Qur'an", title: "Never underestimate one sincere return to Allah.", source: "Qur'an 2:186" },

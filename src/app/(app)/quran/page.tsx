@@ -1,14 +1,15 @@
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
-import { ArrowRight, BookMarked, BookOpen, Compass, EyeOff, Headphones, MoonStar, Radio } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { ArrowRight, BookMarked, BookOpen, Compass, MoonStar } from "lucide-react";
+import { DistractionFreeToggle } from "@/components/app/distraction-free-toggle";
+import { SurahProgressSection } from "@/components/progress/surah-progress-section";
+import { DisclosureCard } from "@/components/ui/disclosure-card";
 import { Pill } from "@/components/ui/pill";
 import { QuranMotivationHero } from "@/components/quran/quran-motivation-hero";
-import { getReciterLabel } from "@/hifzer/audio/reciters";
+import { listQuranSurahProgress } from "@/hifzer/progress/surah-progress.server";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
-import { getAyahById, getSurahInfo, listJuzs, listSurahs } from "@/hifzer/quran/lookup.server";
+import { getAyahById, listJuzs, listSurahs } from "@/hifzer/quran/lookup.server";
 import { getQuranReadProgress } from "@/hifzer/quran/read-progress.server";
-import { DEFAULT_QURAN_TRANSLATION_ID, getQuranTranslationOption } from "@/hifzer/quran/translation-prefs";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { QuranCompletionProgress } from "./quran-completion-progress";
 import { QuranProgressBackfill } from "./quran-progress-backfill";
@@ -28,33 +29,24 @@ export default async function QuranIndexPage() {
     lastReadAyahId: null as number | null,
     lastReadAt: null as string | null,
   };
+  let surahProgressItems = [] as Awaited<ReturnType<typeof listQuranSurahProgress>>;
   if (clerkEnabled()) {
     const { userId } = await auth();
     if (userId) {
       profile = await getOrCreateUserProfile(userId);
       if (profile) {
-        readCoverage = await getQuranReadProgress(profile.id);
+        [readCoverage, surahProgressItems] = await Promise.all([
+          getQuranReadProgress(profile.id),
+          listQuranSurahProgress(userId),
+        ]);
       }
     }
   }
 
-  const progressAyahId = readCoverage.lastReadAyahId ?? profile?.quranCursorAyahId ?? 1;
-  const selectedTranslation = getQuranTranslationOption(profile?.quranTranslationId ?? DEFAULT_QURAN_TRANSLATION_ID);
-
+  const progressAyahId = profile?.quranCursorAyahId ?? readCoverage.lastReadAyahId ?? 1;
   const surahs = listSurahs();
   const juzs = listJuzs();
   const lastAyah = getAyahById(progressAyahId) ?? getAyahById(1);
-  const lastSurah = getSurahInfo(lastAyah?.surahNumber ?? 1);
-  const surahProgress = lastSurah && lastAyah ? Math.round((lastAyah.ayahNumber / lastSurah.ayahCount) * 100) : 0;
-  const nextSurahNumber = lastSurah &&
-      lastAyah &&
-      lastAyah.ayahNumber >= lastSurah.ayahCount &&
-      lastSurah.surahNumber < 114
-    ? lastSurah.surahNumber + 1
-    : null;
-  const nextSurahHref = nextSurahNumber != null
-    ? `/quran/read?${new URLSearchParams({ view: "compact", surah: String(nextSurahNumber) }).toString()}`
-    : null;
 
   const trackedParams = new URLSearchParams({ view: "compact" });
   if (lastAyah) {
@@ -63,40 +55,23 @@ export default async function QuranIndexPage() {
   }
   const trackedHref = `/quran/read?${trackedParams.toString()}`;
   const anonymousHref = `${trackedHref}&anon=1`;
-  const activeReciterLabel = getReciterLabel(profile?.reciterId ?? "default");
+  const toolLinkClass = "inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] transition hover:bg-white";
 
   return (
     <div className="pb-12 pt-10 md:pb-16 md:pt-14">
-      <Pill tone="neutral">Qur&apos;an</Pill>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Pill tone="neutral">Qur&apos;an</Pill>
+        <DistractionFreeToggle />
+      </div>
       <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0 flex-1">
           <QuranMotivationHero />
           <div className="mt-4 flex flex-wrap gap-2">
             <Link
-              href="/quran/glossary"
-              className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.24)] bg-[rgba(var(--kw-accent-rgb),0.1)] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-[rgba(var(--kw-accent-rgb),1)]"
-            >
-              Open Qur&apos;anic glossary search
-            </Link>
-            <Link
-              href="/quran/read?view=compact"
-              className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.24)] bg-[rgba(var(--kw-accent-rgb),0.1)] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-[rgba(var(--kw-accent-rgb),1)]"
+              href={trackedHref}
+              className="kw-subtle-emphasis inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2.5 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
             >
               Continue reading <ArrowRight size={14} />
-            </Link>
-            <Link
-              href="/quran/bookmarks"
-              className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-ink)]"
-            >
-              Open smart bookmarks
-              <BookMarked size={14} />
-            </Link>
-            <Link
-              href="/dua"
-              className="inline-flex items-center gap-2 rounded-xl border border-[rgba(194,65,12,0.22)] bg-[rgba(194,65,12,0.10)] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-ember-600)]"
-            >
-              Laylat al-Qadr dua
-              <MoonStar size={14} />
             </Link>
           </div>
         </div>
@@ -126,257 +101,127 @@ export default async function QuranIndexPage() {
         />
       </div>
 
-      <div className="mt-10 grid gap-4 lg:grid-cols-2">
-        <Card className="relative overflow-hidden">
-          <div className="pointer-events-none absolute -right-20 -top-20 h-44 w-44 rounded-full bg-[rgba(var(--kw-accent-rgb),0.09)]" />
-          <div className="relative">
-            <div className="flex items-center gap-2">
-              <Pill tone="accent">Continue reading</Pill>
-              <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">Tracked mode</span>
+      <div className="mt-8">
+        <SurahProgressSection
+          title="Surah progress"
+          subtitle="Finished surahs stay marked in green, and the surah you are reading keeps its percentage so you can return to the same place easily."
+          items={surahProgressItems.slice(0, 8)}
+          viewAllHref="/quran/progress"
+          emptyTitle="No surah progress yet"
+          emptyBody="Start reading and your current and finished surahs will appear here."
+        />
+      </div>
+
+      <div className="mt-8">
+        <DisclosureCard
+          summary={(
+            <div>
+              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">More reading tools</p>
+              <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
+                Open bookmarks, jump by surah or juz, save reading done elsewhere, or revisit the dua and progress pages when needed.
+              </p>
             </div>
-            <p className="mt-4 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-              {lastSurah?.nameTransliteration ?? "Surah 1"} {lastAyah ? `${lastAyah.surahNumber}:${lastAyah.ayahNumber}` : "1:1"}
-            </p>
-            <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
-              Surah progress {surahProgress}% | Last tracked global ayah #{lastAyah?.id ?? 1}
-            </p>
-            <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-black/[0.06]">
-              <div
-                className="h-full rounded-full bg-[rgba(var(--kw-accent-rgb),0.75)] transition-[width]"
-                style={{ width: `${surahProgress}%` }}
+          )}
+        >
+          <div className="space-y-5">
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+              <Link href="/quran/glossary" className={toolLinkClass}>
+                Open Qur&apos;anic glossary search
+              </Link>
+              <Link href="/quran/bookmarks" className={toolLinkClass}>
+                Open smart bookmarks
+                <BookMarked size={14} />
+              </Link>
+              <Link href="/dua" className={toolLinkClass}>
+                Laylat al-Qadr dua
+                <MoonStar size={14} />
+              </Link>
+              <Link href="/quran/progress" className={toolLinkClass}>
+                See all surahs
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
+                <div className="flex items-center gap-2">
+                  <Compass size={16} className="text-[color:var(--kw-faint)]" />
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Quick jump</p>
+                </div>
+                <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Start reading from any surah.</p>
+                <form className="mt-4 flex flex-wrap items-center gap-2" method="get" action="/quran/read">
+                  <input type="hidden" name="view" value="compact" />
+                  <label className="sr-only" htmlFor="quran-jump-surah">
+                    Surah
+                  </label>
+                  <select
+                    id="quran-jump-surah"
+                    name="surah"
+                    defaultValue={String(lastAyah?.surahNumber ?? 1)}
+                    className="h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)] sm:min-w-[220px] sm:w-auto"
+                  >
+                    {surahs.map((surah) => (
+                      <option key={surah.surahNumber} value={surah.surahNumber}>
+                        Surah {surah.surahNumber} - {surah.nameTransliteration}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="submit"
+                    className="h-10 w-full rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] sm:w-auto"
+                  >
+                    Open surah
+                  </button>
+                </form>
+              </div>
+
+              <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
+                <div className="flex items-center gap-2">
+                  <Compass size={16} className="text-[color:var(--kw-faint)]" />
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Jump by juz</p>
+                </div>
+                <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Start reading from any juz.</p>
+                <form className="mt-4 flex flex-wrap items-center gap-2" method="get" action="/quran/read">
+                  <input type="hidden" name="view" value="compact" />
+                  <label className="sr-only" htmlFor="quran-jump-juz">
+                    Juz
+                  </label>
+                  <select
+                    id="quran-jump-juz"
+                    name="cursor"
+                    defaultValue={String(juzs[0]?.startAyahId ?? 1)}
+                    className="h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)] sm:min-w-[220px] sm:w-auto"
+                  >
+                    {juzs.map((juz) => (
+                      <option key={juz.juzNumber} value={juz.startAyahId}>
+                        Juz {juz.juzNumber}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="submit"
+                    className="h-10 w-full rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] sm:w-auto"
+                  >
+                    Open juz
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
+              <QuranProgressBackfill
+                defaultSurahNumber={lastAyah?.surahNumber ?? 1}
+                surahs={surahs.map((surah) => ({
+                  surahNumber: surah.surahNumber,
+                  ayahCount: surah.ayahCount,
+                  startAyahId: surah.startAyahId,
+                  nameTransliteration: surah.nameTransliteration,
+                }))}
               />
             </div>
-            <Link
-              href={trackedHref}
-              className="mt-6 inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
-            >
-              Continue where I stopped
-              <ArrowRight size={15} />
-            </Link>
-            {nextSurahHref ? (
-              <Link
-                href={nextSurahHref}
-                className="mt-3 inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
-              >
-                Go to next surah
-                <ArrowRight size={15} />
-              </Link>
-            ) : null}
           </div>
-        </Card>
-
-        <Card className="relative overflow-hidden">
-          <div className="pointer-events-none absolute -left-12 -top-20 h-40 w-40 rounded-full bg-[rgba(255,152,52,0.12)]" />
-          <div className="relative">
-            <div className="flex items-center gap-2">
-              <Pill tone="warn">Private mode</Pill>
-              <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">No tracking</span>
-            </div>
-            <p className="mt-4 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">Anonymous window</p>
-            <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
-              Read without updating last-read position and without streak tracking from browse audio playback.
-            </p>
-            <Link
-              href={anonymousHref}
-              className="mt-6 inline-flex items-center gap-2 rounded-xl border border-[rgba(255,152,52,0.35)] bg-[rgba(255,152,52,0.14)] px-4 py-2 text-sm font-semibold text-[rgb(163,89,24)]"
-            >
-              Open anonymous window
-              <EyeOff size={15} />
-            </Link>
-          </div>
-        </Card>
+        </DisclosureCard>
       </div>
-
-      <div className="mt-8 grid gap-4 lg:grid-cols-2">
-        <Card className="relative overflow-hidden">
-          <div className="pointer-events-none absolute -right-12 -top-10 h-32 w-32 rounded-full bg-[rgba(var(--kw-accent-rgb),0.12)]" />
-          <div className="relative">
-            <div className="flex items-center gap-2">
-              <Pill tone="accent">Listening mode</Pill>
-              <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">Read less, hear more</span>
-            </div>
-            <p className="mt-4 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-              Keep one reciter in your ears every day.
-            </p>
-            <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-              Use compact mode with auto-advance for commute, chores, or evening review. Stay in the same voice when you want stronger auditory recall.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Pill tone="neutral">Active: {activeReciterLabel}</Pill>
-              <Pill tone="neutral">Auto-next available</Pill>
-            </div>
-            <div className="mt-6 flex flex-wrap gap-2">
-              <Link
-                href={trackedHref}
-                className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
-              >
-                Start listening <Headphones size={15} />
-              </Link>
-              <Link
-                href="/settings/reciter"
-                className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
-              >
-                Change reciter <Radio size={15} />
-              </Link>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="relative overflow-hidden">
-          <div className="pointer-events-none absolute -left-12 -top-20 h-40 w-40 rounded-full bg-[rgba(255,152,52,0.12)]" />
-          <div className="relative">
-            <div className="flex items-center gap-2">
-              <Pill tone="warn">Khatmah rhythm</Pill>
-              <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">Seasonal planning</span>
-            </div>
-            <p className="mt-4 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-              Plan ahead for Ramadan or any focused month.
-            </p>
-            <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-              Your current coverage is {readCoverage.completionPct.toFixed(1)}%. Use the reading-plan card above to choose a 30-day, 90-day, or year-long khatmah track and keep the same pace.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Pill tone="neutral">Khatmah completed: {readCoverage.completionKhatmahCount}</Pill>
-              <Pill tone="neutral">Last tracked ayah: #{lastAyah?.id ?? 1}</Pill>
-            </div>
-            <div className="mt-6 flex flex-wrap gap-2">
-              <Link
-                href="/ramadan"
-                className="inline-flex items-center gap-2 rounded-xl border border-[rgba(255,152,52,0.35)] bg-[rgba(255,152,52,0.14)] px-4 py-2 text-sm font-semibold text-[rgb(163,89,24)]"
-              >
-                Open Ramadan planner <ArrowRight size={15} />
-              </Link>
-              <Link
-                href={trackedHref}
-                className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
-              >
-                Resume today&apos;s reading
-              </Link>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      <Card className="mt-8">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <Pill tone="neutral">Source trust</Pill>
-              <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">Content provenance</span>
-            </div>
-            <p className="mt-4 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-              Keep the Qur&apos;an stack traceable.
-            </p>
-            <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
-              Arabic text and metadata are bundled from Tanzil. Your default translation is{" "}
-              <span className="font-semibold text-[color:var(--kw-ink)]">{selectedTranslation?.label ?? "Unknown"}</span>{" "}
-              from <span className="font-semibold text-[color:var(--kw-ink)]">{selectedTranslation?.sourceLabel ?? "Unknown"}</span>.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Pill tone="accent">Arabic text: Tanzil</Pill>
-            <Pill tone={selectedTranslation?.sourceStatus === "verified" ? "accent" : "warn"}>
-              {selectedTranslation?.sourceStatus === "verified" ? "Translation source verified" : "Translation review pending"}
-            </Pill>
-          </div>
-        </div>
-        <p className="mt-4 text-sm leading-7 text-[color:var(--kw-faint)]">
-          {selectedTranslation?.sourceNote ?? "Source notes unavailable for this translation."}
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Link
-            href="/legal/sources"
-            className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
-          >
-            View source registry
-          </Link>
-          <Link
-            href="/settings/language"
-            className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
-          >
-            Review translation language
-          </Link>
-        </div>
-      </Card>
-
-      <Card className="mt-8">
-        <QuranProgressBackfill
-          defaultSurahNumber={lastAyah?.surahNumber ?? 1}
-          surahs={surahs.map((surah) => ({
-            surahNumber: surah.surahNumber,
-            ayahCount: surah.ayahCount,
-            startAyahId: surah.startAyahId,
-            nameTransliteration: surah.nameTransliteration,
-          }))}
-        />
-      </Card>
-
-      <div className="mt-8 grid gap-4 lg:grid-cols-2">
-        <Card>
-          <div className="flex items-center gap-2">
-            <Compass size={16} className="text-[color:var(--kw-faint)]" />
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Quick jump</p>
-          </div>
-          <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Start compact reading from any surah.</p>
-          <form className="mt-4 flex flex-wrap items-center gap-2" method="get" action="/quran/read">
-            <input type="hidden" name="view" value="compact" />
-            <label className="sr-only" htmlFor="quran-jump-surah">
-              Surah
-            </label>
-            <select
-              id="quran-jump-surah"
-              name="surah"
-              defaultValue={String(lastAyah?.surahNumber ?? 1)}
-              className="h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)] sm:min-w-[220px] sm:w-auto"
-            >
-              {surahs.map((surah) => (
-                <option key={surah.surahNumber} value={surah.surahNumber}>
-                  Surah {surah.surahNumber} - {surah.nameTransliteration}
-                </option>
-              ))}
-            </select>
-            <button
-              type="submit"
-              className="h-10 w-full rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] sm:w-auto"
-            >
-              Open surah
-            </button>
-          </form>
-        </Card>
-
-        <Card>
-          <div className="flex items-center gap-2">
-            <Compass size={16} className="text-[color:var(--kw-faint)]" />
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Jump by juz</p>
-          </div>
-          <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Start compact reading from any juz range.</p>
-          <form className="mt-4 flex flex-wrap items-center gap-2" method="get" action="/quran/read">
-            <input type="hidden" name="view" value="compact" />
-            <label className="sr-only" htmlFor="quran-jump-juz">
-              Juz
-            </label>
-            <select
-              id="quran-jump-juz"
-              name="cursor"
-              defaultValue={String(juzs[0]?.startAyahId ?? 1)}
-              className="h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)] sm:min-w-[220px] sm:w-auto"
-            >
-              {juzs.map((juz) => (
-                <option key={juz.juzNumber} value={juz.startAyahId}>
-                  Juz {juz.juzNumber}
-                </option>
-              ))}
-            </select>
-            <button
-              type="submit"
-              className="h-10 w-full rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] sm:w-auto"
-            >
-              Open juz
-            </button>
-          </form>
-        </Card>
-      </div>
-
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
-import { Download, Share, X } from "lucide-react";
+import { Download, X } from "lucide-react";
 import {
   buildDismissedUntil,
   INSTALL_BANNER_DISMISSED_UNTIL_KEY,
@@ -39,7 +39,6 @@ function writeStorage(key: string, value: string): void {
 export function InstallAppBanner({ className }: { className?: string }) {
   const install = useInstallApp();
   const [nowMs] = useState<number>(() => Date.now());
-  const [showIosSteps, setShowIosSteps] = useState(false);
   const [dismissedUntil, setDismissedUntil] = useState<number | null>(() =>
     parseDismissedUntil(readStorage(INSTALL_BANNER_DISMISSED_UNTIL_KEY)),
   );
@@ -68,13 +67,9 @@ export function InstallAppBanner({ className }: { className?: string }) {
     return null;
   }
 
-  const title = install.canPrompt ? "Install Hifzer app" : "Add Hifzer to Home Screen";
-  const hint = install.canPrompt
-    ? "Get faster launch and app-style full-screen on mobile."
-    : showIosSteps
-      ? "Step 1: tap Share. Step 2: choose Add to Home Screen."
-      : "On iPhone Safari, open Share and tap Add to Home Screen.";
-  const Icon = install.canPrompt ? Download : Share;
+  const title = "Install Hifzer on Android";
+  const hint = "Get faster launch and an app-style full-screen experience on Android.";
+  const Icon = Download;
 
   const dismiss = () => {
     const until = buildDismissedUntil(Date.now());
@@ -84,12 +79,8 @@ export function InstallAppBanner({ className }: { className?: string }) {
 
   const onInstall = async () => {
     const result = await install.requestInstall();
-    if (result === "ios_instructions") {
-      setShowIosSteps(true);
-      return;
-    }
     if (result === "dismissed") {
-      setShowIosSteps(false);
+      return;
     }
   };
 
@@ -101,7 +92,7 @@ export function InstallAppBanner({ className }: { className?: string }) {
       )}
       style={{ bottom: "calc(env(safe-area-inset-bottom) + 6.5rem)" }}
       role="region"
-      aria-label="Install app"
+      aria-label="Install on Android"
     >
       <div className="rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.24)] bg-white/92 px-3 py-3 shadow-[var(--kw-shadow)] backdrop-blur">
         <div className="flex items-start justify-between gap-3">
@@ -129,7 +120,7 @@ export function InstallAppBanner({ className }: { className?: string }) {
             className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] transition hover:bg-[rgba(var(--kw-accent-rgb),0.16)]"
           >
             <Icon size={15} />
-            {install.canPrompt ? "Install app" : "How to add"}
+            Install now
           </button>
           <button
             type="button"

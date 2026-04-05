@@ -306,15 +306,15 @@ export function ProgressClient() {
               <div className="w-full max-w-[360px] rounded-2xl border border-[color:var(--kw-border-2)] bg-white/75 p-4 shadow-[var(--kw-shadow-soft)]">
                 <div className="grid gap-2 sm:grid-cols-3">
                   <div className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2.5">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Tracked ayah</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Ayah count</p>
                     <p className="mt-1 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{animatedAyahs}</p>
                   </div>
                   <div className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2.5">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Tracked surah</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Surah count</p>
                     <p className="mt-1 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{animatedSurahs}</p>
                   </div>
                   <div className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2.5">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Tracked juz</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Juz count</p>
                     <p className="mt-1 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{animatedJuzs}</p>
                   </div>
                 </div>
@@ -365,7 +365,7 @@ export function ProgressClient() {
                   </p>
                 </div>
                 <div className="rounded-2xl border border-[color:var(--kw-border-2)] bg-white/60 p-3">
-                  <p className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">Tracked ayahs</p>
+                  <p className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">Ayahs in review</p>
                   <p className="mt-2 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
                     {data.hifz.trackedAyahs}
                   </p>

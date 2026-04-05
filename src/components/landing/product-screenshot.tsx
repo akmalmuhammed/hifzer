@@ -2,7 +2,10 @@
 
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
-import { Card } from "@/components/ui/card";
+import { ArrowRight, ShieldCheck } from "lucide-react";
+import { PublicAuthLink } from "@/components/landing/public-auth-link";
+import { Button } from "@/components/ui/button";
+import styles from "./landing.module.css";
 
 const PROOF_STATS = [
   { label: "Practitioners", value: "2,400+" },
@@ -20,6 +23,7 @@ export function ProductScreenshot() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: reduceMotion ? 0 : 0.55, ease: [0.22, 1, 0.36, 1] }}
+        className={`${styles.proofShell} px-5 py-6 sm:px-6 sm:py-7`}
       >
         <div className="mx-auto max-w-[860px] text-center">
           <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">

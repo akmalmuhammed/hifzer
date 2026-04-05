@@ -4,6 +4,8 @@ import { useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { BookOpen, PenLine, Moon, Sun, Heart, Sunrise } from "lucide-react";
 import { Pill } from "@/components/ui/pill";
+import { PublicAuthLink } from "@/components/landing/public-auth-link";
+import styles from "./landing.module.css";
 
 const FEATURES = [
   {

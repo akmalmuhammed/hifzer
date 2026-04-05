@@ -8,9 +8,11 @@ import { WindLines } from "@/components/brand/wind-lines";
 import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { Button } from "@/components/ui/button";
+import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
 import { useInstallApp } from "@/components/pwa/use-install-app";
 import { trackGaEvent } from "@/lib/ga/client";
+import styles from "./landing.module.css";
 
 export function Hero(props: { primaryIntent?: "install" | "signup" }) {
   const primaryIntent = props.primaryIntent ?? "install";

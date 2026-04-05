@@ -29,12 +29,12 @@ function variantClasses(variant: ButtonVariant): string {
 
 function sizeClasses(size: ButtonSize): string {
   if (size === "sm") {
-    return "h-9 rounded-xl px-3 text-sm";
+    return "h-9 rounded-[12px] px-3 text-sm";
   }
   if (size === "lg") {
-    return "h-12 rounded-2xl px-5 text-base";
+    return "h-12 rounded-[18px] px-5 text-base";
   }
-  return "h-10 rounded-2xl px-4 text-sm";
+  return "h-11 rounded-[16px] px-4 text-sm";
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
@@ -54,6 +54,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   const isDisabled = disabled || loading;
   const buttonClasses = clsx(
     "inline-flex select-none items-center justify-center gap-2 whitespace-nowrap font-semibold transition",
+    "[&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0",
     "shadow-[var(--kw-shadow-soft)] active:translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-60",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--kw-bg)]",
     variantClasses(variant),

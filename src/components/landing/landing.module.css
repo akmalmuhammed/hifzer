@@ -1,0 +1,651 @@
+.page {
+  position: relative;
+}
+
+.page::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 36rem;
+  pointer-events: none;
+  background:
+    radial-gradient(42rem 26rem at 8% 8%, rgba(10, 138, 119, 0.18), transparent 68%),
+    radial-gradient(34rem 22rem at 88% 14%, rgba(var(--kw-accent-rgb), 0.16), transparent 66%),
+    radial-gradient(32rem 20rem at 56% 28%, rgba(234, 88, 12, 0.12), transparent 72%);
+  opacity: 0.9;
+  z-index: 0;
+}
+
+.page > * {
+  position: relative;
+  z-index: 1;
+}
+
+.navWrap {
+  margin: 0 auto;
+  max-width: 1200px;
+  padding: 0.8rem 1rem 0;
+}
+
+.navFrame {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--kw-border);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.66));
+  box-shadow: var(--kw-shadow-soft);
+  backdrop-filter: blur(18px);
+}
+
+.navFrame::before,
+.heroShell::before,
+.sectionShell::before,
+.proofShell::before,
+.finalShell::before,
+.footerFrame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.navFrame::before {
+  background:
+    linear-gradient(120deg, rgba(10, 138, 119, 0.14), transparent 26%),
+    linear-gradient(290deg, rgba(var(--kw-accent-rgb), 0.12), transparent 24%);
+}
+
+.heroShell {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--kw-border);
+  border-radius: 34px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.7));
+  box-shadow: var(--kw-shadow);
+  backdrop-filter: blur(18px);
+}
+
+.heroShell::before {
+  background:
+    radial-gradient(34rem 24rem at 4% 6%, rgba(10, 138, 119, 0.16), transparent 70%),
+    radial-gradient(30rem 22rem at 92% 12%, rgba(var(--kw-accent-rgb), 0.14), transparent 68%),
+    radial-gradient(22rem 18rem at 72% 100%, rgba(234, 88, 12, 0.1), transparent 72%);
+}
+
+.heroPanel,
+.sectionShell,
+.asidePanel,
+.outcomeCard,
+.linkChip,
+.installCard,
+.footerFrame,
+.surfaceCard,
+.trustCard,
+.statCard,
+.storyCard,
+.journeyCard,
+.startCard,
+.signalCard {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--kw-border);
+  background: var(--kw-card-strong);
+  box-shadow: var(--kw-shadow-soft);
+  backdrop-filter: blur(14px);
+}
+
+.heroPanel,
+.sectionShell,
+.footerFrame {
+  border-radius: 28px;
+}
+
+.asidePanel,
+.surfaceCard,
+.trustCard,
+.installCard,
+.outcomeCard,
+.linkChip,
+.statCard,
+.storyCard,
+.journeyCard,
+.startCard,
+.signalCard {
+  border-radius: 24px;
+}
+
+.sectionShell::before,
+.proofShell::before,
+.finalShell::before,
+.heroPanel::before,
+.surfaceCard::before,
+.trustCard::before,
+.statCard::before,
+.storyCard::before,
+.journeyCard::before,
+.startCard::before,
+.signalCard::before,
+.footerFrame::before {
+  background:
+    radial-gradient(16rem 10rem at 12% 0%, rgba(var(--kw-accent-rgb), 0.1), transparent 72%),
+    radial-gradient(14rem 10rem at 88% 100%, rgba(10, 138, 119, 0.09), transparent 76%);
+  opacity: 0.85;
+}
+
+.statsStrip {
+  display: grid;
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.statCard {
+  padding: 1rem;
+}
+
+.heroSignalCard {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--kw-border-2);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.64);
+  box-shadow: var(--kw-shadow-soft);
+}
+
+.heroSignalCard::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(10, 138, 119, 0.9), rgba(var(--kw-accent-rgb), 0.92), rgba(234, 88, 12, 0.8));
+  opacity: 0.95;
+}
+
+.surfaceCard::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 4px;
+  opacity: 0.92;
+}
+
+.surfaceCard[data-tone="hifz"]::after {
+  background: linear-gradient(90deg, rgba(10, 138, 119, 0.95), rgba(10, 138, 119, 0.28));
+}
+
+.surfaceCard[data-tone="quran"]::after {
+  background: linear-gradient(90deg, rgba(var(--kw-accent-rgb), 0.95), rgba(var(--kw-accent-rgb), 0.28));
+}
+
+.surfaceCard[data-tone="dua"]::after {
+  background: linear-gradient(90deg, rgba(234, 88, 12, 0.95), rgba(234, 88, 12, 0.28));
+}
+
+.timelineStep {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.timelineMarker {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.24);
+  background: rgba(var(--kw-accent-rgb), 0.12);
+  color: rgba(var(--kw-accent-rgb), 1);
+  font-size: 0.95rem;
+  font-weight: 700;
+  box-shadow: var(--kw-shadow-soft);
+}
+
+.timelineMarker::after {
+  content: "";
+  position: absolute;
+  top: calc(100% + 0.7rem);
+  left: 50%;
+  width: 1px;
+  height: calc(100% + 1.9rem);
+  background: linear-gradient(180deg, rgba(var(--kw-accent-rgb), 0.32), transparent);
+  transform: translateX(-50%);
+}
+
+.timelineStep:last-child .timelineMarker::after {
+  display: none;
+}
+
+.proofShell {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--kw-border);
+  border-radius: 32px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.7));
+  box-shadow: var(--kw-shadow);
+  backdrop-filter: blur(16px);
+}
+
+.proofFrame {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--kw-border);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: var(--kw-shadow);
+}
+
+.proofFrame::after {
+  content: "";
+  position: absolute;
+  inset: auto 1rem 1rem auto;
+  width: 8rem;
+  height: 8rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(var(--kw-accent-rgb), 0.14), transparent 70%);
+  pointer-events: none;
+}
+
+.proofBadge {
+  position: absolute;
+  border: 1px solid var(--kw-border);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: var(--kw-shadow-soft);
+  backdrop-filter: blur(14px);
+}
+
+.linkRail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.linkChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.linkChip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(var(--kw-accent-rgb), 0.28);
+  background: rgba(var(--kw-accent-rgb), 0.08);
+}
+
+.finalShell {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.2);
+  border-radius: 34px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.72));
+  box-shadow: var(--kw-shadow);
+  backdrop-filter: blur(18px);
+}
+
+.finalShell::before {
+  background:
+    radial-gradient(28rem 20rem at 6% 0%, rgba(10, 138, 119, 0.14), transparent 72%),
+    radial-gradient(24rem 18rem at 96% 10%, rgba(var(--kw-accent-rgb), 0.16), transparent 72%),
+    radial-gradient(18rem 14rem at 80% 100%, rgba(234, 88, 12, 0.12), transparent 74%);
+}
+
+.footerFrame {
+  border-radius: 30px 30px 0 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.64));
+}
+
+.reflectionShell {
+  border-color: rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(180deg, rgba(8, 16, 28, 0.96), rgba(11, 20, 36, 0.9));
+  box-shadow: 0 24px 56px rgba(4, 10, 20, 0.28);
+}
+
+.reflectionShell::before {
+  background:
+    radial-gradient(28rem 20rem at 6% 4%, rgba(10, 138, 119, 0.18), transparent 72%),
+    radial-gradient(26rem 18rem at 92% 10%, rgba(var(--kw-accent-rgb), 0.16), transparent 70%),
+    radial-gradient(18rem 14rem at 80% 100%, rgba(234, 88, 12, 0.12), transparent 74%);
+  opacity: 0.92;
+}
+
+.reflectionGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.reflectionCard {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 18px 36px rgba(4, 10, 20, 0.24);
+  backdrop-filter: blur(16px);
+  padding: 1rem;
+}
+
+.reflectionCard::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  opacity: 0.95;
+}
+
+.reflectionCard[data-tone="intention"]::after {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.95), rgba(16, 185, 129, 0.28));
+}
+
+.reflectionCard[data-tone="reality"]::after {
+  background: linear-gradient(90deg, rgba(var(--kw-accent-rgb), 0.95), rgba(var(--kw-accent-rgb), 0.28));
+}
+
+.reflectionCard[data-tone="truth"]::after {
+  background: linear-gradient(90deg, rgba(234, 88, 12, 0.95), rgba(234, 88, 12, 0.28));
+}
+
+.returnBanner {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--kw-border);
+  border-radius: 26px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.78));
+  box-shadow: var(--kw-shadow-soft);
+}
+
+.returnBanner::before,
+.featureCard::before,
+.personaCard::before,
+.promiseCard::before,
+.sacredShell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.returnBanner::before {
+  background:
+    radial-gradient(18rem 12rem at 0% 0%, rgba(10, 138, 119, 0.12), transparent 72%),
+    radial-gradient(16rem 12rem at 100% 100%, rgba(var(--kw-accent-rgb), 0.1), transparent 72%);
+}
+
+.featureGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.storyGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.storyCard {
+  padding: 1rem;
+}
+
+.featureCard {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--kw-border);
+  border-radius: 24px;
+  background: var(--kw-card-strong);
+  box-shadow: var(--kw-shadow-soft);
+  backdrop-filter: blur(14px);
+  padding: 1rem;
+}
+
+.featureCard::before {
+  background:
+    radial-gradient(12rem 8rem at 8% 0%, rgba(var(--kw-accent-rgb), 0.08), transparent 72%),
+    radial-gradient(14rem 8rem at 92% 100%, rgba(10, 138, 119, 0.08), transparent 76%);
+  opacity: 0.85;
+}
+
+.personaGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.journeyGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.journeyCard {
+  padding: 1rem;
+}
+
+.personaCard {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--kw-border);
+  border-radius: 24px;
+  background: var(--kw-card-strong);
+  box-shadow: var(--kw-shadow-soft);
+  backdrop-filter: blur(14px);
+  padding: 1rem;
+}
+
+.personaCard::before {
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(10, 138, 119, 0.85), rgba(var(--kw-accent-rgb), 0.85), rgba(234, 88, 12, 0.72));
+  opacity: 0.95;
+}
+
+.promiseGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.promiseCard {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--kw-border);
+  border-radius: 24px;
+  background: var(--kw-card-strong);
+  box-shadow: var(--kw-shadow-soft);
+  backdrop-filter: blur(14px);
+  padding: 1rem;
+}
+
+.promiseCard::before {
+  background:
+    radial-gradient(16rem 10rem at 12% 0%, rgba(var(--kw-accent-rgb), 0.08), transparent 72%),
+    radial-gradient(14rem 10rem at 88% 100%, rgba(10, 138, 119, 0.07), transparent 76%);
+  opacity: 0.84;
+}
+
+.startGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.startCard {
+  padding: 1rem;
+}
+
+.signalGrid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.signalCard {
+  padding: 0.95rem 1rem;
+}
+
+.sacredShell {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--kw-border);
+  border-radius: 34px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.78));
+  box-shadow: var(--kw-shadow);
+  backdrop-filter: blur(16px);
+}
+
+.sacredShell::before {
+  background:
+    radial-gradient(24rem 18rem at 14% 10%, rgba(10, 138, 119, 0.12), transparent 72%),
+    radial-gradient(24rem 18rem at 86% 14%, rgba(var(--kw-accent-rgb), 0.1), transparent 72%),
+    radial-gradient(18rem 14rem at 50% 100%, rgba(234, 88, 12, 0.08), transparent 74%);
+  opacity: 0.92;
+}
+
+:global(html[data-mode="dark"]) .page::before {
+  opacity: 0.72;
+}
+
+:global(html[data-mode="dark"]) .navFrame,
+:global(html[data-mode="dark"]) .heroShell,
+:global(html[data-mode="dark"]) .proofShell,
+:global(html[data-mode="dark"]) .finalShell,
+:global(html[data-mode="dark"]) .footerFrame {
+  border-color: rgba(148, 163, 184, 0.16);
+}
+
+:global(html[data-mode="dark"]) .navFrame {
+  background:
+    linear-gradient(180deg, rgba(10, 16, 29, 0.92), rgba(13, 20, 36, 0.82));
+}
+
+:global(html[data-mode="dark"]) .heroShell,
+:global(html[data-mode="dark"]) .proofShell,
+:global(html[data-mode="dark"]) .finalShell {
+  background:
+    linear-gradient(180deg, rgba(8, 14, 26, 0.9), rgba(12, 18, 31, 0.82));
+}
+
+:global(html[data-mode="dark"]) .heroPanel,
+:global(html[data-mode="dark"]) .sectionShell,
+:global(html[data-mode="dark"]) .asidePanel,
+:global(html[data-mode="dark"]) .surfaceCard,
+:global(html[data-mode="dark"]) .trustCard,
+:global(html[data-mode="dark"]) .statCard,
+:global(html[data-mode="dark"]) .storyCard,
+:global(html[data-mode="dark"]) .journeyCard,
+:global(html[data-mode="dark"]) .startCard,
+:global(html[data-mode="dark"]) .signalCard,
+:global(html[data-mode="dark"]) .installCard,
+:global(html[data-mode="dark"]) .outcomeCard,
+:global(html[data-mode="dark"]) .linkChip,
+:global(html[data-mode="dark"]) .proofFrame {
+  border-color: rgba(148, 163, 184, 0.14);
+  background: rgba(15, 23, 42, 0.74);
+}
+
+:global(html[data-mode="dark"]) .returnBanner,
+:global(html[data-mode="dark"]) .featureCard,
+:global(html[data-mode="dark"]) .personaCard,
+:global(html[data-mode="dark"]) .promiseCard,
+:global(html[data-mode="dark"]) .sacredShell {
+  border-color: rgba(148, 163, 184, 0.14);
+  background: rgba(15, 23, 42, 0.76);
+}
+
+:global(html[data-mode="dark"]) .returnBanner {
+  background:
+    linear-gradient(180deg, rgba(9, 15, 27, 0.92), rgba(15, 23, 42, 0.84));
+}
+
+:global(html[data-mode="dark"]) .reflectionShell {
+  border-color: rgba(148, 163, 184, 0.16);
+}
+
+:global(html[data-mode="dark"]) .heroSignalCard {
+  border-color: rgba(148, 163, 184, 0.14);
+  background: rgba(15, 23, 42, 0.76);
+}
+
+:global(html[data-mode="dark"]) .proofBadge {
+  border-color: rgba(148, 163, 184, 0.14);
+  background: rgba(9, 15, 27, 0.9);
+}
+
+:global(html[data-mode="dark"]) .linkChip:hover {
+  background: rgba(var(--kw-accent-rgb), 0.16);
+}
+
+@media (max-width: 1100px) {
+  .statsStrip,
+  .storyGrid,
+  .journeyGrid,
+  .signalGrid,
+  .reflectionGrid,
+  .promiseGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .navWrap {
+    padding-top: 0.6rem;
+  }
+
+  .page::before {
+    height: 28rem;
+  }
+
+  .heroShell,
+  .proofShell,
+  .finalShell,
+  .sectionShell,
+  .heroPanel {
+    border-radius: 28px;
+  }
+
+  .footerFrame {
+    border-radius: 28px 28px 0 0;
+  }
+
+  .timelineStep {
+    grid-template-columns: 2.65rem minmax(0, 1fr);
+    gap: 0.9rem;
+  }
+
+  .timelineMarker {
+    width: 2.65rem;
+    height: 2.65rem;
+  }
+
+  .reflectionGrid,
+  .statsStrip,
+  .featureGrid,
+  .storyGrid,
+  .journeyGrid,
+  .personaGrid,
+  .signalGrid,
+  .startGrid,
+  .promiseGrid {
+    grid-template-columns: 1fr;
+  }
+}

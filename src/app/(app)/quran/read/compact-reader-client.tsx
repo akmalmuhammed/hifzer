@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type TouchEvent, type WheelEvent } from "react";
+import { useEffect, useRef, useState, type MouseEvent, type TouchEvent, type WheelEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
@@ -58,6 +58,7 @@ type Props = {
   compactReaderAnchor: string;
   syncEnabled: boolean;
   reciterId: string;
+  focusMode: boolean;
 };
 
 export function CompactReaderClient({
@@ -75,6 +76,7 @@ export function CompactReaderClient({
   compactReaderAnchor,
   syncEnabled,
   reciterId,
+  focusMode,
 }: Props) {
   const router = useRouter();
   const progressSyncRef = useRef<ReadProgressSyncHandle | null>(null);
@@ -150,6 +152,16 @@ export function CompactReaderClient({
     }
   }
 
+  function advanceToNextVisible() {
+    if (nextAyah) {
+      advanceToIndex(cursorIndex + 1);
+      return;
+    }
+    if (resolvedNextSurahHref) {
+      router.push(resolvedNextSurahHref, { scroll: false });
+    }
+  }
+
   function buildNextSurahHrefFromCurrent(): string | null {
     if (current.surahNumber >= 114) {
       return null;
@@ -168,12 +180,21 @@ export function CompactReaderClient({
   const resolvedNextSurahHref = buildNextSurahHrefFromCurrent() ?? nextSurahHref;
 
   function handleAutoAdvance() {
-    if (nextAyah) {
-      advanceToIndex(cursorIndex + 1);
+    advanceToNextVisible();
+  }
+
+  function onFocusTextClick(event: MouseEvent<HTMLDivElement>) {
+    if (!focusMode) {
       return;
     }
-    if (resolvedNextSurahHref) {
-      router.push(resolvedNextSurahHref, { scroll: false });
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const relativeX = (event.clientX - bounds.left) / Math.max(bounds.width, 1);
+    if (relativeX <= 0.35 && prevAyah) {
+      handlePrev();
+      return;
+    }
+    if (relativeX >= 0.65) {
+      advanceToNextVisible();
     }
   }
 
@@ -226,10 +247,10 @@ export function CompactReaderClient({
     `${btnBase} border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]`;
   const btnSecondary =
     `${btnBase} border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]`;
-  const showAnyDetails = showPhonetic || showTranslation;
+  const showAnyDetails = !focusMode && (showPhonetic || showTranslation);
 
   return (
-    <div id={compactReaderAnchor} className="mt-8">
+    <div id={compactReaderAnchor} className={focusMode ? "mx-auto max-w-4xl pt-2" : "mt-8"}>
       {syncEnabled && (
         <ReadProgressSync
           ref={progressSyncRef}
@@ -239,68 +260,82 @@ export function CompactReaderClient({
           ayahId={current.id}
         />
       )}
-      <Card className="py-3">
-        {/* Header row */}
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1 text-xs font-semibold text-[color:var(--kw-muted)]">
-              {current.surahNumber}:{current.ayahNumber}
-            </span>
-            <span className="text-xs text-[color:var(--kw-faint)]">#{current.id}</span>
-            <span className="text-xs text-[color:var(--kw-faint)]">
-              {globalIndex + 1} / {totalInSet}
-            </span>
-          </div>
-          <div className="w-full sm:w-auto">
+      <Card className={focusMode ? "py-5 sm:px-6" : "py-3"}>
+        {!focusMode ? (
+          <>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1 text-xs font-semibold text-[color:var(--kw-muted)]">
+                  {current.surahNumber}:{current.ayahNumber}
+                </span>
+                <span className="text-xs text-[color:var(--kw-faint)]">#{current.id}</span>
+                <span className="text-xs text-[color:var(--kw-faint)]">
+                  {globalIndex + 1} / {totalInSet}
+                </span>
+              </div>
+              <div className="w-full sm:w-auto">
+                <AyahAudioPlayer
+                  ayahId={current.id}
+                  reciterId={reciterId}
+                  className="w-full sm:w-auto"
+                  streakTrackSource={anonymous ? undefined : "quran_browse"}
+                  autoPlayPrefKey="hifzer_quran_autoplay_v1"
+                  speedPrefKey={QURAN_AUDIO_SPEED_PREF_KEY}
+                  onAutoAdvance={handleAutoAdvance}
+                  trailingControl={
+                    <ReaderBookmarkControl
+                      ayahId={current.id}
+                      surahNumber={current.surahNumber}
+                      ayahNumber={current.ayahNumber}
+                      anonymous={anonymous}
+                      variant="inline"
+                    />
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
+                Pinch, Ctrl + wheel, or use A-/A+
+              </span>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={() => resizeArabic(-0.08)} className={btnSecondary}>
+                  A-
+                </button>
+                <button type="button" onClick={() => resizeArabic(0.08)} className={btnSecondary}>
+                  A+
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="mx-auto max-w-md">
             <AyahAudioPlayer
               ayahId={current.id}
               reciterId={reciterId}
-              className="w-full sm:w-auto"
+              className="w-full"
               streakTrackSource={anonymous ? undefined : "quran_browse"}
               autoPlayPrefKey="hifzer_quran_autoplay_v1"
               speedPrefKey={QURAN_AUDIO_SPEED_PREF_KEY}
               onAutoAdvance={handleAutoAdvance}
-              trailingControl={
-                <ReaderBookmarkControl
-                  ayahId={current.id}
-                  surahNumber={current.surahNumber}
-                  ayahNumber={current.ayahNumber}
-                  anonymous={anonymous}
-                  variant="inline"
-                />
-              }
             />
           </div>
-        </div>
-
-        {/* Arabic text */}
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
-            Pinch, Ctrl + wheel, or use A-/A+
-          </span>
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={() => resizeArabic(-0.08)} className={btnSecondary}>
-              A-
-            </button>
-            <button type="button" onClick={() => resizeArabic(0.08)} className={btnSecondary}>
-              A+
-            </button>
-          </div>
-        </div>
+        )}
         <div
           dir="rtl"
-          className="mt-3 text-right text-[color:var(--kw-ink)]"
+          className={focusMode ? "mt-8 text-right text-[color:var(--kw-ink)]" : "mt-3 text-right text-[color:var(--kw-ink)]"}
           style={{ fontSize: arabicFontSize, lineHeight: 2.05, touchAction: "manipulation" }}
           onTouchStart={onArabicTouchStart}
           onTouchMove={onArabicTouchMove}
           onTouchEnd={onArabicTouchEnd}
           onTouchCancel={onArabicTouchEnd}
           onWheel={onArabicWheel}
+          onClick={onFocusTextClick}
         >
           {current.textUthmani}
         </div>
 
-        {/* Details */}
         {showAnyDetails ? (
           <div className="mt-3 space-y-2">
             {showPhonetic ? (
@@ -318,34 +353,35 @@ export function CompactReaderClient({
               </SupportTextPanel>
             ) : null}
           </div>
-        ) : (
+        ) : !focusMode ? (
           <p dir={translationDir} className="mt-3 text-sm leading-7 text-[color:var(--kw-faint)]">
             {ui.detailsHiddenInFilters}
           </p>
-        )}
+        ) : null}
 
-        {/* Navigation */}
-        <div className="mt-6 flex items-center gap-2">
-          {prevAyah ? (
-            <button type="button" onClick={handlePrev} className={btnSecondary}>
-              {ui.previous}
-            </button>
-          ) : (
-            <span className={btnDisabled}>{ui.previous}</span>
-          )}
+        {!focusMode ? (
+          <div className="mt-6 flex items-center gap-2">
+            {prevAyah ? (
+              <button type="button" onClick={handlePrev} className={btnSecondary}>
+                {ui.previous}
+              </button>
+            ) : (
+              <span className={btnDisabled}>{ui.previous}</span>
+            )}
 
-          {nextAyah ? (
-            <button type="button" onClick={handleNext} className={btnActive}>
-              {ui.next}
-            </button>
-          ) : resolvedNextSurahHref ? (
-            <Link href={resolvedNextSurahHref} scroll={false} className={btnActive}>
-              {ui.nextSurah}
-            </Link>
-          ) : (
-            <span className={btnDisabled}>{ui.nextSurah}</span>
-          )}
-        </div>
+            {nextAyah ? (
+              <button type="button" onClick={handleNext} className={btnActive}>
+                {ui.next}
+              </button>
+            ) : resolvedNextSurahHref ? (
+              <Link href={resolvedNextSurahHref} scroll={false} className={btnActive}>
+                {ui.nextSurah}
+              </Link>
+            ) : (
+              <span className={btnDisabled}>{ui.nextSurah}</span>
+            )}
+          </div>
+        ) : null}
       </Card>
     </div>
   );

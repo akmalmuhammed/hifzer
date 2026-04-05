@@ -120,9 +120,12 @@ export async function recordBrowseAyahRecitation(clerkUserId: string, ayahId: nu
   };
 }
 
-export async function getUserStreakSummary(clerkUserId: string): Promise<StreakSummary> {
+export async function getUserStreakSummary(
+  clerkUserId: string,
+  input?: { now?: Date },
+): Promise<StreakSummary> {
   const profile = await getOrCreateUserProfile(clerkUserId);
-  const now = new Date();
+  const now = input?.now ?? new Date();
 
   if (!profile) {
     return emptySummary(isoDateInTimeZone(now, "UTC"));

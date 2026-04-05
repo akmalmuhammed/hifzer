@@ -11,7 +11,7 @@ import { getProfileSnapshot } from "@/hifzer/profile/server";
 import { clerkEnabled } from "@/lib/clerk-config";
 
 export const metadata = {
-  title: "Manage Billing",
+  title: "Receipts and Buyer Help",
 };
 
 function formatDate(input: string | null): string {
@@ -30,7 +30,6 @@ function formatDate(input: string | null): string {
 }
 
 export default async function BillingManagePage() {
-  let plan: "FREE" | "PAID" = "FREE";
   let subscriptionStatus: string | null = null;
   let currentPeriodEnd: string | null = null;
   let hasPortal = false;
@@ -42,7 +41,6 @@ export default async function BillingManagePage() {
     }
     const profile = await getProfileSnapshot(userId);
     if (profile) {
-      plan = profile.plan;
       subscriptionStatus = profile.subscriptionStatus;
       currentPeriodEnd = profile.currentPeriodEnd;
       hasPortal = Boolean(profile.paddleCustomerId);
@@ -53,24 +51,24 @@ export default async function BillingManagePage() {
     <div className="space-y-6">
       <PageHeader
         eyebrow="Billing"
-        title="Manage"
-        subtitle="View your subscription status and open the Paddle billing portal."
+        title="Receipts and buyer help"
+        subtitle="Open Paddle buyer support when it is available for your account and review payment history for your one-time Hifzer product-work purchases."
       />
 
       <Card>
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-              Current plan
+              Current billing state
             </p>
             <p className="mt-2 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-              {plan === "PAID" ? "Paid" : "Free"}
+              {hasPortal ? "Paddle linked" : "No checkout linked yet"}
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <Pill tone={plan === "PAID" ? "accent" : "neutral"}>
-                {subscriptionStatus ?? "No active subscription"}
+              <Pill tone={hasPortal ? "accent" : "neutral"}>
+                {subscriptionStatus ?? "No recurring subscription"}
               </Pill>
-              <Pill tone="neutral">Renews/ends: {formatDate(currentPeriodEnd)}</Pill>
+              <Pill tone="neutral">Latest billing period end: {formatDate(currentPeriodEnd)}</Pill>
             </div>
           </div>
           <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)]">
@@ -82,13 +80,13 @@ export default async function BillingManagePage() {
           <ManagePortalButton disabled={!hasPortal} />
           <Link href="/billing/upgrade">
             <Button variant="ghost">
-              {plan === "PAID" ? "Back to plans" : "See upgrade options"}
+              Back to checkout
             </Button>
           </Link>
         </div>
         {!hasPortal ? (
           <p className="mt-3 text-xs text-[color:var(--kw-faint)]">
-            A billing portal appears after Paddle links your customer record from checkout.
+            This becomes available after your first successful Paddle checkout links a customer record.
           </p>
         ) : null}
       </Card>
@@ -99,9 +97,9 @@ export default async function BillingManagePage() {
             <SlidersHorizontal size={18} />
           </span>
           <div>
-            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">What you can manage in portal</p>
+            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">What you can find in Paddle</p>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-              Payment method, invoices, subscription cancellation, and renewal controls are handled by Paddle.
+              Receipt access, saved payment details, and buyer support are handled by Paddle. Since Hifzer is using one-time service purchases here, there is no subscription cancellation flow.
             </p>
           </div>
         </div>

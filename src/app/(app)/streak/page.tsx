@@ -1,9 +1,9 @@
-import { StreakClient } from "./streak-client";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Streak",
 };
 
 export default function StreakPage() {
-  return <StreakClient />;
+  redirect("/today");
 }

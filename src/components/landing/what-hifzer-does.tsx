@@ -1,7 +1,7 @@
 import { BookOpen, CheckCircle2, Flame } from "lucide-react";
 import { CardSoft } from "@/components/ui/card";
 
-const STEPS = [
+const GAP_COLUMNS = [
   {
     step: "01",
     title: "Keep it daily, even if small",
@@ -42,16 +42,10 @@ export function WhatHifzerDoes() {
         </p>
       </div>
 
-      <div className="mt-8 grid gap-4 md:grid-cols-3">
-        {STEPS.map((item) => (
-          <CardSoft key={item.title} className="h-full">
-            <div className="flex items-center justify-between gap-3">
-              <p className="font-[family-name:var(--font-kw-display)] text-2xl font-semibold tracking-tight text-[rgba(var(--kw-accent-rgb),1)]">
-                {item.step}
-              </p>
-              <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/75 text-[color:var(--kw-ink-2)]">
-                {item.icon}
-              </span>
+            <div className="mt-6 flex flex-wrap gap-2">
+              <Pill tone="brand">Gentle structure</Pill>
+              <Pill tone="accent">No shame-driven noise</Pill>
+              <Pill tone="warn">Return-focused</Pill>
             </div>
             <p className="mt-4 text-lg font-semibold leading-7 tracking-tight text-[color:var(--kw-ink)]">
               {item.title}

@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     template: "%s | Hifzer",
   },
   description:
-    "Hifzer is the operating system for Qur'an memorization: quality gates, spaced repetition, and a daily plan that enforces retention.",
+    "A calm Qur'an companion for reading, reciting, and memorizing with structure.",
   applicationName: "Hifzer",
   manifest: "/manifest.webmanifest",
   icons: {
@@ -70,14 +70,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     title: "Hifzer",
-    description: "The operating system for Qur'an memorization: quality gates, spaced repetition, and daily enforcement.",
+    description: "A calm Qur'an companion for reading, reciting, and memorizing with structure.",
     url: "/",
     siteName: "Hifzer",
   },
   twitter: {
     card: "summary_large_image",
     title: "Hifzer",
-    description: "The operating system for Qur'an memorization: quality gates, spaced repetition, and daily enforcement.",
+    description: "A calm Qur'an companion for reading, reciting, and memorizing with structure.",
   },
   robots: {
     index: true,
@@ -111,7 +111,6 @@ export default async function RootLayout({
         data-mode="light"
         data-theme="standard"
         data-accent="teal"
-        data-distraction-free={distractionFree ? "1" : "0"}
         className={`${inter.variable} ${mono.variable} ${amiri.variable} ${marketingDisplay.variable}`}
       >
       <body suppressHydrationWarning className="kw-canvas min-h-dvh bg-[color:var(--kw-bg)] text-[color:var(--kw-ink)] antialiased">

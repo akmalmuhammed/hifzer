@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 export type ThemeMode = "light" | "dark";
-export type ThemePreset = "standard" | "paper";
+export type ThemePreset = "standard" | "paper" | "noor" | "dawn" | "rose";
 export type AccentPreset = "teal" | "cobalt" | "ember";
 
 type ThemeState = {
@@ -70,7 +70,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     readStored(STORAGE_KEYS.mode, "light", ["light", "dark"] as const),
   );
   const [theme, setTheme] = useState<ThemePreset>(() =>
-    readStored(STORAGE_KEYS.theme, "standard", ["standard", "paper"] as const),
+    readStored(STORAGE_KEYS.theme, "standard", ["standard", "paper", "noor", "dawn", "rose"] as const),
   );
   const [accent, setAccent] = useState<AccentPreset>(() =>
     readStored(STORAGE_KEYS.accent, "teal", ["teal", "cobalt", "ember"] as const),

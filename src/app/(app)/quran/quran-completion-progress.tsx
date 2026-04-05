@@ -124,12 +124,12 @@ export function QuranCompletionProgress(props: QuranCompletionProgressProps) {
         <div className="mx-auto lg:mx-0">
           <div className={styles.ring} style={ringStyle}>
             <div className={styles.ringInner}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[color:var(--kw-faint)]">Read coverage</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[color:var(--kw-faint)]">Read so far</p>
               <p className="mt-1 font-[family-name:var(--font-kw-display)] text-4xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
                 {formatPercent(displayProgress)}%
               </p>
               <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
-                {NUMBER_FORMATTER.format(completedAyahs)} / {NUMBER_FORMATTER.format(safeTotalAyahs)} ayahs tracked
+                {NUMBER_FORMATTER.format(completedAyahs)} / {NUMBER_FORMATTER.format(safeTotalAyahs)} ayahs read
               </p>
             </div>
           </div>
@@ -140,15 +140,15 @@ export function QuranCompletionProgress(props: QuranCompletionProgressProps) {
             <Pill tone="accent">Total Qur&apos;an progress</Pill>
             <span className="inline-flex items-center gap-1 rounded-full border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.1)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[rgba(var(--kw-accent-rgb),1)]">
               <Sparkles size={12} />
-              Read-based
+              From your reading
             </span>
           </div>
 
           <p className="mt-3 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-            Last tracked ayah: {props.currentSurahNumber}:{props.currentAyahNumber}
+            Last place: {props.currentSurahNumber}:{props.currentAyahNumber}
           </p>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-            You have tracked {NUMBER_FORMATTER.format(completedAyahs)} unique ayahs from Qur&apos;an browsing.
+            You have read {NUMBER_FORMATTER.format(completedAyahs)} unique ayahs so far.
             {" "}{NUMBER_FORMATTER.format(remainingAyahs)} ayahs remain for full coverage.
           </p>
 
@@ -158,19 +158,19 @@ export function QuranCompletionProgress(props: QuranCompletionProgressProps) {
 
           <div className="mt-3 grid gap-2 sm:grid-cols-3">
             <div className={styles.statCard}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--kw-faint)]">Tracked</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--kw-faint)]">Read</p>
               <p className="mt-1 text-xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
                 {NUMBER_FORMATTER.format(completedAyahs)}
               </p>
             </div>
             <div className={styles.statCard}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--kw-faint)]">Remaining</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--kw-faint)]">Left</p>
               <p className="mt-1 text-xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
                 {NUMBER_FORMATTER.format(remainingAyahs)}
               </p>
             </div>
             <div className={styles.statCard}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--kw-faint)]">Last</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--kw-faint)]">Last place</p>
               <p className="mt-1 text-xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
                 {props.currentSurahNumber}:{props.currentAyahNumber}
               </p>
@@ -179,7 +179,7 @@ export function QuranCompletionProgress(props: QuranCompletionProgressProps) {
 
           <div className={styles.rankSection}>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--kw-faint)]">Khatmah rank track</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--kw-faint)]">Khatmah rank</p>
               <span className={styles.rankCountPill}>
                 <Medal size={12} />
                 x{khatmahCount}
@@ -194,8 +194,8 @@ export function QuranCompletionProgress(props: QuranCompletionProgressProps) {
             </div>
             <p className="mt-3 text-xs text-[color:var(--kw-faint)]">
               {nextTier
-                ? `${completionsToNextTier} more completion${completionsToNextTier === 1 ? "" : "s"} to unlock ${nextTier.title}.`
-                : "All rank badges unlocked. Maintain your muraja'ah flow and consistency."}
+                ? `${completionsToNextTier} more khatmah${completionsToNextTier === 1 ? "" : "s"} to unlock ${nextTier.title}.`
+                : "All rank badges unlocked. Keep your muraja'ah steady and present."}
             </p>
             <div className={styles.badgeGrid}>
               {KHATMAH_TIERS.map((tier) => {

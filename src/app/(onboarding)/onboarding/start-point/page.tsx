@@ -10,9 +10,10 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
+import { STORAGE_KEYS } from "@/hifzer/local/store";
 import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
 
-const STORAGE_KEYS = {
+const LEGACY_STORAGE_KEYS = {
   activeSurahNumber: "hifzer_active_surah_number_v1",
   cursorAyahId: "hifzer_cursor_ayah_id_v1",
 } as const;
@@ -38,10 +39,20 @@ export default function OnboardingStartPointPage() {
   const { pushToast } = useToast();
 
   const [query, setQuery] = useState("");
-  const [selectedSurah, setSelectedSurah] = useState(() => readStoredNumber(STORAGE_KEYS.activeSurahNumber) ?? 1);
+  const [selectedSurah, setSelectedSurah] = useState(() =>
+    readStoredNumber(STORAGE_KEYS.hifzActiveSurahNumber) ??
+    readStoredNumber(LEGACY_STORAGE_KEYS.activeSurahNumber) ??
+    1,
+  );
   const [ayahNumber, setAyahNumber] = useState(() => {
-    const selected = SURAH_INDEX.find((s) => s.surahNumber === (readStoredNumber(STORAGE_KEYS.activeSurahNumber) ?? 1));
-    const cursor = readStoredNumber(STORAGE_KEYS.cursorAyahId);
+    const selected = SURAH_INDEX.find((s) => s.surahNumber === (
+      readStoredNumber(STORAGE_KEYS.hifzActiveSurahNumber) ??
+      readStoredNumber(LEGACY_STORAGE_KEYS.activeSurahNumber) ??
+      1
+    ));
+    const cursor =
+      readStoredNumber(STORAGE_KEYS.hifzCursorAyahId) ??
+      readStoredNumber(LEGACY_STORAGE_KEYS.cursorAyahId);
     if (!selected || !cursor) {
       return 1;
     }
@@ -68,8 +79,10 @@ export default function OnboardingStartPointPage() {
   const cursorAyahId = selected.startAyahId + (clampedAyah - 1);
 
   async function saveAndNext() {
-    window.localStorage.setItem(STORAGE_KEYS.activeSurahNumber, String(selected.surahNumber));
-    window.localStorage.setItem(STORAGE_KEYS.cursorAyahId, String(cursorAyahId));
+    window.localStorage.setItem(STORAGE_KEYS.hifzActiveSurahNumber, String(selected.surahNumber));
+    window.localStorage.setItem(STORAGE_KEYS.hifzCursorAyahId, String(cursorAyahId));
+    window.localStorage.removeItem(LEGACY_STORAGE_KEYS.activeSurahNumber);
+    window.localStorage.removeItem(LEGACY_STORAGE_KEYS.cursorAyahId);
 
     try {
       await fetch("/api/profile/start-point", {

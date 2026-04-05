@@ -39,9 +39,10 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
 import { laylatAlQadrGuide } from "@/hifzer/ramadan/laylat-al-qadr";
+import { readSessionCache, writeSessionCache } from "@/lib/client-session-cache";
 import styles from "./dashboard.module.css";
 
-type DashboardOverview = {
+export type DashboardOverview = {
   generatedAt: string;
   profile: {
     mode: "NORMAL" | "CONSOLIDATION" | "CATCH_UP";
@@ -109,6 +110,8 @@ type DashboardPayload = {
 };
 
 type DashboardTab = "overview" | "dua";
+const DASHBOARD_CACHE_KEY = "hifzer.dashboard.overview.v1";
+const DASHBOARD_CACHE_TTL_MS = 2 * 60 * 1000;
 
 function statusPill(status: DashboardOverview["today"]["status"]): { tone: "neutral" | "accent" | "success"; label: string } {
   if (status === "completed") {
@@ -619,14 +622,21 @@ function DashboardDuaTab() {
   );
 }
 
-export function DashboardClient() {
+function readCachedDashboardOverview() {
+  return readSessionCache<DashboardOverview>(DASHBOARD_CACHE_KEY, DASHBOARD_CACHE_TTL_MS);
+}
+
+export function DashboardClient(props: { initialOverview?: DashboardOverview | null }) {
   const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !props.initialOverview && !readCachedDashboardOverview());
   const [error, setError] = useState<string | null>(null);
-  const [overview, setOverview] = useState<DashboardOverview | null>(null);
+  const [overview, setOverview] = useState<DashboardOverview | null>(() => props.initialOverview ?? readCachedDashboardOverview());
   const [monthCursor, setMonthCursor] = useState(0);
+
   async function load() {
-    setLoading(true);
+    if (!overview) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const res = await fetch("/api/dashboard/overview", { cache: "no-store" });
@@ -635,6 +645,7 @@ export function DashboardClient() {
         throw new Error(payload.error || "Failed to load dashboard.");
       }
       setOverview(payload.overview);
+      writeSessionCache(DASHBOARD_CACHE_KEY, payload.overview);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load dashboard.");
     } finally {
@@ -643,8 +654,19 @@ export function DashboardClient() {
   }
 
   useEffect(() => {
-    void load();
-  }, []);
+    if (!props.initialOverview) {
+      void load();
+    }
+    // `load` intentionally stays local so this effect only keys off server-provided hydration.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.initialOverview]);
+
+  useEffect(() => {
+    if (!props.initialOverview) {
+      return;
+    }
+    writeSessionCache(DASHBOARD_CACHE_KEY, props.initialOverview);
+  }, [props.initialOverview]);
 
   const heroScore = useMemo(() => {
     if (!overview) {
@@ -898,7 +920,7 @@ export function DashboardClient() {
                   <QuickActionCard
                     href="/quran/read?view=compact"
                     eyebrow="Qur'an"
-                    title="Continue your reading lane"
+                    title="Continue reading"
                     note={`${overview.quran.currentSurahName} | ${overview.quran.cursorRef}`}
                     icon={BookOpenText}
                   />
@@ -938,7 +960,7 @@ export function DashboardClient() {
               <div className={styles.spotlightPanel}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">System score</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Overall score</p>
                     <p className="mt-1 text-sm leading-6 text-[color:var(--kw-muted)]">
                       Weighted from practice consistency, retention quality, and Qur&apos;an coverage.
                     </p>
@@ -1046,7 +1068,7 @@ export function DashboardClient() {
                 </div>
                 <div className="mt-4 grid gap-2 sm:grid-cols-3">
                   <div className={`${styles.kpiTile} px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Tracked ayahs</p>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Ayahs in review</p>
                     <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{overview.kpis.trackedAyahs}</p>
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-2`}>
@@ -1134,7 +1156,7 @@ export function DashboardClient() {
                 <SectionHeader
                   eyebrow="Qur&apos;an compass"
                   title={`${overview.quran.currentSurahName} | ${overview.quran.cursorRef}`}
-                  description="Reading progress stays separate from Hifz, but it still belongs in the same command view."
+                  description="Reading progress stays separate from Hifz, while still living in the same calm daily view."
                   icon={BookOpenText}
                   tone="accent"
                   meta={<Pill tone="accent">Ayah #{overview.quran.cursorAyahId}</Pill>}
@@ -1156,8 +1178,8 @@ export function DashboardClient() {
                     </div>
                     <div className="flex flex-wrap gap-2 pt-1">
                       <Pill tone="neutral">Khatmah x{overview.quran.completedKhatmahCount}</Pill>
-                      <Pill tone="neutral">Browse ayahs (7d): {overview.quran.browseRecitedAyahs7d}</Pill>
-                      <Pill tone="neutral">Surahs active (14d): {overview.quran.uniqueSurahsRecited14d}</Pill>
+                      <Pill tone="neutral">Read in 7 days: {overview.quran.browseRecitedAyahs7d}</Pill>
+                      <Pill tone="neutral">Surahs read in 14 days: {overview.quran.uniqueSurahsRecited14d}</Pill>
                     </div>
                   </div>
                 </div>

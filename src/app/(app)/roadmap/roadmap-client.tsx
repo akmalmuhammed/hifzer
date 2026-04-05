@@ -69,7 +69,7 @@ const LANES: Lane[] = [
   {
     label: "Later",
     horizon: "Platform expansion",
-    focus: "Mobile and infrastructure scale",
+    focus: "Mobile reach and dependable delivery",
     milestones: [
       {
         title: "Native iOS app",
@@ -103,7 +103,7 @@ export function RoadmapClient() {
       <PageHeader
         eyebrow="Product"
         title="Roadmap"
-        subtitle="A transparent build plan for where Hifzer is heading next."
+        subtitle="A transparent look at what Hifzer is shaping next for daily recitation and memorization."
         right={(
           <div className="flex flex-wrap gap-2">
             <Link href="/dashboard">
@@ -130,11 +130,11 @@ export function RoadmapClient() {
               <Pill tone="neutral">Execution-first</Pill>
             </div>
             <h2 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-3xl tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
-              Building a professional memorization operating system, step by step.
+              Building a calmer, stronger Qur&apos;an companion one step at a time.
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
-              Priority is always retention integrity, then AI-assisted recitation quality, then platform scale.
-              Every roadmap item is tied to better day-to-day outcomes, not vanity features.
+              Priority stays with better daily outcomes first: steadier review, clearer recitation support,
+              and simpler ways to return to the Qur&apos;an without friction.
             </p>
           </div>
 

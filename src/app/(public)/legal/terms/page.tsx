@@ -38,11 +38,11 @@ export default function LegalTermsPage() {
         </Card>
 
         <Card>
-          <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">3. Plans, billing, and cancellation</h2>
+          <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">3. Billing and one-time product work purchases</h2>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-            Hifzer offers Free and Paid plans. Paid subscriptions and other charges are processed by
-            our billing provider (currently Paddle). You can cancel subscription renewal at any
-            time from your billing portal.
+            Hifzer may offer one-time paid product work, implementation help, or software-related
+            service purchases. These charges are processed by our billing provider (currently Paddle).
+            At the moment, this flow is not a recurring subscription.
           </p>
           <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
             Our order process is conducted by our online reseller Paddle.com. Paddle.com is the

@@ -7,13 +7,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, CheckCircle2, CornerDownLeft, Link2, PlayCircle, RotateCcw } from "lucide-react";
 import clsx from "clsx";
 import { PageHeader } from "@/components/app/page-header";
-import { SessionFlowTutorial } from "@/components/app/session-flow-tutorial";
 import { SupportTextPanel } from "@/components/quran/support-text-panel";
 import { SurahSearchSelect } from "@/components/app/surah-search-select";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
-import { useDistractionFree } from "@/components/providers/distraction-free-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { DisclosureCard } from "@/components/ui/disclosure-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
@@ -21,7 +20,7 @@ import {
   getPendingSessionSyncPayloads,
   pushPendingSessionSyncPayload,
   replacePendingSessionSyncPayloads,
-  setActiveSurahCursor,
+  setHifzActiveSurahCursor,
   setOpenSession,
   type PendingSessionSyncPayload,
 } from "@/hifzer/local/store";
@@ -400,7 +399,6 @@ export function SessionClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { userId } = useAuth();
-  const { enabled: distractionFree } = useDistractionFree();
   const progressStorageKey = useMemo(() => sessionProgressStorageKey(userId), [userId]);
   const supportPrefsStorageKey = useMemo(() => sessionSupportPrefsStorageKey(userId), [userId]);
   const quickReviewMode = searchParams.get("focus") === "review";
@@ -417,7 +415,6 @@ export function SessionClient() {
   const [showText, setShowText] = useState(true);
   const [showPhonetic, setShowPhonetic] = useState(true);
   const [showTranslation, setShowTranslation] = useState(true);
-  const [switchOpen, setSwitchOpen] = useState(false);
   const [switchingSurah, setSwitchingSurah] = useState(false);
   const [targetSurahNumber, setTargetSurahNumber] = useState(1);
   const [learningLanes, setLearningLanes] = useState<LearningLane[]>([]);
@@ -529,21 +526,20 @@ export function SessionClient() {
 
       setRun(payload);
       const defaultShowDetails = payload.preferences?.quranShowDetails ?? true;
-      setShowPhonetic(distractionFree ? false : (storedSupportPrefs?.showPhonetic ?? defaultShowDetails));
-      setShowTranslation(distractionFree ? false : (storedSupportPrefs?.showTranslation ?? defaultShowDetails));
+      setShowPhonetic(storedSupportPrefs?.showPhonetic ?? defaultShowDetails);
+      setShowTranslation(storedSupportPrefs?.showTranslation ?? defaultShowDetails);
       setStepIndex(nextStepIndex);
       setEvents(nextEvents);
       setStepStartedAt(Date.now());
       setWarmupRetryUsed(nextWarmupRetryUsed);
       setWarmupInterstitial(nextWarmupInterstitial);
       setReviewOnlyLock(nextReviewOnlyLock);
-      setSwitchOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load Hifz.");
     } finally {
       setLoading(false);
     }
-  }, [distractionFree, flushPendingSync, loadLearningLanes, progressStorageKey, quickReviewMode, router, supportPrefsStorageKey]);
+  }, [flushPendingSync, loadLearningLanes, progressStorageKey, quickReviewMode, router, supportPrefsStorageKey]);
 
   useEffect(() => {
     void loadRun();
@@ -589,13 +585,6 @@ export function SessionClient() {
     setAssistedThisStep(false);
     setRevealUntilMs(null);
   }, [currentStep, stepIndex]);
-
-  useEffect(() => {
-    if (distractionFree) {
-      setShowPhonetic(false);
-      setShowTranslation(false);
-    }
-  }, [distractionFree]);
 
   useEffect(() => {
     writeStoredSessionSupportPrefs(supportPrefsStorageKey, {
@@ -728,11 +717,10 @@ export function SessionClient() {
       const nextSurah = Number(payload.profile?.activeSurahNumber);
       const nextCursor = Number(payload.profile?.cursorAyahId);
       if (Number.isFinite(nextSurah) && Number.isFinite(nextCursor)) {
-        setActiveSurahCursor(nextSurah, nextCursor);
+        setHifzActiveSurahCursor(nextSurah, nextCursor);
       }
       setOpenSession(null);
       clearStoredSessionProgress(progressStorageKey);
-      setSwitchOpen(false);
       await loadRun();
 
       const abandonedCount = Number(payload.abandonedOpenSessions ?? 0);
@@ -931,7 +919,7 @@ export function SessionClient() {
           {showText ? "Hide text" : "Show text"}
         </Button>
       ) : null}
-      {currentStep?.kind === "AYAH" && !distractionFree ? (
+      {currentStep?.kind === "AYAH" ? (
         <Button
           type="button"
           variant="secondary"
@@ -942,7 +930,7 @@ export function SessionClient() {
           {showPhonetic ? "Hide transliteration" : "Show transliteration"}
         </Button>
       ) : null}
-      {currentStep?.kind === "AYAH" && !distractionFree ? (
+      {currentStep?.kind === "AYAH" ? (
         <Button
           type="button"
           variant="secondary"
@@ -958,15 +946,6 @@ export function SessionClient() {
           Back to Today <ArrowRight size={16} />
         </Button>
       </Link>
-      {!distractionFree ? (
-        <Button
-          variant="secondary"
-          className="w-full gap-2 sm:w-auto"
-          onClick={() => setSwitchOpen((prev) => !prev)}
-        >
-          {switchOpen ? "Close surah switcher" : "Switch surah"}
-        </Button>
-      ) : null}
     </div>
   );
 
@@ -1215,28 +1194,14 @@ export function SessionClient() {
         message: "Tap Again, Hard, Good, or Easy. Your choice saves the step and moves you forward immediately.",
       }
       : null;
+  const helperNoteCount = [shouldShowWeeklyGateIntro, Boolean(coachTip)].filter(Boolean).length;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow={
-          <span className="inline-flex items-center gap-2">
-            <span>Practice</span>
-            <span className="text-[color:var(--kw-faint)]">/</span>
-            <span className="text-[color:var(--kw-muted)]">{run.state.mode}</span>
-          </span>
-        }
-        title={distractionFree ? "Recite with focus" : "Show up. Recite. Retain."}
-        subtitle={distractionFree
-          ? undefined
-          : (
-            <>
-              Every ayah you hold raises your rank.
-              <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
-                Sunan Abi Dawud 1464
-              </span>
-            </>
-          )}
+        eyebrow={undefined}
+        title="Show up. Recite. Retain."
+        subtitle="Every ayah you hold raises your rank."
         right={
           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
             <Pill tone="neutral">{progressText}</Pill>
@@ -1245,73 +1210,85 @@ export function SessionClient() {
           </div>
         }
       />
-      {!distractionFree ? (
-        <>
-          <p className="text-sm text-[color:var(--kw-muted)]">
-            {quickReviewMode ? "Quick review-only run for due items." : stepSummary(currentStep)}
-          </p>
+      <DisclosureCard
+        summary={(
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Session helpers</p>
+              <Pill tone="neutral">Compact</Pill>
+              {helperNoteCount > 0 ? <Pill tone="warn">{helperNoteCount} note{helperNoteCount === 1 ? "" : "s"}</Pill> : null}
+            </div>
+            <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
+              {quickReviewMode ? "Quick review-only run for due items." : stepSummary(currentStep)}
+            </p>
+          </div>
+        )}
+      >
+        <div className="space-y-3">
+          <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/65 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Practice flow</p>
+            <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+              Expose, guided recall, blind recall, link practice, then grade. Expand helpers only when you need support.
+            </p>
+          </div>
 
-          <SessionFlowTutorial surface="session" />
-        </>
-      ) : null}
-
-      {switchOpen && !distractionFree ? (
-        <Card>
-          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Select Hifz surah</p>
-          <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
-            If you already practiced this surah, we continue from your last paused ayah. Otherwise it starts from ayah 1.
-          </p>
-          <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr)_220px]">
-            <label className="text-xs text-[color:var(--kw-muted)]">
-              Surah
-              <div className="mt-1">
-                <SurahSearchSelect
-                  value={targetSurahNumber}
-                  onChange={(surahNumber) => {
-                    setTargetSurahNumber(surahNumber);
-                  }}
-                  disabled={switchingSurah}
-                />
+          <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/65 p-4">
+            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Select Hifz surah</p>
+            <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
+              We resume from your last paused ayah when progress exists. New surahs begin from ayah 1.
+            </p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr)_220px]">
+              <label className="text-xs text-[color:var(--kw-muted)]">
+                Surah
+                <div className="mt-1">
+                  <SurahSearchSelect
+                    value={targetSurahNumber}
+                    onChange={(surahNumber) => {
+                      setTargetSurahNumber(surahNumber);
+                    }}
+                    disabled={switchingSurah}
+                  />
+                </div>
+              </label>
+              <div className="flex items-end">
+                <Button className="w-full" onClick={() => void switchSessionSurah()} disabled={switchingSurah}>
+                  {switchingSurah ? "Switching..." : "Switch surah"}
+                </Button>
               </div>
-            </label>
-            <div className="flex items-end">
-              <Button className="w-full" onClick={() => void switchSessionSurah()} disabled={switchingSurah}>
-                {switchingSurah ? "Switching..." : "Switch surah"}
-              </Button>
             </div>
           </div>
-        </Card>
-      ) : null}
 
-      {shouldShowWeeklyGateIntro && !distractionFree ? (
-        <Card className="border-[rgba(234,88,12,0.28)] bg-[rgba(234,88,12,0.10)]">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Weekly consolidation gate (mandatory)</p>
-              <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">
-                This gate is required before new memorization continues. It protects retention and prevents hidden decay.
-              </p>
+          {shouldShowWeeklyGateIntro ? (
+            <div className="rounded-[20px] border border-[rgba(234,88,12,0.28)] bg-[rgba(234,88,12,0.10)] p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Weekly consolidation gate</p>
+                  <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">
+                    This gate is required before new memorization continues. It protects retention and prevents hidden decay.
+                  </p>
+                </div>
+                <Button size="sm" variant="secondary" onClick={() => markCoachSeen("weeklyGate")}>
+                  I understand
+                </Button>
+              </div>
             </div>
-            <Button size="sm" variant="secondary" onClick={() => markCoachSeen("weeklyGate")}>
-              I understand
-            </Button>
-          </div>
-        </Card>
-      ) : null}
+          ) : null}
 
-      {coachTip && !distractionFree ? (
-        <Card className="border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)]">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{coachTip.title}</p>
-              <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">{coachTip.message}</p>
+          {coachTip ? (
+            <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{coachTip.title}</p>
+                  <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">{coachTip.message}</p>
+                </div>
+                <Button size="sm" variant="secondary" onClick={() => markCoachSeen(coachTip.key)}>
+                  Got it
+                </Button>
+              </div>
             </div>
-            <Button size="sm" variant="secondary" onClick={() => markCoachSeen(coachTip.key)}>
-              Got it
-            </Button>
-          </div>
-        </Card>
-      ) : null}
+          ) : null}
+        </div>
+      </DisclosureCard>
 
       <Card>
         <div className="space-y-4">
@@ -1361,7 +1338,7 @@ export function SessionClient() {
                     <div dir="rtl" className="text-right font-[family-name:var(--font-kw-quran)] text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
                       {ayahText ?? "Ayah text unavailable"}
                     </div>
-                    {(showPhonetic || showTranslation) && !distractionFree ? (
+                    {showPhonetic || showTranslation ? (
                       <div className="space-y-2">
                         {showPhonetic ? (
                           <SupportTextPanel kind="transliteration">
@@ -1378,11 +1355,11 @@ export function SessionClient() {
                           </SupportTextPanel>
                         ) : null}
                       </div>
-                    ) : !distractionFree ? (
+                    ) : (
                       <p dir="ltr" className="text-left text-sm leading-7 text-[color:var(--kw-faint)]">
                         Transliteration and translation hidden.
                       </p>
-                    ) : null}
+                    )}
                   </div>
                 ) : (
                   <div className="mt-3 rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-3 py-3">

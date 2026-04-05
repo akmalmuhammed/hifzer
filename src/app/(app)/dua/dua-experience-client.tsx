@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { startTransition, useDeferredValue, useEffect, useEffectEvent, useMemo, useState, type FormEvent } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleAlert,
+  Coins,
   HandHeart,
   Heart,
   Minus,
@@ -17,6 +18,7 @@ import {
   Plus,
   RefreshCcw,
   Save,
+  Shield,
   Sparkles,
   Trash2,
   type LucideIcon,
@@ -24,6 +26,7 @@ import {
 import { SupportTextPanel } from "@/components/quran/support-text-panel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { DisclosureCard } from "@/components/ui/disclosure-card";
 import { Pill } from "@/components/ui/pill";
 import {
   DEFAULT_DUA_MODULE_ID,
@@ -38,6 +41,10 @@ import styles from "./dua-experience.module.css";
 
 const STORAGE_KEY = "hifzer.dua.experience.v3";
 const DUA_VISIBILITY_KEY = "hifzer.dua.support-copy.v2";
+const DEFAULT_VISIBILITY_PREFS: DuaVisibilityPrefs = {
+  showTransliteration: false,
+  showTranslation: true,
+};
 
 type ModuleProgressState = {
   currentIndex: number;
@@ -86,11 +93,35 @@ type DuaVisibilityPrefs = {
 };
 
 function moduleIcon(moduleId: DuaModuleId): LucideIcon {
-  return moduleId === "laylat-al-qadr" ? MoonStar : Heart;
+  if (moduleId === "laylat-al-qadr") {
+    return MoonStar;
+  }
+  if (moduleId === "beautiful-names") {
+    return Sparkles;
+  }
+  if (moduleId === "wealth") {
+    return Coins;
+  }
+  if (moduleId === "ruqyah") {
+    return Shield;
+  }
+  return Heart;
 }
 
 function moduleTone(moduleId: DuaModuleId): "accent" | "warn" | "success" {
-  return moduleId === "laylat-al-qadr" ? "accent" : "warn";
+  if (moduleId === "laylat-al-qadr") {
+    return "accent";
+  }
+  if (moduleId === "beautiful-names") {
+    return "success";
+  }
+  if (moduleId === "wealth") {
+    return "success";
+  }
+  if (moduleId === "ruqyah") {
+    return "accent";
+  }
+  return "warn";
 }
 
 function kindTone(kind: JourneyKind): "accent" | "warn" | "success" {
@@ -152,7 +183,10 @@ function normalizeModuleProgress(journeyModule: DuaJourneyModule, input?: Partia
 }
 
 function buildDefaultSavedState(modules: DuaJourneyModule[]): SavedState {
-  const currentModuleId = modules[0]?.id ?? DEFAULT_DUA_MODULE_ID;
+  const currentModuleId =
+    modules.find((journeyModule) => journeyModule.id === DEFAULT_DUA_MODULE_ID)?.id ??
+    modules[0]?.id ??
+    DEFAULT_DUA_MODULE_ID;
   const moduleState = Object.fromEntries(
     modules.map((journeyModule) => [journeyModule.id, buildDefaultModuleProgress(journeyModule)]),
   );
@@ -197,25 +231,27 @@ function loadSavedState(modules: DuaJourneyModule[]): SavedState {
 }
 
 function loadVisibilityPrefs(): DuaVisibilityPrefs {
-  const fallback = {
-    showTransliteration: false,
-    showTranslation: true,
-  };
   if (typeof window === "undefined") {
-    return fallback;
+    return DEFAULT_VISIBILITY_PREFS;
   }
   try {
     const raw = window.localStorage.getItem(DUA_VISIBILITY_KEY);
     if (!raw) {
-      return fallback;
+      return DEFAULT_VISIBILITY_PREFS;
     }
     const parsed = JSON.parse(raw) as Partial<DuaVisibilityPrefs>;
     return {
-      showTransliteration: typeof parsed.showTransliteration === "boolean" ? parsed.showTransliteration : fallback.showTransliteration,
-      showTranslation: typeof parsed.showTranslation === "boolean" ? parsed.showTranslation : fallback.showTranslation,
+      showTransliteration:
+        typeof parsed.showTransliteration === "boolean"
+          ? parsed.showTransliteration
+          : DEFAULT_VISIBILITY_PREFS.showTransliteration,
+      showTranslation:
+        typeof parsed.showTranslation === "boolean"
+          ? parsed.showTranslation
+          : DEFAULT_VISIBILITY_PREFS.showTranslation,
     };
   } catch {
-    return fallback;
+    return DEFAULT_VISIBILITY_PREFS;
   }
 }
 
@@ -252,6 +288,10 @@ function deckHref(moduleId: DuaModuleId): string {
   return `/dua/${moduleId}/deck`;
 }
 
+function normalizeSearchValue(input: string): string {
+  return input.trim().toLowerCase();
+}
+
 export function DuaExperienceClient({
   canManageCustomDuas,
   initialCustomDuas,
@@ -265,7 +305,7 @@ export function DuaExperienceClient({
   });
   const [customDuas, setCustomDuas] = useState(initialCustomDuas);
   const [deckOrders, setDeckOrders] = useState(initialDeckOrders);
-  const [experienceState, setExperienceState] = useState<SavedState>(() => loadSavedState(initialModules));
+  const [experienceState, setExperienceState] = useState<SavedState>(() => buildDefaultSavedState(initialModules));
   const [draft, setDraft] = useState<CustomDuaDraft>(emptyDraft(initialModuleId ?? DEFAULT_DUA_MODULE_ID, 10));
   const [formError, setFormError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -273,8 +313,12 @@ export function DuaExperienceClient({
   const [savingOrderKey, setSavingOrderKey] = useState<string | null>(null);
   const [deletingCustomId, setDeletingCustomId] = useState<string | null>(null);
   const [orderDrafts, setOrderDrafts] = useState<Record<string, string>>({});
-  const [visibilityPrefs, setVisibilityPrefs] = useState<DuaVisibilityPrefs>(loadVisibilityPrefs);
+  const [visibilityPrefs, setVisibilityPrefs] = useState<DuaVisibilityPrefs>(DEFAULT_VISIBILITY_PREFS);
   const [showStudySupport, setShowStudySupport] = useState(false);
+  const [stepSearch, setStepSearch] = useState("");
+  const [activeStepFilter, setActiveStepFilter] = useState("All");
+  const [loadedBrowserPrefs, setLoadedBrowserPrefs] = useState(false);
+  const deferredStepSearch = useDeferredValue(stepSearch);
 
   const modules = useMemo(
     () =>
@@ -288,6 +332,25 @@ export function DuaExperienceClient({
   useEffect(() => {
     setExperienceState((previous) => reconcileSavedState(modules, previous));
   }, [modules]);
+
+  useEffect(() => {
+    if (loadedBrowserPrefs) {
+      return;
+    }
+
+    setExperienceState(() => {
+      const savedState = loadSavedState(modules);
+      if (!initialModuleId) {
+        return savedState;
+      }
+      return {
+        ...savedState,
+        currentModuleId: initialModuleId,
+      };
+    });
+    setVisibilityPrefs(loadVisibilityPrefs());
+    setLoadedBrowserPrefs(true);
+  }, [initialModuleId, loadedBrowserPrefs, modules]);
 
   useEffect(() => {
     if (!initialModuleId) {
@@ -304,23 +367,107 @@ export function DuaExperienceClient({
   }, [initialModuleId]);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(experienceState));
+    if (!loadedBrowserPrefs || typeof window === "undefined") {
+      return;
     }
-  }, [experienceState]);
+
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(experienceState));
+  }, [experienceState, loadedBrowserPrefs]);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(DUA_VISIBILITY_KEY, JSON.stringify(visibilityPrefs));
+    if (!loadedBrowserPrefs || typeof window === "undefined") {
+      return;
     }
-  }, [visibilityPrefs]);
+
+    window.localStorage.setItem(DUA_VISIBILITY_KEY, JSON.stringify(visibilityPrefs));
+  }, [loadedBrowserPrefs, visibilityPrefs]);
 
   const resolvedModuleId = initialModuleId ?? experienceState.currentModuleId;
   const currentModule = modules.find((journeyModule) => journeyModule.id === resolvedModuleId) ?? modules[0];
   const currentModuleState =
     (currentModule && experienceState.moduleState[currentModule.id]) ||
     (currentModule ? buildDefaultModuleProgress(currentModule) : { currentIndex: 0, repetitionCounts: {}, visitedStepIds: [] });
-  const currentStep = currentModule?.steps[currentModuleState.currentIndex] ?? currentModule?.steps[0];
+  const isNamesModule = currentModule?.id === "beautiful-names";
+
+  const availableStepFilters = useMemo(() => {
+    if (!currentModule || !isNamesModule) {
+      return ["All"];
+    }
+
+    const filters = ["All"];
+    const seen = new Set(filters);
+    for (const step of currentModule.steps) {
+      const nextFilter = step.spotlight?.category ?? "Method";
+      if (seen.has(nextFilter)) {
+        continue;
+      }
+      seen.add(nextFilter);
+      filters.push(nextFilter);
+    }
+    return filters;
+  }, [currentModule, isNamesModule]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(experienceState));
+    }
+  }, [experienceState]);
+
+  const hasNamesFilter = isNamesModule && (normalizeSearchValue(stepSearch).length > 0 || activeStepFilter !== "All");
+  const matchedStepIndexes = useMemo(() => {
+    if (!currentModule || !isNamesModule) {
+      return currentModule?.steps.map((_, index) => index) ?? [];
+    }
+
+    const search = normalizeSearchValue(deferredStepSearch);
+    return currentModule.steps.flatMap((step, index) => {
+      const filterLabel = step.spotlight?.category ?? "Method";
+      if (activeStepFilter !== "All" && filterLabel !== activeStepFilter) {
+        return [];
+      }
+
+      const haystack = normalizeSearchValue(
+        [
+          step.title,
+          step.summary,
+          step.spotlight?.meaning,
+          step.spotlight?.transliteration,
+          step.spotlight?.arabic,
+          filterLabel,
+          ...(step.tags ?? []),
+        ]
+          .filter(Boolean)
+          .join(" "),
+      );
+
+      if (search && !haystack.includes(search)) {
+        return [];
+      }
+
+      return [index];
+    });
+  }, [activeStepFilter, currentModule, deferredStepSearch, isNamesModule]);
+
+  const visibleStepIndexes = useMemo(() => {
+    if (!currentModule) {
+      return [];
+    }
+    if (!isNamesModule) {
+      return currentModule.steps.map((_, index) => index);
+    }
+    if (matchedStepIndexes.length > 0) {
+      return matchedStepIndexes;
+    }
+    if (hasNamesFilter) {
+      return [currentModuleState.currentIndex];
+    }
+    return currentModule.steps.map((_, index) => index);
+  }, [currentModule, currentModuleState.currentIndex, hasNamesFilter, isNamesModule, matchedStepIndexes]);
+
+  const currentStepIndex = visibleStepIndexes.includes(currentModuleState.currentIndex)
+    ? currentModuleState.currentIndex
+    : visibleStepIndexes[0] ?? currentModuleState.currentIndex;
+  const currentStep = currentModule?.steps[currentStepIndex] ?? currentModule?.steps[0];
 
   const moduleProgress = useMemo(
     () =>
@@ -388,6 +535,16 @@ export function DuaExperienceClient({
     setShowStudySupport(false);
   }, [currentModule?.id, currentModuleState.currentIndex, initialView]);
 
+  useEffect(() => {
+    if (isNamesModule) {
+      return;
+    }
+    if (stepSearch || activeStepFilter !== "All") {
+      setStepSearch("");
+      setActiveStepFilter("All");
+    }
+  }, [activeStepFilter, isNamesModule, stepSearch]);
+
   const currentRepetitions = currentStep ? currentModuleState.repetitionCounts[currentStep.id] ?? 0 : 0;
   const currentStepHasTransliteration = Boolean(currentStep?.dua?.transliteration?.trim());
   const canManageCurrentModule = Boolean(currentModule?.supportsCustomDeck && canManageCustomDuas);
@@ -399,6 +556,20 @@ export function DuaExperienceClient({
     currentModuleIndex >= 0 && currentModuleIndex < modules.length - 1
       ? modules[currentModuleIndex + 1]
       : null;
+  const currentVisibleIndex = visibleStepIndexes.indexOf(currentStepIndex);
+  const previousStepIndex = currentVisibleIndex > 0 ? visibleStepIndexes[currentVisibleIndex - 1] : null;
+  const nextStepIndex =
+    currentVisibleIndex >= 0 && currentVisibleIndex < visibleStepIndexes.length - 1
+      ? visibleStepIndexes[currentVisibleIndex + 1]
+      : null;
+  const namesMatchCount = isNamesModule ? matchedStepIndexes.length : visibleStepIndexes.length;
+  const namesShowingFallback = isNamesModule && hasNamesFilter && matchedStepIndexes.length === 0;
+  const practiceCuePreview = currentStep?.actionLine ?? currentStep?.practice[0] ?? "Return gently to this step.";
+  const supportSummaryParts = [
+    visibilityPrefs.showTransliteration && currentStepHasTransliteration ? "Transliteration on" : null,
+    visibilityPrefs.showTranslation ? "Translation on" : null,
+    currentStep?.dua ? `${currentRepetitions} reps` : null,
+  ].filter(Boolean) as string[];
 
   function setModuleProgress(moduleId: DuaModuleId, updater: (previous: ModuleProgressState) => ModuleProgressState) {
     setExperienceState((previous) => {
@@ -430,9 +601,32 @@ export function DuaExperienceClient({
       visitedStepIds:
         stepId && !previous.visitedStepIds.includes(stepId)
           ? [...previous.visitedStepIds, stepId]
-          : previous.visitedStepIds,
+        : previous.visitedStepIds,
     }));
   }
+
+  const syncNamesSelection = useEffectEvent(() => {
+    if (!isNamesModule || !currentModule || matchedStepIndexes.length === 0) {
+      return;
+    }
+    if (matchedStepIndexes.includes(currentModuleState.currentIndex)) {
+      return;
+    }
+    const boundedIndex = matchedStepIndexes[0] ?? 0;
+    const stepId = currentModule.steps[boundedIndex]?.id;
+    setModuleProgress(currentModule.id, (previous) => ({
+      ...previous,
+      currentIndex: boundedIndex,
+      visitedStepIds:
+        stepId && !previous.visitedStepIds.includes(stepId)
+          ? [...previous.visitedStepIds, stepId]
+          : previous.visitedStepIds,
+    }));
+  });
+
+  useEffect(() => {
+    syncNamesSelection();
+  }, [currentModule, currentModuleState.currentIndex, isNamesModule, matchedStepIndexes]);
 
   function resetCurrentModule() {
     if (!currentModule) {
@@ -652,8 +846,7 @@ export function DuaExperienceClient({
               <p className={styles.homeEyebrow}>Dua</p>
               <h1 className={styles.homeTitle}>Focused guided dua experiences</h1>
               <p className={styles.homeSubtitle}>
-                Choose a module, move one step at a time, open study support only when you need context, and keep
-                private dua management separate from the worship flow.
+                Choose a module, move one step at a time, and open support only when you need it.
               </p>
             </div>
             <div className={styles.homeActions}>
@@ -671,34 +864,10 @@ export function DuaExperienceClient({
             </div>
           </div>
 
-          <div className={styles.principleGrid}>
-            <div className={styles.principleCard}>
-              <span className={styles.principleIcon}>
-                <HandHeart size={16} />
-              </span>
-              <div>
-                <p className={styles.principleTitle}>Guided first</p>
-                <p className={styles.principleText}>The main experience stays centered on one current step and one clear action.</p>
-              </div>
-            </div>
-            <div className={styles.principleCard}>
-              <span className={styles.principleIcon}>
-                <BookOpenText size={16} />
-              </span>
-              <div>
-                <p className={styles.principleTitle}>Study when needed</p>
-                <p className={styles.principleText}>Reflection prompts, authenticity notes, and sources stay secondary instead of competing with the dua.</p>
-              </div>
-            </div>
-            <div className={styles.principleCard}>
-              <span className={styles.principleIcon}>
-                <Sparkles size={16} />
-              </span>
-              <div>
-                <p className={styles.principleTitle}>Private management apart</p>
-                <p className={styles.principleText}>Custom duas and deck order live in a dedicated surface so worship mode stays calm.</p>
-              </div>
-            </div>
+          <div className={styles.homePrincipleRow}>
+            <span className={styles.metricChip}>Guided first</span>
+            <span className={styles.metricChip}>Support on demand</span>
+            <span className={styles.metricChip}>Private deck separate</span>
           </div>
         </Card>
 
@@ -761,7 +930,7 @@ export function DuaExperienceClient({
     return null;
   }
 
-  const isLastStep = currentModuleState.currentIndex === currentModule.steps.length - 1;
+  const isLastStep = nextStepIndex === null;
   const hasVisibleDuaCopy = Boolean(
     currentStep.dua &&
       (
@@ -1038,26 +1207,72 @@ export function DuaExperienceClient({
 
         <div className={styles.focusMetaRow}>
           <span className={styles.focusMetaPill}>
-            Step {currentModuleState.currentIndex + 1} of {currentModule.steps.length}
+            Step {currentStepIndex + 1} of {currentModule.steps.length}
           </span>
           <span className={styles.focusMetaPill}>
             Visited {currentProgress?.seen ?? 0} of {currentModule.steps.length}
           </span>
-          <button
-            type="button"
-            className={styles.focusMetaPill}
-            data-interactive="1"
-            onClick={() => setShowStudySupport((previous) => !previous)}
-          >
-            {showStudySupport ? "Hide study support" : "Open study support"}
-          </button>
+          {isNamesModule ? (
+            <span className={styles.focusMetaPill}>
+              {namesMatchCount} {namesMatchCount === 1 ? "match" : "matches"}
+            </span>
+          ) : null}
         </div>
       </Card>
 
+      {isNamesModule ? (
+        <Card className={styles.explorerCard}>
+          <div className={styles.explorerTop}>
+            <div>
+              <p className={styles.sectionLabel}>Names explorer</p>
+              <p className={styles.toolSummary}>
+                Find a name by need, meaning, or transliteration, then move through only the cards that matter right now.
+              </p>
+            </div>
+            <label className={styles.searchField}>
+              <span className={styles.fieldLabel}>Find a name</span>
+              <input
+                type="search"
+                className={styles.searchInput}
+                value={stepSearch}
+                onChange={(event) => setStepSearch(event.target.value)}
+                placeholder="Rahman, mercy, forgiveness, guidance..."
+              />
+            </label>
+          </div>
+
+          <div className={styles.filterRow}>
+            {availableStepFilters.map((filterLabel) => (
+              <button
+                key={filterLabel}
+                type="button"
+                className={styles.filterChip}
+                data-active={activeStepFilter === filterLabel ? "1" : "0"}
+                onClick={() => {
+                  startTransition(() => setActiveStepFilter(filterLabel));
+                }}
+              >
+                {filterLabel}
+              </button>
+            ))}
+          </div>
+
+          {namesShowingFallback ? (
+            <div className={styles.notice} data-tone="neutral">
+              No name matched that filter. The current card is staying visible so you can reset your search gently.
+            </div>
+          ) : null}
+        </Card>
+      ) : null}
+
       <section className={styles.stepShell}>
         <div className={styles.stepRail}>
-          {currentModule.steps.map((step, index) => {
-            const active = index === currentModuleState.currentIndex;
+          {visibleStepIndexes.map((index) => {
+            const step = currentModule.steps[index];
+            if (!step) {
+              return null;
+            }
+            const active = index === currentStepIndex;
             const seen = currentModuleState.visitedStepIds.includes(step.id);
             return (
               <button
@@ -1071,7 +1286,9 @@ export function DuaExperienceClient({
                 <span className={styles.stepNumber}>{index + 1}</span>
                 <span className={styles.stepCopy}>
                   <span className={styles.stepEyebrow}>{step.eyebrow}</span>
+                  {step.spotlight ? <span className={styles.stepArabic}>{step.spotlight.arabic}</span> : null}
                   <span className={styles.stepTitle}>{step.title}</span>
+                  {step.spotlight ? <span className={styles.stepMeaning}>{step.spotlight.meaning}</span> : null}
                 </span>
               </button>
             );
@@ -1084,33 +1301,39 @@ export function DuaExperienceClient({
           <div className={styles.stageHeader}>
             <div className="flex flex-wrap items-center gap-2">
               <Pill tone={kindTone(currentStep.kind)}>{kindLabel(currentStep.kind)}</Pill>
+              {currentStep.spotlight ? <Pill tone="success">{currentStep.spotlight.anchorType}</Pill> : null}
             </div>
             <div>
               <p className={styles.stageCount}>
-                Step {currentModuleState.currentIndex + 1} of {currentModule.steps.length}
+                Step {currentStepIndex + 1} of {currentModule.steps.length}
               </p>
               <h2 className={styles.stageTitle}>{currentStep.title}</h2>
               <p className={styles.stageSummary}>{currentStep.summary}</p>
             </div>
           </div>
 
-          {currentStep.actionLine ? (
-            <div className={styles.actionBand}>
-              <span className={styles.actionIcon}>
-                <HandHeart size={16} />
-              </span>
-              <div>
-                <p className={styles.sectionLabel}>Do this now</p>
-                <p className={styles.actionText}>{currentStep.actionLine}</p>
+          {currentStep.spotlight ? (
+            <div className={styles.nameCard}>
+              <div className={styles.nameCopy}>
+                <p dir="rtl" className={styles.nameArabic}>
+                  {currentStep.spotlight.arabic}
+                </p>
+                <div>
+                  <p className={styles.sectionLabel}>{currentStep.spotlight.category}</p>
+                  <p className={styles.nameMeaning}>{currentStep.spotlight.meaning}</p>
+                </div>
               </div>
+              <p className={styles.nameTransliteration}>{currentStep.spotlight.transliteration}</p>
             </div>
           ) : null}
 
           {currentStep.dua ? (
             <div className={styles.duaCard}>
               <div>
-                <p className={styles.sectionLabel}>Dua</p>
-                <p className={styles.duaIntro}>Keep the recitation slow and present. Reveal only the support text you actually need.</p>
+                <p className={styles.sectionLabel}>{currentStep.dua.label ?? "Dua"}</p>
+                <p className={styles.duaIntro}>
+                  {currentStep.dua.intro ?? "Keep the recitation slow and present. Reveal only the support text you actually need."}
+                </p>
               </div>
 
               {currentStep.dua.arabic ? (
@@ -1140,24 +1363,16 @@ export function DuaExperienceClient({
             </div>
           ) : null}
 
-          <section className={styles.practiceSection}>
-            <p className={styles.sectionLabel}>Stay with this step</p>
-            <div className={styles.practiceList}>
-              {currentStep.practice.map((item) => (
-                <div key={item} className={styles.practiceItem}>
-                  <span className={styles.practiceDot} />
-                  <p>{item}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
           <div className={styles.stageActions}>
             <Button
               variant="secondary"
               className="gap-2"
-              onClick={() => goToStep(currentModuleState.currentIndex - 1)}
-              disabled={currentModuleState.currentIndex === 0}
+              onClick={() => {
+                if (previousStepIndex !== null) {
+                  goToStep(previousStepIndex);
+                }
+              }}
+              disabled={previousStepIndex === null}
             >
               <ChevronLeft size={16} />
               Previous
@@ -1179,7 +1394,14 @@ export function DuaExperienceClient({
                 </Button>
               </div>
             ) : (
-              <Button className="gap-2" onClick={() => goToStep(currentModuleState.currentIndex + 1)}>
+              <Button
+                className="gap-2"
+                onClick={() => {
+                  if (nextStepIndex !== null) {
+                    goToStep(nextStepIndex);
+                  }
+                }}
+              >
                 Next
                 <ChevronRight size={16} />
               </Button>
@@ -1187,8 +1409,57 @@ export function DuaExperienceClient({
           </div>
         </Card>
 
+        {currentStep.actionLine || currentStep.practice.length > 0 ? (
+          <DisclosureCard
+            className={styles.compactCard}
+            summary={(
+              <div>
+                <p className={styles.sectionLabel}>Practice cues</p>
+                <p className={styles.compactSummary}>{practiceCuePreview}</p>
+              </div>
+            )}
+          >
+            <div className={styles.practiceDisclosureBody}>
+              {currentStep.actionLine ? (
+                <div className={styles.actionBand}>
+                  <span className={styles.actionIcon}>
+                    <HandHeart size={16} />
+                  </span>
+                  <div>
+                    <p className={styles.sectionLabel}>Do this now</p>
+                    <p className={styles.actionText}>{currentStep.actionLine}</p>
+                  </div>
+                </div>
+              ) : null}
+
+              <section className={styles.practiceSection}>
+                <div className={styles.practiceList}>
+                  {currentStep.practice.map((item) => (
+                    <div key={item} className={styles.practiceItem}>
+                      <span className={styles.practiceDot} />
+                      <p>{item}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+          </DisclosureCard>
+        ) : null}
+
         {currentStep.dua ? (
-          <Card className={styles.toolCard}>
+          <DisclosureCard
+            className={styles.toolCard}
+            summary={(
+              <div>
+                <p className={styles.sectionLabel}>Practice tools</p>
+                <p className={styles.compactSummary}>
+                  {supportSummaryParts.length > 0
+                    ? supportSummaryParts.join(" | ")
+                    : "Reveal support copy only when it helps."}
+                </p>
+              </div>
+            )}
+          >
             <div className={styles.toolTop}>
               <div>
                 <p className={styles.sectionLabel}>Practice tools</p>
@@ -1251,7 +1522,7 @@ export function DuaExperienceClient({
                 </button>
               </div>
             </div>
-          </Card>
+          </DisclosureCard>
         ) : null}
 
         <Card className={styles.studyCard}>
@@ -1313,7 +1584,7 @@ export function DuaExperienceClient({
             </div>
           ) : (
             <p className={styles.studyClosed}>
-              Keep the page centered on worship. Open study support when you want authenticity notes, reflection, or sources.
+              Open this only when you want reflection, authenticity notes, or sources.
             </p>
           )}
         </Card>

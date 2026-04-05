@@ -72,7 +72,7 @@ const APP_UI_COPY: Record<UiLanguage, AppUiCopy> = {
     sectionProduct: "Product",
     nav: {
       home: "Home",
-      today: "Today",
+      today: "Dashboard",
       hifz: "Hifz",
       quran: "Qur'an",
       dua: "Dua",
@@ -85,7 +85,7 @@ const APP_UI_COPY: Record<UiLanguage, AppUiCopy> = {
     },
     marketing: {
       compare: "Compare",
-      openApp: "Open app",
+      openApp: "Continue in app",
       signIn: "Sign in",
       getStarted: "Get started",
       motivation: "Motivation",
