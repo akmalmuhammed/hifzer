@@ -54,14 +54,14 @@ export function ProductScreenshot() {
         {/* Stats row below screenshot, not crammed into a sidebar */}
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           {PROOF_STATS.map((item) => (
-            <Card key={item.label}>
+            <div key={item.label} className="rounded-[var(--kw-radius-xl)] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
                 {item.label}
               </p>
               <p className="mt-1.5 text-2xl font-[family-name:var(--font-kw-display)] tracking-tight text-[color:var(--kw-ink)]">
                 {item.value}
               </p>
-            </Card>
+            </div>
           ))}
         </div>
 
