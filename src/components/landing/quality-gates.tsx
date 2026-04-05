@@ -9,24 +9,24 @@ const GATES = [
   {
     title: "Warm-up gate",
     subtitle: "Yesterday's Sabaq must pass first",
-    copy: "Before new ayahs unlock, you must recall yesterday's material. If your average grade is below GOOD, new memorization is blocked. This prevents building on a shaky foundation.",
-    rule: "Pass: avg ≥ GOOD, AGAIN count ≤ 1",
+    copy: "Every session starts with a quick recall of what you learned yesterday. If you can reproduce it cleanly, the session unlocks. If not, you review first. No new material gets added onto a shaky foundation.",
+    rule: "Runs before every session",
     icon: <ShieldCheck size={18} />,
     pill: { label: "Daily", tone: "brand" as const },
   },
   {
-    title: "Weekly consolidation test",
-    subtitle: "Catch silent decay early",
-    copy: "Once per week, the system tests 20 random ayahs from your Sabqi window. If your pass rate drops, the engine shifts to Consolidation mode — automatically, without guilt or decision fatigue.",
-    rule: "20-ayah sample from last 14 days",
+    title: "Weekly check",
+    subtitle: "Catch silent forgetting early",
+    copy: "Once a week the app quietly tests a sample of older material. If retention has dropped, it automatically shifts focus to consolidation without you needing to notice or decide anything.",
+    rule: "Runs once per week, automatically",
     icon: <Clock size={18} />,
     pill: { label: "Weekly", tone: "accent" as const },
   },
   {
-    title: "Review debt engine",
-    subtitle: "Minutes-based, not item count",
-    copy: "Counting overdue items is not enough. Hifzer estimates the time cost of every due review, sums it against your daily budget, and shifts gears when debt grows — from Normal to Consolidation to Catch-up.",
-    rule: "Consolidation at 25% debt ratio · Catch-up at 45%",
+    title: "Review load balancing",
+    subtitle: "Adjusts when you fall behind",
+    copy: "When overdue reviews build up beyond what a session can handle, the app scales back new memorisation and prioritises clearing the backlog first. It shifts gears so you never dig a hole you cannot climb out of.",
+    rule: "Adjusts your daily load automatically",
     icon: <AlertTriangle size={18} />,
     pill: { label: "Automatic", tone: "warn" as const },
   },
@@ -40,16 +40,16 @@ export function QualityGates() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-            Enforcement
+            How it protects you
           </p>
-          <h2 className="mt-3 max-w-2xl text-balance font-[family-name:var(--font-kw-display)] text-3xl leading-tight tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
-            Hifzer protects your progress.
-            <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Automatically.</span>
+          <h2 className="kw-marketing-display mt-3 max-w-2xl text-balance text-3xl leading-tight text-[color:var(--kw-ink)] sm:text-4xl">
+            Built to protect your progress.
+            <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Not just track it.</span>
           </h2>
         </div>
         <p className="max-w-xl text-sm leading-6 text-[color:var(--kw-muted)]">
-          Other apps let you sprint ahead and forget everything behind you. Hifzer has built-in
-          quality gates that block false progress and keep retention real.
+          Most apps let you sprint ahead while forgetting what is behind you. Hifzer has built-in checkpoints
+          that block false progress and keep what you have learned real.
         </p>
       </div>
 
@@ -69,7 +69,7 @@ export function QualityGates() {
                   {g.icon}
                 </span>
               </div>
-              <p className="mt-3 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
+              <p className="mt-3 text-lg font-bold tracking-tight text-[color:var(--kw-ink)]">
                 {g.title}
               </p>
               <p className="mt-1 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
@@ -79,7 +79,7 @@ export function QualityGates() {
 
               <div className="mt-4 rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2">
                 <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                  Rule
+                  When
                 </p>
                 <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">{g.rule}</p>
               </div>

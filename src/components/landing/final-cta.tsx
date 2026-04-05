@@ -1,8 +1,8 @@
-﻿"use client";
+"use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { Download, Share } from "lucide-react";
-import { IphoneInstallGuide } from "@/components/landing/iphone-install-guide";
+import { ArrowRight, Download, Share } from "lucide-react";
+import { WindLines } from "@/components/brand/wind-lines";
 import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { Button } from "@/components/ui/button";
@@ -45,7 +45,7 @@ export function FinalCta() {
     pushToast({
       tone: "warning",
       title: "Install prompt not ready",
-      message: "Use the steps below to add Hifzer manually.",
+      message: "Try opening hifzer.com in Chrome or Safari and using the menu to install.",
     });
   };
 
@@ -54,60 +54,75 @@ export function FinalCta() {
       <motion.div
         initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.25 }}
-        transition={{ duration: reduceMotion ? 0 : 0.5 }}
-        className="relative overflow-hidden rounded-[28px] border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[radial-gradient(ellipse_at_top,rgba(var(--kw-accent-rgb),0.10)_0%,transparent_62%)] px-6 py-14 md:px-12 md:py-16"
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: reduceMotion ? 0 : 0.55, ease: [0.22, 1, 0.36, 1] }}
+        className="relative overflow-hidden rounded-[28px] bg-[#0b1220] px-6 py-16 md:px-12 md:py-20"
       >
-        <div className="relative mx-auto max-w-[820px] text-center">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[rgba(var(--kw-accent-rgb),1)]">
-            Install and begin
-          </p>
-          <h2 className="kw-marketing-display kw-gradient-headline mt-3 text-balance text-4xl leading-[1.02] sm:text-5xl">
-            Begin with one recitation today.
-          </h2>
-          <p className="mx-auto mt-4 max-w-[56ch] text-base leading-7 text-[color:var(--kw-muted)]">
-            The most beloved deeds are consistent, even when small. Install Hifzer and keep your
-            daily return protected.
-            <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
-              Sahih al-Bukhari 6464
-            </span>
+        {/* Decorative wind lines on dark bg — same motif, inverted context */}
+        <div className="pointer-events-none absolute inset-0 opacity-20">
+          <WindLines className="h-full w-full opacity-70" animated={!reduceMotion} />
+        </div>
+
+        {/* Teal radial glow */}
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse 900px 500px at 50% -10%, rgba(10,138,119,0.22), transparent 65%)",
+          }}
+        />
+
+        <div className="relative mx-auto max-w-[720px] text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#2dd4bf]">
+            Begin today
           </p>
 
-          <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <h2 className="kw-marketing-display mt-4 text-balance text-4xl font-bold leading-[1.0] text-[rgba(248,250,252,0.94)] sm:text-5xl">
+            Your return to the Book{" "}
+            <span className="text-[#2dd4bf]">starts here.</span>
+          </h2>
+
+          <p className="mx-auto mt-5 max-w-[46ch] text-base leading-[1.8] text-[rgba(248,250,252,0.58)]">
+            No complicated setup. No flashcard grind. Open the app, follow today&apos;s session,
+            and let Hifzer handle the rest.
+          </p>
+
+          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Button
               type="button"
               size="lg"
               onClick={() => {
                 void onInstallNow();
               }}
+              className="sm:w-auto"
             >
-              <InstallIcon size={18} />
-              Add to Home Screen now
+              <InstallIcon size={17} />
+              Add to Home Screen
+            </Button>
+            <Button asChild size="lg" variant="secondary">
+              <PublicAuthLink
+                signedInHref="/today"
+                signedOutHref="/signup"
+                onClick={() => {
+                  trackGaEvent("landing.secondary_start_free_click", { placement: "final-cta" });
+                }}
+              >
+                {isSignedIn ? "Open app" : "Start free in browser"} <ArrowRight size={17} />
+              </PublicAuthLink>
             </Button>
           </div>
 
-          <p className="mt-4">
-            <PublicAuthLink
-              signedInHref="/today"
-              signedOutHref="/signup"
-              onClick={() => {
-                trackGaEvent("landing.secondary_start_free_click", { placement: "final-cta" });
-              }}
-              className="text-sm font-semibold text-[color:var(--kw-muted)] underline underline-offset-2 transition hover:text-[color:var(--kw-ink)]"
-            >
-              {isSignedIn ? "Open app" : "Start free in browser"}
-            </PublicAuthLink>
+          <p className="mt-5 text-xs text-[rgba(248,250,252,0.32)]">
+            Free to start · No card required
           </p>
-        </div>
 
-        <div className="mx-auto mt-8 grid max-w-[920px] gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border border-[color:var(--kw-border-2)] bg-white/75 p-4 text-left">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Android</p>
-            <p className="mt-2 text-sm leading-6 text-[color:var(--kw-ink-2)]">
-              Open Chrome or Edge menu, then choose Add to Home screen or Install app.
-            </p>
-          </div>
-          <IphoneInstallGuide />
+          {/* Qur'anic closing — earned position, not repeated from above */}
+          <p className="mt-10 border-t border-[rgba(255,255,255,0.08)] pt-8 text-sm italic text-[rgba(248,250,252,0.4)]">
+            &ldquo;Your return is never lost.&rdquo;
+            <span className="ml-2 not-italic text-[11px] tracking-wide text-[rgba(248,250,252,0.25)]">
+              Adapted from Sahih Muslim 798a
+            </span>
+          </p>
         </div>
       </motion.div>
     </section>

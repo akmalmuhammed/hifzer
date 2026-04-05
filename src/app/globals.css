@@ -196,7 +196,7 @@ html[data-mode="dark"] {
 
   --font-sans: var(--font-kw-sans);
   --font-mono: var(--font-kw-mono);
-  --font-kw-display: var(--font-kw-sans);
+  --font-kw-display: var(--font-kw-marketing);
   --font-kw-quran: var(--font-quran-uthmani), "KFGQPC Uthmanic Script HAFS", "Scheherazade New", "Amiri", "Noto Naskh Arabic", "Traditional Arabic", serif;
 }
 
@@ -262,7 +262,7 @@ html[data-distraction-free="1"] .kw-distraction-hide {
    because Inter (unlike Fraunces) doesn't come with implicit bold. */
 h1, h2, h3 {
   font-weight: 700;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
 }
 
 /* Tighten leading on large display text */
@@ -283,16 +283,14 @@ body {
   font-family:
     var(--font-kw-marketing),
     var(--font-kw-sans),
-    "Inter",
     ui-sans-serif,
-    system-ui,
     -apple-system,
-    "Segoe UI",
-    Roboto,
+    "Helvetica Neue",
     Helvetica,
     Arial,
     sans-serif;
-  letter-spacing: -0.03em;
+  font-weight: 800;
+  letter-spacing: -0.04em;
 }
 
 .kw-gradient-headline {
@@ -330,7 +328,7 @@ html[data-mode="dark"] .kw-gradient-headline {
 
 .kw-canvas::before {
   content: "";
-  position: absolute;
+  position: fixed;
   inset: 0;
   z-index: -2;
   background:
@@ -346,7 +344,7 @@ html[data-mode="dark"] .kw-gradient-headline {
     ),
     radial-gradient(
       980px 620px at 70% 92%,
-      rgba(234, 88, 12, 0.14),
+      rgba(234, 88, 12, 0.05),
       transparent 64%
     ),
     linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(246, 247, 249, 1));
@@ -365,6 +363,7 @@ html[data-mode="dark"] .kw-gradient-headline {
 }
 
 html[data-mode="dark"] .kw-canvas::before {
+  position: fixed;
   background:
     radial-gradient(
       1100px 700px at 10% 15%,
@@ -378,7 +377,7 @@ html[data-mode="dark"] .kw-canvas::before {
     ),
     radial-gradient(
       980px 620px at 70% 90%,
-      rgba(234, 88, 12, 0.12),
+      rgba(234, 88, 12, 0.04),
       transparent 68%
     ),
     linear-gradient(180deg, rgba(5, 10, 18, 0.96), rgba(11, 18, 32, 1));
@@ -504,6 +503,25 @@ html[data-mode="dark"] [class~="focus:bg-white"]:focus {
   background-color: var(--kw-surface-strong) !important;
 }
 
+@keyframes kw-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.kw-marquee-track {
+  animation: kw-marquee 32s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kw-marquee-track {
+    animation: none;
+  }
+}
+
 @keyframes kw-float {
   0% {
     transform: translate3d(0, 0, 0);
@@ -544,6 +562,37 @@ html[data-mode="dark"] [class~="focus:bg-white"]:focus {
   flex-shrink: 0;
   white-space: nowrap;
   padding-inline: 1.25rem;
+}
+
+/* Glassmorphic feature cards */
+.kw-feature-card {
+  background: linear-gradient(
+    135deg,
+    rgba(10, 138, 119, 0.08) 0%,
+    rgba(255, 255, 255, 0.52) 50%,
+    rgba(234, 88, 12, 0.03) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow:
+    0 8px 32px rgba(11, 18, 32, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+html[data-mode="dark"] .kw-feature-card {
+  background: linear-gradient(
+    135deg,
+    rgba(10, 138, 119, 0.16) 0%,
+    rgba(11, 18, 32, 0.62) 50%,
+    rgba(234, 88, 12, 0.04) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .kw-glass {

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, IBM_Plex_Mono, Amiri, Space_Grotesk } from "next/font/google";
+import { Inter, IBM_Plex_Mono, Amiri, Plus_Jakarta_Sans } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { cookies } from "next/headers";
 import { AppProviders } from "@/components/providers/app-providers";
@@ -32,10 +32,10 @@ const amiri = Amiri({
   weight: ["400", "700"],
 });
 
-const marketingDisplay = Space_Grotesk({
+const marketingDisplay = Plus_Jakarta_Sans({
   variable: "--font-kw-marketing",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const siteUrl = getSiteUrl();
@@ -114,7 +114,7 @@ export default async function RootLayout({
         data-distraction-free={distractionFree ? "1" : "0"}
         className={`${inter.variable} ${mono.variable} ${amiri.variable} ${marketingDisplay.variable}`}
       >
-      <body className="kw-canvas min-h-dvh bg-[color:var(--kw-bg)] text-[color:var(--kw-ink)] antialiased">
+      <body suppressHydrationWarning className="kw-canvas min-h-dvh bg-[color:var(--kw-bg)] text-[color:var(--kw-ink)] antialiased">
         <a
           href="#main-content"
           className="sr-only rounded-md bg-[color:var(--kw-ink)] px-3 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[1000]"

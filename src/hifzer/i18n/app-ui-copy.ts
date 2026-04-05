@@ -67,7 +67,7 @@ const APP_UI_COPY: Record<UiLanguage, AppUiCopy> = {
   "en.sahih": {
     skipToMain: "Skip to main content",
     language: "Language",
-    brandTagline: "Hifz operating system",
+    brandTagline: "Your Islamic companion",
     sectionInsights: "Insights",
     sectionProduct: "Product",
     nav: {
