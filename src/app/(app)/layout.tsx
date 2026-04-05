@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app/app-shell";
 import { BookmarkSyncAgent } from "@/components/bookmarks/bookmark-sync-agent";
 import { ProfileHydrator } from "@/components/providers/profile-hydrator";
-import { PublicBetaBanner } from "@/components/site/public-beta-banner";
 import { getProfileSnapshot } from "@/hifzer/profile/server";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { dbConfigured } from "@/lib/db";
@@ -36,13 +35,10 @@ export default async function AppGroupLayout({ children }: { children: React.Rea
   }
 
   return (
-    <>
-      <PublicBetaBanner />
-      <AppShell streakEnabled={Boolean(profile?.onboardingCompleted)}>
-        <ProfileHydrator profile={profile} />
-        <BookmarkSyncAgent />
-        {children}
-      </AppShell>
-    </>
+    <AppShell streakEnabled={Boolean(profile?.onboardingCompleted)}>
+      <ProfileHydrator profile={profile} />
+      <BookmarkSyncAgent />
+      {children}
+    </AppShell>
   );
 }
