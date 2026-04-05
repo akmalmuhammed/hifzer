@@ -200,6 +200,7 @@ model UserProfile {
   bookmarkCategories    BookmarkCategory[]
   bookmarks             Bookmark[]
   bookmarkEvents        BookmarkEvent[]
+  quranFoundationAccount QuranFoundationAccount?
   privateJournalEntries PrivateJournalEntry[]
   quranBrowseEvents     QuranBrowseEvent[]
   customDuas           CustomDua[]
@@ -288,6 +289,10 @@ model Bookmark {
   isPinned   Boolean           @default(false)
   version    Int               @default(1)
   deletedAt  DateTime?
+  quranFoundationBookmarkId String?
+  quranFoundationSyncState String?
+  quranFoundationLastSyncedAt DateTime?
+  quranFoundationSyncError String?
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
 
@@ -299,6 +304,30 @@ model Bookmark {
   @@index([userId, deletedAt])
   @@index([userId, ayahId])
   @@index([categoryId])
+  @@index([quranFoundationBookmarkId])
+}
+
+model QuranFoundationAccount {
+  id                    String      @id @default(cuid())
+  userId                String      @unique
+  quranFoundationUserId String?
+  displayName           String?
+  email                 String?
+  accessTokenCiphertext String
+  refreshTokenCiphertext String?
+  scopes                String[]    @default([])
+  status                String      @default("connected")
+  accessTokenExpiresAt  DateTime?
+  lastMutationAt        String?
+  lastSyncedAt          DateTime?
+  lastError             String?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status, updatedAt])
+  @@index([quranFoundationUserId])
 }
 
 model BookmarkEvent {

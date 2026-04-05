@@ -379,6 +379,11 @@ export type StoredBookmark = {
   deletedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  provider?: "local" | "dual";
+  syncState?: "not_linked" | "local_only" | "synced" | "error";
+  lastSyncedAt?: string | null;
+  syncError?: string | null;
+  remoteBookmarkId?: string | null;
   category: StoredBookmarkCategory | null;
 };
 

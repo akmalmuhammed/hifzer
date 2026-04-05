@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell, Eye, Languages, LifeBuoy, Map, Palette, SlidersHorizontal, Target, UserRound, Volume2 } from "lucide-react";
+import { Bell, Eye, Languages, LifeBuoy, Link2, Map, Palette, SlidersHorizontal, Target, UserRound, Volume2 } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
@@ -32,6 +32,13 @@ function getItems(copy: ReturnType<typeof getAppUiCopy>) {
       desc: copy.languageSettings.subtitle,
       icon: <Languages size={18} />,
       tone: "accent" as const,
+    },
+    {
+      href: "/settings/quran-foundation",
+      title: "Quran.com",
+      desc: "Link Quran.com for bookmark sync and official content enrichment.",
+      icon: <Link2 size={18} />,
+      tone: "brand" as const,
     },
     {
       href: "/settings/account",

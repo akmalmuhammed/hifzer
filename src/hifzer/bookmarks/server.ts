@@ -3,6 +3,7 @@ import "server-only";
 import { Prisma, type BookmarkCategory, type BookmarkEvent, type BookmarkMutationType } from "@prisma/client";
 import { getAyahById, getSurahInfo } from "@/hifzer/quran/lookup";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
+import { syncBookmarkToQuranFoundation } from "@/hifzer/quran-foundation/bookmarks";
 import { db, dbConfigured } from "@/lib/db";
 
 const MAX_BOOKMARK_NAME = 120;
@@ -36,6 +37,11 @@ export type BookmarkSnapshot = {
   deletedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  provider: "local" | "dual";
+  syncState: "not_linked" | "local_only" | "synced" | "error";
+  lastSyncedAt: string | null;
+  syncError: string | null;
+  remoteBookmarkId: string | null;
   category: BookmarkCategorySnapshot | null;
 };
 
@@ -244,6 +250,18 @@ function toBookmarkSnapshot(row: BookmarkWithCategory): BookmarkSnapshot {
     deletedAt: row.deletedAt ? row.deletedAt.toISOString() : null,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
+    provider: row.quranFoundationBookmarkId ? "dual" : "local",
+    syncState:
+      row.quranFoundationSyncState === "synced" ||
+      row.quranFoundationSyncState === "error" ||
+      row.quranFoundationSyncState === "not_linked"
+        ? row.quranFoundationSyncState
+        : row.quranFoundationBookmarkId
+          ? "synced"
+          : "local_only",
+    lastSyncedAt: row.quranFoundationLastSyncedAt ? row.quranFoundationLastSyncedAt.toISOString() : null,
+    syncError: row.quranFoundationSyncError ?? null,
+    remoteBookmarkId: row.quranFoundationBookmarkId ?? null,
     category: row.category ? toCategorySnapshot(row.category) : null,
   };
 }
@@ -456,6 +474,7 @@ export async function createBookmark(clerkUserId: string, input: BookmarkCreateI
           note,
           categoryId: category?.id ?? null,
           isPinned: Boolean(input.isPinned),
+          quranFoundationSyncState: "local_only",
         },
         include: { category: true },
       });
@@ -475,7 +494,13 @@ export async function createBookmark(clerkUserId: string, input: BookmarkCreateI
       });
       return bookmark;
     });
-    return toBookmarkSnapshot(created);
+    await syncBookmarkToQuranFoundation({
+      clerkUserId,
+      bookmarkId: created.id,
+      action: "create_or_restore",
+    });
+    const latest = await getBookmarkRowForUser(profile.id, created.id);
+    return toBookmarkSnapshot(latest);
   } catch (error) {
     if (isDuplicateClientMutationError(error) && dedupeId) {
       const event = await checkMutationAlreadyApplied(profile.id, dedupeId);
@@ -547,7 +572,13 @@ export async function updateBookmark(clerkUserId: string, input: BookmarkUpdateI
       });
       return row;
     });
-    return toBookmarkSnapshot(updated);
+    await syncBookmarkToQuranFoundation({
+      clerkUserId,
+      bookmarkId: updated.id,
+      action: "metadata",
+    });
+    const latest = await getBookmarkRowForUser(profile.id, updated.id);
+    return toBookmarkSnapshot(latest);
   } catch (error) {
     if (isDuplicateClientMutationError(error) && dedupeId) {
       const event = await checkMutationAlreadyApplied(profile.id, dedupeId);
@@ -592,7 +623,13 @@ export async function softDeleteBookmark(clerkUserId: string, input: BookmarkDel
       });
       return row;
     });
-    return toBookmarkSnapshot(deleted);
+    await syncBookmarkToQuranFoundation({
+      clerkUserId,
+      bookmarkId: deleted.id,
+      action: "delete",
+    });
+    const latest = await getBookmarkRowForUser(profile.id, deleted.id);
+    return toBookmarkSnapshot(latest);
   } catch (error) {
     if (isDuplicateClientMutationError(error) && dedupeId) {
       const event = await checkMutationAlreadyApplied(profile.id, dedupeId);
@@ -637,7 +674,13 @@ export async function restoreBookmark(clerkUserId: string, input: BookmarkRestor
       });
       return row;
     });
-    return toBookmarkSnapshot(restored);
+    await syncBookmarkToQuranFoundation({
+      clerkUserId,
+      bookmarkId: restored.id,
+      action: "create_or_restore",
+    });
+    const latest = await getBookmarkRowForUser(profile.id, restored.id);
+    return toBookmarkSnapshot(latest);
   } catch (error) {
     if (isDuplicateClientMutationError(error) && dedupeId) {
       const event = await checkMutationAlreadyApplied(profile.id, dedupeId);

@@ -11,6 +11,8 @@ export type CoreSchemaCapabilities = {
   hasSessionPlanJson: boolean;
   hasQuranBrowseTable: boolean;
   hasCustomDuaTables: boolean;
+  hasBookmarkQuranFoundationColumns: boolean;
+  hasQuranFoundationTable: boolean;
 };
 
 function resolveDbSchemaName(): string {
@@ -38,6 +40,8 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
       hasSessionPlanJson: false,
       hasQuranBrowseTable: false,
       hasCustomDuaTables: false,
+      hasBookmarkQuranFoundationColumns: false,
+      hasQuranFoundationTable: false,
     };
   }
 
@@ -109,6 +113,34 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
               LOWER('updatedAt')
             )
           )
+          OR (
+            LOWER(table_name) = LOWER('Bookmark')
+            AND LOWER(column_name) IN (
+              LOWER('quranFoundationBookmarkId'),
+              LOWER('quranFoundationSyncState'),
+              LOWER('quranFoundationLastSyncedAt'),
+              LOWER('quranFoundationSyncError')
+            )
+          )
+          OR (
+            LOWER(table_name) = LOWER('QuranFoundationAccount')
+            AND LOWER(column_name) IN (
+              LOWER('userId'),
+              LOWER('quranFoundationUserId'),
+              LOWER('displayName'),
+              LOWER('email'),
+              LOWER('accessTokenCiphertext'),
+              LOWER('refreshTokenCiphertext'),
+              LOWER('scopes'),
+              LOWER('status'),
+              LOWER('accessTokenExpiresAt'),
+              LOWER('lastMutationAt'),
+              LOWER('lastSyncedAt'),
+              LOWER('lastError'),
+              LOWER('createdAt'),
+              LOWER('updatedAt')
+            )
+          )
         )
     `;
 
@@ -135,6 +167,16 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
     const duaDeckOrderColumns = new Set(
       rows
         .filter((row) => row.table_name.toLowerCase() === "duadeckorder")
+        .map((row) => row.column_name.toLowerCase()),
+    );
+    const bookmarkColumns = new Set(
+      rows
+        .filter((row) => row.table_name.toLowerCase() === "bookmark")
+        .map((row) => row.column_name.toLowerCase()),
+    );
+    const quranFoundationAccountColumns = new Set(
+      rows
+        .filter((row) => row.table_name.toLowerCase() === "quranfoundationaccount")
         .map((row) => row.column_name.toLowerCase()),
     );
 
@@ -174,6 +216,26 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
         duaDeckOrderColumns.has("sortorder") &&
         duaDeckOrderColumns.has("createdat") &&
         duaDeckOrderColumns.has("updatedat"),
+      hasBookmarkQuranFoundationColumns:
+        bookmarkColumns.has("quranfoundationbookmarkid") &&
+        bookmarkColumns.has("quranfoundationsyncstate") &&
+        bookmarkColumns.has("quranfoundationlastsyncedat") &&
+        bookmarkColumns.has("quranfoundationsyncerror"),
+      hasQuranFoundationTable:
+        quranFoundationAccountColumns.has("userid") &&
+        quranFoundationAccountColumns.has("quranfoundationuserid") &&
+        quranFoundationAccountColumns.has("displayname") &&
+        quranFoundationAccountColumns.has("email") &&
+        quranFoundationAccountColumns.has("accesstokenciphertext") &&
+        quranFoundationAccountColumns.has("refreshtokenciphertext") &&
+        quranFoundationAccountColumns.has("scopes") &&
+        quranFoundationAccountColumns.has("status") &&
+        quranFoundationAccountColumns.has("accesstokenexpiresat") &&
+        quranFoundationAccountColumns.has("lastmutationat") &&
+        quranFoundationAccountColumns.has("lastsyncedat") &&
+        quranFoundationAccountColumns.has("lasterror") &&
+        quranFoundationAccountColumns.has("createdat") &&
+        quranFoundationAccountColumns.has("updatedat"),
     };
   } catch {
     // Fail-safe: assume legacy schema if capability probing fails.
@@ -183,6 +245,8 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
       hasSessionPlanJson: false,
       hasQuranBrowseTable: false,
       hasCustomDuaTables: false,
+      hasBookmarkQuranFoundationColumns: false,
+      hasQuranFoundationTable: false,
     };
   }
 }
@@ -299,6 +363,13 @@ export async function ensureCoreSchemaCompatibility(): Promise<void> {
         ADD COLUMN IF NOT EXISTS "quranShowDetails" BOOLEAN NOT NULL DEFAULT true;
       `);
       await prisma.$executeRawUnsafe(`
+        ALTER TABLE "Bookmark"
+        ADD COLUMN IF NOT EXISTS "quranFoundationBookmarkId" TEXT,
+        ADD COLUMN IF NOT EXISTS "quranFoundationSyncState" TEXT,
+        ADD COLUMN IF NOT EXISTS "quranFoundationLastSyncedAt" TIMESTAMP(3),
+        ADD COLUMN IF NOT EXISTS "quranFoundationSyncError" TEXT;
+      `);
+      await prisma.$executeRawUnsafe(`
         UPDATE "UserProfile"
         SET
           "quranActiveSurahNumber" = COALESCE("quranActiveSurahNumber", "activeSurahNumber", 1),
@@ -347,6 +418,26 @@ export async function ensureCoreSchemaCompatibility(): Promise<void> {
       `);
 
       // Ensure supporting tables exist for load/start and lane APIs.
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "QuranFoundationAccount" (
+          "id" TEXT NOT NULL,
+          "userId" TEXT NOT NULL,
+          "quranFoundationUserId" TEXT,
+          "displayName" TEXT,
+          "email" TEXT,
+          "accessTokenCiphertext" TEXT NOT NULL,
+          "refreshTokenCiphertext" TEXT,
+          "scopes" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+          "status" TEXT NOT NULL DEFAULT 'connected',
+          "accessTokenExpiresAt" TIMESTAMP(3),
+          "lastMutationAt" TEXT,
+          "lastSyncedAt" TIMESTAMP(3),
+          "lastError" TEXT,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "QuranFoundationAccount_pkey" PRIMARY KEY ("id")
+        );
+      `);
       await prisma.$executeRawUnsafe(`
         CREATE TABLE IF NOT EXISTS "ReviewEvent" (
           "id" TEXT NOT NULL,
@@ -433,6 +524,21 @@ export async function ensureCoreSchemaCompatibility(): Promise<void> {
           IF NOT EXISTS (
             SELECT 1
             FROM pg_constraint
+            WHERE conname = 'QuranFoundationAccount_userId_fkey'
+          ) THEN
+            ALTER TABLE "QuranFoundationAccount"
+            ADD CONSTRAINT "QuranFoundationAccount_userId_fkey"
+            FOREIGN KEY ("userId") REFERENCES "UserProfile"("id")
+            ON DELETE CASCADE ON UPDATE CASCADE;
+          END IF;
+        END $$;
+      `);
+      await prisma.$executeRawUnsafe(`
+        DO $$
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
             WHERE conname = 'CustomDua_userId_fkey'
           ) THEN
             ALTER TABLE "CustomDua"
@@ -456,6 +562,18 @@ export async function ensureCoreSchemaCompatibility(): Promise<void> {
             ON DELETE CASCADE ON UPDATE CASCADE;
           END IF;
         END $$;
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE UNIQUE INDEX IF NOT EXISTS "QuranFoundationAccount_userId_key" ON "QuranFoundationAccount"("userId");
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "QuranFoundationAccount_status_updatedAt_idx" ON "QuranFoundationAccount"("status", "updatedAt");
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "QuranFoundationAccount_quranFoundationUserId_idx" ON "QuranFoundationAccount"("quranFoundationUserId");
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "Bookmark_quranFoundationBookmarkId_idx" ON "Bookmark"("quranFoundationBookmarkId");
       `);
       await prisma.$executeRawUnsafe(`
         CREATE INDEX IF NOT EXISTS "ReviewEvent_userId_createdAt_idx" ON "ReviewEvent"("userId", "createdAt");
@@ -555,6 +673,8 @@ export async function ensureCoreSchemaCompatibility(): Promise<void> {
         hasSessionPlanJson: true,
         hasQuranBrowseTable: true,
         hasCustomDuaTables: true,
+        hasBookmarkQuranFoundationColumns: true,
+        hasQuranFoundationTable: true,
       });
     })().catch((error) => {
       ensureCoreSchemaPatchPromise = null;

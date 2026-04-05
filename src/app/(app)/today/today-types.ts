@@ -1,3 +1,5 @@
+import type { QuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/types";
+
 // Shared types between today/page.tsx (server) and today-client.tsx (client).
 
 export type TodayPayload = {
@@ -44,6 +46,7 @@ export type TodayPayload = {
     };
   };
   monthlyAdjustmentMessage?: string | null;
+  quranFoundation?: QuranFoundationConnectionStatus | null;
 };
 
 export type LearningLane = {

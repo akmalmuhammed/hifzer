@@ -7,6 +7,7 @@ import { ArrowUpRight, BookMarked, BookmarkPlus, MessageSquareText, X } from "lu
 import { queueAndFlushBookmarkMutation, readCachedBookmarkState, loadBookmarksFromApi, newBookmarkMutationId } from "@/hifzer/bookmarks/client";
 import { getPendingBookmarkSyncMutations } from "@/hifzer/local/store";
 import { Button } from "@/components/ui/button";
+import type { QuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/types";
 
 type Props = {
   ayahId: number;
@@ -28,6 +29,7 @@ export function ReaderBookmarkControl(props: Props) {
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [pendingCount, setPendingCount] = useState(getPendingBookmarkSyncMutations().length);
+  const [connectionStatus, setConnectionStatus] = useState<QuranFoundationConnectionStatus | null>(null);
 
   const defaultName = useMemo(
     () => `Surah ${props.surahNumber}:${props.ayahNumber}`,
@@ -53,6 +55,26 @@ export function ReaderBookmarkControl(props: Props) {
   useEffect(() => {
     void refreshCategories();
   }, [refreshCategories]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const response = await fetch("/api/quran-foundation/status", { cache: "no-store" });
+        const payload = (await response.json().catch(() => null)) as { status?: QuranFoundationConnectionStatus } | null;
+        if (!cancelled && payload?.status) {
+          setConnectionStatus(payload.status);
+        }
+      } catch {
+        if (!cancelled) {
+          setConnectionStatus(null);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!open) {
@@ -231,6 +253,15 @@ export function ReaderBookmarkControl(props: Props) {
 
             {feedback ? (
               <p className="text-xs text-[color:var(--kw-muted)]">{feedback}</p>
+            ) : null}
+            {connectionStatus ? (
+              <p className="text-xs text-[color:var(--kw-faint)]">
+                {connectionStatus.state === "connected"
+                  ? "Quran.com is linked. New bookmarks can sync remotely."
+                  : connectionStatus.state === "degraded"
+                    ? "Quran.com link needs attention. This bookmark will stay local until it recovers."
+                    : "This bookmark will stay local until you link Quran.com."}
+              </p>
             ) : null}
           </div>
           </div>

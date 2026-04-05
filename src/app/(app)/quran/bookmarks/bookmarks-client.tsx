@@ -16,6 +16,7 @@ import { getPendingBookmarkSyncMutations } from "@/hifzer/local/store";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
+import type { QuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/types";
 
 type BookmarkDraft = {
   name: string;
@@ -45,7 +46,7 @@ function toDraft(bookmark: BookmarkSnapshot): BookmarkDraft {
   };
 }
 
-export function BookmarkManagerClient() {
+export function BookmarkManagerClient(props: { connectionStatus: QuranFoundationConnectionStatus }) {
   const cached = readCachedBookmarkState();
   const [categories, setCategories] = useState<BookmarkCategorySnapshot[]>(cached.categories);
   const [bookmarks, setBookmarks] = useState<BookmarkSnapshot[]>(cached.bookmarks);
@@ -311,6 +312,9 @@ export function BookmarkManagerClient() {
         <div className="flex flex-wrap items-center gap-2">
           <Pill tone="accent">Manager</Pill>
           {pendingCount > 0 ? <Pill tone="warn">{pendingCount} pending sync</Pill> : <Pill tone="success">All synced</Pill>}
+          <Pill tone={props.connectionStatus.state === "connected" ? "accent" : props.connectionStatus.state === "degraded" ? "warn" : "neutral"}>
+            Quran.com: {props.connectionStatus.state.replace("_", " ")}
+          </Pill>
           <Button
             size="sm"
             variant="secondary"
@@ -320,8 +324,12 @@ export function BookmarkManagerClient() {
           >
             Sync now
           </Button>
+          <Button size="sm" variant="ghost" asChild>
+            <Link href="/settings/quran-foundation">Quran.com settings</Link>
+          </Button>
         </div>
         {feedback ? <p className="mt-2 text-sm text-[color:var(--kw-muted)]">{feedback}</p> : null}
+        <p className="mt-2 text-sm text-[color:var(--kw-muted)]">{props.connectionStatus.detail}</p>
 
         <div className="mt-4 grid gap-3 md:grid-cols-4">
           <label className="text-sm text-[color:var(--kw-muted)] md:col-span-2">
@@ -437,9 +445,16 @@ export function BookmarkManagerClient() {
                   <Pill tone={bookmark.isPinned ? "accent" : "neutral"}>
                     {bookmark.isPinned ? "Pinned" : "Unpinned"}
                   </Pill>
+                  <Pill tone={bookmark.syncState === "synced" ? "accent" : bookmark.syncState === "error" ? "warn" : "neutral"}>
+                    {bookmark.provider === "dual" ? "Quran.com linked" : "Local bookmark"}
+                  </Pill>
                   <span className="text-xs text-[color:var(--kw-faint)]">v{bookmark.version}</span>
                 </div>
-                <p className="text-xs text-[color:var(--kw-faint)]">Category: {categoryName}</p>
+                <p className="text-xs text-[color:var(--kw-faint)]">
+                  Category: {categoryName}
+                  {bookmark.lastSyncedAt ? ` · synced ${new Date(bookmark.lastSyncedAt).toLocaleString()}` : ""}
+                </p>
+                {bookmark.syncError ? <p className="text-xs text-[color:var(--kw-faint)]">{bookmark.syncError}</p> : null}
               </div>
 
               <Link href={openHref}>

@@ -1,13 +1,19 @@
+import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Pill } from "@/components/ui/pill";
+import { getQuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/server";
+import { clerkEnabled } from "@/lib/clerk-config";
 import { BookmarkManagerClient } from "./bookmarks-client";
 
 export const metadata = {
   title: "Qur'an Bookmarks",
 };
 
-export default function QuranBookmarksPage() {
+export default async function QuranBookmarksPage() {
+  const userId = clerkEnabled() ? (await auth()).userId : null;
+  const connectionStatus = await getQuranFoundationConnectionStatus(userId ?? null);
+
   return (
     <div className="pb-12 pt-10 md:pb-16 md:pt-14">
       <Link
@@ -29,7 +35,7 @@ export default function QuranBookmarksPage() {
         </p>
       </div>
 
-      <BookmarkManagerClient />
+      <BookmarkManagerClient connectionStatus={connectionStatus} />
     </div>
   );
 }

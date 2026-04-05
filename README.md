@@ -180,6 +180,41 @@ Generate English translation seed:
 pnpm quran:translation:sahih
 ```
 
+## Quran Foundation / Quran.com
+
+Hifzer now supports a minimal Quran Foundation integration path for the hackathon:
+
+- Optional Quran.com account linking at `/settings/quran-foundation`
+- Bookmark sync via Quran Foundation User APIs
+- Official ayah enrichment inside the compact reader via Quran Foundation content APIs
+
+Environment variables:
+
+- `QF_CLIENT_ID`
+- `QF_CLIENT_SECRET` (required for content enrichment)
+- `QF_TOKEN_ENCRYPTION_SECRET` (required for storing linked-account tokens)
+- `QF_OAUTH_REDIRECT_URI` (optional; defaults to `/api/quran-foundation/callback`)
+- `QF_BOOKMARK_MUSHAF_ID` (optional; defaults to `4`)
+- `QF_CONTENT_TRANSLATION_RESOURCE_ID` (optional)
+- `QF_CONTENT_TAFSIR_RESOURCE_ID` (optional)
+
+Main routes:
+
+- `GET /api/quran-foundation/connect`
+- `GET /api/quran-foundation/callback`
+- `GET /api/quran-foundation/status`
+- `POST /api/quran-foundation/disconnect`
+- `POST /api/quran-foundation/bookmarks/push`
+- `POST /api/quran-foundation/bookmarks/hydrate`
+- `GET /api/quran/content-panel?ayahId=...`
+
+Judge-facing product surfaces:
+
+- `/today` shows current Quran.com connection state
+- `/quran/read?view=compact` shows Quran Foundation enrichment for the active ayah
+- `/quran/bookmarks` shows bookmark provider/sync state
+- `/settings/quran-foundation` is the control surface for linking and syncing
+
 ## Audio (Cloudflare R2 Ready)
 
 Configure the base URL (optional for now):

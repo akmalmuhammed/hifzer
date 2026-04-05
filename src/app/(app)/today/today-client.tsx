@@ -200,10 +200,11 @@ export function TodayClient({
     }
     setError(null);
     try {
-      const [todayRes, lanesRes, overviewRes] = await Promise.all([
+      const [todayRes, lanesRes, overviewRes, quranFoundationRes] = await Promise.all([
         fetch("/api/session/today", { cache: "no-store" }),
         fetch("/api/profile/learning-lanes", { cache: "no-store" }),
         fetch("/api/dashboard/overview", { cache: "no-store" }),
+        fetch("/api/quran-foundation/status", { cache: "no-store" }),
       ]);
       const payload = (await todayRes.json()) as TodayPayload & { error?: string };
       if (todayRes.status === 403 && payload.error === "onboarding_required") {
@@ -227,6 +228,14 @@ export function TodayClient({
         const overviewPayload = (await overviewRes.json()) as { overview?: DashboardOverviewLike };
         nextOverview = toTodayDashboardSummary(overviewPayload.overview);
         setOverview(nextOverview);
+      }
+
+      if (quranFoundationRes.ok) {
+        const quranFoundationPayload = (await quranFoundationRes.json()) as { status?: TodayPayload["quranFoundation"] };
+        if (quranFoundationPayload.status) {
+          payload.quranFoundation = quranFoundationPayload.status;
+          setData({ ...payload });
+        }
       }
 
       writeSessionCache(TODAY_CACHE_KEY, {
@@ -445,6 +454,33 @@ export function TodayClient({
       />
 
       <SessionFlowTutorial surface="today" />
+
+      {data?.quranFoundation ? (
+        <Card>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Pill tone={data.quranFoundation.state === "connected" ? "accent" : data.quranFoundation.state === "degraded" ? "warn" : "neutral"}>
+                  Quran.com {data.quranFoundation.state.replace("_", " ")}
+                </Pill>
+                {data.quranFoundation.contentApiReady ? <Pill tone="neutral">Official enrichment ready</Pill> : null}
+              </div>
+              <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">{data.quranFoundation.detail}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/quran/read?view=compact">
+                <Button variant="secondary">Open reader</Button>
+              </Link>
+              <Link href="/quran/bookmarks">
+                <Button variant="secondary">Open bookmarks</Button>
+              </Link>
+              <Link href="/journal">
+                <Button variant="ghost">Reflect in journal</Button>
+              </Link>
+            </div>
+          </div>
+        </Card>
+      ) : null}
 
       {/* ---------- Monthly adjustment banner ---------- */}
       {data?.monthlyAdjustmentMessage ? (
