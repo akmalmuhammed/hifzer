@@ -63,7 +63,7 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
   return (
     <section
       ref={sectionRef}
-      className="relative flex min-h-[100dvh] flex-col items-center overflow-hidden"
+      className={`${styles.publicHero} relative flex flex-col items-center overflow-hidden`}
     >
       {/* Full-bleed ambient background — static, no animation to keep paint cost low */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[120%]">
@@ -81,7 +81,7 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
       {/* ── TEXT BLOCK — fades + floats out on scroll ── */}
       <motion.div
         style={{ opacity: textOpacity, y: textY }}
-        className="relative z-10 mx-auto flex w-full max-w-[860px] flex-col items-center px-4 pt-24 text-center md:pt-32"
+        className={`${styles.publicHeroText} relative z-10 mx-auto flex w-full flex-col items-center text-center`}
       >
         {/* Staggered entrance for all text children */}
         <motion.div
@@ -101,7 +101,8 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
           {/* Headline — gradient on H1 only, very large */}
           <motion.h1
             variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] } } }}
-            className="kw-marketing-display kw-gradient-headline mx-auto max-w-[13ch] text-balance text-[clamp(2.6rem,7.5vw,5.4rem)] leading-[0.92]" style={{ fontWeight: 800 }}
+            className={`${styles.publicHeroTitle} kw-marketing-display kw-gradient-headline mx-auto text-balance leading-[0.92]`}
+            style={{ fontWeight: 800 }}
           >
             Recite the Qur&apos;an. It will intercede for you.
           </motion.h1>
@@ -109,7 +110,7 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
           {/* Subheadline — single line */}
           <motion.p
             variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } } }}
-            className="mx-auto max-w-[42ch] text-center text-base leading-[1.7] text-[color:var(--kw-muted)] md:text-lg"
+            className={`${styles.publicHeroSummary} mx-auto text-center text-base leading-[1.7] text-[color:var(--kw-muted)] md:text-lg`}
           >
             Your complete companion for Hifz, Qur&apos;an reading, duas, and daily reflection.
           </motion.p>
@@ -117,12 +118,12 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
           {/* CTA row */}
           <motion.div
             variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } } }}
-            className="flex flex-wrap items-center justify-center gap-3"
+            className={`${styles.publicHeroActions} flex flex-wrap items-center justify-center`}
           >
             {primaryIntent === "signup" ? (
               <Button asChild size="lg">
                 <PublicAuthLink
-                  signedInHref="/today"
+                  signedInHref="/dashboard"
                   signedOutHref="/signup"
                   onClick={() => trackGaEvent("landing.secondary_start_free_click", { placement: "hero-primary" })}
                 >
@@ -137,7 +138,7 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
             )}
             <Button asChild size="lg" variant="secondary">
               <PublicAuthLink
-                signedInHref="/today"
+                signedInHref="/dashboard"
                 signedOutHref="/signup"
                 onClick={() => trackGaEvent("landing.secondary_start_free_click", { placement: "hero-auth-cta", state: isSignedIn ? "signed_in" : "signed_out" })}
               >
@@ -163,7 +164,7 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
         initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 60 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.9, delay: 0.65, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 mt-14 w-full max-w-[1100px] px-4 md:px-8"
+        className={`${styles.publicHeroVisual} relative z-10`}
       >
         {/* Screenshot glow bloom */}
         <div
@@ -189,7 +190,7 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
       {/* ── SCROLL INDICATOR — fades out as you scroll ── */}
       <motion.div
         style={{ opacity: indicatorOpacity }}
-        className="absolute bottom-8 left-1/2 z-20 -translate-x-1/2"
+        className={`${styles.publicHeroIndicator} absolute left-1/2 z-20 -translate-x-1/2`}
         aria-hidden="true"
       >
         <motion.div
@@ -206,3 +207,4 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
     </section>
   );
 }
+

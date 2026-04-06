@@ -97,7 +97,7 @@ export function FeaturePillars() {
               transition={{ duration: reduceMotion ? 0 : 0.45, delay: idx * 0.06 }}
             >
               <PublicAuthLink
-                signedInHref="/today"
+                signedInHref="/dashboard"
                 signedOutHref={pillar.href}
                 className={[
                   "group flex h-full flex-col rounded-[var(--kw-radius-xl)] border px-6 py-6 transition-all duration-200",
@@ -157,3 +157,4 @@ export function FeaturePillars() {
     </section>
   );
 }
+

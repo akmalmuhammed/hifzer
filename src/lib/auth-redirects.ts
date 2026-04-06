@@ -32,8 +32,9 @@ function normalizeAuthEntryPath(path: string, fallback: "/login" | "/signup"): s
 export const clerkAuthRoutes = {
   signInUrl: normalizeAuthEntryPath(envPathOrDefault("NEXT_PUBLIC_CLERK_SIGN_IN_URL", "/login"), "/login"),
   signUpUrl: normalizeAuthEntryPath(envPathOrDefault("NEXT_PUBLIC_CLERK_SIGN_UP_URL", "/signup"), "/signup"),
-  signInForceRedirectUrl: envPathOrDefault("NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL", "/today"),
-  signInFallbackRedirectUrl: envPathOrDefault("NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL", "/today"),
-  signUpForceRedirectUrl: envPathOrDefault("NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL", "/today"),
-  signUpFallbackRedirectUrl: envPathOrDefault("NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL", "/today"),
+  signInForceRedirectUrl: envPathOrDefault("NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL", "/dashboard"),
+  signInFallbackRedirectUrl: envPathOrDefault("NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL", "/dashboard"),
+  signUpForceRedirectUrl: envPathOrDefault("NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL", "/dashboard"),
+  signUpFallbackRedirectUrl: envPathOrDefault("NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL", "/dashboard"),
 } as const;
+

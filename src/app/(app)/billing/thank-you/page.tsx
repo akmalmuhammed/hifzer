@@ -41,7 +41,7 @@ export default function BillingThankYouPage() {
 
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 <Button asChild>
-                  <Link href="/today">
+                  <Link href="/dashboard">
                     Return to today <MoveRight size={16} />
                   </Link>
                 </Button>
@@ -91,3 +91,4 @@ export default function BillingThankYouPage() {
     </div>
   );
 }
+

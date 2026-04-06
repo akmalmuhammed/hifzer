@@ -1116,7 +1116,7 @@ export function SessionClient() {
 
             {/* Action buttons */}
             <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-              <Link href="/today">
+              <Link href="/dashboard">
                 <Button className="gap-2">
                   Go to Today <ArrowRight size={16} />
                 </Button>
@@ -1146,7 +1146,7 @@ export function SessionClient() {
             message={quickReviewMode ? "Your due-review queue is currently empty." : "There are no scheduled steps at the moment."}
             icon={<PlayCircle size={18} />}
             action={
-              <Link href="/today">
+              <Link href="/dashboard">
                 <Button className="gap-2">
                   Back to Today <ArrowRight size={16} />
                 </Button>
@@ -1441,3 +1441,4 @@ export function SessionClient() {
     </div>
   );
 }
+

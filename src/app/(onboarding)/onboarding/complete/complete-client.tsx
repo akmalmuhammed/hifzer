@@ -47,7 +47,7 @@ export function OnboardingCompleteClient() {
               }
 
               pushToast({ title: "Onboarding complete", message: "Welcome to Hifzer.", tone: "success" });
-              router.push("/today");
+              router.push("/dashboard");
             }}
           >
             Go to Today <ArrowRight size={18} />
@@ -57,3 +57,4 @@ export function OnboardingCompleteClient() {
     </div>
   );
 }
+

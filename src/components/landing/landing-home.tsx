@@ -228,7 +228,7 @@ export function LandingHome() {
 
               <motion.div variants={fadeUp} className={styles.heroActions}>
                 <Button asChild size="lg">
-                  <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
+                  <PublicAuthLink signedInHref="/dashboard" signedOutHref="/signup">
                     Open App <ArrowRight size={18} />
                   </PublicAuthLink>
                 </Button>
@@ -460,7 +460,7 @@ export function LandingHome() {
 
             <div className={styles.finalActions}>
               <Button asChild size="lg">
-                <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
+                <PublicAuthLink signedInHref="/dashboard" signedOutHref="/signup">
                   {isSignedIn ? "Open App" : "Create my free space"} <ArrowRight size={18} />
                 </PublicAuthLink>
               </Button>
@@ -477,3 +477,4 @@ export function LandingHome() {
     </div>
   );
 }
+

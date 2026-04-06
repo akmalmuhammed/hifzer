@@ -178,7 +178,7 @@ export function FinalCta() {
             </Button>
             <Button asChild size="lg" variant="secondary">
               <PublicAuthLink
-                signedInHref="/today"
+                signedInHref="/dashboard"
                 signedOutHref="/signup"
                 onClick={() => {
                   trackGaEvent("landing.secondary_start_free_click", { placement: "final-cta" });
@@ -205,3 +205,4 @@ export function FinalCta() {
     </section>
   );
 }
+

@@ -27,7 +27,7 @@ function isProtectedQuranPath(pathname: string): boolean {
   return pathname === "/quran" || pathname.startsWith("/quran/");
 }
 
-function safeRedirectPath(candidate: string | null | undefined, fallback = "/today"): string {
+function safeRedirectPath(candidate: string | null | undefined, fallback = "/dashboard"): string {
   const raw = (candidate ?? "").trim();
   if (!raw) {
     return fallback;
@@ -70,3 +70,4 @@ export default clerkMiddleware(async (auth, req) => {
 export const config = {
   matcher: ["/((?!_next|.*\\..*).*)"],
 };
+

@@ -69,3 +69,11 @@
   width: min(100%, var(--kw-app-main-max));
   margin-inline-end: auto;
 }
+
+.topUtilityRow {
+  display: flex;
+  width: min(100%, var(--kw-app-main-max));
+  justify-content: flex-end;
+  margin-inline-end: auto;
+  margin-bottom: clamp(0.85rem, 1.4vw, 1.2rem);
+}

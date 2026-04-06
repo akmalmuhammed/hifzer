@@ -8,7 +8,7 @@ export function BillingSuccessRedirect() {
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      router.replace("/today");
+      router.replace("/dashboard");
     }, 5000);
 
     return () => {
@@ -18,4 +18,5 @@ export function BillingSuccessRedirect() {
 
   return null;
 }
+
 

@@ -649,3 +649,113 @@
     grid-template-columns: 1fr;
   }
 }
+
+.publicHero {
+  min-height: clamp(42rem, 84dvh, 58rem);
+  padding-inline: 1rem;
+}
+
+.publicHeroText {
+  max-width: 78rem;
+  padding-top: clamp(4.5rem, 11vh, 7rem);
+  padding-inline: 1rem;
+}
+
+.publicHeroTitle {
+  max-width: 11.4ch;
+  font-size: clamp(2.5rem, 5.8vw, 4.9rem);
+}
+
+.publicHeroSummary {
+  max-width: 38rem;
+}
+
+.publicHeroActions {
+  gap: 0.75rem;
+}
+
+.publicHeroVisual {
+  width: 100%;
+  max-width: 62rem;
+  margin-top: clamp(2rem, 4vh, 3.25rem);
+  padding-inline: 1rem;
+}
+
+.publicHeroIndicator {
+  bottom: 1.25rem;
+}
+
+@media (max-width: 1600px) {
+  .publicHero {
+    min-height: clamp(40rem, 80dvh, 53rem);
+  }
+
+  .publicHeroText {
+    max-width: 70rem;
+    padding-top: clamp(3.8rem, 9vh, 5.6rem);
+  }
+
+  .publicHeroTitle {
+    max-width: 10.5ch;
+    font-size: clamp(2.35rem, 5vw, 4.35rem);
+  }
+
+  .publicHeroSummary {
+    max-width: 34rem;
+  }
+
+  .publicHeroVisual {
+    max-width: 58rem;
+    margin-top: clamp(1.5rem, 3vh, 2.5rem);
+  }
+}
+
+@media (max-height: 920px) {
+  .publicHero {
+    min-height: clamp(38rem, 78dvh, 50rem);
+  }
+
+  .publicHeroText {
+    padding-top: clamp(3.25rem, 8vh, 4.8rem);
+  }
+
+  .publicHeroTitle {
+    font-size: clamp(2.2rem, 4.65vw, 4rem);
+  }
+
+  .publicHeroVisual {
+    margin-top: 1.5rem;
+  }
+
+  .publicHeroIndicator {
+    display: none;
+  }
+}
+
+@media (max-width: 1023px) {
+  .publicHero {
+    min-height: auto;
+    padding-inline: 0.75rem;
+  }
+
+  .publicHeroText {
+    max-width: 100%;
+    padding-top: 3.25rem;
+    padding-inline: 1rem;
+  }
+
+  .publicHeroTitle {
+    max-width: 12ch;
+    font-size: clamp(2.25rem, 11vw, 4rem);
+  }
+
+  .publicHeroVisual {
+    max-width: 100%;
+    margin-top: 1.5rem;
+    padding-inline: 0;
+  }
+
+  .publicHeroIndicator {
+    display: none;
+  }
+}

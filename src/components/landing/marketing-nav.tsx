@@ -48,7 +48,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
               {showSignedIn ? (
                 <>
                   <Button asChild size="md">
-                    <TrackedLink href="/today" telemetryName="marketing.open-app">
+                    <TrackedLink href="/dashboard" telemetryName="marketing.open-app">
                       {openAppLabel}
                     </TrackedLink>
                   </Button>
@@ -59,14 +59,14 @@ export function MarketingNav(props: { authEnabled: boolean }) {
               ) : (
                 <>
                   <PublicAuthLink
-                    signedInHref="/today"
+                    signedInHref="/dashboard"
                     signedOutHref="/login"
                     className="rounded-[16px] px-3 py-2.5 text-sm font-semibold text-[color:var(--kw-muted)] transition hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)]"
                   >
                     {signInLabel}
                   </PublicAuthLink>
                   <Button asChild size="md">
-                    <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
+                    <PublicAuthLink signedInHref="/dashboard" signedOutHref="/signup">
                       {getStartedLabel} <ArrowRight size={16} />
                     </PublicAuthLink>
                   </Button>
@@ -95,7 +95,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                 {showSignedIn ? (
                   <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                     <TrackedLink
-                      href="/today"
+                      href="/dashboard"
                       telemetryName="marketing.mobile-open-app"
                       onClick={() => setOpen(false)}
                       className="rounded-[18px] border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 py-2.5 text-center text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]"
@@ -111,7 +111,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                 ) : (
                   <div className="grid gap-2 sm:grid-cols-2">
                     <PublicAuthLink
-                      signedInHref="/today"
+                      signedInHref="/dashboard"
                       signedOutHref="/login"
                       onClick={() => setOpen(false)}
                       className="rounded-[18px] border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 py-2.5 text-center text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]"
@@ -120,7 +120,7 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                     </PublicAuthLink>
                     <Button asChild className="w-full">
                       <PublicAuthLink
-                        signedInHref="/today"
+                        signedInHref="/dashboard"
                         signedOutHref="/signup"
                         onClick={() => setOpen(false)}
                       >
@@ -144,3 +144,4 @@ export function MarketingNav(props: { authEnabled: boolean }) {
     </header>
   );
 }
+

@@ -128,7 +128,7 @@ export function ComparisonMatrix() {
           Try the system that combines all three.
         </p>
         <Button asChild size="lg" className="gap-2">
-          <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
+          <PublicAuthLink signedInHref="/dashboard" signedOutHref="/signup">
             Get started free <ArrowRight size={16} />
           </PublicAuthLink>
         </Button>
@@ -136,3 +136,4 @@ export function ComparisonMatrix() {
     </section>
   );
 }
+

@@ -11,7 +11,7 @@ export function WelcomeAuthCta() {
   if (isSignedIn) {
     return (
       <Button asChild size="lg" className="gap-2">
-        <PublicAuthLink signedInHref="/today" className="inline-flex">
+        <PublicAuthLink signedInHref="/dashboard" className="inline-flex">
           Continue in app <ArrowRight size={18} />
         </PublicAuthLink>
       </Button>
@@ -21,15 +21,16 @@ export function WelcomeAuthCta() {
   return (
     <>
       <Button asChild size="lg">
-        <PublicAuthLink signedInHref="/today" signedOutHref="/login">
+        <PublicAuthLink signedInHref="/dashboard" signedOutHref="/login">
           Create account <ArrowRight size={18} />
         </PublicAuthLink>
       </Button>
       <Button asChild size="lg" variant="secondary">
-        <PublicAuthLink signedInHref="/today" signedOutHref="/login">
+        <PublicAuthLink signedInHref="/dashboard" signedOutHref="/login">
           Sign in
         </PublicAuthLink>
       </Button>
     </>
   );
 }
+

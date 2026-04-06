@@ -42,7 +42,7 @@ type NavItem = { href: string; key: NavKey; icon: typeof House; label?: string }
 
 const PRIMARY: NavItem[] = [
   { href: "/", key: "home", icon: House },
-  { href: "/today", key: "today", icon: CalendarDays },
+  { href: "/dashboard", key: "today", icon: CalendarDays },
   { href: "/hifz", key: "hifz", icon: PlayCircle },
   { href: "/quran", key: "quran", icon: BookOpenText },
   { href: "/dua", key: "dua", icon: MoonStar },
@@ -60,7 +60,7 @@ const PLATFORM: NavItem[] = [
 
 const MOBILE_NAV: NavItem[] = [
   { href: "/", key: "home", icon: House },
-  { href: "/today", key: "today", icon: CalendarDays },
+  { href: "/dashboard", key: "today", icon: CalendarDays },
   { href: "/hifz", key: "hifz", icon: PlayCircle },
   { href: "/quran", key: "quran", icon: BookOpenText },
   { href: "/dua", key: "dua", icon: MoonStar },
@@ -72,8 +72,8 @@ function isActive(pathname: string, href: string): boolean {
   if (href === "/") {
     return pathname === "/";
   }
-  if (href === "/today") {
-    return pathname === "/" || pathname === "/today";
+  if (href === "/dashboard") {
+    return pathname === "/dashboard" || pathname === "/today";
   }
   if (href === "/roadmap") {
     return pathname === "/roadmap";
@@ -212,11 +212,10 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
 
   return (
     <div className={clsx("kw-app-shell min-h-dvh overflow-x-clip", quranShell && "kw-quran-shell")}>
-      <StreakCornerBadge enabled={Boolean(props.streakEnabled)} />
       <div className={styles.frame}>
         <aside className={clsx(styles.sidebar, "hidden shrink-0 md:block")}>
           <div className={clsx(styles.sidebarSticky, "space-y-4")}>
-            <TrackedLink href="/today" className={clsx(styles.brand, "flex items-center")} telemetryName="shell.logo">
+            <TrackedLink href="/dashboard" className={clsx(styles.brand, "flex items-center")} telemetryName="shell.logo">
               <span className={clsx(styles.brandMark, "grid place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[color:var(--kw-surface-soft)] text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] backdrop-blur-md")}>
                 <HifzerMark />
               </span>
@@ -289,6 +288,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
         </aside>
 
         <main id="main-content" className={styles.main}>
+          <StreakCornerBadge enabled={Boolean(props.streakEnabled)} />
           <div className={styles.mainInner}>
             {props.children}
           </div>
@@ -323,3 +323,4 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
     </div>
   );
 }
+

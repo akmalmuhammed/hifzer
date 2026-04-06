@@ -66,7 +66,7 @@ export function WhyItWorks() {
                 <p className="mt-4 text-sm leading-7 text-[color:var(--kw-muted)]">{item.response}</p>
                 <div className="mt-5">
                   <Button asChild size="md" variant="secondary">
-                    <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
+                    <PublicAuthLink signedInHref="/dashboard" signedOutHref="/signup">
                       This is me
                     </PublicAuthLink>
                   </Button>
@@ -79,3 +79,4 @@ export function WhyItWorks() {
     </section>
   );
 }
+

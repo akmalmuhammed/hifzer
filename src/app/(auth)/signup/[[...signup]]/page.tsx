@@ -18,7 +18,7 @@ export default async function SignupPage() {
   if (configured) {
     const { userId } = await auth();
     if (userId) {
-      redirect("/today");
+      redirect("/dashboard");
     }
   }
 
@@ -72,3 +72,4 @@ export default async function SignupPage() {
     </div>
   );
 }
+

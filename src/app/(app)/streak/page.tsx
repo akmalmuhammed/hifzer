@@ -5,5 +5,6 @@ export const metadata = {
 };
 
 export default function StreakPage() {
-  redirect("/today");
+  redirect("/dashboard");
 }
+

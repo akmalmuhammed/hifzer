@@ -9,7 +9,6 @@ import {
   ArrowRight,
   BadgeCheck,
   BookOpenText,
-  BookMarked,
   CalendarDays,
   ChevronLeft,
   ChevronRight,
@@ -23,9 +22,9 @@ import {
   ListChecks,
   MoonStar,
   PlayCircle,
-  Radar,
   RefreshCcw,
   ShieldCheck,
+  SquarePen,
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
@@ -330,6 +329,8 @@ function SectionHeader(props: {
   );
 }
 
+// Retained for a future multi-surface dashboard return without re-deriving the interaction model.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function DashboardTabButton(props: {
   active: boolean;
   label: string;
@@ -350,6 +351,8 @@ function DashboardTabButton(props: {
   );
 }
 
+// Retained as a reusable Ramadan dashboard surface if we bring guided seasonal tabs back.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function DashboardDuaTab() {
   const guide = laylatAlQadrGuide;
 
@@ -627,7 +630,7 @@ function readCachedDashboardOverview() {
 }
 
 export function DashboardClient(props: { initialOverview?: DashboardOverview | null }) {
-  const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
+  const activeTab: DashboardTab = "overview";
   const [loading, setLoading] = useState(() => !props.initialOverview && !readCachedDashboardOverview());
   const [error, setError] = useState<string | null>(null);
   const [overview, setOverview] = useState<DashboardOverview | null>(() => props.initialOverview ?? readCachedDashboardOverview());
@@ -667,16 +670,6 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
     }
     writeSessionCache(DASHBOARD_CACHE_KEY, props.initialOverview);
   }, [props.initialOverview]);
-
-  const heroScore = useMemo(() => {
-    if (!overview) {
-      return 0;
-    }
-    const consistency = Math.min(100, overview.kpis.completedSessions7d * 12.5);
-    const retention = overview.kpis.retentionScore14d;
-    const coverage = overview.kpis.quranCompletionPct;
-    return Math.round((consistency * 0.35) + (retention * 0.45) + (coverage * 0.2));
-  }, [overview]);
 
   const trendMinutes = useMemo(
     () => overview?.sessionTrend14d.map((point) => ({ t: `${point.date}T00:00:00.000Z`, v: point.minutes })) ?? [],
@@ -805,57 +798,21 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
     <div className="space-y-6">
       <PageHeader
         eyebrow="Dashboard"
-        title={activeTab === "overview" ? "Command center" : "Laylat al-Qadr Dua"}
-        subtitle={
-          activeTab === "overview"
-            ? "A clear readout of retention, review load, and Qur'an reading momentum."
-            : "A structured Ramadan surface for forgiveness, authentic dua, and what is actually verified for the last ten nights."
-        }
+        title="Dashboard"
+        subtitle="Open Hifz, continue Qur'an, return to dua, and capture private reflections from one calm home."
         right={
           <div className="flex flex-wrap items-center gap-2">
-            {activeTab === "overview" ? (
-              <>
-                <Button variant="secondary" className="gap-2" onClick={() => void load()}>
-                  Refresh <RefreshCcw size={16} />
-                </Button>
-                <Link href="/today">
-                  <Button className="gap-2">
-                    Open Today <ArrowRight size={16} />
-                  </Button>
-                </Link>
-              </>
-            ) : (
-              <>
-                <Button asChild variant="secondary" className="gap-2">
-                  <a href={laylatAlQadrGuide.featuredDua.source.href} target="_blank" rel="noreferrer">
-                    Source hadith <ExternalLink size={16} />
-                  </a>
-                </Button>
-                <Button asChild className="gap-2">
-                  <Link href="/ramadan">
-                    Ramadan plan <ArrowRight size={16} />
-                  </Link>
-                </Button>
-              </>
-            )}
+            <Button variant="secondary" className="gap-2" onClick={() => void load()}>
+              Refresh <RefreshCcw size={16} />
+            </Button>
+            <Link href="/hifz">
+              <Button className="gap-2">
+                Open Hifz <ArrowRight size={16} />
+              </Button>
+            </Link>
           </div>
         }
       />
-
-      <div className={styles.dashboardTabs} role="tablist" aria-label="Dashboard tabs">
-        <DashboardTabButton
-          active={activeTab === "overview"}
-          label="Overview"
-          note="Retention, review pressure, and reading momentum."
-          onClick={() => setActiveTab("overview")}
-        />
-        <DashboardTabButton
-          active={activeTab === "dua"}
-          label="Dua"
-          note="Laylat al-Qadr, forgiveness, and verified Ramadan guidance."
-          onClick={() => setActiveTab("dua")}
-        />
-      </div>
 
       {activeTab === "overview" && loading ? <DashboardSkeleton /> : null}
 
@@ -873,8 +830,6 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
         </Card>
       ) : null}
 
-      {activeTab === "dua" ? <DashboardDuaTab /> : null}
-
       {activeTab === "overview" && !loading && !error && overview ? (
         <div className="space-y-5">
           <section className={`kw-fade-in ${styles.commandDeck} px-5 py-5 sm:px-6`}>
@@ -883,7 +838,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1fr)_260px]">
               <div className="space-y-5">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Pill tone="accent">Command center</Pill>
+                  <Pill tone="accent">Daily dashboard</Pill>
                   <Pill tone={modeTone(overview.profile.mode)}>{modeLabel(overview.profile.mode)}</Pill>
                   {status ? <Pill tone={status.tone}>{status.label}</Pill> : null}
                   <span className="text-xs text-[color:var(--kw-faint)]">
@@ -893,40 +848,50 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
 
                 <div>
                   <h2 className={`${styles.heroTitle} kw-marketing-display text-balance text-4xl text-[color:var(--kw-ink)] sm:text-5xl`}>
-                    Protect today&apos;s rhythm before review debt grows.
+                    Start the right thing quickly, then keep the whole deen flow in view.
                   </h2>
                   <p className={`${styles.heroBody} mt-3 text-sm leading-7 text-[color:var(--kw-muted)]`}>
-                    The dashboard now reads like an operations screen: what needs action, what is stable, and where your
-                    next best move sits across Hifz and Qur&apos;an.
+                    Hifz, Qur&apos;an reading, dua, journal, streak, and momentum all stay here so you can move without hunting through separate surfaces first.
                   </p>
                 </div>
 
                 <div className={styles.actionRail}>
                   <QuickActionCard
-                    href="/today"
-                    eyebrow="Today"
-                    title="Review the live queue"
-                    note={`${overview.today.completedSessions} completed sessions today`}
-                    icon={Radar}
-                    tone="accent"
-                  />
-                  <QuickActionCard
                     href="/hifz"
                     eyebrow="Hifz"
-                    title="Start the next memorization block"
-                    note={`${overview.reviewHealth.dueNow} reviews are waiting now`}
+                    title="Start your next recall block"
+                    note={
+                      overview.reviewHealth.dueNow > 0
+                        ? `${overview.reviewHealth.dueNow} reviews are due right now`
+                        : "Queue is clear enough to keep momentum honest"
+                    }
                     icon={PlayCircle}
+                    tone="accent"
                   />
                   <QuickActionCard
                     href="/quran/read?view=compact"
                     eyebrow="Qur'an"
-                    title="Continue reading"
+                    title="Continue from your last place"
                     note={`${overview.quran.currentSurahName} | ${overview.quran.cursorRef}`}
                     icon={BookOpenText}
                   />
+                  <QuickActionCard
+                    href="/dua"
+                    eyebrow="Dua"
+                    title="Return to your dua modules"
+                    note="Repentance, ruqyah, provision, beautiful names, and personal duas stay ready"
+                    icon={MoonStar}
+                  />
+                  <QuickActionCard
+                    href="/journal"
+                    eyebrow="Journal"
+                    title="Capture today&apos;s reflection"
+                    note="Keep an ayah, a feeling, or a private dua tied to your own account"
+                    icon={SquarePen}
+                  />
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                   <div className={`${styles.kpiTile} px-3 py-2.5`}>
                     <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
                       Due now
@@ -954,26 +919,48 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                     </p>
                     <p className="mt-2 text-xs text-[color:var(--kw-muted)]">Khatmah x{overview.quran.completedKhatmahCount}</p>
                   </div>
+                  <div className={`${styles.kpiTile} px-3 py-2.5`}>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
+                      Streak
+                    </p>
+                    <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
+                      {overview.streak.currentStreakDays}d
+                    </p>
+                    <p className="mt-2 text-xs text-[color:var(--kw-muted)]">
+                      {overview.streak.todayQualifiedAyahs} ayahs qualified today
+                    </p>
+                  </div>
                 </div>
               </div>
 
               <div className={styles.spotlightPanel}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Overall score</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Today snapshot</p>
                     <p className="mt-1 text-sm leading-6 text-[color:var(--kw-muted)]">
-                      Weighted from practice consistency, retention quality, and Qur&apos;an coverage.
+                      The essentials worth seeing before you decide whether to read, review, reflect, or slow down.
                     </p>
                   </div>
                   <span className={clsx(styles.iconBadge, styles.iconAccent)}>
                     <Gauge size={17} />
                   </span>
                 </div>
-                <div className="mt-3 flex items-center justify-between gap-3">
-                  <DonutProgress value={heroScore / 100} size={86} stroke={8} tone="accent" />
-                  <div className="text-right">
-                    <p className={`${styles.numericValue} text-4xl text-[color:var(--kw-ink)]`}>{heroScore}</p>
-                    <p className="text-xs text-[color:var(--kw-muted)]">out of 100</p>
+                <div className="mt-4 grid gap-3">
+                  <div className={`${styles.kpiTile} px-3 py-3`}>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Retention score (14d)</p>
+                    <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
+                      {overview.kpis.retentionScore14d}
+                    </p>
+                    <p className="mt-1 text-xs text-[color:var(--kw-muted)]">How clean recent recall has been.</p>
+                  </div>
+                  <div className={`${styles.kpiTile} px-3 py-3`}>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Current reading place</p>
+                    <p className="mt-1 text-base font-semibold text-[color:var(--kw-ink)]">
+                      {overview.quran.currentSurahName} | {overview.quran.cursorRef}
+                    </p>
+                    <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
+                      {overview.quran.currentSurahProgressPct}% through this surah
+                    </p>
                   </div>
                 </div>
                 <div className={styles.spotlightMeta}>
@@ -991,14 +978,14 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                   </div>
                 </div>
                 <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <Link href="/quran/read?view=compact">
+                  <Link href="/journal">
                     <Button variant="secondary" size="sm" className="gap-2">
-                      Continue Qur&apos;an <BookMarked size={14} />
+                      Open journal <SquarePen size={14} />
                     </Button>
                   </Link>
-                  <Link href="/hifz">
+                  <Link href="/dua">
                     <Button size="sm" className="gap-2">
-                      Start Hifz <PlayCircle size={14} />
+                      Open dua <MoonStar size={14} />
                     </Button>
                   </Link>
                 </div>
@@ -1056,9 +1043,9 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             <div className="kw-fade-in h-full" style={{ animationDelay: "200ms" }}>
               <Card className="h-full">
                 <SectionHeader
-                  eyebrow="Momentum stream"
+                  eyebrow="Practice rhythm"
                   title="Session minutes over 14 days"
-                  description="A clean view of whether effort is drifting up, flattening out, or slipping."
+                  description="A calmer way to see whether your effort is holding, dipping, or finally settling into a repeatable routine."
                   icon={TrendingUp}
                   tone="accent"
                   meta={<Pill tone="accent">{overview.profile.timezone}</Pill>}
@@ -1086,9 +1073,9 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             <div className="kw-fade-in h-full" style={{ animationDelay: "240ms" }}>
               <Card className="h-full">
                 <SectionHeader
-                  eyebrow="Recitation quality"
+                  eyebrow="Review quality"
                   title="Recall quality mix"
-                  description="Grade balance and stage mix, without the dashboard sounding like a sci-fi control panel."
+                  description="Grade balance and stage mix, so you can tell whether review is actually clean or just being rushed."
                   icon={ShieldCheck}
                   tone="accent"
                   meta={<Pill tone="neutral">14d</Pill>}
@@ -1154,9 +1141,9 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             <div className="kw-fade-in h-full" style={{ animationDelay: "280ms" }}>
               <Card className="h-full">
                 <SectionHeader
-                  eyebrow="Qur&apos;an compass"
+                  eyebrow="Qur&apos;an place"
                   title={`${overview.quran.currentSurahName} | ${overview.quran.cursorRef}`}
-                  description="Reading progress stays separate from Hifz, while still living in the same calm daily view."
+                  description="Reading progress stays separate from Hifz while still remaining visible in the same daily home."
                   icon={BookOpenText}
                   tone="accent"
                   meta={<Pill tone="accent">Ayah #{overview.quran.cursorAyahId}</Pill>}
@@ -1202,9 +1189,9 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             <div className="kw-fade-in h-full" style={{ animationDelay: "320ms" }}>
               <Card className="h-full">
                 <SectionHeader
-                  eyebrow="Activity calendar"
+                  eyebrow="Monthly return map"
                   title="Monthly consistency map"
-                  description="A denser view of how often you actually showed up, with today clearly marked."
+                  description="A simple month view of how often you actually came back, with today clearly marked."
                   icon={CalendarDays}
                   tone="neutral"
                 />
@@ -1277,9 +1264,9 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             title="Dashboard unavailable"
             message="Database is not configured for this environment."
             action={(
-              <Link href="/today">
+              <Link href="/dashboard">
                 <Button className="gap-2">
-                  Back to Today <TrendingUp size={16} />
+                  Back to dashboard <TrendingUp size={16} />
                 </Button>
               </Link>
             )}
@@ -1289,3 +1276,4 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
     </div>
   );
 }
+

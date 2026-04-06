@@ -18,7 +18,7 @@ export default async function LoginPage() {
   if (configured) {
     const { userId } = await auth();
     if (userId) {
-      redirect("/today");
+      redirect("/dashboard");
     }
   }
 
@@ -71,3 +71,4 @@ CLERK_SECRET_KEY=...`}
     </div>
   );
 }
+

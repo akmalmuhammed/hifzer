@@ -68,7 +68,7 @@ export function StorySection() {
             </p>
           </div>
           <Button asChild size="lg">
-            <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
+            <PublicAuthLink signedInHref="/dashboard" signedOutHref="/signup">
               Start your return
             </PublicAuthLink>
           </Button>
@@ -77,3 +77,4 @@ export function StorySection() {
     </section>
   );
 }
+

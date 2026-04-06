@@ -100,7 +100,7 @@ export function HowItWorks() {
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <Button asChild size="lg">
-                <PublicAuthLink signedInHref="/today" signedOutHref="/signup">
+                <PublicAuthLink signedInHref="/dashboard" signedOutHref="/signup">
                   Create my free space <ArrowRight size={16} />
                 </PublicAuthLink>
               </Button>
@@ -116,3 +116,4 @@ export function HowItWorks() {
     </section>
   );
 }
+
