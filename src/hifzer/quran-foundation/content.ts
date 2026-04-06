@@ -19,6 +19,7 @@ type TimedCache<T> = {
 
 const CONTENT_TOKEN_TTL_FALLBACK_MS = 50 * 60 * 1000;
 const CONTENT_TOKEN_SAFETY_WINDOW_MS = 60 * 1000;
+const CONTENT_TOKEN_SCOPE = "content";
 const RESOURCE_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const FETCH_REVALIDATE_SECONDS = 60 * 60;
 const MAX_DEFAULT_TAFSIRS = 2;
@@ -270,7 +271,10 @@ async function requestContentAccessToken(): Promise<string> {
       authorization: `Basic ${auth}`,
       "content-type": "application/x-www-form-urlencoded",
     },
-    body: new URLSearchParams({ grant_type: "client_credentials" }),
+    body: new URLSearchParams({
+      grant_type: "client_credentials",
+      scope: CONTENT_TOKEN_SCOPE,
+    }),
     cache: "no-store",
   });
 
@@ -783,26 +787,46 @@ function recitationMatchScore(resource: QuranFoundationRecitationResource, token
 
 async function resolveQuranFoundationRecitation(input: {
   reciterId: string;
-}): Promise<QuranFoundationRecitationResource | null> {
+}): Promise<{
+  status: QuranFoundationContentStatus;
+  detail: string;
+  recitation: QuranFoundationRecitationResource | null;
+}> {
   const requestedRemoteId = parseQuranFoundationReciterId(input.reciterId);
   const catalog = await getQuranFoundationRecitationCatalog();
   if (catalog.status !== "available") {
-    return null;
+    return {
+      status: catalog.status,
+      detail: catalog.detail,
+      recitation: null,
+    };
   }
   if (requestedRemoteId) {
-    return catalog.recitations.find((item) => item.id === requestedRemoteId) ?? null;
+    return {
+      status: catalog.status,
+      detail: catalog.detail,
+      recitation: catalog.recitations.find((item) => item.id === requestedRemoteId) ?? null,
+    };
   }
 
   const effectiveLocalReciterId = resolveLocalAudioReciterId(input.reciterId);
   if (!effectiveLocalReciterId) {
-    return null;
+    return {
+      status: catalog.status,
+      detail: catalog.detail,
+      recitation: null,
+    };
   }
   const tokens = getLocalReciterMatchTokens(effectiveLocalReciterId);
   const best = [...catalog.recitations]
     .map((item) => ({ item, score: recitationMatchScore(item, tokens) }))
     .filter((entry) => entry.score > 0)
     .sort((left, right) => right.score - left.score)[0];
-  return best?.item ?? null;
+  return {
+    status: catalog.status,
+    detail: catalog.detail,
+    recitation: best?.item ?? null,
+  };
 }
 
 function extractAudioUrl(row: QuranFoundationRawRecitationAudio): string | null {
@@ -830,7 +854,19 @@ export async function getQuranFoundationAyahAudioSource(input: {
   }
 
   try {
-    const recitation = await resolveQuranFoundationRecitation({ reciterId: input.reciterId });
+    const resolvedRecitation = await resolveQuranFoundationRecitation({ reciterId: input.reciterId });
+    if (resolvedRecitation.status !== "available") {
+      return {
+        status: resolvedRecitation.status,
+        detail: resolvedRecitation.detail,
+        verseKey: input.verseKey,
+        recitationId: null,
+        recitationLabel: null,
+        url: null,
+      };
+    }
+
+    const recitation = resolvedRecitation.recitation;
     if (!recitation) {
       return {
         status: "not_found",
