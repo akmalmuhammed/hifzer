@@ -749,17 +749,16 @@ html[data-mode="dark"] [class~="focus:bg-white"]:focus {
 @keyframes kw-subtle-emphasis {
   0%,
   100% {
-    transform: translate3d(0, 0, 0);
-    box-shadow: 0 10px 24px rgba(var(--kw-accent-rgb), 0.12);
+    transform: translate3d(0, 0, 0) scale(1);
   }
   50% {
-    transform: translate3d(0, -3px, 0);
-    box-shadow: 0 14px 28px rgba(var(--kw-accent-rgb), 0.2);
+    transform: translate3d(0, -3px, 0) scale(1.01);
   }
 }
 
 .kw-subtle-emphasis {
   animation: kw-subtle-emphasis 5.5s ease-in-out infinite;
+  will-change: transform;
 }
 
 @keyframes kw-beta-marquee {

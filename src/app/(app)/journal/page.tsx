@@ -34,7 +34,8 @@ export default async function JournalPage() {
   const profile = userId ? await getProfileSnapshot(userId) : null;
   const duaState = await loadDuaPageData();
   let initialEntries: JournalEntry[] = [];
-  let syncEnabled = Boolean(userId && dbConfigured());
+  const syncEnabled = Boolean(userId && dbConfigured());
+  let initialSyncError = false;
   const quranTranslationId = normalizeQuranTranslationId(
     cookieStore.get(QURAN_TRANSLATION_COOKIE)?.value ??
       profile?.quranTranslationId ??
@@ -72,7 +73,7 @@ export default async function JournalPage() {
     try {
       initialEntries = await listPrivateJournalEntries(userId);
     } catch {
-      syncEnabled = false;
+      initialSyncError = true;
       initialEntries = [];
     }
   }
@@ -83,6 +84,7 @@ export default async function JournalPage() {
       duaOptions={duaOptions}
       initialEntries={initialEntries}
       syncEnabled={syncEnabled}
+      initialSyncError={initialSyncError}
       reciterId={profile?.reciterId ?? "default"}
       translationDir={translationDir}
       translationAlignClass={translationAlignClass}

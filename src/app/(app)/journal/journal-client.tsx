@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import {
+  useCallback,
   useDeferredValue,
   useEffect,
   useRef,
@@ -252,18 +253,23 @@ export function JournalClient(props: {
   duaOptions: JournalLinkedDua[];
   initialEntries: JournalEntry[];
   syncEnabled: boolean;
+  initialSyncError: boolean;
   reciterId: string;
   translationDir: "ltr" | "rtl";
   translationAlignClass: string;
 }) {
   const { pushToast } = useToast();
   const didAttemptLegacyImportRef = useRef(false);
+  const didAnnounceSyncRecoveryRef = useRef(!props.initialSyncError);
+  const didAnnounceSyncIssueRef = useRef(false);
 
   const [entries, setEntries] = useState<JournalEntry[]>(() => sortEntries(props.initialEntries));
   const [draft, setDraft] = useState<JournalDraft | null>(null);
   const [expandedEntryId, setExpandedEntryId] = useState<string | "new" | null>(null);
   const [isDirty, setIsDirty] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(() => props.syncEnabled);
+  const [isLoaded, setIsLoaded] = useState(
+    () => (props.syncEnabled ? props.initialEntries.length > 0 || !props.initialSyncError : false),
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [search, setSearch] = useState("");
@@ -272,6 +278,9 @@ export function JournalClient(props: {
   const [ayahCardById, setAyahCardById] = useState<Record<number, AyahCardResponse>>({});
   const [ayahCardErrorById, setAyahCardErrorById] = useState<Record<number, string>>({});
   const [hydratingAyahIds, setHydratingAyahIds] = useState<number[]>([]);
+  const [syncIssue, setSyncIssue] = useState<string | null>(() =>
+    props.initialSyncError ? "We could not reach your account journal yet. Retrying now." : null,
+  );
   const deferredSearch = useDeferredValue(search.trim().toLowerCase());
 
   const defaultDuaValue = props.duaOptions[0] ? buildDuaOptionValue(props.duaOptions[0]) : "";
@@ -302,6 +311,18 @@ export function JournalClient(props: {
     return payload.entry;
   };
 
+  const fetchSyncedEntries = async () => {
+    const response = await fetch("/api/journal", {
+      method: "GET",
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    });
+    const payload = await readApiJson<{ ok: true; entries: JournalEntry[] }>(response);
+    return payload.entries;
+  };
+
   const importLegacyEntries = async (legacyEntries: JournalEntry[]) => {
     const response = await fetch("/api/journal/import", {
       method: "POST",
@@ -320,6 +341,41 @@ export function JournalClient(props: {
     });
     await readApiJson<{ ok: true }>(response);
   };
+
+  const refreshSyncedEntries = useCallback(async (options?: { quiet?: boolean }) => {
+    if (!props.syncEnabled) {
+      return;
+    }
+
+    try {
+      const remoteEntries = sortEntries(await fetchSyncedEntries());
+      setEntries(remoteEntries);
+      setIsLoaded(true);
+      setSyncIssue(null);
+      didAnnounceSyncIssueRef.current = false;
+      if (!didAnnounceSyncRecoveryRef.current) {
+        didAnnounceSyncRecoveryRef.current = true;
+        pushToast({
+          tone: "success",
+          title: "Journal sync restored",
+          message: "Your notes are loading from your account again.",
+        });
+      }
+    } catch (error) {
+      setIsLoaded(true);
+      const message = error instanceof Error ? error.message : "Could not refresh your account journal right now.";
+      setSyncIssue(message);
+      if (options?.quiet || didAnnounceSyncIssueRef.current) {
+        return;
+      }
+      didAnnounceSyncIssueRef.current = true;
+      pushToast({
+        tone: "warning",
+        title: "Journal sync is reconnecting",
+        message,
+      });
+    }
+  }, [props.syncEnabled, pushToast]);
 
   const fetchAyahCard = async (ayahId: number) => {
     const response = await fetch(`/api/quran/ayah-card?ayahId=${encodeURIComponent(String(ayahId))}`);
@@ -415,6 +471,7 @@ export function JournalClient(props: {
         setIsSaving(false);
       }
       setEntries((current) => sortEntries([...current.filter((entry) => entry.id !== savedEntry.id), savedEntry]));
+      setSyncIssue(null);
     } else {
       const localEntry: JournalEntry = {
         ...nextEntry,
@@ -462,13 +519,39 @@ export function JournalClient(props: {
   useEffect(() => {
     if (props.syncEnabled) {
       setEntries(sortEntries(props.initialEntries));
-      setIsLoaded(true);
+      setIsLoaded(props.initialEntries.length > 0 || !props.initialSyncError);
+      setSyncIssue(props.initialSyncError ? "We could not reach your account journal yet. Retrying now." : null);
+      didAnnounceSyncRecoveryRef.current = !props.initialSyncError;
+      void refreshSyncedEntries({ quiet: !props.initialSyncError });
       return;
     }
     const loadedEntries = listJournalEntries();
     setEntries(loadedEntries);
     setIsLoaded(true);
-  }, [props.initialEntries, props.syncEnabled]);
+    setSyncIssue(null);
+  }, [props.initialEntries, props.initialSyncError, props.syncEnabled, refreshSyncedEntries]);
+
+  useEffect(() => {
+    if (!props.syncEnabled) {
+      return;
+    }
+
+    const handleFocus = () => {
+      void refreshSyncedEntries({ quiet: true });
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        void refreshSyncedEntries({ quiet: true });
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [props.syncEnabled, refreshSyncedEntries]);
 
   useEffect(() => {
     if (!props.syncEnabled || didAttemptLegacyImportRef.current) {
@@ -490,6 +573,7 @@ export function JournalClient(props: {
         }
         clearJournalEntries();
         setEntries(sortEntries(importedEntries));
+        setSyncIssue(null);
         pushToast({
           tone: "success",
           title: "Notes moved to your account",
@@ -635,6 +719,7 @@ export function JournalClient(props: {
       try {
         await removeSyncedEntry(draft.id);
         setEntries((current) => current.filter((entry) => entry.id !== draft.id));
+        setSyncIssue(null);
       } catch (error) {
         pushToast({
           tone: "warning",
@@ -1209,6 +1294,13 @@ export function JournalClient(props: {
             : "A private place for reflections, linked ayahs, and personal duas that stay on this device for now."
         }
       />
+
+      {props.syncEnabled && syncIssue ? (
+        <Card className="border-[rgba(var(--kw-accent-rgb),0.18)] bg-[rgba(var(--kw-accent-rgb),0.06)]">
+          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Reconnecting your account journal...</p>
+          <p className="mt-1 text-sm leading-6 text-[color:var(--kw-muted)]">{syncIssue}</p>
+        </Card>
+      ) : null}
 
       {expandedEntryId === null ? (
         <div className={styles.searchBar}>

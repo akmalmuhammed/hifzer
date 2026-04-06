@@ -51,7 +51,7 @@ export function PlanSettingsClient(props: PlanClientProps) {
     <div className="space-y-6">
       <SettingsDetailHeader
         title="Plan"
-        subtitle="Adjust your time, rhythm, and learning focus for the way you actually practice."
+        subtitle="Time, days, and focus."
       />
 
       <Card>

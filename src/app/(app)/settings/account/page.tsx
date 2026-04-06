@@ -16,7 +16,7 @@ export default function AccountSettingsPage() {
     <div className="space-y-6">
       <SettingsDetailHeader
         title="Account"
-        subtitle="Profile and sign-out controls via Clerk."
+        subtitle="Profile and sign out."
       />
       {enabled ? (
         <AccountSettingsClient />

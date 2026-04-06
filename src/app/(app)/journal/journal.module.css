@@ -72,7 +72,6 @@
   transition:
     transform 180ms ease,
     border-color 180ms ease,
-    box-shadow 180ms ease,
     background-color 180ms ease;
 }
 
@@ -80,7 +79,7 @@
 .noteCardButton:focus-visible .noteCard {
   transform: translateY(-2px);
   border-color: rgba(var(--kw-accent-rgb), 0.22);
-  box-shadow: var(--journal-hover-shadow);
+  background: var(--journal-card-bg-expanded);
 }
 
 .noteCardExpanded {

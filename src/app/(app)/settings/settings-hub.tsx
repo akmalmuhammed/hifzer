@@ -40,22 +40,22 @@ type SettingsItem = {
 const TAB_META: Record<SettingsTabKey, { label: string; desc: string; tone: PillTone }> = {
   learning: {
     label: "Learning",
-    desc: "Plan, translation, audio, and study rhythm.",
+    desc: "Plan, language, and audio.",
     tone: "accent",
   },
   display: {
     label: "Display",
-    desc: "Theme, color, and mode preferences.",
+    desc: "Theme and color.",
     tone: "brand",
   },
   account: {
     label: "Account",
-    desc: "Identity, reminders, and sign-in state.",
+    desc: "Profile and reminders.",
     tone: "neutral",
   },
   integrations: {
     label: "Integrations",
-    desc: "Connected services and bookmark sync.",
+    desc: "Linked services.",
     tone: "warn",
   },
 };
@@ -66,7 +66,7 @@ function getItems(props: SettingsHubProps): SettingsItem[] {
       href: "/settings/plan",
       group: "learning",
       title: "Learning plan",
-      desc: "Daily minutes, weekly rhythm, plan bias, and teacher support.",
+      desc: "Time, days, and focus.",
       eyebrow: "Core",
       icon: SlidersHorizontal,
       tone: "brand",
@@ -84,7 +84,7 @@ function getItems(props: SettingsHubProps): SettingsItem[] {
       href: "/settings/reciter",
       group: "learning",
       title: "Reciter",
-      desc: "Choose the default voice used across reader and Hifz playback.",
+      desc: "Default voice and audio route.",
       eyebrow: "Audio",
       icon: Volume2,
       tone: "accent",
@@ -93,7 +93,7 @@ function getItems(props: SettingsHubProps): SettingsItem[] {
       href: "/settings/display",
       group: "display",
       title: "Display",
-      desc: "Theme presets, accent color, and light or dark mode.",
+      desc: "Mode, theme, and accent.",
       eyebrow: "Theme",
       icon: Palette,
       tone: "accent",
@@ -102,7 +102,7 @@ function getItems(props: SettingsHubProps): SettingsItem[] {
       href: "/settings/account",
       group: "account",
       title: "Account",
-      desc: "Profile identity and sign-out controls through Clerk.",
+      desc: "Profile and sign out.",
       eyebrow: "Identity",
       icon: UserRound,
       tone: "neutral",
@@ -111,7 +111,7 @@ function getItems(props: SettingsHubProps): SettingsItem[] {
       href: "/settings/reminders",
       group: "account",
       title: "Reminders",
-      desc: "Email reminder timing and whether daily reminders are enabled.",
+      desc: "Email timing.",
       eyebrow: "Schedule",
       icon: Bell,
       tone: "warn",
@@ -120,7 +120,7 @@ function getItems(props: SettingsHubProps): SettingsItem[] {
       href: "/settings/quran-foundation",
       group: "integrations",
       title: "Quran.com",
-      desc: "Link your Quran.com account for bookmark sync and enrichment.",
+      desc: "Link and sync.",
       eyebrow: "Connected",
       icon: Link2,
       tone: "brand",
@@ -141,20 +141,6 @@ export function SettingsHub(props: SettingsHubProps) {
         title={props.title}
         subtitle={props.subtitle}
       />
-
-      <Card>
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="max-w-3xl">
-            <div className="flex flex-wrap gap-2">
-              <Pill tone="accent">Focused settings</Pill>
-              <Pill tone="neutral">{items.length} live pages</Pill>
-            </div>
-            <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-              Only settings with real, current behavior stay here. Product notes, roadmap items, and non-configurable engine explanations have been removed so this hub stays specific and easier to scan on mobile.
-            </p>
-          </div>
-        </div>
-      </Card>
 
       <div
         className="flex gap-2 overflow-x-auto pb-1"
@@ -197,10 +183,7 @@ export function SettingsHub(props: SettingsHubProps) {
         className="space-y-4"
       >
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="max-w-3xl">
-            <Pill tone={activeMeta.tone}>{activeMeta.label}</Pill>
-            <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">{activeMeta.desc}</p>
-          </div>
+          <Pill tone={activeMeta.tone}>{activeMeta.label}</Pill>
           <Pill tone="neutral">{activeItems.length} pages</Pill>
         </div>
 

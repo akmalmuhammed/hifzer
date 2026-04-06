@@ -77,7 +77,7 @@ export function LanguageSettingsClient(props: LanguageSettingsClientProps) {
     <div className="space-y-6">
       <SettingsDetailHeader
         title={copy.languageSettings.title}
-        subtitle={copy.languageSettings.subtitle}
+        subtitle="Interface and default translation."
       />
 
       <Card>
@@ -85,7 +85,7 @@ export function LanguageSettingsClient(props: LanguageSettingsClientProps) {
           <div>
             <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{copy.languageSettings.interfaceLanguageTitle}</p>
             <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">
-              {copy.languageSettings.interfaceLanguageSubtitle}
+              App language.
             </p>
           </div>
         </div>
@@ -100,7 +100,7 @@ export function LanguageSettingsClient(props: LanguageSettingsClientProps) {
           <div>
             <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{copy.languageSettings.defaultTranslationTitle}</p>
             <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">
-              {copy.languageSettings.defaultTranslationSubtitle}
+              Reader translation.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Pill tone="accent">{selected?.label ?? copy.languageSettings.unknownLanguage}</Pill>
@@ -112,9 +112,6 @@ export function LanguageSettingsClient(props: LanguageSettingsClientProps) {
             <p className="mt-3 max-w-2xl text-xs leading-6 text-[color:var(--kw-faint)]">
               Source: {selected?.sourceLabel ?? "Unknown"}.
               {selected?.sourceNote ? ` ${selected.sourceNote}` : ""}
-            </p>
-            <p className="mt-1 text-xs leading-6 text-[color:var(--kw-faint)]">
-              Source registry and provider notes live in <a className="font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline" href="/legal/sources">/legal/sources</a>.
             </p>
           </div>
         </div>

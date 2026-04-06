@@ -16,7 +16,7 @@ export default async function QuranFoundationSettingsPage() {
     <div className="space-y-6">
       <SettingsDetailHeader
         title="Quran.com"
-        subtitle="Link a Quran.com account so bookmarks can sync and the reader can show Quran Foundation enrichment."
+        subtitle="Link and sync Quran.com."
       />
       <QuranFoundationSettingsClient initialStatus={status} />
     </div>

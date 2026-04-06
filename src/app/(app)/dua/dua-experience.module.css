@@ -204,13 +204,13 @@
   transition:
     transform 180ms ease,
     border-color 180ms ease,
-    box-shadow 180ms ease;
+    background-color 180ms ease;
 }
 
 .moduleOverviewCard:hover {
   transform: translateY(-2px);
   border-color: rgba(var(--kw-accent-rgb), 0.18);
-  box-shadow: var(--kw-shadow-soft);
+  background: rgba(255, 255, 255, 0.82);
 }
 
 .moduleOverviewCard[data-active="1"] {

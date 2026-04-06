@@ -14,9 +14,9 @@ export default async function SettingsPage() {
     <SettingsHub
       eyebrow={copy.settingsPage.eyebrow}
       title={copy.settingsPage.title}
-      subtitle={copy.settingsPage.subtitle}
+      subtitle="Manage your preferences."
       languageTitle={copy.languageSettings.title}
-      languageDesc={copy.languageSettings.subtitle}
+      languageDesc="Interface and translation."
     />
   );
 }

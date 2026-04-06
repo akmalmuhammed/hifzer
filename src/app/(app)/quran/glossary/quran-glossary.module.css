@@ -74,14 +74,12 @@
   padding: 6px 12px;
   transition:
     transform 180ms ease,
-    background-color 180ms ease,
-    box-shadow 180ms ease;
+    background-color 180ms ease;
 }
 
 .topicChip:hover {
   transform: translateY(-1px);
   background: rgba(var(--kw-accent-rgb), 0.14);
-  box-shadow: 0 8px 18px rgba(var(--kw-accent-rgb), 0.18);
 }
 
 .resultCard {
@@ -95,13 +93,13 @@
   transition:
     transform 220ms ease,
     border-color 220ms ease,
-    box-shadow 220ms ease;
+    background-color 220ms ease;
 }
 
 .resultCard:hover {
   transform: translateY(-1px);
   border-color: rgba(var(--kw-accent-rgb), 0.24);
-  box-shadow: 0 16px 30px rgba(var(--kw-accent-rgb), 0.14);
+  background: rgba(255, 255, 255, 0.76);
 }
 
 .resultCard::after {

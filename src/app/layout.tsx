@@ -11,6 +11,14 @@ import { GoogleAnalytics } from "@/components/telemetry/google-analytics";
 import { DISTRACTION_FREE_COOKIE, normalizeDistractionFree } from "@/hifzer/focus/distraction-free";
 import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
 import { normalizeUiLanguage, UI_LANGUAGE_COOKIE, uiLanguageToHtmlLang } from "@/hifzer/i18n/ui-language";
+import {
+  normalizeAccentPreset,
+  normalizeThemeMode,
+  normalizeThemePreset,
+  THEME_ACCENT_COOKIE,
+  THEME_MODE_COOKIE,
+  THEME_PRESET_COOKIE,
+} from "@/hifzer/theme/preferences";
 import { clerkAuthRoutes } from "@/lib/auth-redirects";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { getSiteUrl } from "@/lib/site-url";
@@ -107,16 +115,22 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const uiLanguage = normalizeUiLanguage(cookieStore.get(UI_LANGUAGE_COOKIE)?.value);
   const distractionFree = normalizeDistractionFree(cookieStore.get(DISTRACTION_FREE_COOKIE)?.value);
+  const initialThemeState = {
+    mode: normalizeThemeMode(cookieStore.get(THEME_MODE_COOKIE)?.value),
+    theme: normalizeThemePreset(cookieStore.get(THEME_PRESET_COOKIE)?.value),
+    accent: normalizeAccentPreset(cookieStore.get(THEME_ACCENT_COOKIE)?.value),
+  };
   const ui = getAppUiCopy(uiLanguage);
   return (
       <html
         lang={uiLanguageToHtmlLang(uiLanguage)}
-        data-mode="light"
-        data-theme="standard"
-        data-accent="teal"
+        data-mode={initialThemeState.mode}
+        data-theme={initialThemeState.theme}
+        data-accent={initialThemeState.accent}
         className={`${inter.variable} ${mono.variable} ${amiri.variable} ${marketingDisplay.variable}`}
+        style={{ colorScheme: initialThemeState.mode }}
       >
-      <body suppressHydrationWarning className="kw-canvas min-h-dvh bg-[color:var(--kw-bg)] text-[color:var(--kw-ink)] antialiased">
+      <body className="kw-canvas min-h-dvh bg-[color:var(--kw-bg)] text-[color:var(--kw-ink)] antialiased">
         <a
           href="#main-content"
           className="sr-only rounded-md bg-[color:var(--kw-ink)] px-3 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[1000]"
@@ -132,10 +146,10 @@ export default async function RootLayout({
             signUpForceRedirectUrl={clerkAuthRoutes.signUpForceRedirectUrl}
             signUpFallbackRedirectUrl={clerkAuthRoutes.signUpFallbackRedirectUrl}
           >
-            <AppProviders initialUiLanguage={uiLanguage} initialDistractionFree={distractionFree}>{children}</AppProviders>
+            <AppProviders initialUiLanguage={uiLanguage} initialDistractionFree={distractionFree} initialThemeState={initialThemeState}>{children}</AppProviders>
           </ClerkWrapper>
         ) : (
-          <AppProviders initialUiLanguage={uiLanguage} initialDistractionFree={distractionFree}>{children}</AppProviders>
+          <AppProviders initialUiLanguage={uiLanguage} initialDistractionFree={distractionFree} initialThemeState={initialThemeState}>{children}</AppProviders>
         )}
         <InstallAppBanner />
         <ServiceWorkerRegistration />

@@ -53,7 +53,7 @@ export function RemindersSettingsClient(props: RemindersClientProps) {
     <div className="space-y-6">
       <SettingsDetailHeader
         title="Reminders"
-        subtitle="Daily reminder email schedule for your practice days."
+        subtitle="Email reminders."
       />
 
       <Card>
@@ -61,7 +61,7 @@ export function RemindersSettingsClient(props: RemindersClientProps) {
           <div>
             <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Email reminders</p>
             <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">
-              We send one reminder per local day when you have not completed your session.
+              One reminder if you have not finished for the day.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Pill tone={draft.emailRemindersEnabled ? "success" : "warn"}>
@@ -84,7 +84,7 @@ export function RemindersSettingsClient(props: RemindersClientProps) {
           <Input
             id="settings-reminders-time"
             label="Reminder time (local)"
-            description="The scheduler runs hourly and sends when your local time is near this value."
+            description="Local time."
             fieldClassName="max-w-[220px]"
             labelClassName="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]"
             type="time"

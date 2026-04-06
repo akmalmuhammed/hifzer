@@ -88,7 +88,6 @@
   transition:
     transform 180ms ease,
     border-color 180ms ease,
-    box-shadow 180ms ease,
     background-color 180ms ease;
   text-decoration: none;
 }
@@ -101,7 +100,7 @@
 .actionTile:hover {
   transform: translateY(-2px);
   border-color: rgba(var(--kw-accent-rgb), 0.28);
-  box-shadow: 0 16px 32px rgba(11, 18, 32, 0.12);
+  background: rgba(255, 255, 255, 0.84);
 }
 
 .actionEyebrow {
@@ -261,7 +260,6 @@
     background-color 180ms ease,
     border-color 180ms ease,
     transform 180ms ease,
-    box-shadow 180ms ease,
     color 180ms ease;
 }
 

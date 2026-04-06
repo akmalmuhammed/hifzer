@@ -4,6 +4,11 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import clsx from "clsx";
 import { Forward, Pause, Play, Repeat2, Volume2, Zap } from "lucide-react";
 import { audioUrl } from "@/hifzer/audio/config";
+import {
+  type AudioPlaybackMode,
+  readPersistedAudioPlaybackMode,
+} from "@/hifzer/audio/playback-mode";
+import { parseQuranFoundationReciterId } from "@/hifzer/audio/reciters";
 import { claimSinglePlayback, releaseSinglePlayback } from "@/components/audio/single-playback";
 
 const SPEEDS = [0.75, 1, 1.25] as const;
@@ -57,6 +62,7 @@ function syncAudioSource(audio: HTMLAudioElement, nextSrc: string) {
 export function AyahAudioPlayer(props: {
   ayahId: number;
   reciterId?: string;
+  playbackMode?: AudioPlaybackMode;
   className?: string;
   streakTrackSource?: "quran_browse";
   trailingControl?: ReactNode;
@@ -64,21 +70,22 @@ export function AyahAudioPlayer(props: {
   speedPrefKey?: string;
   onAutoAdvance?: () => void;
 }) {
-  const initialSrc = audioUrl(props.reciterId ?? "default", props.ayahId);
-  const playerKey = `${props.reciterId ?? "default"}:${props.ayahId}`;
-  return <AyahAudioPlayerInner key={playerKey} {...props} initialSrc={initialSrc} />;
+  const localSrc = audioUrl(props.reciterId ?? "default", props.ayahId);
+  const playerKey = `${props.reciterId ?? "default"}:${props.ayahId}:${props.playbackMode ?? "stored"}`;
+  return <AyahAudioPlayerInner key={playerKey} {...props} localSrc={localSrc} />;
 }
 
 function AyahAudioPlayerInner(props: {
   ayahId: number;
   reciterId?: string;
+  playbackMode?: AudioPlaybackMode;
   className?: string;
   streakTrackSource?: "quran_browse";
   trailingControl?: ReactNode;
   autoPlayPrefKey?: string;
   speedPrefKey?: string;
   onAutoAdvance?: () => void;
-  initialSrc: string | null;
+  localSrc: string | null;
 }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const repeatLeftRef = useRef(0);
@@ -86,9 +93,22 @@ function AyahAudioPlayerInner(props: {
   const isScrubbingRef = useRef(false);
   const speedRef = useRef(1);
   const repeatCountRef = useRef(1);
-  const fallbackAttemptedRef = useRef(false);
+  const remoteAttemptedRef = useRef(false);
   const pendingResumeRef = useRef(false);
-  const activeSrcRef = useRef<string | null>(props.initialSrc);
+  const sourceKindRef = useRef<"local" | "quran_foundation" | "unavailable">("unavailable");
+  const playbackMode = props.playbackMode ?? readPersistedAudioPlaybackMode();
+  const remoteReciterSelected = parseQuranFoundationReciterId(props.reciterId ?? "default") != null;
+  const remoteAllowed = remoteReciterSelected || playbackMode !== "local_only";
+  const remotePreferred = remoteReciterSelected || playbackMode === "quran_foundation_first";
+  const initialSourceKind = props.localSrc && !remotePreferred ? "local" : "unavailable";
+  const initialSourceDetail = props.localSrc
+    ? remotePreferred
+      ? "Quran.com audio will be tried first for this ayah."
+      : "Playing from the local Hifzer audio library."
+    : remoteAllowed
+      ? "No local audio file was found, so Hifzer will try Quran.com when you play."
+      : "No local audio file is available for this ayah in local-only mode.";
+  const activeSrcRef = useRef<string | null>(initialSourceKind === "local" ? props.localSrc : null);
 
   const [playing, setPlaying] = useState(false);
   const [repeatCount, setRepeatCount] = useState(1);
@@ -96,11 +116,9 @@ function AyahAudioPlayerInner(props: {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [loadError, setLoadError] = useState(false);
-  const [activeSrc, setActiveSrc] = useState<string | null>(props.initialSrc);
-  const [sourceKind, setSourceKind] = useState<"local" | "quran_foundation" | "unavailable">(
-    props.initialSrc ? "local" : "unavailable",
-  );
-  const [sourceDetail, setSourceDetail] = useState<string | null>(null);
+  const [activeSrc, setActiveSrc] = useState<string | null>(activeSrcRef.current);
+  const [sourceKind, setSourceKind] = useState<"local" | "quran_foundation" | "unavailable">(initialSourceKind);
+  const [sourceDetail, setSourceDetail] = useState<string | null>(initialSourceDetail);
   const [resolvingFallback, setResolvingFallback] = useState(false);
   const [autoPlayEnabled, setAutoPlayEnabled] = useState(() => {
     if (typeof window === "undefined" || !props.autoPlayPrefKey) {
@@ -117,6 +135,10 @@ function AyahAudioPlayerInner(props: {
   const progress01 = duration > 0 ? Math.max(0, Math.min(1, currentTime / duration)) : 0;
   const autoAdvanceEnabledRef = useRef(autoPlayEnabled);
   const onAutoAdvanceRef = useRef(props.onAutoAdvance);
+
+  useEffect(() => {
+    sourceKindRef.current = sourceKind;
+  }, [sourceKind]);
 
   const markStreakRecitation = useCallback(async () => {
     if (props.streakTrackSource !== "quran_browse" || streakMarkedRef.current) {
@@ -140,11 +162,25 @@ function AyahAudioPlayerInner(props: {
     }
   }, [props.ayahId, props.streakTrackSource]);
 
-  const resolveRemoteFallback = useCallback(async () => {
-    if (fallbackAttemptedRef.current || resolvingFallback) {
-      return activeSrcRef.current;
+  const switchToLocalSource = useCallback((detail: string) => {
+    if (!props.localSrc) {
+      return null;
     }
-    fallbackAttemptedRef.current = true;
+    setActiveSrc(props.localSrc);
+    setSourceKind("local");
+    setSourceDetail(detail);
+    setLoadError(false);
+    return props.localSrc;
+  }, [props.localSrc]);
+
+  const resolveRemoteFallback = useCallback(async () => {
+    if (!remoteAllowed) {
+      return null;
+    }
+    if (remoteAttemptedRef.current || resolvingFallback) {
+      return sourceKindRef.current === "quran_foundation" ? activeSrcRef.current : null;
+    }
+    remoteAttemptedRef.current = true;
     setResolvingFallback(true);
     try {
       const response = await fetch(
@@ -156,10 +192,13 @@ function AyahAudioPlayerInner(props: {
       const payload = (await response.json().catch(() => null)) as RemoteAudioPayload | null;
       const remoteAudio = payload?.audio;
       if (!response.ok || !remoteAudio?.url) {
-        setLoadError(true);
-        setPlaying(false);
         setSourceDetail(remoteAudio?.detail ?? "Audio is unavailable for this ayah.");
         pendingResumeRef.current = false;
+        if (props.localSrc && sourceKindRef.current !== "local") {
+          return switchToLocalSource("Quran.com audio was unavailable, so Hifzer switched back to local audio.");
+        }
+        setLoadError(true);
+        setPlaying(false);
         return null;
       }
       setActiveSrc(remoteAudio.url);
@@ -168,42 +207,65 @@ function AyahAudioPlayerInner(props: {
       setLoadError(false);
       return remoteAudio.url;
     } catch {
-      setLoadError(true);
-      setPlaying(false);
       setSourceDetail("Could not reach Quran.com audio right now.");
       pendingResumeRef.current = false;
+      if (props.localSrc && sourceKindRef.current !== "local") {
+        return switchToLocalSource("Quran.com audio could not be reached, so Hifzer switched back to local audio.");
+      }
+      setLoadError(true);
+      setPlaying(false);
       return null;
     } finally {
       setResolvingFallback(false);
     }
-  }, [props.ayahId, props.reciterId, resolvingFallback]);
+  }, [props.ayahId, props.localSrc, props.reciterId, remoteAllowed, resolvingFallback, switchToLocalSource]);
 
   const ensureSourceReady = useCallback(async () => {
+    if (remotePreferred) {
+      const remoteSource = await resolveRemoteFallback();
+      if (remoteSource) {
+        return remoteSource;
+      }
+      return switchToLocalSource("Playing from the local Hifzer audio library.");
+    }
     if (activeSrcRef.current) {
       return activeSrcRef.current;
     }
-    return resolveRemoteFallback();
-  }, [resolveRemoteFallback]);
+    if (props.localSrc) {
+      return switchToLocalSource("Playing from the local Hifzer audio library.");
+    }
+    if (remoteAllowed) {
+      return resolveRemoteFallback();
+    }
+    setLoadError(true);
+    setSourceDetail("Local-only mode is enabled, and no local audio file is available for this ayah.");
+    return null;
+  }, [props.localSrc, remoteAllowed, remotePreferred, resolveRemoteFallback, switchToLocalSource]);
 
   useEffect(() => {
     activeSrcRef.current = activeSrc;
   }, [activeSrc]);
 
   useEffect(() => {
-    const nextSourceKind = props.initialSrc ? "local" : "unavailable";
-    fallbackAttemptedRef.current = false;
+    const nextSourceKind = props.localSrc && !remotePreferred ? "local" : "unavailable";
+    remoteAttemptedRef.current = false;
     pendingResumeRef.current = false;
-    setActiveSrc(props.initialSrc);
+    const nextSrc = nextSourceKind === "local" ? props.localSrc : null;
+    setActiveSrc(nextSrc);
     setSourceKind(nextSourceKind);
     setSourceDetail(
-      props.initialSrc
-        ? "Playing from the local Hifzer audio library."
-        : "No local audio file was found, so Hifzer will try Quran.com when you play.",
+      props.localSrc
+        ? remotePreferred
+          ? "Quran.com audio will be tried first for this ayah."
+          : "Playing from the local Hifzer audio library."
+        : remoteAllowed
+          ? "No local audio file was found, so Hifzer will try Quran.com when you play."
+          : "No local audio file is available for this ayah in local-only mode.",
     );
     setLoadError(false);
     setCurrentTime(0);
     setDuration(0);
-  }, [props.initialSrc]);
+  }, [props.localSrc, remoteAllowed, remotePreferred]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -253,7 +315,7 @@ function AyahAudioPlayerInner(props: {
 
     function onError() {
       setPlaying(false);
-      if (!fallbackAttemptedRef.current) {
+      if (sourceKindRef.current === "local" && remoteAllowed && !remoteAttemptedRef.current) {
         void (async () => {
           const nextSource = await resolveRemoteFallback();
           const target = audioRef.current;
@@ -274,6 +336,21 @@ function AyahAudioPlayerInner(props: {
         })();
         return;
       }
+      if (sourceKindRef.current === "quran_foundation" && props.localSrc) {
+        const nextSource = switchToLocalSource("Quran.com audio failed, so Hifzer switched back to local audio.");
+        const target = audioRef.current;
+        if (nextSource && target) {
+          syncAudioSource(target, nextSource);
+          target.playbackRate = speedRef.current;
+          if (pendingResumeRef.current) {
+            claimSinglePlayback(target);
+            void target.play().catch(() => {
+              setPlaying(false);
+            });
+          }
+        }
+        return;
+      }
       setLoadError(true);
     }
 
@@ -290,7 +367,7 @@ function AyahAudioPlayerInner(props: {
       audioEl.removeEventListener("error", onError);
       releaseSinglePlayback(audioEl);
     };
-  }, [markStreakRecitation, resolveRemoteFallback]);
+  }, [markStreakRecitation, props.localSrc, remoteAllowed, resolveRemoteFallback, switchToLocalSource]);
 
   useEffect(() => {
     const audio = audioRef.current;

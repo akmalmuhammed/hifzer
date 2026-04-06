@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useTheme, type AccentPreset, type ThemePreset } from "@/components/providers/theme-provider";
+import { useTheme } from "@/components/providers/theme-provider";
 import {
   applyFreshStartBridge,
   setHifzActiveSurahCursor,
@@ -9,9 +9,7 @@ import {
   setQuranActiveSurahCursor,
 } from "@/hifzer/local/store";
 import type { ProfileSnapshot } from "@/hifzer/profile/server";
-
-const VALID_THEMES = new Set<ThemePreset>(["standard", "paper", "noor", "dawn", "rose"]);
-const VALID_ACCENTS = new Set<AccentPreset>(["teal", "cobalt", "ember"]);
+import { normalizeAccentPreset, normalizeThemePreset } from "@/hifzer/theme/preferences";
 
 export function ProfileHydrator(props: { profile: ProfileSnapshot | null }) {
   const { setMode, setTheme, setAccent } = useTheme();
@@ -32,12 +30,8 @@ export function ProfileHydrator(props: { profile: ProfileSnapshot | null }) {
 
     setMode(profile.darkMode ? "dark" : "light");
 
-    const theme = (VALID_THEMES.has(profile.themePreset as ThemePreset)
-      ? (profile.themePreset as ThemePreset)
-      : "standard") as ThemePreset;
-    const accent = (VALID_ACCENTS.has(profile.accentPreset as AccentPreset)
-      ? (profile.accentPreset as AccentPreset)
-      : "teal") as AccentPreset;
+    const theme = normalizeThemePreset(profile.themePreset);
+    const accent = normalizeAccentPreset(profile.accentPreset);
     setTheme(theme);
     setAccent(accent);
   }, [props.profile, setAccent, setMode, setTheme]);

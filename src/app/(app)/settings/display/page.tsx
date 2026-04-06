@@ -56,31 +56,31 @@ const THEME_OPTIONS: Array<{
   {
     id: "standard",
     label: "Standard",
-    description: "Balanced glass surfaces with the core Hifzer atmosphere.",
+    description: "Default",
     previewClass: "from-[#dff7f1] via-[#eef2ff] to-[#fff4e5]",
   },
   {
     id: "paper",
     label: "Paper",
-    description: "Warmer parchment tones for a softer reading feel.",
+    description: "Warm",
     previewClass: "from-[#fff8ef] via-[#fffaf6] to-[#f5efe8]",
   },
   {
     id: "noor",
     label: "Noor",
-    description: "Cool luminous blues and teals with a calmer night-glow edge.",
+    description: "Cool",
     previewClass: "from-[#e1f5ff] via-[#eff6ff] to-[#dff7f1]",
   },
   {
     id: "dawn",
     label: "Dawn",
-    description: "A sunrise mix of sand, gold, and early-sky warmth.",
+    description: "Soft",
     previewClass: "from-[#fff1d8] via-[#fff8ef] to-[#ffe4c7]",
   },
   {
     id: "rose",
     label: "Rose",
-    description: "A pink-tinted gradient with a softer devotional mood.",
+    description: "Rose",
     previewClass: "from-[#ffe0ea] via-[#fff1f5] to-[#f7e8ff]",
   },
 ];
@@ -156,13 +156,13 @@ export default function DisplaySettingsPage() {
     <div className="space-y-6">
       <SettingsDetailHeader
         title="Display"
-        subtitle="Choose the mood, color, and contrast that make daily recitation easier to return to."
+        subtitle="Theme and color."
       />
 
       <Card>
         <OptionRow
           title="Mode"
-          desc="Switch between light and dark while keeping the Qur'an script untouched."
+          desc="Light or dark."
           right={(
             <Button variant="secondary" className="gap-2" onClick={() => toggleMode()}>
               {mode === "dark" ? <Moon size={16} /> : <Sun size={16} />}
@@ -175,7 +175,7 @@ export default function DisplaySettingsPage() {
       <Card>
         <OptionRow
           title="Theme"
-          desc="These presets reshape the gradients and surface feel without changing the Qur'an font."
+          desc="Surface style."
         >
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {THEME_OPTIONS.map((option) => (
@@ -195,7 +195,7 @@ export default function DisplaySettingsPage() {
       <Card>
         <OptionRow
           title="Accent"
-          desc="Pick the color used for highlights, active states, and calls to action."
+          desc="Highlight color."
         >
           <div className="flex flex-wrap gap-2">
             {ACCENT_OPTIONS.map((option) => (
