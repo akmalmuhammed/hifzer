@@ -465,6 +465,99 @@ html[data-mode="dark"] .kw-canvas::after {
   mix-blend-mode: overlay;
 }
 
+/* ── Islamic geometric pattern overlay ─────────────────────────────── */
+.kw-islamic-pattern {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='none' stroke='%230a8a77' stroke-width='0.5'%3E%3Cpath d='M40 8 L52 28 L72 28 L56 42 L62 62 L40 50 L18 62 L24 42 L8 28 L28 28Z' opacity='.45'/%3E%3Ccircle cx='40' cy='40' r='14' opacity='.25'/%3E%3Cpath d='M0 0L12 20 M80 0L68 20 M0 80L12 60 M80 80L68 60' opacity='.3'/%3E%3Cpath d='M40 0L40 8 M80 40L72 40 M40 80L40 72 M0 40L8 40' opacity='.2'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 80px 80px;
+  opacity: 0.04;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 30%, transparent 75%);
+}
+
+html[data-mode="dark"] .kw-islamic-pattern {
+  opacity: 0.06;
+  filter: invert(1);
+}
+
+/* ── Soft glow orbs ───────────────────────────────────────────────── */
+.kw-glow-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.kw-glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  will-change: transform, opacity;
+}
+
+.kw-glow-orb--1 {
+  width: 500px;
+  height: 500px;
+  top: 8%;
+  left: 6%;
+  background: radial-gradient(circle, rgba(10, 138, 119, 0.22), transparent 70%);
+  animation: kw-glow-drift-1 18s ease-in-out infinite;
+}
+
+.kw-glow-orb--2 {
+  width: 420px;
+  height: 420px;
+  top: 14%;
+  right: 8%;
+  background: radial-gradient(circle, rgba(var(--kw-accent-rgb), 0.16), transparent 70%);
+  animation: kw-glow-drift-2 22s ease-in-out infinite;
+}
+
+.kw-glow-orb--3 {
+  width: 460px;
+  height: 460px;
+  bottom: 18%;
+  left: 50%;
+  background: radial-gradient(circle, rgba(234, 88, 12, 0.10), transparent 70%);
+  animation: kw-glow-drift-3 26s ease-in-out infinite;
+}
+
+@keyframes kw-glow-drift-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 1; }
+  33%      { transform: translate(40px, 25px) scale(1.12); opacity: 0.7; }
+  66%      { transform: translate(-25px, -15px) scale(0.92); opacity: 1; }
+}
+
+@keyframes kw-glow-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 1; }
+  40%      { transform: translate(-35px, 30px) scale(1.08); opacity: 0.65; }
+  75%      { transform: translate(20px, -20px) scale(0.95); opacity: 1; }
+}
+
+@keyframes kw-glow-drift-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 1; }
+  50%      { transform: translate(30px, -35px) scale(1.1); opacity: 0.6; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kw-glow-orb { animation: none; }
+}
+
+@media (max-width: 768px) {
+  .kw-islamic-pattern {
+    background-size: 60px 60px;
+    opacity: 0.03;
+  }
+
+  .kw-glow-orb--1 { width: 280px; height: 280px; }
+  .kw-glow-orb--2 { width: 240px; height: 240px; }
+  .kw-glow-orb--3 { display: none; }
+}
+
 @media (max-width: 768px) {
   .kw-canvas::before {
     background:

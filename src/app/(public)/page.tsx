@@ -52,6 +52,7 @@ export default async function LandingPage() {
           imageSrc="/hifzer app 1.png"
           imageAlt="Hifzer Dua journey with Arabic text and transliteration"
           reverse={false}
+          shrinkOnExit
         />
 
       </div>

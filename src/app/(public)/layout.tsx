@@ -9,6 +9,14 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
   return (
     <PublicAuthProvider authEnabled={authEnabled}>
       <div className="min-h-dvh">
+        {/* Subtle Islamic geometric pattern + drifting glow orbs */}
+        <div className="kw-islamic-pattern" aria-hidden="true" />
+        <div className="kw-glow-wrap" aria-hidden="true">
+          <div className="kw-glow-orb kw-glow-orb--1" />
+          <div className="kw-glow-orb kw-glow-orb--2" />
+          <div className="kw-glow-orb kw-glow-orb--3" />
+        </div>
+
         <MarketingNav authEnabled={authEnabled} />
         <main id="main-content" className="w-full overflow-x-hidden">
           {children}
