@@ -13,7 +13,7 @@ const FEATURES = [
     tag: "Dua",
     tagTone: "brand" as const,
     headline: "Start every day with intention.",
-    body: "A structured morning routine of duas from the Sunnah. Arabic, transliteration and meaning — read at your pace, not rushed.",
+    body: "Simple morning adhkar with Arabic, transliteration, and meaning.",
     preview: {
       type: "dua" as const,
       title: "Morning adhkar",
@@ -32,7 +32,7 @@ const FEATURES = [
     tag: "Dua",
     tagTone: "brand" as const,
     headline: "End the day with gratitude.",
-    body: "Curated evening supplications that bring your day to a close with remembrance. Each dua sourced, explained and easy to follow.",
+    body: "Evening duas that are easy to follow and return to each day.",
     preview: {
       type: "dua" as const,
       title: "Evening adhkar",
@@ -51,7 +51,7 @@ const FEATURES = [
     tag: "Dua",
     tagTone: "brand" as const,
     headline: "Turn to Allah in difficulty.",
-    body: "When life is hard, Hifzer guides you through supplications for patience, relief and trust. Grounded in Qur'an and authentic hadith.",
+    body: "Guided supplications for patience, relief, and trust when life feels heavy.",
     preview: {
       type: "dua" as const,
       title: "In times of distress",
@@ -70,7 +70,7 @@ const FEATURES = [
     tag: "Journal",
     tagTone: "accent" as const,
     headline: "Capture what moves you.",
-    body: "Write reflections tied directly to the ayah you are reading. Private, searchable and always connected to your Qur'anic journey.",
+    body: "Write private reflections and tie them to the ayah you are reading.",
     preview: {
       type: "journal" as const,
       surah: "Al-Baqarah · 2:286",
@@ -86,7 +86,7 @@ const FEATURES = [
     tag: "Journal",
     tagTone: "accent" as const,
     headline: "See how far you have come.",
-    body: "Log the ayahs that stayed with you, the days that mattered and the progress you have made. Your spiritual growth, written in your own words.",
+    body: "Save milestones, remembered ayahs, and meaningful days in one place.",
     preview: {
       type: "milestones" as const,
       entries: [
@@ -216,7 +216,7 @@ export function SessionWalkthrough() {
           More than just Hifz.
         </h2>
         <p className="mt-3 max-w-xl text-sm leading-7 text-[color:var(--kw-muted)]">
-          Dua journeys grounded in sunnah and a private journal for your spiritual growth. Everything in one place.
+          Dua and reflection live alongside your daily Hifz routine.
         </p>
       </div>
 

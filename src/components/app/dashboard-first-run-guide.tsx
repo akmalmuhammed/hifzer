@@ -116,8 +116,8 @@ function nextActionStep(lane: OnboardingStartLane | null, overview: DashboardGui
       key: "fluency",
       label: "Next action",
       note: `Guided fluency | ${queueNote}`,
-      title: "Start with guided fluency work.",
-      body: "Your onboarding lane says fluency support should come first. Open the fluency hub before heavier memorization, then come back to Hifz once the queue and recitation feel calmer.",
+      title: "Start with fluency first.",
+      body: "Open the fluency hub before heavier memorization, then come back to Hifz once things feel steadier.",
       href: "/fluency",
       cta: "Open fluency",
       icon: Mic,
@@ -130,8 +130,8 @@ function nextActionStep(lane: OnboardingStartLane | null, overview: DashboardGui
       key: "listen",
       label: "Next action",
       note: `Listen and repeat | ${queueNote}`,
-      title: "Begin with listen-and-repeat practice.",
-      body: "Use the listening-led lesson first so pronunciation, rhythm, and confidence settle before you push recall harder. That gives the rest of your dashboard a much clearer starting point.",
+      title: "Begin with listen and repeat.",
+      body: "Use the listening lesson first so pronunciation and rhythm settle before you push recall harder.",
       href: "/fluency/lesson/listen-repeat",
       cta: "Open listen-repeat",
       icon: Headphones,
@@ -144,8 +144,8 @@ function nextActionStep(lane: OnboardingStartLane | null, overview: DashboardGui
       key: "transitions",
       label: "Next action",
       note: `Transition repair | ${queueNote}`,
-      title: "Open seam repair before memorizing more.",
-      body: "Your self-check pointed to ayah joins as the weak spot, so transition work is the best first route from the dashboard before you add pressure elsewhere.",
+      title: "Fix joins before adding more.",
+      body: "Your self-check pointed to ayah joins as the weak spot, so transition work is the best place to start.",
       href: "/fluency/lesson/transitions",
       cta: "Open transitions",
       icon: Link2,
@@ -158,11 +158,11 @@ function nextActionStep(lane: OnboardingStartLane | null, overview: DashboardGui
     label: "Next action",
     note: `Main Hifz flow | ${queueNote}`,
     title: overview.reviewHealth.dueNow > 0
-      ? "Open Hifz and clear the due review first."
-      : "Open Hifz and run your first recall block.",
+      ? "Open Hifz and clear due review first."
+      : "Open Hifz and begin your next recall block.",
     body: overview.reviewHealth.dueNow > 0
-      ? "Start in Hifz and let review lead. Due reviews and weak transitions tell you the queue needs protection before you chase more new ayahs."
-      : "Start in Hifz and run a clean recall block. Your queue is light enough that the first session should feel focused instead of overloaded.",
+      ? "Start in Hifz and let review lead before adding more new ayahs."
+      : "Start in Hifz and run a clean recall block while the queue is still light.",
     href: "/hifz",
     cta: "Open Hifz",
     icon: PlayCircle,
@@ -175,8 +175,8 @@ function queueHealthStep(overview: DashboardGuideOverview): GuideStep {
     key: "queue-health",
     label: "Queue health",
     note: `${overview.reviewHealth.dueNow} due now | ${overview.reviewHealth.dueSoon6h} due soon`,
-    title: "Read queue health before deciding what to practice.",
-    body: "Queue health is the fastest explanation of today's Hifz pressure. Due now means work already waiting. Due soon shows what is about to join the queue. Weak links highlight ayah transitions that still need repair.",
+    title: "Check the queue before you start.",
+    body: "Due now needs attention first. Due soon may join later. Weak links are ayah joins worth revisiting.",
     href: "/hifz",
     cta: "Open Hifz queue",
     icon: RefreshCcw,
@@ -192,45 +192,45 @@ function debtRatioStep(overview: DashboardGuideOverview): GuideStep {
   const roundedRatio = `${Math.round(overview.reviewHealth.debtRatioPct)}%`;
   const roundedMinutes = `${Math.round(overview.reviewHealth.reviewDebtMinutes)} min`;
 
-  let body = "Debt ratio compares the review work waiting for you against today's planned study budget. A lower ratio means the queue still has room to stay balanced.";
+  let body = "This shows how much of today may be spent on review. Lower is lighter.";
   if (overview.reviewHealth.debtRatioPct >= 45) {
-    body = `Your review debt is about ${roundedMinutes} against a ${overview.profile.dailyMinutes} minute day, which is why the engine treats the queue as catch-up work first. Clear the backlog before asking for more new material.`;
+    body = `About ${roundedMinutes} of review is waiting inside a ${overview.profile.dailyMinutes} minute day. Clear the backlog before adding more new material.`;
   } else if (overview.reviewHealth.debtRatioPct >= 25) {
-    body = `Your review debt is about ${roundedMinutes} against a ${overview.profile.dailyMinutes} minute day, so the engine leans into consolidation. That keeps retention from slipping while the queue settles.`;
+    body = `About ${roundedMinutes} of review is waiting inside a ${overview.profile.dailyMinutes} minute day, so it helps to slow down and protect what you already learned.`;
   }
 
   return {
     key: "debt-ratio",
-    label: "Debt ratio",
+    label: "Workload",
     note: `${roundedRatio} of today budget`,
-    title: "Debt ratio tells you when review is crowding out new work.",
+    title: "Workload shows when review is crowding out new work.",
     body,
     href: "/hifz",
     cta: "See live queue",
     icon: Gauge,
     highlights: [
-      { label: "Debt ratio", value: roundedRatio, tone: debtTone(overview.reviewHealth.debtRatioPct) },
-      { label: "Review debt", value: roundedMinutes, tone: "neutral" },
-      { label: "Daily budget", value: `${overview.profile.dailyMinutes} min`, tone: "accent" },
+      { label: "Workload", value: roundedRatio, tone: debtTone(overview.reviewHealth.debtRatioPct) },
+      { label: "Review time", value: roundedMinutes, tone: "neutral" },
+      { label: "Daily plan", value: `${overview.profile.dailyMinutes} min`, tone: "accent" },
     ],
   };
 }
 
 function modeStep(overview: DashboardGuideOverview): GuideStep {
   const mode = overview.profile.mode;
-  let body = "Normal mode keeps review and new work balanced. When debt stays comfortably below the engine thresholds, Hifzer can protect retention without freezing progress.";
+  let body = "Normal keeps review and new work balanced.";
 
   if (mode === "CONSOLIDATION") {
-    body = "Consolidation mode means the engine is protecting what you already learned. This usually kicks in when debt rises to roughly 25% or more of your daily budget, or when recent recall looks shaky.";
+    body = "Consolidation slows new work a little so what you already learned can settle.";
   } else if (mode === "CATCH_UP") {
-    body = "Catch-up mode means the queue needs repair before growth. This usually appears when debt rises to roughly 45% or more of your budget, or when missed days start stacking.";
+    body = "Catch-up means the queue needs repair before you add more.";
   }
 
   return {
     key: "srs-mode",
-    label: "SRS mode",
+    label: "Today's mode",
     note: `${modeLabel(mode)} | ${debtLabel(overview.reviewHealth.debtRatioPct)}`,
-    title: `${modeLabel(mode)} mode explains how strict today's queue will feel.`,
+    title: `${modeLabel(mode)} mode explains how today will feel.`,
     body,
     href: "/hifz",
     cta: "Practice in Hifz",
@@ -279,10 +279,10 @@ export function DashboardFirstRunGuide(props: { overview: DashboardGuideOverview
             <Pill tone="neutral">New dashboard</Pill>
           </div>
           <p className="mt-3 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-            Start from the dashboard without guessing.
+            Start here without overthinking it.
           </p>
           <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
-            Your setup is done. These guided hints explain what the queue is doing, how much pressure it is carrying, and what your best next move is.
+            Your setup is done. These short tips show what to open first and how busy your Hifz queue is.
           </p>
         </div>
 

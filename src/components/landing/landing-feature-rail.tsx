@@ -5,21 +5,21 @@ import { FeatureShowcase } from "@/components/landing/feature-showcase";
 const FEATURE_SHOWCASES = [
   {
     boldIntro: "Protect your Hifz before you add more.",
-    body: "Hifzer runs your Sabaq, Sabqi, and Manzil in one clear daily flow, then catches weak seams, similar ayahs, and fragile recall before they spread. Warm-up gates, blind recall, and rescue drills protect what you already memorised instead of letting today's new lesson quietly damage yesterday's work.",
+    body: "Hifzer keeps new memorisation and review in one clear daily flow. If yesterday feels weak, it slows things down and helps you fix it first, so progress does not come at the cost of forgetting.",
     imageSrc: "/hifzer app 1.png",
     imageAlt: "Hifzer Hifz session showing Arabic ayah and SRS grade buttons",
     reverse: false,
   },
   {
     boldIntro: "Never lose your Qur'an place again.",
-    body: "Hifzer saves your exact ayah, not just a vague streak. Jump by surah or juz, keep smart bookmarks with notes, mark reading done outside the app, search Qur'anic terms, and return to the same place even when you are offline.",
+    body: "Hifzer remembers your exact ayah, keeps bookmarks with notes, and helps you return to the same place across your reading routine. You can move by surah or juz and still pick up exactly where you left off.",
     imageSrc: "/hifzer app 1.png",
     imageAlt: "Hifzer Qur'an reading view with progress tracker and audio player",
     reverse: true,
   },
   {
     boldIntro: "When you do not know what to say, start here.",
-    body: "Move through focused dua journeys for repentance, provision, protection, Allah's Names, and Laylat al-Qadr without feeling lost or performative. Every step keeps the source, meaning, transliteration, repetition support, and your own personal duas close, so the experience feels guided, personal, and honest.",
+    body: "Move through guided duas for repentance, provision, protection, Allah's Names, and Laylat al-Qadr without feeling lost. Each step keeps the words, meaning, and your own personal duas close.",
     imageSrc: "/hifzer app 1.png",
     imageAlt: "Hifzer Dua journey with Arabic text and transliteration",
     reverse: false,

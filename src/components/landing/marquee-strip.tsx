@@ -1,16 +1,16 @@
 const FEATURES = [
-  { label: "Spaced Repetition" },
-  { label: "Hifz Gating System" },
-  { label: "Daily Qur'an Reading" },
-  { label: "Sabaq · Sabqi · Manzil" },
-  { label: "Guided Dua Flows" },
-  { label: "Retention Scoring" },
-  { label: "Streak Tracking" },
-  { label: "Reflective Journaling" },
-  { label: "Ramadan Planner" },
+  { label: "Daily Hifz review" },
+  { label: "Qur'an reading" },
+  { label: "Guided duas" },
+  { label: "Private journal" },
+  { label: "Bookmarks and notes" },
+  { label: "Exact reading place" },
+  { label: "Review before forgetting" },
+  { label: "Morning and evening adhkar" },
+  { label: "Streaks and milestones" },
   { label: "Works Offline" },
-  { label: "Arabic Audio Playback" },
-  { label: "Progress Milestones" },
+  { label: "Audio recitation" },
+  { label: "Simple daily flow" },
 ];
 
 export function MarqueeStrip() {

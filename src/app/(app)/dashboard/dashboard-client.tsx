@@ -120,29 +120,9 @@ function statusPill(status: DashboardOverview["today"]["status"]): { tone: "neut
     return { tone: "success", label: "Today completed" };
   }
   if (status === "in_progress") {
-    return { tone: "accent", label: "Hifz in progress" };
+    return { tone: "accent", label: "Session in progress" };
   }
   return { tone: "neutral", label: "Not started today" };
-}
-
-function modeTone(mode: DashboardOverview["profile"]["mode"]): "accent" | "warn" | "neutral" {
-  if (mode === "NORMAL") {
-    return "accent";
-  }
-  if (mode === "CONSOLIDATION") {
-    return "warn";
-  }
-  return "neutral";
-}
-
-function modeLabel(mode: DashboardOverview["profile"]["mode"]): string {
-  if (mode === "CATCH_UP") {
-    return "Catch-up";
-  }
-  if (mode === "CONSOLIDATION") {
-    return "Consolidation";
-  }
-  return "Normal";
 }
 
 function formatLocalDate(isoDate: string): string {
@@ -802,7 +782,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
       <PageHeader
         eyebrow="Dashboard"
         title="Dashboard"
-        subtitle="Open Hifz, continue Qur'an, return to dua, and capture private reflections from one calm home."
+        subtitle="Your Hifz, Qur'an, dua, and journal in one place."
         right={
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="secondary" size="sm" className="gap-2" onClick={() => void load()}>
@@ -843,8 +823,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1fr)_260px]">
               <div className="space-y-5">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Pill tone="accent">Daily dashboard</Pill>
-                  <Pill tone={modeTone(overview.profile.mode)}>{modeLabel(overview.profile.mode)}</Pill>
+                  <Pill tone="accent">Today</Pill>
                   {status ? <Pill tone={status.tone}>{status.label}</Pill> : null}
                   <span className="text-xs text-[color:var(--kw-faint)]">
                     Updated {new Date(overview.generatedAt).toLocaleTimeString()}
@@ -853,10 +832,10 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
 
                 <div>
                   <h2 className={`${styles.heroTitle} kw-marketing-display kw-app-hero-title text-balance text-[color:var(--kw-ink)]`}>
-                    Start the right thing quickly, then keep the whole deen flow in view.
+                    Pick up where you left off.
                   </h2>
                   <p className={`${styles.heroBody} kw-app-hero-body mt-3 text-[color:var(--kw-muted)]`}>
-                    Hifz, Qur&apos;an reading, dua, journal, streak, and momentum all stay here so you can move without hunting through separate surfaces first.
+                    Start Hifz, continue reading, open dua, or save a reflection from one calm home.
                   </p>
                 </div>
 
@@ -867,8 +846,8 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                     title="Start your next recall block"
                     note={
                       overview.reviewHealth.dueNow > 0
-                        ? `${overview.reviewHealth.dueNow} reviews are due right now`
-                        : "Queue is clear enough to keep momentum honest"
+                        ? `${overview.reviewHealth.dueNow} due now`
+                        : "Queue is light today"
                     }
                     icon={PlayCircle}
                     tone="accent"
@@ -884,14 +863,14 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                     href="/dua"
                     eyebrow="Dua"
                     title="Return to your dua modules"
-                    note="Repentance, ruqyah, provision, beautiful names, and personal duas stay ready"
+                    note="Open your saved dua sets and continue where you stopped"
                     icon={MoonStar}
                   />
                   <QuickActionCard
                     href="/journal"
                     eyebrow="Journal"
                     title="Capture today&apos;s reflection"
-                    note="Keep an ayah, a feeling, or a private dua tied to your own account"
+                    note="Save a private note, ayah, or dua for later"
                     icon={SquarePen}
                   />
                 </div>
@@ -904,7 +883,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                     <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
                       {overview.reviewHealth.dueNow}
                     </p>
-                    <p className="mt-2 text-xs text-[color:var(--kw-muted)]">Weak links {overview.reviewHealth.weakTransitions}</p>
+                    <p className="mt-2 text-xs text-[color:var(--kw-muted)]">{overview.reviewHealth.weakTransitions} joins to fix</p>
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-2.5`}>
                     <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
@@ -917,12 +896,12 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-2.5`}>
                     <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
-                      Qur&apos;an Coverage
+                      Qur&apos;an progress
                     </p>
                     <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
                       {overview.kpis.quranCompletionPct.toFixed(1)}%
                     </p>
-                    <p className="mt-2 text-xs text-[color:var(--kw-muted)]">Khatmah x{overview.quran.completedKhatmahCount}</p>
+                    <p className="mt-2 text-xs text-[color:var(--kw-muted)]">{overview.quran.completedKhatmahCount} khatmah</p>
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-2.5`}>
                     <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
@@ -941,9 +920,9 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
               <div className={styles.spotlightPanel}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Today snapshot</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Quick look</p>
                     <p className="mt-1 text-sm leading-6 text-[color:var(--kw-muted)]">
-                      The essentials worth seeing before you decide whether to read, review, reflect, or slow down.
+                      The essentials before you continue.
                     </p>
                   </div>
                   <span className={clsx(styles.iconBadge, styles.iconAccent)}>
@@ -952,14 +931,14 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                 </div>
                 <div className="mt-4 grid gap-3">
                   <div className={`${styles.kpiTile} px-3 py-3`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Retention score (14d)</p>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Recall score (14d)</p>
                     <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
                       {overview.kpis.retentionScore14d}
                     </p>
-                    <p className="mt-1 text-xs text-[color:var(--kw-muted)]">How clean recent recall has been.</p>
+                    <p className="mt-1 text-xs text-[color:var(--kw-muted)]">How steady recent recall has felt.</p>
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-3`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Current reading place</p>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Reading place</p>
                     <p className="mt-1 text-base font-semibold text-[color:var(--kw-ink)]">
                       {overview.quran.currentSurahName} | {overview.quran.cursorRef}
                     </p>
@@ -1000,9 +979,9 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
 
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             <MetricTile
-              label="Practice minutes (7d)"
+              label="Practice time (7d)"
               value={overview.kpis.totalSessionMinutes7d}
-              detail={`Avg ${overview.kpis.avgSessionMinutes7d.toFixed(1)} min per completed session`}
+              detail={`Avg ${overview.kpis.avgSessionMinutes7d.toFixed(1)} min per session`}
               icon={Clock3}
               tone="accent"
               delayMs={40}
@@ -1010,9 +989,9 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             />
 
             <MetricTile
-              label="Retention score"
+              label="Recall score"
               value={overview.kpis.retentionScore14d}
-              detail="Based on graded recall over the last 14 days."
+              detail="Last 14 days"
               icon={Gauge}
               tone="neutral"
               delayMs={80}
@@ -1020,9 +999,9 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             />
 
             <MetricTile
-              label="Review pressure"
+              label="Due review"
               value={overview.reviewHealth.dueNow}
-              detail={`Due now, with ${overview.reviewHealth.dueSoon6h} more due in the next 6 hours.`}
+              detail={`${overview.reviewHealth.dueSoon6h} more due later today.`}
               icon={RefreshCcw}
               tone="warn"
               delayMs={120}
@@ -1048,9 +1027,9 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             <div className="kw-fade-in h-full" style={{ animationDelay: "200ms" }}>
               <Card className="h-full">
                 <SectionHeader
-                  eyebrow="Practice rhythm"
-                  title="Session minutes over 14 days"
-                  description="A calmer way to see whether your effort is holding, dipping, or finally settling into a repeatable routine."
+                  eyebrow="Practice"
+                  title="Last 14 days"
+                  description="A quick view of your recent time."
                   icon={TrendingUp}
                   tone="accent"
                   meta={<Pill tone="accent">{overview.profile.timezone}</Pill>}
@@ -1060,11 +1039,11 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                 </div>
                 <div className="mt-4 grid gap-2 sm:grid-cols-3">
                   <div className={`${styles.kpiTile} px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Ayahs in review</p>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Tracked ayahs</p>
                     <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{overview.kpis.trackedAyahs}</p>
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Weak links</p>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Joins to fix</p>
                     <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{overview.reviewHealth.weakTransitions}</p>
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-2`}>
@@ -1078,9 +1057,9 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             <div className="kw-fade-in h-full" style={{ animationDelay: "240ms" }}>
               <Card className="h-full">
                 <SectionHeader
-                  eyebrow="Review quality"
-                  title="Recall quality mix"
-                  description="Grade balance and stage mix, so you can tell whether review is actually clean or just being rushed."
+                  eyebrow="Recall"
+                  title="How recent sessions felt"
+                  description="A quick read on clean answers and easier recall."
                   icon={ShieldCheck}
                   tone="accent"
                   meta={<Pill tone="neutral">14d</Pill>}
@@ -1114,25 +1093,25 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
 
                 <div className="mt-4 grid gap-2 sm:grid-cols-2">
                   <div className={`${styles.kpiTile} px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Again / Hard</p>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Needs work</p>
                     <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
                       {overview.gradeMix14d.AGAIN} / {overview.gradeMix14d.HARD}
                     </p>
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Good / Easy</p>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Clean answers</p>
                     <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
                       {overview.gradeMix14d.GOOD} / {overview.gradeMix14d.EASY}
                     </p>
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Warmup + Review</p>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Review work</p>
                     <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
                       {overview.stageMix14d.WARMUP + overview.stageMix14d.REVIEW}
                     </p>
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">New + Link</p>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">New work</p>
                     <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
                       {overview.stageMix14d.NEW + overview.stageMix14d.LINK + overview.stageMix14d.LINK_REPAIR}
                     </p>
@@ -1146,12 +1125,12 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             <div className="kw-fade-in h-full" style={{ animationDelay: "280ms" }}>
               <Card className="h-full">
                 <SectionHeader
-                  eyebrow="Qur&apos;an place"
+                  eyebrow="Qur&apos;an"
                   title={`${overview.quran.currentSurahName} | ${overview.quran.cursorRef}`}
-                  description="Reading progress stays separate from Hifz while still remaining visible in the same daily home."
+                  description="Your reading place stays ready here."
                   icon={BookOpenText}
                   tone="accent"
-                  meta={<Pill tone="accent">Ayah #{overview.quran.cursorAyahId}</Pill>}
+                  meta={<Pill tone="accent">Ayah {overview.quran.cursorAyahId}</Pill>}
                 />
 
                 <div className="mt-4 grid gap-4 sm:grid-cols-[120px_minmax(0,1fr)]">
@@ -1169,9 +1148,9 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                       />
                     </div>
                     <div className="flex flex-wrap gap-2 pt-1">
-                      <Pill tone="neutral">Khatmah x{overview.quran.completedKhatmahCount}</Pill>
-                      <Pill tone="neutral">Read in 7 days: {overview.quran.browseRecitedAyahs7d}</Pill>
-                      <Pill tone="neutral">Surahs read in 14 days: {overview.quran.uniqueSurahsRecited14d}</Pill>
+                      <Pill tone="neutral">Khatmah {overview.quran.completedKhatmahCount}</Pill>
+                      <Pill tone="neutral">Last 7 days: {overview.quran.browseRecitedAyahs7d} ayahs</Pill>
+                      <Pill tone="neutral">Last 14 days: {overview.quran.uniqueSurahsRecited14d} surahs</Pill>
                     </div>
                   </div>
                 </div>
@@ -1194,9 +1173,9 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             <div className="kw-fade-in h-full" style={{ animationDelay: "320ms" }}>
               <Card className="h-full">
                 <SectionHeader
-                  eyebrow="Monthly return map"
-                  title="Monthly consistency map"
-                  description="A simple month view of how often you actually came back, with today clearly marked."
+                  eyebrow="Consistency"
+                  title="Monthly activity"
+                  description="See the days you came back."
                   icon={CalendarDays}
                   tone="neutral"
                 />

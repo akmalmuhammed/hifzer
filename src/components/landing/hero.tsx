@@ -77,7 +77,7 @@ export function Hero() {
             variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } } }}
             className={`${styles.publicHeroSummary} mx-auto text-center text-base leading-[1.7] text-[color:var(--kw-muted)] md:text-lg`}
           >
-            Hifz, Qur&apos;an reading, dua, and private reflection in one calm daily system.
+            Hifz, Qur&apos;an reading, dua, and private reflection in one calm place.
           </motion.p>
 
           {/* CTA row */}
@@ -165,4 +165,3 @@ export function Hero() {
     </section>
   );
 }
-

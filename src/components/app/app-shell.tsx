@@ -7,9 +7,9 @@ import {
   BookOpenText,
   CalendarDays,
   ChevronDown,
-  House,
   LifeBuoy,
   LibraryBig,
+  type LucideIcon,
   Map,
   MoonStar,
   PlayCircle,
@@ -25,7 +25,6 @@ import { useUiLanguage } from "@/components/providers/ui-language-provider";
 import styles from "./app-shell.module.css";
 
 type NavKey =
-  | "home"
   | "dashboard"
   | "hifz"
   | "quran"
@@ -36,10 +35,9 @@ type NavKey =
   | "support"
   | "settings";
 
-type NavItem = { href: string; key: NavKey; icon: typeof House; label?: string };
+type NavItem = { href: string; key: NavKey; icon: LucideIcon; label?: string };
 
 const PRIMARY: NavItem[] = [
-  { href: "/", key: "home", icon: House },
   { href: "/dashboard", key: "dashboard", icon: CalendarDays },
   { href: "/hifz", key: "hifz", icon: PlayCircle },
   { href: "/quran", key: "quran", icon: BookOpenText },
@@ -57,7 +55,6 @@ const PLATFORM: NavItem[] = [
 ];
 
 const MOBILE_NAV: NavItem[] = [
-  { href: "/", key: "home", icon: House },
   { href: "/dashboard", key: "dashboard", icon: CalendarDays },
   { href: "/hifz", key: "hifz", icon: PlayCircle },
   { href: "/quran", key: "quran", icon: BookOpenText },
@@ -67,9 +64,6 @@ const MOBILE_NAV: NavItem[] = [
 ];
 
 function isActive(pathname: string, href: string): boolean {
-  if (href === "/") {
-    return pathname === "/";
-  }
   if (href === "/dashboard") {
     return pathname === "/dashboard";
   }

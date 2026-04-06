@@ -7,31 +7,31 @@ import { Pill } from "@/components/ui/pill";
 const SIGNALS = [
   {
     label: "Before every session",
-    value: "Warm-up checks yesterday first",
+    value: "You review before adding more",
   },
   {
     label: "When retention drops",
-    value: "The plan switches into consolidation",
+    value: "The app slows down and focuses on review",
   },
   {
     label: "When recall bends",
-    value: "Link repair and rescue drills step in",
+    value: "Weak spots get extra practice",
   },
 ] as const;
 
 const LAYERS = [
   {
-    title: "Daily protection loop",
-    subtitle: "Warm-up, Sabqi, and Manzil stay in one honest flow",
+    title: "Review comes first",
+    subtitle: "Strengthen what you know before moving on",
     copy:
-      "New memorisation does not open just because you showed up. Hifzer checks yesterday's Sabaq first, keeps recent review and long-term review in the same rhythm, and makes you earn today's new lesson with clean recall.",
+      "Hifzer checks review before opening new memorisation. That keeps your daily routine honest and protects what you already worked hard to learn.",
     bullets: [
-      "Warm-up can block new when yesterday is shaky",
-      "Blind recall exposes gaps before they spread",
-      "Recent and long-term review stay attached to the same session",
+      "Review before new memorisation",
+      "Weak recall is caught early",
+      "One clear daily flow",
     ],
-    footer: "Runs before every Hifz session",
-    pill: { label: "Daily gate", tone: "brand" as const },
+    footer: "Used in every Hifz session",
+    pill: { label: "Daily flow", tone: "brand" as const },
     icon: ShieldCheck,
     surfaceClassName:
       "border-[rgba(10,138,119,0.18)] bg-[radial-gradient(circle_at_top_left,rgba(10,138,119,0.16),transparent_38%),linear-gradient(180deg,var(--kw-surface),var(--kw-surface-soft))]",
@@ -39,17 +39,17 @@ const LAYERS = [
       "border-[rgba(10,138,119,0.2)] bg-[rgba(10,138,119,0.1)] text-[rgba(10,138,119,0.95)]",
   },
   {
-    title: "Weekly consolidation boundary",
-    subtitle: "Catch silent forgetting before it becomes a collapse",
+    title: "The app slows down when needed",
+    subtitle: "Less pressure when your memory needs care",
     copy:
-      "Once a week Hifzer samples older material and checks whether retention still holds. If the weekly gate fails, the app does not pretend everything is fine. It shifts the day into consolidation so you stabilise before moving again.",
+      "If older material starts slipping, Hifzer shifts the day toward consolidation. You recover first instead of forcing more memorisation on top of shaky review.",
     bullets: [
-      "Mandatory weekly retention check",
-      "Automatic switch to review-focused mode",
-      "Hidden decay is surfaced early instead of months later",
+      "Weekly check on older material",
+      "More review when needed",
+      "Prevents quiet forgetting",
     ],
-    footer: "Runs automatically each week",
-    pill: { label: "Weekly gate", tone: "accent" as const },
+    footer: "Used when retention drops",
+    pill: { label: "Auto adjust", tone: "accent" as const },
     icon: Clock3,
     surfaceClassName:
       "border-[rgba(var(--kw-accent-rgb),0.18)] bg-[radial-gradient(circle_at_top_right,rgba(var(--kw-accent-rgb),0.16),transparent_40%),linear-gradient(180deg,var(--kw-surface),var(--kw-surface-soft))]",
@@ -57,17 +57,17 @@ const LAYERS = [
       "border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.1)] text-[rgba(var(--kw-accent-rgb),1)]",
   },
   {
-    title: "Repair layer for real mistakes",
-    subtitle: "Weak seams, similar ayahs, and backlog pressure get their own tools",
+    title: "Extra help for weak spots",
+    subtitle: "Focus on the part that is actually breaking",
     copy:
-      "When recall starts bending, Hifzer does more than show a lower score. It shifts load when reviews pile up, sends weak transitions into link repair, and gives you rescue and mushabihat practice without quietly mutating your main Hifz queue.",
+      "When a transition, similar ayah, or fragile passage keeps slipping, Hifzer gives it focused repair work instead of burying it inside the rest of your queue.",
     bullets: [
-      "Review pressure reduces new load automatically",
-      "Link repair isolates weak transitions",
-      "Rescue sessions and mushabihat radar target the fragile parts directly",
+      "Extra practice for weak links",
+      "Support for similar ayahs",
+      "Review pressure handled earlier",
     ],
-    footer: "Appears when the system detects fragility",
-    pill: { label: "Repair tools", tone: "warn" as const },
+    footer: "Shows up when you need help",
+    pill: { label: "Repair", tone: "warn" as const },
     icon: LifeBuoy,
     surfaceClassName:
       "border-[rgba(234,88,12,0.18)] bg-[radial-gradient(circle_at_bottom_right,rgba(234,88,12,0.14),transparent_38%),linear-gradient(180deg,var(--kw-surface),var(--kw-surface-soft))]",
@@ -90,21 +90,19 @@ export function QualityGates() {
         <div className="relative grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-start">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[color:var(--kw-faint)]">
-              Retention engine
+              Made for real Hifz
             </p>
             <h2 className="kw-marketing-display mt-3 max-w-3xl text-balance text-3xl leading-tight text-[color:var(--kw-ink)] sm:text-4xl">
-              Progress only counts
-              <span className="block text-[rgba(var(--kw-accent-rgb),1)]">if recall still holds.</span>
+              Built to help you remember,
+              <span className="block text-[rgba(var(--kw-accent-rgb),1)]">not just finish.</span>
             </h2>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)] md:text-[15px]">
-              Hifzer does not just count ayahs covered. It checks yesterday&apos;s Sabaq, samples older
-              material, slows new memorisation when retention drops, and gives you repair tools for weak
-              seams, similar ayahs, and review overload before damage becomes normal.
+              Hifzer helps you keep what you memorise. It reviews old material, slows down when things get shaky, and gives extra help where recall is weak.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
-              <Pill tone="brand">Warm-up before new</Pill>
-              <Pill tone="accent">Weekly consolidation gate</Pill>
-              <Pill tone="warn">Link repair + rescue work</Pill>
+              <Pill tone="brand">Review first</Pill>
+              <Pill tone="accent">Slow down when needed</Pill>
+              <Pill tone="warn">Fix weak spots</Pill>
             </div>
           </div>
 
@@ -177,7 +175,7 @@ export function QualityGates() {
 
                   <div className="mt-5 rounded-[18px] border border-[color:var(--kw-border-2)] bg-[linear-gradient(180deg,var(--kw-surface-soft),var(--kw-surface))] px-4 py-3">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--kw-faint)]">
-                      System behavior
+                      When it helps
                     </p>
                     <p className="mt-2 text-sm font-semibold leading-6 text-[color:var(--kw-ink)]">
                       {layer.footer}
