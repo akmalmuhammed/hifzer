@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, IBM_Plex_Mono, Amiri, Plus_Jakarta_Sans } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { cookies } from "next/headers";
 import { AppProviders } from "@/components/providers/app-providers";
@@ -137,6 +138,7 @@ export default async function RootLayout({
         <InstallAppBanner />
         <ServiceWorkerRegistration />
         <GoogleAnalytics />
+        <Analytics />
       </body>
     </html>
   );
