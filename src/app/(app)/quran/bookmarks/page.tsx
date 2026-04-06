@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { QuranOfflineStatus } from "@/components/quran/quran-offline-status";
 import { Pill } from "@/components/ui/pill";
 import { getQuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/server";
 import { clerkEnabled } from "@/lib/clerk-config";
@@ -34,6 +35,8 @@ export default async function QuranBookmarksPage() {
           locally until sync succeeds.
         </p>
       </div>
+
+      <QuranOfflineStatus compact showReadyHint scope="bookmarks" />
 
       <BookmarkManagerClient connectionStatus={connectionStatus} />
     </div>

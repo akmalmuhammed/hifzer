@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useOnlineStatus } from "@/components/pwa/use-online-status";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import { SupportTextPanel } from "@/components/quran/support-text-panel";
@@ -30,6 +31,7 @@ type Payload = {
 };
 
 export function QuranFoundationContentPanel(props: { ayahId: number; compact?: boolean }) {
+  const online = useOnlineStatus();
   const [payload, setPayload] = useState<Payload | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -65,7 +67,9 @@ export function QuranFoundationContentPanel(props: { ayahId: number; compact?: b
       ? "accent"
       : content?.status === "degraded"
         ? "warn"
-        : "neutral";
+        : !online
+          ? "warn"
+          : "neutral";
 
   return (
     <Card className={props.compact ? "mt-3" : "mt-4"}>
@@ -78,7 +82,11 @@ export function QuranFoundationContentPanel(props: { ayahId: number; compact?: b
       </div>
 
       <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-        {loading ? "Loading official Quran Foundation enrichment..." : content?.detail ?? "Official enrichment is unavailable right now."}
+        {loading
+          ? "Loading official Quran Foundation enrichment..."
+          : !online
+            ? "Official Quran Foundation enrichment needs connection. Local Qur'an reading still works offline on this device."
+            : content?.detail ?? "Official enrichment is unavailable right now."}
       </p>
 
       {content?.officialTranslation ? (

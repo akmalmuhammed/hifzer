@@ -139,7 +139,7 @@ function kindLabel(kind: JourneyKind): string {
     return "Verified anchor";
   }
   if (kind === "personal") {
-    return "Private dua";
+    return "Personal dua";
   }
   return "Guided step";
 }
@@ -679,7 +679,7 @@ export function DuaExperienceClient({
       sortOrder: String(deckEntry.sortOrder),
     });
     setFormError(null);
-    setFeedback("Editing your private dua.");
+    setFeedback("Editing your personal dua.");
   }
 
   async function submitCustomDua(event: FormEvent<HTMLFormElement>) {
@@ -717,7 +717,7 @@ export function DuaExperienceClient({
         deckOrder?: DuaDeckOrderSnapshot;
       };
       if (!response.ok || !data.ok || !data.customDua || !data.deckOrder) {
-        throw new Error(data.error || "Unable to save custom dua.");
+        throw new Error(data.error || "Unable to save your personal dua.");
       }
 
       setCustomDuas((previous) => {
@@ -732,9 +732,9 @@ export function DuaExperienceClient({
         return [...next, data.deckOrder as DuaDeckOrderSnapshot];
       });
       resetDraft(currentModule.id, nextSuggestedSortOrder + 10);
-      setFeedback(draft.id ? "Private dua updated in this module." : "Private dua added to this module.");
+      setFeedback(draft.id ? "Personal dua updated in this module." : "Personal dua added to this module.");
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : "Unable to save custom dua.");
+      setFormError(error instanceof Error ? error.message : "Unable to save your personal dua.");
     } finally {
       setSavingDraft(false);
     }
@@ -770,7 +770,7 @@ export function DuaExperienceClient({
         deckOrder?: DuaDeckOrderSnapshot;
       };
       if (!response.ok || !data.ok || !data.deckOrder) {
-        throw new Error(data.error || "Unable to save the deck order.");
+        throw new Error(data.error || "Unable to save the module sequence.");
       }
 
       setDeckOrders((previous) => {
@@ -784,9 +784,9 @@ export function DuaExperienceClient({
         ...previous,
         [draftKey(currentModule.id, itemKey)]: String(data.deckOrder?.sortOrder ?? fallback),
       }));
-      setFeedback(options?.reset ? "Built-in order reset." : "Deck order updated.");
+      setFeedback(options?.reset ? "Guided step returned to its default place." : "Module sequence updated.");
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : "Unable to save the deck order.");
+      setFormError(error instanceof Error ? error.message : "Unable to save the module sequence.");
     } finally {
       setSavingOrderKey(null);
     }
@@ -823,7 +823,7 @@ export function DuaExperienceClient({
       if (draft.id === customId) {
         resetDraft(currentModule.id, nextSuggestedSortOrder);
       }
-      setFeedback("Private dua removed from this module.");
+      setFeedback("Personal dua removed from this module.");
     } catch (error) {
       setFormError(error instanceof Error ? error.message : "Unable to delete the custom dua.");
     } finally {
@@ -867,7 +867,7 @@ export function DuaExperienceClient({
           <div className={styles.homePrincipleRow}>
             <span className={styles.metricChip}>Guided first</span>
             <span className={styles.metricChip}>Support on demand</span>
-            <span className={styles.metricChip}>Private deck separate</span>
+            <span className={styles.metricChip}>Personal duas stay personal</span>
           </div>
         </Card>
 
@@ -896,7 +896,7 @@ export function DuaExperienceClient({
                 <div className={styles.moduleMetaRow}>
                   <span className={styles.metricChip}>Visited {seen} of {total}</span>
                   <span className={styles.metricChip}>
-                    {journeyModule.supportsCustomDeck ? "Private deck available" : "Guided only"}
+                    {journeyModule.supportsCustomDeck ? "Personal space available" : "Guided only"}
                   </span>
                 </div>
 
@@ -911,9 +911,9 @@ export function DuaExperienceClient({
                     </Link>
                   </Button>
                   {journeyModule.supportsCustomDeck && canManageCustomDuas ? (
-                    <Button asChild variant="ghost" className="gap-2">
+                    <Button asChild variant="secondary" className="gap-2">
                       <Link href={deckHref(journeyModule.id)}>
-                        Private deck <Sparkles size={16} />
+                        Personal duas <PencilLine size={16} />
                       </Link>
                     </Button>
                   ) : null}
@@ -943,12 +943,12 @@ export function DuaExperienceClient({
   if (initialView === "manage") {
     return (
       <div className={styles.page}>
-        <Card className={styles.focusHero}>
+        <Card className={`${styles.focusHero} ${styles.managerHero}`}>
           <div className={styles.focusHeroTop}>
             <Button asChild variant="ghost" className="gap-2">
               <Link href={moduleHref(currentModule.id)}>
                 <ArrowLeft size={16} />
-                Back to experience
+                Back to module
               </Link>
             </Button>
             <div className={styles.focusHeroActions}>
@@ -960,29 +960,30 @@ export function DuaExperienceClient({
 
           <div>
             <Pill tone={moduleTone(currentModule.id)}>{currentModule.label}</Pill>
-            <h1 className={styles.focusTitle}>Private deck management</h1>
+            <h1 className={styles.focusTitle}>Your personal dua space</h1>
             <p className={styles.focusSubtitle}>
-              Add your own duas or adjust deck order here so the guided worship experience can stay uncluttered.
+              Write your own duas, keep them tied to your account, and place them gently beside this module&apos;s guided sequence.
             </p>
           </div>
 
-          <div className={styles.focusMetaRow}>
-            <span className={styles.focusMetaPill}>{deckEntries.length} deck items</span>
-            <span className={styles.focusMetaPill}>Separate from worship mode</span>
+          <div className={styles.managerMetaRow}>
+            <span className={styles.focusMetaPill}>{deckEntries.length} items in this module</span>
+            <span className={styles.focusMetaPill}>Personal to your account</span>
+            <span className={styles.focusMetaPill}>Guided path stays intact</span>
           </div>
         </Card>
 
         <section className={styles.managerShell}>
-          <Card className={styles.managerCard}>
+          <Card className={`${styles.managerCard} ${styles.managerComposerCard}`}>
             <div className={styles.managerTop}>
               <div>
-                <p className={styles.sectionLabel}>Private dua manager</p>
-                <h2 className={styles.managerTitle}>Add your own dua to {currentModule.label}</h2>
+                <p className={styles.sectionLabel}>Personal dua</p>
+                <h2 className={styles.managerTitle}>Write something personal for {currentModule.label}</h2>
                 <p className={styles.managerSubtitle}>
-                  Your private duas are stored only under your user and merged into this module&apos;s deck order.
+                  Your own wording, notes, and transliteration stay on your account and can sit beside this module&apos;s guided sequence when that helps you return.
                 </p>
               </div>
-              <Pill tone={moduleTone(currentModule.id)}>{deckEntries.length} deck items</Pill>
+              <Pill tone={moduleTone(currentModule.id)}>Only you can see this</Pill>
             </div>
 
             {feedback ? <div className={styles.notice} data-tone="success">{feedback}</div> : null}
@@ -1026,7 +1027,7 @@ export function DuaExperienceClient({
                     />
                   </label>
                   <label className={`${styles.field} ${styles.fieldFull}`}>
-                    <span className={styles.fieldLabel}>Translation / personal wording</span>
+                    <span className={styles.fieldLabel}>Translation or your own wording</span>
                     <textarea
                       className={styles.fieldTextarea}
                       value={draft.translation}
@@ -1046,7 +1047,7 @@ export function DuaExperienceClient({
                 <div className={styles.managerActions}>
                   <Button type="submit" className="gap-2" loading={savingDraft}>
                     <Save size={14} />
-                    {draft.id ? "Update private dua" : "Save private dua"}
+                    {draft.id ? "Update personal dua" : "Save personal dua"}
                   </Button>
                   <Button
                     type="button"
@@ -1060,18 +1061,18 @@ export function DuaExperienceClient({
               </form>
             ) : (
               <div className={styles.notice} data-tone="neutral">
-                Sign in to save private duas and merge them into this module.
+                Sign in to save personal duas in this space.
               </div>
             )}
           </Card>
 
-          <Card className={styles.managerCard}>
+          <Card className={`${styles.managerCard} ${styles.managerSequenceCard}`}>
             <div className={styles.managerTop}>
               <div>
-                <p className={styles.sectionLabel}>Deck order</p>
-                <h2 className={styles.managerTitle}>Control what comes first</h2>
+                <p className={styles.sectionLabel}>Module sequence</p>
+                <h2 className={styles.managerTitle}>Choose what comes first</h2>
                 <p className={styles.managerSubtitle}>
-                  Built-in duas and your private duas share one ordered sequence inside this module.
+                  Guided anchors and your personal duas share one quiet sequence inside this module. Adjust only what helps you return.
                 </p>
               </div>
               <Pill tone="neutral">{currentModule.label}</Pill>
@@ -1079,7 +1080,7 @@ export function DuaExperienceClient({
 
             {!canManageCustomDuas ? (
               <div className={styles.notice} data-tone="neutral">
-                Sign in to edit deck order for this module.
+                Sign in to adjust the sequence for this module.
               </div>
             ) : null}
 
@@ -1088,28 +1089,30 @@ export function DuaExperienceClient({
                 const key = draftKey(currentModule.id, entry.itemKey);
                 return (
                   <div key={key} className={styles.deckOrderRow}>
-                    <label className={styles.orderField}>
-                      <span className={styles.fieldLabel}>Order</span>
-                      <input
-                        type="number"
-                        min={1}
-                        className={styles.fieldInput}
-                        value={orderDrafts[key] ?? String(entry.sortOrder)}
-                        onChange={(event) =>
-                          setOrderDrafts((previous) => ({
-                            ...previous,
-                            [key]: event.target.value,
-                          }))}
-                        disabled={!canManageCustomDuas}
-                      />
-                    </label>
+                    <div className={styles.deckOrderMain}>
+                      <label className={styles.orderField}>
+                        <span className={styles.fieldLabel}>Order</span>
+                        <input
+                          type="number"
+                          min={1}
+                          className={styles.fieldInput}
+                          value={orderDrafts[key] ?? String(entry.sortOrder)}
+                          onChange={(event) =>
+                            setOrderDrafts((previous) => ({
+                              ...previous,
+                              [key]: event.target.value,
+                            }))}
+                          disabled={!canManageCustomDuas}
+                        />
+                      </label>
 
-                    <div className={styles.deckBody}>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className={styles.deckOrderTitle}>{entry.title}</p>
-                        <Pill tone={kindTone(entry.kind)}>{kindLabel(entry.kind)}</Pill>
+                      <div className={styles.deckBody}>
+                        <div className={styles.deckTitleRow}>
+                          <p className={styles.deckOrderTitle}>{entry.title}</p>
+                          <Pill tone={kindTone(entry.kind)}>{kindLabel(entry.kind)}</Pill>
+                        </div>
+                        <p className={styles.deckOrderSummary}>{entry.summary}</p>
                       </div>
-                      <p className={styles.deckOrderSummary}>{entry.summary}</p>
                     </div>
 
                     <div className={styles.deckActions}>
@@ -1188,8 +1191,8 @@ export function DuaExperienceClient({
             {canManageCurrentModule ? (
               <Button asChild variant="secondary" className="gap-2">
                 <Link href={deckHref(currentModule.id)}>
-                  <Sparkles size={16} />
-                  Private deck
+                  <PencilLine size={16} />
+                  Personal duas
                 </Link>
               </Button>
             ) : null}

@@ -1,7 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import * as Sentry from "@sentry/nextjs";
 import { getReciterLabel } from "@/hifzer/audio/reciters";
-import { getDashboardOverview } from "@/hifzer/dashboard/server";
 import { loadTodayState } from "@/hifzer/engine/server";
 import { listLearningLanes } from "@/hifzer/profile/server";
 import { getQuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/server";
@@ -10,7 +9,7 @@ import { getQuranReadProgress } from "@/hifzer/quran/read-progress.server";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { dbConfigured } from "@/lib/db";
 import { TodayClient } from "./today-client";
-import { toTodayDashboardSummary, type TodayPayload } from "./today-types";
+import type { TodayPayload } from "./today-types";
 
 export const metadata = {
   title: "Dashboard",
@@ -32,10 +31,9 @@ export default async function TodayPage() {
   try {
     // Fetch today state and learning lanes in parallel on the server so the
     // client renders immediately — no skeleton, no waterfall fetch on mount.
-    const [todayResult, lanes, dashboardOverview, quranFoundation] = await Promise.all([
+    const [todayResult, lanes, quranFoundation] = await Promise.all([
       loadTodayState(userId),
       listLearningLanes(userId),
-      getDashboardOverview(userId),
       getQuranFoundationConnectionStatus(userId),
     ]);
 
@@ -111,14 +109,10 @@ export default async function TodayPage() {
       lastTouchedAt: lane.lastTouchedAt,
       isActive: lane.isActive,
     }));
-
-    const initialOverview = toTodayDashboardSummary(dashboardOverview);
-
     return (
       <TodayClient
         initialData={initialData}
         initialLanes={initialLanes}
-        initialOverview={initialOverview}
       />
     );
   } catch (error) {

@@ -4,7 +4,25 @@ import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-const STORAGE_KEY = "hifzer_tutorial_session_flow_hidden_v1";
+export const SESSION_FLOW_TUTORIAL_STORAGE_KEY = "hifzer_tutorial_session_flow_hidden_v1";
+
+export function isSessionFlowTutorialHidden() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+  return window.localStorage.getItem(SESSION_FLOW_TUTORIAL_STORAGE_KEY) === "1";
+}
+
+export function setSessionFlowTutorialHidden(hidden: boolean) {
+  if (typeof window === "undefined") {
+    return;
+  }
+  if (hidden) {
+    window.localStorage.setItem(SESSION_FLOW_TUTORIAL_STORAGE_KEY, "1");
+  } else {
+    window.localStorage.removeItem(SESSION_FLOW_TUTORIAL_STORAGE_KEY);
+  }
+}
 
 type TutorialStep = {
   key: string;
@@ -52,12 +70,7 @@ type SessionFlowTutorialProps = {
 
 export function SessionFlowTutorial(props: SessionFlowTutorialProps) {
   const [stepIndex, setStepIndex] = useState(0);
-  const [hidden, setHidden] = useState(() => {
-    if (typeof window === "undefined") {
-      return false;
-    }
-    return window.localStorage.getItem(STORAGE_KEY) === "1";
-  });
+  const [hidden, setHidden] = useState(() => isSessionFlowTutorialHidden());
 
   const step = useMemo(() => STEPS[stepIndex] ?? STEPS[0], [stepIndex]);
   if (!step || hidden) {
@@ -72,7 +85,13 @@ export function SessionFlowTutorial(props: SessionFlowTutorialProps) {
     : "Use this flow while you practice.";
 
   return (
-    <Card className="border-[rgba(var(--kw-accent-rgb),0.24)] bg-[rgba(var(--kw-accent-rgb),0.08)]">
+    <Card
+      className="border-[rgba(var(--kw-accent-rgb),0.24)]"
+      style={{
+        background:
+          "linear-gradient(145deg, rgba(var(--kw-accent-rgb), 0.08), rgba(255, 255, 255, 0.12)), var(--kw-panel-gradient-soft)",
+      }}
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{heading}</p>
@@ -82,9 +101,7 @@ export function SessionFlowTutorial(props: SessionFlowTutorialProps) {
           size="sm"
           variant="secondary"
           onClick={() => {
-            if (typeof window !== "undefined") {
-              window.localStorage.setItem(STORAGE_KEY, "1");
-            }
+            setSessionFlowTutorialHidden(true);
             setHidden(true);
           }}
         >
@@ -104,7 +121,7 @@ export function SessionFlowTutorial(props: SessionFlowTutorialProps) {
                 "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
                 active
                   ? "border-[rgba(var(--kw-accent-rgb),0.32)] bg-[rgba(var(--kw-accent-rgb),0.18)] text-[color:var(--kw-ink)]"
-                  : "border-[color:var(--kw-border)] bg-white/80 text-[color:var(--kw-muted)] hover:bg-white",
+                  : "border-[color:var(--kw-border)] bg-[color:var(--kw-surface-soft)] text-[color:var(--kw-muted)] hover:bg-[color:var(--kw-surface)]",
               ].join(" ")}
             >
               {index + 1}. {item.title}
@@ -113,7 +130,10 @@ export function SessionFlowTutorial(props: SessionFlowTutorialProps) {
         })}
       </div>
 
-      <div className="mt-3 rounded-2xl border border-[color:var(--kw-border)] bg-white/80 p-4">
+      <div
+        className="mt-3 rounded-2xl border border-[color:var(--kw-border)] p-4"
+        style={{ background: "var(--kw-panel-gradient-soft)" }}
+      >
         <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{step.title}</p>
         <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
           <span className="font-semibold text-[color:var(--kw-ink)]">What:</span> {step.what}

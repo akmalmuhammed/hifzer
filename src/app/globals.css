@@ -16,6 +16,18 @@
   --kw-surface-soft: rgba(255, 255, 255, 0.56);
   --kw-surface: rgba(255, 255, 255, 0.72);
   --kw-surface-strong: rgba(255, 255, 255, 0.88);
+  --kw-panel-gradient-soft:
+    radial-gradient(140% 140% at 0% 0%, rgba(var(--kw-accent-rgb), 0.07), transparent 56%),
+    radial-gradient(120% 120% at 100% 100%, rgba(10, 138, 119, 0.06), transparent 60%),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0.58));
+  --kw-panel-gradient:
+    radial-gradient(140% 140% at 0% 0%, rgba(var(--kw-accent-rgb), 0.08), transparent 56%),
+    radial-gradient(120% 120% at 100% 100%, rgba(10, 138, 119, 0.07), transparent 60%),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.68));
+  --kw-panel-gradient-strong:
+    radial-gradient(145% 145% at 0% 0%, rgba(var(--kw-accent-rgb), 0.1), transparent 54%),
+    radial-gradient(125% 125% at 100% 100%, rgba(10, 138, 119, 0.08), transparent 58%),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.8));
 
   --kw-shadow: 0 18px 44px rgba(11, 18, 32, 0.12);
   --kw-shadow-soft: 0 10px 26px rgba(11, 18, 32, 0.1);
@@ -82,6 +94,44 @@
   --kw-radius-sm: 12px;
 
   --kw-noise-opacity: 0.08;
+  --kw-app-frame-max: 1240px;
+  --kw-app-main-max: 100%;
+  --kw-app-sidebar-width: 240px;
+  --kw-app-shell-gap: clamp(1.25rem, 1.8vw, 1.75rem);
+  --kw-app-shell-pad-x: clamp(1rem, 1.8vw, 1.5rem);
+  --kw-app-shell-pad-y: clamp(1.25rem, 1.8vw, 1.75rem);
+  --kw-app-nav-height: 72px;
+  --kw-app-nav-icon-box: 40px;
+  --kw-app-nav-font-size: 0.95rem;
+  --kw-app-section-label-size: 0.68rem;
+}
+
+html[data-display-tier="wide"] {
+  font-size: 16.5px;
+  --kw-app-frame-max: 1540px;
+  --kw-app-main-max: 1320px;
+  --kw-app-sidebar-width: 256px;
+  --kw-app-shell-gap: 2rem;
+  --kw-app-shell-pad-x: clamp(1.5rem, 2vw, 2.25rem);
+  --kw-app-shell-pad-y: clamp(1.5rem, 2vw, 2.25rem);
+  --kw-app-nav-height: 78px;
+  --kw-app-nav-icon-box: 44px;
+  --kw-app-nav-font-size: 0.98rem;
+  --kw-app-section-label-size: 0.7rem;
+}
+
+html[data-display-tier="ultra"] {
+  font-size: 17px;
+  --kw-app-frame-max: 1700px;
+  --kw-app-main-max: 1460px;
+  --kw-app-sidebar-width: 272px;
+  --kw-app-shell-gap: 2.25rem;
+  --kw-app-shell-pad-x: clamp(1.75rem, 2.4vw, 2.75rem);
+  --kw-app-shell-pad-y: clamp(1.75rem, 2.4vw, 2.5rem);
+  --kw-app-nav-height: 82px;
+  --kw-app-nav-icon-box: 46px;
+  --kw-app-nav-font-size: 1rem;
+  --kw-app-section-label-size: 0.72rem;
 }
 
 html[data-theme="paper"] {
@@ -145,6 +195,18 @@ html[data-mode="dark"] {
   --kw-surface-soft: rgba(15, 23, 42, 0.56);
   --kw-surface: rgba(15, 23, 42, 0.68);
   --kw-surface-strong: rgba(30, 41, 59, 0.78);
+  --kw-panel-gradient-soft:
+    radial-gradient(140% 140% at 0% 0%, rgba(var(--kw-accent-rgb), 0.16), transparent 56%),
+    radial-gradient(120% 120% at 100% 100%, rgba(20, 184, 166, 0.12), transparent 60%),
+    linear-gradient(155deg, rgba(18, 26, 44, 0.78), rgba(12, 18, 32, 0.64));
+  --kw-panel-gradient:
+    radial-gradient(140% 140% at 0% 0%, rgba(var(--kw-accent-rgb), 0.18), transparent 56%),
+    radial-gradient(120% 120% at 100% 100%, rgba(20, 184, 166, 0.14), transparent 60%),
+    linear-gradient(155deg, rgba(18, 26, 44, 0.86), rgba(12, 18, 32, 0.72));
+  --kw-panel-gradient-strong:
+    radial-gradient(145% 145% at 0% 0%, rgba(var(--kw-accent-rgb), 0.22), transparent 54%),
+    radial-gradient(125% 125% at 100% 100%, rgba(20, 184, 166, 0.16), transparent 58%),
+    linear-gradient(155deg, rgba(24, 34, 56, 0.92), rgba(14, 21, 38, 0.8));
 
   --kw-shadow: 0 18px 44px rgba(0, 0, 0, 0.5);
   --kw-shadow-soft: 0 10px 26px rgba(0, 0, 0, 0.42);
@@ -700,6 +762,112 @@ html[data-mode="dark"] .kw-feature-card {
   border: 1px solid var(--kw-border);
   box-shadow: var(--kw-shadow);
   backdrop-filter: blur(12px);
+}
+
+.kw-surface-gradient-soft {
+  background: var(--kw-panel-gradient-soft);
+}
+
+.kw-surface-gradient {
+  background: var(--kw-panel-gradient);
+}
+
+.kw-surface-gradient-strong {
+  background: var(--kw-panel-gradient-strong);
+}
+
+.kw-app-shell :where(.kw-glass):not([class*="bg-"]) {
+  background: var(--kw-panel-gradient);
+}
+
+.kw-app-shell :where(.kw-glass-strong):not([class*="bg-"]) {
+  background: var(--kw-panel-gradient-strong);
+}
+
+.kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/40"],
+.kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/50"],
+.kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/55"],
+.kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/60"],
+.kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/65"],
+.kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class*="bg-[color:var(--kw-surface-soft)]"] {
+  background: var(--kw-panel-gradient-soft) !important;
+  background-color: transparent !important;
+}
+
+.kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/70"],
+.kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/75"],
+.kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/78"],
+.kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class*="bg-[color:var(--kw-surface)]"] {
+  background: var(--kw-panel-gradient) !important;
+  background-color: transparent !important;
+}
+
+.kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/80"],
+.kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/85"],
+.kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/90"],
+.kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white"],
+.kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class*="bg-[color:var(--kw-surface-strong)]"] {
+  background: var(--kw-panel-gradient-strong) !important;
+  background-color: transparent !important;
+}
+
+.kw-app-shell [class~="hover:bg-white"]:hover,
+.kw-app-shell [class~="hover:bg-white/60"]:hover,
+.kw-app-shell [class~="hover:bg-white/75"]:hover,
+.kw-app-shell [class~="hover:bg-white/80"]:hover {
+  background: var(--kw-panel-gradient-strong) !important;
+  background-color: transparent !important;
+}
+
+.kw-app-shell [class~="focus:bg-white"]:focus {
+  background: var(--kw-panel-gradient-strong) !important;
+  background-color: transparent !important;
+}
+
+.kw-quran-shell .kw-glass {
+  background: var(--kw-panel-gradient);
+}
+
+.kw-quran-shell .kw-glass-strong {
+  background: var(--kw-panel-gradient-strong);
+}
+
+.kw-quran-shell [class~="bg-white/50"],
+.kw-quran-shell [class~="bg-white/55"],
+.kw-quran-shell [class~="bg-white/60"],
+.kw-quran-shell [class~="bg-white/65"],
+.kw-quran-shell [class*="bg-[color:var(--kw-surface-soft)]"] {
+  background: var(--kw-panel-gradient-soft) !important;
+  background-color: transparent !important;
+}
+
+.kw-quran-shell [class~="bg-white/70"],
+.kw-quran-shell [class~="bg-white/75"],
+.kw-quran-shell [class*="bg-[color:var(--kw-surface)]"] {
+  background: var(--kw-panel-gradient) !important;
+  background-color: transparent !important;
+}
+
+.kw-quran-shell [class~="bg-white/80"],
+.kw-quran-shell [class~="bg-white/85"],
+.kw-quran-shell [class~="bg-white/90"],
+.kw-quran-shell [class~="bg-white"],
+.kw-quran-shell [class*="bg-[color:var(--kw-surface-strong)]"] {
+  background: var(--kw-panel-gradient-strong) !important;
+  background-color: transparent !important;
+}
+
+.kw-quran-shell [class~="hover:bg-white"]:hover,
+.kw-quran-shell [class~="hover:bg-white/60"]:hover,
+.kw-quran-shell [class~="hover:bg-white/75"]:hover,
+.kw-quran-shell [class~="hover:bg-white/80"]:hover {
+  background: var(--kw-panel-gradient-strong) !important;
+  background-color: transparent !important;
+}
+
+.kw-quran-shell [class~="focus:bg-white"]:focus {
+  background: var(--kw-panel-gradient-strong) !important;
+  background-color: transparent !important;
 }
 
 .kw-hairline {

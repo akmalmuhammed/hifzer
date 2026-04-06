@@ -404,7 +404,7 @@ const laylatCompletionSteps: JourneyStep[] = [
     summary:
       "A strong ending is not self-certification. It is humility, gratitude, and readiness to return on the remaining nights with the same seriousness.",
     practice: [
-      "End with one final private dua before you leave the prayer space.",
+      "End with one final personal dua before you leave the prayer space.",
       "Carry one repentance decision and one dua request into the next day.",
       "Plan your next last-ten night before sleep, not after Ramadan passes.",
     ],
@@ -837,16 +837,16 @@ function buildCustomDuaStep(customDua: CustomDuaSnapshot, fallbackOrder: number)
     id: `custom-dua-${customDua.id}`,
     moduleId: customDua.moduleId,
     kind: "personal",
-    eyebrow: "Your private dua",
+    eyebrow: "Your personal dua",
     title: customDua.title,
     summary:
-      "A private dua saved only to your account and inserted into this module's guided deck.",
+      "A personal dua saved only to your account and placed inside this module's guided sequence.",
     practice: [
       "Begin with praise of Allah and salawat, then move into your own wording with calm focus.",
       "Use the same slow, present rhythm you use with the authenticated duas in the deck.",
     ],
-    actionLine: "Stay present with your own dua before moving to the next card.",
-    reflectionPrompt: trimmedNote ?? "Keep your private dua clear, humble, and free of ritual claims that are not authenticated.",
+    actionLine: "Stay present with your own dua before moving to the next step.",
+    reflectionPrompt: trimmedNote ?? "Keep your personal dua clear, humble, and free of ritual claims that are not authenticated.",
     evidence,
     deckItemKey: `custom:${customDua.id}`,
     deckOrder: fallbackOrder,
@@ -856,7 +856,7 @@ function buildCustomDuaStep(customDua: CustomDuaSnapshot, fallbackOrder: number)
       translation: customDua.translation,
       trackerLabel: "Personal repetition counter",
       trackerNote:
-        "This counter is only your focus aid. Your private dua is not being assigned an authenticated fixed repetition count.",
+        "This counter is only your focus aid. Your personal dua is not being assigned an authenticated fixed repetition count.",
     },
   }) as OrderedDeckStep;
 }

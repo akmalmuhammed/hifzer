@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, CheckCircle2, CornerDownLeft, Link2, PlayCircle, RotateCcw } from "lucide-react";
 import clsx from "clsx";
 import { PageHeader } from "@/components/app/page-header";
+import { isSessionFlowTutorialHidden, setSessionFlowTutorialHidden } from "@/components/app/session-flow-tutorial";
 import { SupportTextPanel } from "@/components/quran/support-text-panel";
 import { SurahSearchSelect } from "@/components/app/surah-search-select";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
@@ -421,6 +422,7 @@ export function SessionClient() {
   const [textVisibleDuringStep, setTextVisibleDuringStep] = useState(true);
   const [assistedThisStep, setAssistedThisStep] = useState(false);
   const [revealUntilMs, setRevealUntilMs] = useState<number | null>(null);
+  const [tutorialHidden, setTutorialHidden] = useState(() => isSessionFlowTutorialHidden());
   const [coachSeen, setCoachSeen] = useState<Record<CoachKey, boolean>>(() => {
     if (typeof window === "undefined") {
       return {
@@ -941,11 +943,6 @@ export function SessionClient() {
           {showTranslation ? "Hide translation" : "Show translation"}
         </Button>
       ) : null}
-      <Link href="/today" className="w-full sm:w-auto">
-        <Button variant="secondary" className="w-full gap-2 sm:w-auto">
-          Back to Today <ArrowRight size={16} />
-        </Button>
-      </Link>
     </div>
   );
 
@@ -1161,7 +1158,6 @@ export function SessionClient() {
     );
   }
 
-  const progressText = `${stepIndex + 1} / ${filteredSteps.length}`;
   const ayahId = currentStep.kind === "AYAH" ? currentStep.ayahId : currentStep.toAyahId;
   const ref = verseRefFromAyahId(ayahId);
   const translation = run.translations.byAyahId[String(ayahId)] ?? null;
@@ -1202,13 +1198,7 @@ export function SessionClient() {
         eyebrow={undefined}
         title="Show up. Recite. Retain."
         subtitle="Every ayah you hold raises your rank."
-        right={
-          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-            <Pill tone="neutral">{progressText}</Pill>
-            {quickReviewMode ? <Pill tone="accent">Review-only</Pill> : null}
-            {rightActions}
-          </div>
-        }
+        right={rightActions}
       />
       <DisclosureCard
         summary={(
@@ -1216,6 +1206,7 @@ export function SessionClient() {
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Session helpers</p>
               <Pill tone="neutral">Compact</Pill>
+              {quickReviewMode ? <Pill tone="accent">Review-only</Pill> : null}
               {helperNoteCount > 0 ? <Pill tone="warn">{helperNoteCount} note{helperNoteCount === 1 ? "" : "s"}</Pill> : null}
             </div>
             <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
@@ -1225,6 +1216,30 @@ export function SessionClient() {
         )}
       >
         <div className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            {tutorialHidden ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                className="rounded-full"
+                onClick={() => {
+                  setSessionFlowTutorialHidden(false);
+                  setTutorialHidden(false);
+                  pushToast({
+                    title: "Tutorial turned back on",
+                    message: "The Hifz tutorial will appear again on Today.",
+                    tone: "success",
+                  });
+                }}
+              >
+                Turn tutorial back on
+              </Button>
+            ) : (
+              <Pill tone="success">Tutorial ready</Pill>
+            )}
+          </div>
+
           <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/65 p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Practice flow</p>
             <p className="mt-2 text-sm text-[color:var(--kw-muted)]">

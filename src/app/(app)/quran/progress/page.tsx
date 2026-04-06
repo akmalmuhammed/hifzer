@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { QuranOfflineStatus } from "@/components/quran/quran-offline-status";
 import { SurahProgressSection } from "@/components/progress/surah-progress-section";
 import { Pill } from "@/components/ui/pill";
 import { listQuranSurahProgress } from "@/hifzer/progress/surah-progress.server";
@@ -46,6 +47,8 @@ export default async function QuranSurahProgressPage() {
         <Pill tone="accent">Completed surahs: {completedCount}</Pill>
         <Pill tone="neutral">Reading now: {currentCount}</Pill>
       </div>
+
+      <QuranOfflineStatus compact showReadyHint scope="hub" />
 
       <div className="mt-8">
         <SurahProgressSection

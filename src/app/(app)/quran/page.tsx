@@ -5,6 +5,7 @@ import { DistractionFreeToggle } from "@/components/app/distraction-free-toggle"
 import { SurahProgressSection } from "@/components/progress/surah-progress-section";
 import { DisclosureCard } from "@/components/ui/disclosure-card";
 import { Pill } from "@/components/ui/pill";
+import { QuranOfflineStatus } from "@/components/quran/quran-offline-status";
 import { QuranMotivationHero } from "@/components/quran/quran-motivation-hero";
 import { listQuranSurahProgress } from "@/hifzer/progress/surah-progress.server";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
@@ -91,6 +92,8 @@ export default async function QuranIndexPage() {
           resumeHref={trackedHref}
         />
       </div>
+
+      <QuranOfflineStatus showReadyHint scope="hub" />
 
       <div className="mt-8">
         <QuranReadingPlanCard

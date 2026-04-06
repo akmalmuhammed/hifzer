@@ -18,6 +18,7 @@ type Lane = {
   label: string;
   horizon: string;
   focus: string;
+  summary: string;
   milestones: Milestone[];
 };
 
@@ -26,6 +27,7 @@ const LANES: Lane[] = [
     label: "Now",
     horizon: "Current build cycle",
     focus: "Reliability and quality foundation",
+    summary: "Tighten the core reading and memorization flow so people can trust what they finish and return without friction.",
     milestones: [
       {
         title: "Stabilize progress integrity",
@@ -48,6 +50,7 @@ const LANES: Lane[] = [
     label: "Next",
     horizon: "Upcoming major release",
     focus: "Memorization intelligence",
+    summary: "Move beyond basic tracking into earlier confusion detection, faster repair loops, and prayer-ready preparation.",
     milestones: [
       {
         title: "Mushabihat radar and seam trainer",
@@ -70,6 +73,7 @@ const LANES: Lane[] = [
     label: "Later",
     horizon: "Platform expansion",
     focus: "Mobile reach and dependable delivery",
+    summary: "Extend Hifzer into dependable mobile routines and stronger delivery foundations without sacrificing calm daily use.",
     milestones: [
       {
         title: "Native iOS app",
@@ -98,12 +102,15 @@ function statusPill(status: Milestone["status"]): { tone: "accent" | "neutral"; 
 }
 
 export function RoadmapClient() {
+  const inProgressCount = LANES.flatMap((lane) => lane.milestones).filter((milestone) => milestone.status === "in_progress").length;
+  const plannedCount = LANES.flatMap((lane) => lane.milestones).filter((milestone) => milestone.status === "planned").length;
+
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow="Product"
         title="Roadmap"
-        subtitle="A transparent look at what Hifzer is shaping next for daily recitation and memorization."
+        subtitle="A transparent view of what is actively being tightened now, what is coming next, and what Hifzer will grow into after the core gets stronger."
         right={(
           <div className="flex flex-wrap gap-2">
             <Link href="/dashboard">
@@ -123,48 +130,48 @@ export function RoadmapClient() {
       <section className={`kw-fade-in ${styles.hero} px-5 py-5 sm:px-6`}>
         <div className={styles.orbA} />
         <div className={styles.orbB} />
-        <div className="relative grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-end">
+        <div className="relative grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-end">
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <Pill tone="accent">Public roadmap</Pill>
-              <Pill tone="neutral">Execution-first</Pill>
+              <Pill tone="neutral">Shipped carefully</Pill>
             </div>
             <h2 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-3xl tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
-              Building a calmer, stronger Qur&apos;an companion one step at a time.
+              Building the next layer of Hifzer without losing the calm that makes it usable every day.
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
-              Priority stays with better daily outcomes first: steadier review, clearer recitation support,
-              and simpler ways to return to the Qur&apos;an without friction.
+              Priority stays with better daily outcomes first: steadier progress, stronger memorization support,
+              and simpler ways to keep returning to the Qur&apos;an without noise.
             </p>
           </div>
 
           <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
-            <div className={`${styles.valueCard} flex items-center gap-3 px-3 py-2.5`}>
+            <div className={`${styles.valueCard} flex items-center gap-3 px-3 py-3`}>
               <ShieldCheck size={16} className="text-[color:var(--kw-ink-2)]" />
               <div>
                 <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Quality</p>
-                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Retention-first gates</p>
+                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{inProgressCount} active priorities</p>
               </div>
             </div>
-            <div className={`${styles.valueCard} flex items-center gap-3 px-3 py-2.5`}>
+            <div className={`${styles.valueCard} flex items-center gap-3 px-3 py-3`}>
               <Cpu size={16} className="text-[color:var(--kw-ink-2)]" />
               <div>
-                <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">AI</p>
-                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Recitation correction</p>
+                <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Next</p>
+                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{plannedCount} planned moves</p>
               </div>
             </div>
-            <div className={`${styles.valueCard} flex items-center gap-3 px-3 py-2.5`}>
+            <div className={`${styles.valueCard} flex items-center gap-3 px-3 py-3`}>
               <Rocket size={16} className="text-[color:var(--kw-ink-2)]" />
               <div>
-                <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Scale</p>
-                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">iOS, Android, infra</p>
+                <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Direction</p>
+                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Reading, Hifz, mobile reach</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="grid gap-4 xl:grid-cols-3">
+      <div className="grid items-start gap-4 xl:grid-cols-3">
         {LANES.map((lane, laneIndex) => (
           <div
             key={lane.label}
@@ -172,25 +179,36 @@ export function RoadmapClient() {
             style={{ animationDelay: `${laneIndex * 50}ms` }}
           >
             <Card className={`${styles.lane} px-4 py-4`}>
-              <div className="flex items-center justify-between gap-3">
+              <div className={styles.laneHeader}>
                 <div>
-                  <Pill tone={laneIndex === 0 ? "accent" : "neutral"}>{lane.label}</Pill>
-                  <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">{lane.horizon}</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Pill tone={laneIndex === 0 ? "accent" : "neutral"}>{lane.label}</Pill>
+                    <span className={styles.laneCount}>{lane.milestones.length} priorities</span>
+                  </div>
+                  <p className="mt-3 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">{lane.horizon}</p>
+                  <p className="mt-1 text-sm font-medium text-[color:var(--kw-ink-2)]">{lane.focus}</p>
                 </div>
               </div>
-              <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">{lane.focus}</p>
+              <p className="mt-3 max-w-[58ch] text-sm leading-7 text-[color:var(--kw-muted)]">{lane.summary}</p>
 
-              <div className="mt-4 space-y-4">
-                {lane.milestones.map((milestone) => {
+              <div className={`${styles.milestoneList} mt-5`}>
+                {lane.milestones.map((milestone, milestoneIndex) => {
                   const pill = statusPill(milestone.status);
                   return (
-                    <div key={milestone.title} className={styles.milestone}>
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{milestone.title}</p>
+                    <article key={milestone.title} className={styles.milestone}>
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <span className={styles.milestoneIndex}>0{milestoneIndex + 1}</span>
                         <Pill tone={pill.tone}>{pill.label}</Pill>
                       </div>
-                      <p className="mt-1.5 text-sm leading-7 text-[color:var(--kw-muted)]">{milestone.detail}</p>
-                    </div>
+                      <p className="mt-3 text-base font-semibold leading-7 tracking-tight text-[color:var(--kw-ink)]">
+                        {milestone.title}
+                      </p>
+                      <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">{milestone.detail}</p>
+                      <div className={styles.milestoneFoot}>
+                        <span className={styles.milestoneDot} />
+                        <span>{lane.label === "Now" ? "Being tightened in the current cycle" : "Queued for a later shipping pass"}</span>
+                      </div>
+                    </article>
                   );
                 })}
               </div>

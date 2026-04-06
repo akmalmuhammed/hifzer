@@ -7,7 +7,7 @@ import { listHifzSurahProgress } from "@/hifzer/progress/surah-progress.server";
 import { clerkEnabled } from "@/lib/clerk-config";
 
 export const metadata = {
-  title: "Hifz Surah Progress",
+  title: "Hifz Progress",
 };
 
 export default async function HifzSurahProgressPage() {

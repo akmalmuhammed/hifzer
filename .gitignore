@@ -49,3 +49,6 @@ next-env.d.ts
 /ha-bot/services/engine/data/*.db
 /ha-bot/services/engine/data/*.db-shm
 /ha-bot/services/engine/data/*.db-wal
+
+# local Codex desktop worktrees
+/.claude/worktrees/

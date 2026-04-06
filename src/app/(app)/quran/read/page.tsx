@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
 import { SupportTextPanel } from "@/components/quran/support-text-panel";
+import { QuranOfflineStatus } from "@/components/quran/quran-offline-status";
 import { QuranViewportProgressTracker } from "@/components/quran/quran-viewport-progress-tracker";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
@@ -417,6 +418,8 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
               <div className="pt-3">{renderFilterControls()}</div>
             </details>
           </div>
+
+          <QuranOfflineStatus compact showReadyHint scope="reader" />
 
           <div className="mt-6 flex flex-wrap items-center gap-2">
             <Pill tone="neutral">{ayahs.length} {ui.ayahsMatchedSuffix}</Pill>

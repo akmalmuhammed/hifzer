@@ -1,0 +1,71 @@
+.frame {
+  width: min(100%, var(--kw-app-frame-max));
+  margin-inline: auto;
+  padding-inline: var(--kw-app-shell-pad-x);
+  padding-block: var(--kw-app-shell-pad-y);
+}
+
+@media (min-width: 768px) {
+  .frame {
+    display: flex;
+    gap: var(--kw-app-shell-gap);
+  }
+}
+
+.sidebar {
+  width: var(--kw-app-sidebar-width);
+}
+
+.sidebarSticky {
+  position: sticky;
+  top: var(--kw-app-shell-pad-y);
+}
+
+.brand {
+  gap: clamp(0.7rem, 0.95vw, 0.95rem);
+}
+
+.brandMark {
+  height: clamp(2.5rem, 2.8vw, 2.9rem);
+  width: clamp(2.5rem, 2.8vw, 2.9rem);
+}
+
+.navLink {
+  min-height: var(--kw-app-nav-height);
+  padding-inline: clamp(0.85rem, 0.95vw, 1rem);
+  padding-block: clamp(0.65rem, 0.85vw, 0.8rem);
+}
+
+.navIcon {
+  height: var(--kw-app-nav-icon-box);
+  width: var(--kw-app-nav-icon-box);
+}
+
+.navText {
+  font-size: var(--kw-app-nav-font-size);
+}
+
+.sectionToggle {
+  font-size: var(--kw-app-section-label-size);
+}
+
+.languageCard {
+  padding: clamp(0.45rem, 0.8vw, 0.6rem);
+}
+
+.main {
+  min-width: 0;
+  flex: 1;
+  padding-bottom: 6rem;
+}
+
+@media (min-width: 768px) {
+  .main {
+    padding-bottom: 0;
+  }
+}
+
+.mainInner {
+  width: min(100%, var(--kw-app-main-max));
+  margin-inline-end: auto;
+}

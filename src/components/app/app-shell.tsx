@@ -22,6 +22,7 @@ import { StreakCornerBadge } from "@/components/app/streak-corner-badge";
 import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { useUiLanguage } from "@/components/providers/ui-language-provider";
+import styles from "./app-shell.module.css";
 
 type NavKey =
   | "home"
@@ -118,7 +119,8 @@ function NavLink(props: { item: NavItem; pathname: string; copy: ReturnType<type
       href={item.href}
       telemetryName={`shell.nav.${item.key}`}
       className={clsx(
-        "flex items-center gap-3 rounded-[18px] border px-3.5 py-2.5 text-sm font-semibold shadow-[var(--kw-shadow-soft)] transition",
+        styles.navLink,
+        "flex items-center gap-3 rounded-[18px] border font-semibold shadow-[var(--kw-shadow-soft)] transition",
         active
           ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] text-[color:var(--kw-ink)]"
           : "border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] text-[color:var(--kw-muted)] hover:bg-[color:var(--kw-surface-strong)] hover:text-[color:var(--kw-ink)]",
@@ -126,13 +128,14 @@ function NavLink(props: { item: NavItem; pathname: string; copy: ReturnType<type
     >
       <span
         className={clsx(
-          "grid h-10 w-10 place-items-center rounded-[16px] border bg-[color:var(--kw-surface)] text-[color:var(--kw-ink-2)]",
+          styles.navIcon,
+          "grid place-items-center rounded-[16px] border bg-[color:var(--kw-surface)] text-[color:var(--kw-ink-2)]",
           active ? "border-[rgba(var(--kw-accent-rgb),0.26)]" : "border-[color:var(--kw-border-2)]",
         )}
       >
         <Icon size={17} />
       </span>
-      <span className="truncate">{label}</span>
+      <span className={clsx(styles.navText, "truncate")}>{label}</span>
     </TrackedLink>
   );
 }
@@ -144,6 +147,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
   const [platformOpen, setPlatformOpen] = useState(true);
   const { language } = useUiLanguage();
   const copy = getAppUiCopy(language);
+  const quranShell = pathname === "/quran" || pathname.startsWith("/quran/");
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -183,14 +187,37 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
     };
   }, [pathname, router]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const root = document.documentElement;
+    const updateDisplayTier = () => {
+      const viewportWidth = Math.round(window.visualViewport?.width ?? window.innerWidth);
+      const nextTier = viewportWidth >= 2400 ? "ultra" : viewportWidth >= 1800 ? "wide" : "base";
+      root.dataset.displayTier = nextTier;
+    };
+
+    updateDisplayTier();
+    window.addEventListener("resize", updateDisplayTier);
+    window.visualViewport?.addEventListener("resize", updateDisplayTier);
+
+    return () => {
+      window.removeEventListener("resize", updateDisplayTier);
+      window.visualViewport?.removeEventListener("resize", updateDisplayTier);
+      delete root.dataset.displayTier;
+    };
+  }, []);
+
   return (
-    <div className="min-h-dvh overflow-x-clip">
+    <div className={clsx("kw-app-shell min-h-dvh overflow-x-clip", quranShell && "kw-quran-shell")}>
       <StreakCornerBadge enabled={Boolean(props.streakEnabled)} />
-      <div className="mx-auto w-full max-w-[1200px] px-4 py-6 md:flex md:gap-6">
-        <aside className="hidden w-[240px] shrink-0 md:block">
-          <div className="sticky top-6 space-y-4">
-            <TrackedLink href="/today" className="flex items-center gap-3" telemetryName="shell.logo">
-              <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[color:var(--kw-surface-soft)] text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] backdrop-blur-md">
+      <div className={styles.frame}>
+        <aside className={clsx(styles.sidebar, "hidden shrink-0 md:block")}>
+          <div className={clsx(styles.sidebarSticky, "space-y-4")}>
+            <TrackedLink href="/today" className={clsx(styles.brand, "flex items-center")} telemetryName="shell.logo">
+              <span className={clsx(styles.brandMark, "grid place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[color:var(--kw-surface-soft)] text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] backdrop-blur-md")}>
                 <HifzerMark />
               </span>
               <div className="leading-tight">
@@ -209,7 +236,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
               <button
                 type="button"
                 onClick={() => setInsightsOpen((v) => !v)}
-                className="flex w-full items-center justify-between rounded-[14px] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[color:var(--kw-faint)] transition hover:text-[color:var(--kw-muted)]"
+                className={clsx(styles.sectionToggle, "flex w-full items-center justify-between rounded-[14px] px-3 py-1.5 font-semibold uppercase tracking-widest text-[color:var(--kw-faint)] transition hover:text-[color:var(--kw-muted)]")}
               >
                 <span>{copy.sectionInsights}</span>
                 <ChevronDown
@@ -230,7 +257,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
               <button
                 type="button"
                 onClick={() => setPlatformOpen((v) => !v)}
-                className="flex w-full items-center justify-between rounded-[14px] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[color:var(--kw-faint)] transition hover:text-[color:var(--kw-muted)]"
+                className={clsx(styles.sectionToggle, "flex w-full items-center justify-between rounded-[14px] px-3 py-1.5 font-semibold uppercase tracking-widest text-[color:var(--kw-faint)] transition hover:text-[color:var(--kw-muted)]")}
               >
                 <span>{copy.sectionProduct}</span>
                 <ChevronDown
@@ -255,14 +282,16 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
               />
             </nav>
 
-            <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] p-2">
+            <div className={clsx(styles.languageCard, "rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)]")}>
               <UiLanguageSwitcher compact />
             </div>
           </div>
         </aside>
 
-        <main id="main-content" className="min-w-0 flex-1 pb-24 md:pb-0">
-          {props.children}
+        <main id="main-content" className={styles.main}>
+          <div className={styles.mainInner}>
+            {props.children}
+          </div>
         </main>
       </div>
 

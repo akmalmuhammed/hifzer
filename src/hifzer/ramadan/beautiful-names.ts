@@ -998,7 +998,7 @@ const beautifulNamesCompletionSteps: JourneyStep[] = [
       "The real outcome is not completion percentage. It is a heart that knows how to ask Allah with a truer sense of who He is.",
     practice: [
       "Choose one name to keep close for the next seven days.",
-      "Use it in salah, in sujud, and in one private dua outside the app.",
+      "Use it in salah, in sujud, and in one personal dua outside the app.",
       "Come back later for a second name only after the first has begun to change your tone with Allah.",
     ],
     actionLine: "Leave with one living name, not only a finished module.",

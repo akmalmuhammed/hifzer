@@ -6,9 +6,6 @@ import { MarqueeStrip } from "@/components/landing/marquee-strip";
 import { PlatformStrip } from "@/components/landing/platform-strip";
 import { QualityGates } from "@/components/landing/quality-gates";
 import { SessionWalkthrough } from "@/components/landing/session-walkthrough";
-import { TrackedLink } from "@/components/telemetry/tracked-link";
-import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
-import { getUiLanguageServer } from "@/hifzer/i18n/server";
 
 export const metadata = {
   alternates: {
@@ -16,10 +13,7 @@ export const metadata = {
   },
 };
 
-export default async function LandingPage() {
-  const language = await getUiLanguageServer();
-  const copy = getAppUiCopy(language);
-
+export default function LandingPage() {
   return (
     <div>
       {/* 1. Full-viewport hero with scroll parallax + screenshot peek */}
@@ -77,17 +71,6 @@ export default async function LandingPage() {
       {/* 11. Final conversion */}
       <div className="mx-auto max-w-[1200px] px-4 pb-4 md:px-8">
         <FinalCta />
-      </div>
-
-      {/* Soft discovery link */}
-      <div className="pb-8 pt-2 text-center">
-        <TrackedLink
-          href="/motivation"
-          telemetryName="landing.motivation_link"
-          className="inline-flex rounded-full border border-[color:var(--kw-border)] bg-[color:var(--kw-surface-soft)] px-5 py-2 text-sm font-semibold text-[color:var(--kw-ink)] transition hover:bg-[color:var(--kw-hover-soft)]"
-        >
-          {copy.marketing.motivation}
-        </TrackedLink>
       </div>
     </div>
   );

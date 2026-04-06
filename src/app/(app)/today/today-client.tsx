@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, BookOpenText, ChevronDown, Flame, Headphones, PlayCircle, RefreshCcw, TrendingUp } from "lucide-react";
+import { ArrowRight, BookOpenText, ChevronDown, Flame, Headphones, MoonStar, PlayCircle, RefreshCcw, SquarePen, TrendingUp } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { SessionFlowTutorial } from "@/components/app/session-flow-tutorial";
 import { SurahSearchSelect } from "@/components/app/surah-search-select";
@@ -21,6 +21,7 @@ import {
   type TodayPayload,
   type LearningLane,
 } from "./today-types";
+import styles from "./today.module.css";
 
 const TODAY_CACHE_KEY = "hifzer.today.snapshot.v1";
 const TODAY_CACHE_TTL_MS = 90 * 1000;
@@ -123,7 +124,7 @@ function activityColor(value: number, max: number, isFuture: boolean): string {
 
 function HeroSkeleton() {
   return (
-    <Card className="relative overflow-hidden">
+    <Card className={`${styles.heroCard} relative overflow-hidden`}>
       {/* gradient accent mimicking the real hero */}
       <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[radial-gradient(closest-side,rgba(var(--kw-accent-rgb),0.18),transparent_68%)] blur-2xl" />
 
@@ -153,7 +154,7 @@ function HeroSkeleton() {
 
 function DetailsSkeleton() {
   return (
-    <Card>
+    <Card className={styles.detailCard}>
       <div className="space-y-4">
         <div className="h-4 w-32 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
         <div className="h-4 w-64 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
@@ -174,6 +175,8 @@ export function TodayClient({
   initialLanes?: LearningLane[];
   initialOverview?: TodayDashboardSummary | null;
 }) {
+  const initialLanesProvided = typeof initialLanes !== "undefined";
+  const initialOverviewProvided = typeof initialOverview !== "undefined";
   const router = useRouter();
   // When initialData is provided by the server component, start in a loaded state
   // so the skeleton is never shown to the user.
@@ -187,6 +190,9 @@ export function TodayClient({
   const [learningLanes, setLearningLanes] = useState<LearningLane[]>(() => initialLanes ?? readCachedTodaySnapshot()?.lanes ?? []);
   const [overview, setOverview] = useState<TodayDashboardSummary | null>(() => initialOverview ?? readCachedTodaySnapshot()?.overview ?? null);
   const { pushToast } = useToast();
+  const dataRef = useRef<TodayPayload | null>(data);
+  const learningLanesRef = useRef<LearningLane[]>(learningLanes);
+  const overviewRef = useRef<TodayDashboardSummary | null>(overview);
   const [modeShiftNotice, setModeShiftNotice] = useState<{
     from: TodayPayload["state"]["mode"];
     to: TodayPayload["state"]["mode"];
@@ -194,69 +200,123 @@ export function TodayClient({
     body: string;
   } | null>(null);
 
-  async function load() {
-    if (!data) {
+  const load = useCallback(async (options?: {
+    includePrimary?: boolean;
+    includeLanes?: boolean;
+    includeOverview?: boolean;
+    includeQuranFoundation?: boolean;
+  }) => {
+    const includePrimary = options?.includePrimary ?? true;
+    const includeLanes = options?.includeLanes ?? true;
+    const includeOverview = options?.includeOverview ?? true;
+    const includeQuranFoundation = options?.includeQuranFoundation ?? true;
+
+    if (includePrimary && !dataRef.current) {
       setLoading(true);
     }
-    setError(null);
+    if (includePrimary) {
+      setError(null);
+    }
     try {
       const [todayRes, lanesRes, overviewRes, quranFoundationRes] = await Promise.all([
-        fetch("/api/session/today", { cache: "no-store" }),
-        fetch("/api/profile/learning-lanes", { cache: "no-store" }),
-        fetch("/api/dashboard/overview", { cache: "no-store" }),
-        fetch("/api/quran-foundation/status", { cache: "no-store" }),
+        includePrimary ? fetch("/api/session/today", { cache: "no-store" }) : Promise.resolve(null),
+        includeLanes ? fetch("/api/profile/learning-lanes", { cache: "no-store" }) : Promise.resolve(null),
+        includeOverview ? fetch("/api/dashboard/overview", { cache: "no-store" }) : Promise.resolve(null),
+        includeQuranFoundation ? fetch("/api/quran-foundation/status", { cache: "no-store" }) : Promise.resolve(null),
       ]);
-      const payload = (await todayRes.json()) as TodayPayload & { error?: string };
-      if (todayRes.status === 403 && payload.error === "onboarding_required") {
-        router.replace("/onboarding/welcome");
-        return;
-      }
-      if (!todayRes.ok) {
-        throw new Error(payload.error || "Failed to load today state.");
-      }
-      setData(payload);
 
-      let nextLearningLanes = learningLanes;
-      if (lanesRes.ok) {
+      let nextData = dataRef.current;
+      if (todayRes) {
+        const payload = (await todayRes.json()) as TodayPayload & { error?: string };
+        if (todayRes.status === 403 && payload.error === "onboarding_required") {
+          router.replace("/onboarding/welcome");
+          return;
+        }
+        if (!todayRes.ok) {
+          throw new Error(payload.error || "Failed to load today state.");
+        }
+        nextData = payload;
+        dataRef.current = payload;
+        setData(payload);
+      }
+
+      let nextLearningLanes = learningLanesRef.current;
+      if (lanesRes?.ok) {
         const lanesPayload = (await lanesRes.json()) as { lanes?: LearningLane[] };
         nextLearningLanes = Array.isArray(lanesPayload.lanes) ? lanesPayload.lanes : [];
+        learningLanesRef.current = nextLearningLanes;
         setLearningLanes(nextLearningLanes);
       }
 
-      let nextOverview = overview;
-      if (overviewRes.ok) {
+      let nextOverview = overviewRef.current;
+      if (overviewRes?.ok) {
         const overviewPayload = (await overviewRes.json()) as { overview?: DashboardOverviewLike };
         nextOverview = toTodayDashboardSummary(overviewPayload.overview);
+        overviewRef.current = nextOverview;
         setOverview(nextOverview);
       }
 
-      if (quranFoundationRes.ok) {
+      if (quranFoundationRes?.ok) {
         const quranFoundationPayload = (await quranFoundationRes.json()) as { status?: TodayPayload["quranFoundation"] };
-        if (quranFoundationPayload.status) {
-          payload.quranFoundation = quranFoundationPayload.status;
-          setData({ ...payload });
+        if (quranFoundationPayload.status && nextData) {
+          nextData = { ...nextData, quranFoundation: quranFoundationPayload.status };
+          dataRef.current = nextData;
+          setData(nextData);
         }
       }
 
       writeSessionCache(TODAY_CACHE_KEY, {
-        data: payload,
+        data: nextData,
         lanes: nextLearningLanes,
         overview: nextOverview,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load today state.");
+      if (includePrimary) {
+        setError(err instanceof Error ? err.message : "Failed to load today state.");
+      }
     } finally {
-      setLoading(false);
+      if (includePrimary) {
+        setLoading(false);
+      }
     }
-  }
+  }, [router]);
 
-  // Only fetch on mount when server didn't provide initial data.
   useEffect(() => {
     if (!initialData) {
-      void load();
+      void load({
+        includePrimary: true,
+        includeLanes: true,
+        includeOverview: true,
+        includeQuranFoundation: true,
+      });
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
+    const shouldLoadBackgroundOverview = !initialOverviewProvided;
+    const shouldLoadBackgroundLanes = !initialLanesProvided;
+    const shouldLoadBackgroundQuranFoundation = !initialData.quranFoundation;
+
+    if (shouldLoadBackgroundOverview || shouldLoadBackgroundLanes || shouldLoadBackgroundQuranFoundation) {
+      void load({
+        includePrimary: false,
+        includeLanes: shouldLoadBackgroundLanes,
+        includeOverview: shouldLoadBackgroundOverview,
+        includeQuranFoundation: shouldLoadBackgroundQuranFoundation,
+      });
+    }
+  }, [initialData, initialLanesProvided, initialOverviewProvided, load]);
+
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
+
+  useEffect(() => {
+    learningLanesRef.current = learningLanes;
+  }, [learningLanes]);
+
+  useEffect(() => {
+    overviewRef.current = overview;
+  }, [overview]);
 
   useEffect(() => {
     if (!data) {
@@ -437,7 +497,7 @@ export function TodayClient({
   );
 
   return (
-    <div className="space-y-6">
+    <div className={`${styles.page} space-y-6`}>
       <PageHeader
         eyebrow="Dashboard"
         title="Dashboard"
@@ -456,7 +516,7 @@ export function TodayClient({
       <SessionFlowTutorial surface="today" />
 
       {data?.quranFoundation ? (
-        <Card>
+        <Card className={styles.infoCard}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <div className="flex flex-wrap items-center gap-2">
@@ -484,7 +544,7 @@ export function TodayClient({
 
       {/* ---------- Monthly adjustment banner ---------- */}
       {data?.monthlyAdjustmentMessage ? (
-        <Card className="border-[rgba(31,54,217,0.2)] bg-[rgba(31,54,217,0.08)]">
+        <Card className={styles.noticeCard}>
           <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{data.monthlyAdjustmentMessage}</p>
           <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
             This runs in the background and does not require a separate test step unless severe risk is detected.
@@ -494,7 +554,7 @@ export function TodayClient({
 
       {/* ---------- Mode shift notice ---------- */}
       {modeShiftNotice ? (
-        <Card className="border-[rgba(31,54,217,0.2)] bg-[rgba(31,54,217,0.08)]">
+        <Card className={styles.noticeCard}>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{modeShiftNotice.title}</p>
@@ -515,7 +575,7 @@ export function TodayClient({
         </>
       ) : error ? (
         /* ---------- Error state ---------- */
-        <Card>
+        <Card className={styles.detailCard}>
           <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Unable to load Hifz</p>
           <p className="mt-1 text-sm text-[color:var(--kw-muted)]">{error}</p>
           <div className="mt-4">
@@ -527,7 +587,7 @@ export function TodayClient({
       ) : data ? (
         <>
           {/* ========== PRIMARY HERO CARD ========== */}
-          <Card className="relative overflow-hidden">
+          <Card className={`${styles.heroCard} relative overflow-hidden`}>
             {/* Radial gradient accent */}
             <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[radial-gradient(closest-side,rgba(var(--kw-accent-rgb),0.22),transparent_68%)] blur-2xl" />
             <div className="pointer-events-none absolute -bottom-32 -left-32 h-64 w-64 rounded-full bg-[radial-gradient(closest-side,rgba(var(--kw-accent-rgb),0.10),transparent_68%)] blur-3xl" />
@@ -599,7 +659,7 @@ export function TodayClient({
               </div>
 
               {switchOpen ? (
-                <div className="mt-5 rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 p-4">
+                <div className={`${styles.insetPanel} ${styles.switchPanel} mt-5 rounded-2xl border p-4`}>
                   <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Select Hifz surah</p>
                   <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
                     If you already practiced this surah, we continue from your last paused ayah. Otherwise it starts from ayah 1.
@@ -629,61 +689,113 @@ export function TodayClient({
           </Card>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <Card>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Read</p>
-              <p className="mt-2 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                Continue from {data.quran.currentRef}
-              </p>
-              <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
-                Qur&apos;an coverage {data.quran.completionPct.toFixed(1)}% | {data.quran.currentSurahName}
-              </p>
-              <Link href={data.quran.continueHref} className="mt-4 inline-flex text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
-                Continue reading
-              </Link>
+            <Card className={styles.summaryCard}>
+              <div className={styles.summaryCardBody}>
+                <div className={styles.summaryHeader}>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Hifz</p>
+                    <p className="mt-2 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                      {totalQueueItems > 0 ? `${totalQueueItems} ayahs ready today` : "No ayahs queued right now"}
+                    </p>
+                  </div>
+                  <span className={styles.summaryIcon}>
+                    <PlayCircle size={18} />
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+                  {totalQueueItems > 0
+                    ? `Warm-up ${data.state.queue.warmupAyahIds.length} · Review ${reviewCount} · New ${data.state.queue.newAyahIds.length}`
+                    : "Use Hifz to continue recall, clear reviews, or switch to your active surah."}
+                </p>
+                <div className={styles.summaryMeta}>
+                  <span className={styles.summaryMiniPill}>Mode {data.state.mode.toLowerCase().replace("_", "-")}</span>
+                  {hasReviewPressure ? <span className={styles.summaryMiniPill}>{data.state.dueNowCount} due now</span> : null}
+                </div>
+                <Link href="/hifz" className={styles.summaryCta}>
+                  Start Hifz run <ArrowRight size={16} />
+                </Link>
+              </div>
             </Card>
 
-            <Card>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Listen</p>
-              <p className="mt-2 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                {data.profile.reciterLabel ?? "System default"}
-              </p>
-              <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
-                Use compact reader audio with repeat and auto-next for commute, chores, or evening recitation.
-              </p>
-              <Link href={data.quran.anonymousHref} className="mt-4 inline-flex text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
-                Open listening mode
-              </Link>
+            <Card className={styles.summaryCard}>
+              <div className={styles.summaryCardBody}>
+                <div className={styles.summaryHeader}>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Qur&apos;an</p>
+                    <p className="mt-2 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                      Continue from {data.quran.currentRef}
+                    </p>
+                  </div>
+                  <span className={styles.summaryIcon}>
+                    <BookOpenText size={18} />
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+                  Qur&apos;an coverage {data.quran.completionPct.toFixed(1)}% · {data.quran.currentSurahName}
+                </p>
+                <div className={styles.summaryMeta}>
+                  <span className={styles.summaryMiniPill}>Keep your place</span>
+                  <span className={styles.summaryMiniPill}>{progressSummary?.trackedAyahs ?? 0} read this week</span>
+                </div>
+                <Link href={data.quran.continueHref} className={styles.summaryCta}>
+                  Open reader <ArrowRight size={16} />
+                </Link>
+              </div>
             </Card>
 
-            <Card>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Memorize</p>
-              <p className="mt-2 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                {data.state.queue.newAyahIds.length} new ayahs available
-              </p>
-              <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
-                Warm-up {data.state.queue.warmupAyahIds.length} | Review {reviewCount} | Mode {data.state.mode.toLowerCase().replace("_", "-")}
-              </p>
-              <Link href="/hifz" className="mt-4 inline-flex text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
-                Start Hifz run
-              </Link>
+            <Card className={styles.summaryCard}>
+              <div className={styles.summaryCardBody}>
+                <div className={styles.summaryHeader}>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Dua</p>
+                    <p className="mt-2 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                      Return with a guided dua module
+                    </p>
+                  </div>
+                  <span className={styles.summaryIcon}>
+                    <MoonStar size={18} />
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+                  Move through repentance, ruqyah, provision, beautiful names, and Laylat al-Qadr in one calm place.
+                </p>
+                <div className={styles.summaryMeta}>
+                  <span className={styles.summaryMiniPill}>Personal duas stay close</span>
+                </div>
+                <Link href="/dua" className={styles.summaryCta}>
+                  Open dua <ArrowRight size={16} />
+                </Link>
+              </div>
             </Card>
 
-            <Card>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Review</p>
-              <p className="mt-2 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                {data.state.dueNowCount} due now
-              </p>
-              <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
-                {data.state.dueSoonCount} due in the next 6h. {data.state.weeklyGateRequired ? "Weekly gate pending." : "Weekly gate clear."}
-              </p>
-              <Link href="/hifz?focus=review" className="mt-4 inline-flex text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
-                Open review queue
-              </Link>
+            <Card className={styles.summaryCard}>
+              <div className={styles.summaryCardBody}>
+                <div className={styles.summaryHeader}>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Journal</p>
+                    <p className="mt-2 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                      Capture what stayed with you today
+                    </p>
+                  </div>
+                  <span className={styles.summaryIcon}>
+                    <SquarePen size={18} />
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+                  Save a short reflection, link an ayah, or keep a private dua from today&apos;s reading without leaving the flow.
+                </p>
+                <div className={styles.summaryMeta}>
+                  <span className={styles.summaryMiniPill}>Private and personal</span>
+                </div>
+                <Link href="/journal" className={styles.summaryCta}>
+                  Open journal <ArrowRight size={16} />
+                </Link>
+              </div>
             </Card>
           </div>
 
           <div className="grid gap-4 xl:grid-cols-2">
-            <Card className="h-full">
+            <Card className={`${styles.featureCard} h-full`}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Progress</p>
@@ -700,7 +812,7 @@ export function TodayClient({
               </div>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3.5 py-3">
+                <div className={`${styles.insetPanel} rounded-[18px] border px-3.5 py-3`}>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Current surah</p>
                   <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
                     {progressSummary?.currentSurahName ?? data.quran.currentSurahName}
@@ -711,7 +823,7 @@ export function TodayClient({
                       : `Continue from ${data.quran.currentRef}`}
                   </p>
                 </div>
-                <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3.5 py-3">
+                <div className={`${styles.insetPanel} rounded-[18px] border px-3.5 py-3`}>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Reading this week</p>
                   <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
                     {progressSummary?.trackedAyahs ?? 0} ayahs read
@@ -720,7 +832,7 @@ export function TodayClient({
                     {progressSummary?.browseRecitedAyahs7d ?? 0} ayahs read in the last 7 days
                   </p>
                 </div>
-                <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3.5 py-3">
+                <div className={`${styles.insetPanel} rounded-[18px] border px-3.5 py-3`}>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Hifz recall</p>
                   <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
                     {progressSummary?.recallEvents7d ?? 0} recall events in 7 days
@@ -729,7 +841,7 @@ export function TodayClient({
                     Progress stays separate between Qur&apos;an reading and Hifz review.
                   </p>
                 </div>
-                <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3.5 py-3">
+                <div className={`${styles.insetPanel} rounded-[18px] border px-3.5 py-3`}>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Khatmah count</p>
                   <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
                     {progressSummary?.completedKhatmahCount ?? data.quran.completedKhatmahCount} completed
@@ -754,28 +866,60 @@ export function TodayClient({
               </div>
             </Card>
 
-            <Card className="h-full">
+            <Card className={`${styles.featureCard} h-full`}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Streak</p>
-                  <div className="mt-2 flex flex-wrap items-end gap-3">
-                    <p className="text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                      {streakSummary ? streakSummary.currentStreakDays : 0} day{streakSummary?.currentStreakDays === 1 ? "" : "s"}
-                    </p>
-                    {todayStatusPill ? <Pill tone={todayStatusPill.tone}>{todayStatusPill.label}</Pill> : null}
-                    <Pill tone="accent">{streakSummary?.todayQualifiedAyahs ?? 0} ayahs today</Pill>
-                    {streakSummary?.graceInUseToday ? <Pill tone="warn">Grace used</Pill> : null}
-                  </div>
+                  <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+                    A calmer view of whether today still feels alive, not just whether a counter moved.
+                  </p>
                 </div>
                 <span className="grid h-11 w-11 place-items-center rounded-[18px] border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.08)] text-[rgba(var(--kw-accent-rgb),1)]">
                   <Flame size={18} />
                 </span>
               </div>
 
-              <div className="mt-5 rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] p-3.5">
+              <div className={styles.streakHero}>
+                <div className={styles.streakLead}>
+                  <div className={styles.streakLeadInner}>
+                    <p className={styles.streakCount}>
+                      {streakSummary ? streakSummary.currentStreakDays : 0}
+                    </p>
+                    <p className={styles.streakCountLabel}>
+                      day{streakSummary?.currentStreakDays === 1 ? "" : "s"} in a row. Keep today alive with a gentle return through Qur&apos;an or Hifz.
+                    </p>
+                    <div className={`${styles.streakCapsules} mt-4`}>
+                      {todayStatusPill ? <Pill tone={todayStatusPill.tone}>{todayStatusPill.label}</Pill> : null}
+                      <Pill tone="accent">{streakSummary?.todayQualifiedAyahs ?? 0} ayahs today</Pill>
+                      {streakSummary?.graceInUseToday ? <Pill tone="warn">Grace used</Pill> : null}
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.streakMetricGrid}>
+                  <div className={styles.streakMetricCard}>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Best run</p>
+                    <p className={styles.streakMetricValue}>
+                      {streakSummary?.bestStreakDays ?? 0} day{streakSummary?.bestStreakDays === 1 ? "" : "s"}
+                    </p>
+                  </div>
+                  <div className={styles.streakMetricCard}>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Last kept</p>
+                    <p className={styles.streakMetricValue}>{streakSummary?.lastQualifiedDate ?? "Not yet"}</p>
+                  </div>
+                  <div className={styles.streakMetricCard}>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Signal</p>
+                    <p className={styles.streakMetricValue}>
+                      {streakSummary && streakSummary.currentStreakDays > 0 ? "Momentum active" : "Return today"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`${styles.insetPanel} ${styles.heatmapPanel} mt-5 rounded-[18px] border p-3.5`}>
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
-                    Last 8 weeks
+                    Return rhythm · last 8 weeks
                   </p>
                   <div className="flex items-center gap-2 text-[11px] text-[color:var(--kw-faint)]">
                     <span>Less</span>
@@ -812,31 +956,10 @@ export function TodayClient({
                 </div>
               </div>
 
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3.5 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Best</p>
-                  <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
-                    {streakSummary?.bestStreakDays ?? 0} day{streakSummary?.bestStreakDays === 1 ? "" : "s"}
-                  </p>
-                </div>
-                <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3.5 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Last qualified</p>
-                  <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
-                    {streakSummary?.lastQualifiedDate ?? "Not yet"}
-                  </p>
-                </div>
-                <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3.5 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Signal</p>
-                  <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
-                    {streakSummary && streakSummary.currentStreakDays > 0 ? "Momentum active" : "Start today"}
-                  </p>
-                </div>
-              </div>
-
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 <Link href="/quran/read?view=compact">
                   <Button variant="secondary" className="gap-2">
-                    Qualify today <ArrowRight size={16} />
+                    Keep today alive <ArrowRight size={16} />
                   </Button>
                 </Link>
                 <Link href="/hifz">
@@ -859,15 +982,19 @@ export function TodayClient({
                 size={16}
                 className={`transition-transform duration-200 ${detailsOpen ? "rotate-0" : "-rotate-90"}`}
               />
-              {detailsOpen ? "Hide details" : "Show details"}
+              {detailsOpen ? "Hide plan signals" : "How today's plan works"}
             </button>
 
             {detailsOpen ? (
-              <div className="mt-2 grid gap-4 md:grid-cols-2">
+              <>
+                <p className={styles.detailsIntro}>
+                  These panels explain why today feels lighter, heavier, or review-first so the plan stays understandable instead of opaque.
+                </p>
+                <div className="mt-2 grid gap-4 md:grid-cols-2">
                 {/* Debt & review floor */}
-                <Card>
+                <Card className={styles.detailCard}>
                   <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                    Queue health
+                    Today&apos;s queue signals
                   </p>
                   <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
                     Debt: {data.state.reviewDebtMinutes.toFixed(1)} min ({Math.round(data.state.debtRatio)}% of budget)
@@ -878,16 +1005,16 @@ export function TodayClient({
                     {data.state.weeklyGateRequired ? <Pill tone="warn">Weekly gate</Pill> : null}
                     {data.state.monthlyTestRequired ? <Pill tone="warn">Monthly retention guard</Pill> : null}
                     <Pill tone={data.state.newUnlocked ? "accent" : "neutral"}>
-                      {data.state.newUnlocked ? "Mode allows new" : "Mode blocks new"}
+                      {data.state.newUnlocked ? "New is open" : "New is paused"}
                     </Pill>
                     <Pill tone={canStartNewNow ? "success" : "neutral"}>
-                      {canStartNewNow ? "Can start new now" : "Gate pass required"}
+                      {canStartNewNow ? "Ready for new ayahs" : "Gate pass required"}
                     </Pill>
                   </div>
                 </Card>
 
                 {/* Mode explainer */}
-                <Card>
+                <Card className={styles.detailCard}>
                   <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
                     Mode explainer
                   </p>
@@ -900,11 +1027,11 @@ export function TodayClient({
                 </Card>
 
                 {/* Due now / soon */}
-                <Card className="md:col-span-2">
+                <Card className={`${styles.detailCard} md:col-span-2`}>
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-                        Due now / soon
+                        Review timing
                       </p>
                       <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
                         Due now: <span className="font-semibold text-[color:var(--kw-ink)]">{data.state.dueNowCount}</span>
@@ -922,7 +1049,8 @@ export function TodayClient({
                     </Link>
                   </div>
                 </Card>
-              </div>
+                </div>
+              </>
             ) : null}
           </div>
         </>

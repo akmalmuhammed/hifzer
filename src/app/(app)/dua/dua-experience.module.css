@@ -49,6 +49,8 @@
 }
 
 .moduleOverviewActions,
+.managerActions,
+.deckActions,
 .toolActions,
 .actionCluster,
 .filterRow {
@@ -276,6 +278,12 @@
 
 .focusMetaPill {
   border-radius: 999px;
+}
+
+.managerMetaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .progressTrack {
@@ -695,7 +703,26 @@
 .managerShell {
   display: grid;
   gap: 18px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  grid-template-columns: minmax(320px, 0.88fr) minmax(0, 1.12fr);
+}
+
+.managerHero {
+  gap: 14px;
+}
+
+.managerCard {
+  align-self: start;
+  gap: 20px;
+}
+
+.managerComposerCard {
+  position: sticky;
+  top: 1.5rem;
+}
+
+.managerSequenceCard {
+  min-width: 0;
 }
 
 .formGrid {
@@ -730,16 +757,44 @@
 
 .deckOrderRow {
   display: grid;
-  grid-template-columns: 110px minmax(0, 1fr) auto;
   gap: 14px;
+  padding: 18px;
+  background:
+    radial-gradient(360px 140px at 100% -18%, rgba(var(--kw-accent-rgb), 0.08), transparent 60%),
+    linear-gradient(180deg, var(--kw-card-strong), var(--kw-surface-strong));
+}
+
+.deckOrderMain {
+  display: grid;
+  grid-template-columns: minmax(110px, 124px) minmax(0, 1fr);
+  gap: 16px;
   align-items: start;
-  padding: 16px;
 }
 
 .deckBody {
   display: grid;
   gap: 8px;
   min-width: 0;
+}
+
+.deckTitleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.deckOrderTitle {
+  font-size: 1.12rem;
+  line-height: 1.4;
+}
+
+.deckOrderSummary {
+  max-width: 56ch;
+}
+
+.orderField {
+  max-width: 124px;
 }
 
 @media (max-width: 1180px) {
@@ -832,13 +887,21 @@
     display: grid;
   }
 
+  .managerComposerCard {
+    position: static;
+  }
+
   .stepMeaning {
     display: none;
   }
 
   .formGrid,
-  .deckOrderRow {
+  .deckOrderMain {
     grid-template-columns: 1fr;
+  }
+
+  .orderField {
+    max-width: none;
   }
 
   .duaCard {

@@ -3,10 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, BookOpenText, Loader2, Search, Sparkles } from "lucide-react";
+import { useOnlineStatus } from "@/components/pwa/use-online-status";
 import { Pill } from "@/components/ui/pill";
+import { searchQuranAyahsOffline, type QuranSearchScope } from "@/hifzer/quran/search.client";
 import styles from "./quran-glossary.module.css";
-
-type QuranSearchScope = "all" | "arabic" | "translation";
 
 type SearchResult = {
   ayahId: number;
@@ -77,12 +77,14 @@ function HighlightedText(props: { text: string; query: string }) {
 }
 
 export function QuranGlossaryClient() {
+  const online = useOnlineStatus();
   const [query, setQuery] = useState("");
   const [scope, setScope] = useState<QuranSearchScope>("all");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [activeRequest, setActiveRequest] = useState("");
+  const [usingOfflineSearch, setUsingOfflineSearch] = useState(false);
 
   useEffect(() => {
     const trimmed = query.trim();
@@ -90,6 +92,7 @@ export function QuranGlossaryClient() {
       setResults([]);
       setLoading(false);
       setError(null);
+      setUsingOfflineSearch(false);
       return;
     }
 
@@ -99,6 +102,16 @@ export function QuranGlossaryClient() {
       setError(null);
       setActiveRequest(trimmed);
       try {
+        if (!online) {
+          const offlineResults = await searchQuranAyahsOffline({ query: trimmed, scope, limit: 36 });
+          if (controller.signal.aborted) {
+            return;
+          }
+          setResults(offlineResults);
+          setUsingOfflineSearch(true);
+          return;
+        }
+
         const params = new URLSearchParams({ q: trimmed, scope, limit: "36" });
         const res = await fetch(`/api/quran/search?${params.toString()}`, {
           method: "GET",
@@ -113,11 +126,27 @@ export function QuranGlossaryClient() {
           throw new Error(payload.error || "Search failed.");
         }
         setResults(Array.isArray(payload.results) ? payload.results : []);
+        setUsingOfflineSearch(false);
       } catch (fetchError) {
         if ((fetchError as Error).name === "AbortError") {
           return;
         }
+        if (!navigator.onLine) {
+          try {
+            const offlineResults = await searchQuranAyahsOffline({ query: trimmed, scope, limit: 36 });
+            if (controller.signal.aborted) {
+              return;
+            }
+            setResults(offlineResults);
+            setError(null);
+            setUsingOfflineSearch(true);
+            return;
+          } catch {
+            // fall through to the standard error
+          }
+        }
         setResults([]);
+        setUsingOfflineSearch(false);
         setError(fetchError instanceof Error ? fetchError.message : "Search failed.");
       } finally {
         setLoading(false);
@@ -128,7 +157,7 @@ export function QuranGlossaryClient() {
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [query, scope]);
+  }, [online, query, scope]);
 
   const trimmed = query.trim();
 
@@ -179,6 +208,15 @@ export function QuranGlossaryClient() {
             </button>
           ))}
         </div>
+
+        {usingOfflineSearch ? (
+          <div className={`mt-4 ${styles.emptyState}`}>
+            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Offline local search is active.</p>
+            <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
+              Results are coming from the bundled ayahs and the seeded Sahih translation already stored with Hifzer.
+            </p>
+          </div>
+        ) : null}
 
         {trimmed.length < 2 ? (
           <div className={`mt-5 ${styles.emptyState}`}>

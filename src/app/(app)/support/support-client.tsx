@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, ClipboardCopy, Mail, ShieldCheck } from "lucide-react";
+import { ArrowRight, CheckCircle2, ClipboardCopy, Mail, ShieldCheck } from "lucide-react";
 import { SupportCheckoutCard } from "@/components/billing/support-checkout-card";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,36 @@ const DEFAULT_BODY = [
   "",
   "Anything else we should know:",
 ].join("\n");
+
+const PAYMENT_REASONS = [
+  "Move a clearly scoped improvement faster",
+  "Fund account-specific workflow help or product polish",
+  "Start with a small block now, then expand only if needed",
+] as const;
+
+const SUPPORT_POLICY_SECTIONS = [
+  {
+    title: "Free support stays free",
+    points: [
+      "Broken pages, blocked flows, and confusing experiences can be reported without paying.",
+      "When you write in, include the route, what you expected, and a screenshot if you have one.",
+    ],
+  },
+  {
+    title: "Paid product work is for scoped requests",
+    points: [
+      "Use checkout when you want a specific improvement, deeper implementation help, or priority product work tied to your account.",
+      "Broader roadmap direction still stays with product judgment, but clearly scoped work can be handled directly.",
+    ],
+  },
+  {
+    title: "What gets the fastest reply",
+    points: [
+      "A short problem summary, the exact page, and what outcome you need.",
+      "If you already know the budget or desired scope, say that upfront so the reply can be more precise.",
+    ],
+  },
+] as const;
 
 function encodeMailto(text: string): string {
   return encodeURIComponent(text).replace(/%20/g, "+");
@@ -54,15 +84,36 @@ export function SupportClient(props: { hasPortal?: boolean }) {
 
   function renderSupportPayment() {
     return (
-      <Card className={`${styles.panel} px-4 py-4`}>
-        <div className="flex items-center gap-2">
-          <ShieldCheck size={16} className="text-[color:var(--kw-ink-2)]" />
-          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Request paid product work</p>
+      <Card id="paid-work" className={`${styles.panel} ${styles.paymentPanel} px-4 py-4 sm:px-5 sm:py-5`}>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <ShieldCheck size={16} className="text-[color:var(--kw-ink-2)]" />
+              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Paid product work</p>
+            </div>
+            <h2 className="mt-3 max-w-[18ch] text-balance text-3xl font-[family-name:var(--font-kw-display)] tracking-tight text-[color:var(--kw-ink)] sm:text-[2.2rem]">
+              Fund a scoped improvement without waiting on the whole roadmap.
+            </h2>
+          </div>
+          <div className={styles.purchaseBadge}>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">
+              Best fit
+            </p>
+            <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">Specific, visible work</p>
+          </div>
         </div>
-        <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-          Use this for custom development, feature implementation, private workflow help, or other
-          software-related Hifzer work tied to your account.
+        <p className="mt-4 max-w-[62ch] text-sm leading-7 text-[color:var(--kw-muted)]">
+          This is the fastest path if you need a bug investigated deeply, a workflow polished, a specific feature
+          pushed forward, or a custom Hifzer improvement tied to your account.
         </p>
+        <div className="mt-4 grid gap-2 sm:grid-cols-3">
+          {PAYMENT_REASONS.map((reason) => (
+            <div key={reason} className={styles.reasonCard}>
+              <CheckCircle2 size={15} className="mt-0.5 text-[rgba(var(--kw-accent-rgb),1)]" />
+              <p className="text-sm leading-6 text-[color:var(--kw-ink-2)]">{reason}</p>
+            </div>
+          ))}
+        </div>
         <div className="mt-4">
           <SupportCheckoutCard hasPortal={props.hasPortal} />
         </div>
@@ -75,17 +126,17 @@ export function SupportClient(props: { hasPortal?: boolean }) {
       <PageHeader
         eyebrow="Support"
         title="Support"
-        subtitle="Report issues, ask for help, or request paid product work directly."
+        subtitle="Get help when something is broken, or fund a clearly scoped improvement when you want it moved forward faster."
         right={(
           <div className="flex flex-wrap gap-2">
-            <Link href="/roadmap">
-              <Button variant="secondary" className="gap-2">
-                View roadmap <ArrowRight size={15} />
+            <Link href="#paid-work">
+              <Button className="gap-2">
+                Start paid request <ArrowRight size={15} />
               </Button>
             </Link>
             <a href={mailtoHref}>
-              <Button className="gap-2">
-                Open email draft <Mail size={15} />
+              <Button variant="secondary" className="gap-2">
+                Open support email <Mail size={15} />
               </Button>
             </a>
           </div>
@@ -93,16 +144,21 @@ export function SupportClient(props: { hasPortal?: boolean }) {
       />
 
       <section className={`kw-fade-in ${styles.hero} px-5 py-5 sm:px-6`}>
-        <div className="relative grid gap-3 sm:grid-cols-3">
+        <div className="relative grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_repeat(3,minmax(0,1fr))]">
           <div>
             <Pill tone="accent">Direct support</Pill>
             <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-              Every support thread goes to the core product team directly.
+              Every message goes straight to the core product team. Broken flows stay the first priority, and paid product
+              work is available when you want a scoped improvement handled more directly.
             </p>
           </div>
           <div className={`${styles.tipCard} px-3 py-3`}>
             <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Response target</p>
             <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">Usually within 24-48 hours</p>
+          </div>
+          <div className={`${styles.tipCard} px-3 py-3`}>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Paid path</p>
+            <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">Fastest for scoped requests</p>
           </div>
           <div className={`${styles.tipCard} px-3 py-3`}>
             <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Support email</p>
@@ -124,24 +180,42 @@ export function SupportClient(props: { hasPortal?: boolean }) {
         </div>
 
         <div className="kw-fade-in" style={{ animationDelay: "100ms" }}>
-          <Card className={`${styles.panel} px-4 py-4`}>
+          <Card className={`${styles.panel} px-4 py-4 sm:px-5 sm:py-5`}>
             <div className="flex items-center gap-2">
               <ShieldCheck size={16} className="text-[color:var(--kw-ink-2)]" />
               <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Support policy</p>
             </div>
-            <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-              Broken experiences are handled first. Feature requests are reviewed against clarity,
-              usefulness, and whether they help people return to Hifzer consistently. When you write
-              in, include the route, what you expected, and a screenshot if you have one.
+            <p className="mt-3 max-w-[60ch] text-sm leading-7 text-[color:var(--kw-muted)]">
+              The goal is simple: keep support easy to reach, keep bug help free, and make paid product work feel clear,
+              scoped, and worth purchasing when you truly need it.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <Pill tone="accent">Bug fixes first</Pill>
-              <Pill tone="neutral">Roadmap-driven features</Pill>
-              <Pill tone="neutral">Direct email support</Pill>
+              <Pill tone="accent">Bug help first</Pill>
+              <Pill tone="brand">Paid work for scoped requests</Pill>
+              <Pill tone="neutral">Roadmap stays deliberate</Pill>
             </div>
-            <div className="mt-4 border-t border-[color:var(--kw-border-2)] pt-3">
+            <div className={`${styles.policyGrid} mt-4`}>
+              {SUPPORT_POLICY_SECTIONS.map((section) => (
+                <section key={section.title} className={styles.policySection}>
+                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{section.title}</p>
+                  <ul className={styles.policyList}>
+                    {section.points.map((point) => (
+                      <li key={point} className={styles.policyItem}>
+                        <span className={styles.policyDot} />
+                        <span>{point}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </div>
+            <div className="mt-5 border-t border-[color:var(--kw-border-2)] pt-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Developer direct</p>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
+              <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+                If you need to reach the builder directly, use the address below. For a paid request, mention the scope or
+                purchase amount so the reply can stay concrete.
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
                 <a href={developerMailtoHref}>
                   <Button variant="secondary" size="sm" className="gap-2">
                     {DEVELOPER_EMAIL} <Mail size={14} />
@@ -150,6 +224,11 @@ export function SupportClient(props: { hasPortal?: boolean }) {
                 <Button variant="ghost" size="sm" className="gap-2" onClick={copyDeveloperEmail}>
                   Copy <ClipboardCopy size={14} />
                 </Button>
+                <Link href="/roadmap">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    View roadmap <ArrowRight size={14} />
+                  </Button>
+                </Link>
               </div>
             </div>
           </Card>

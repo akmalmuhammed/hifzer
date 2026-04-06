@@ -282,7 +282,7 @@ function runtimeSchemaPatchEnabled(): boolean {
   return process.env.HIFZER_RUNTIME_SCHEMA_PATCH !== "0";
 }
 
-export async function getOrCreateUserProfile(clerkUserId: string): Promise<UserProfile | null> {
+async function getOrCreateUserProfileUncached(clerkUserId: string): Promise<UserProfile | null> {
   if (!dbConfigured()) {
     return null;
   }
@@ -322,6 +322,14 @@ export async function getOrCreateUserProfile(clerkUserId: string): Promise<UserP
       refreshCapabilities: true,
     });
   }
+}
+
+const getOrCreateUserProfileCached = cache(async (clerkUserId: string): Promise<UserProfile | null> => {
+  return getOrCreateUserProfileUncached(clerkUserId);
+});
+
+export async function getOrCreateUserProfile(clerkUserId: string): Promise<UserProfile | null> {
+  return getOrCreateUserProfileCached(clerkUserId);
 }
 
 const getProfileSnapshotCached = cache(async (clerkUserId: string): Promise<ProfileSnapshot | null> => {

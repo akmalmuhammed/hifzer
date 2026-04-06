@@ -13,7 +13,7 @@ export default async function HifzPage() {
       <div className="flex justify-start">
         <Button asChild variant="secondary" className="gap-2">
           <Link href="/hifz/progress">
-            Hifz surah progress <ArrowRight size={16} />
+            Hifz progress <ArrowRight size={16} />
           </Link>
         </Button>
       </div>

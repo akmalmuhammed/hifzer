@@ -25,7 +25,7 @@
   align-items: center;
   border-radius: 16px;
   border: 1px solid rgba(var(--kw-accent-rgb), 0.22);
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--kw-panel-gradient-strong);
   padding: 0 12px;
   box-shadow:
     0 12px 28px rgba(11, 18, 32, 0.08),
@@ -89,7 +89,7 @@
   overflow: hidden;
   border-radius: 18px;
   border: 1px solid rgba(var(--kw-accent-rgb), 0.14);
-  background: rgba(255, 255, 255, 0.66);
+  background: var(--kw-panel-gradient);
   padding: 13px 14px;
   box-shadow: 0 12px 26px rgba(11, 18, 32, 0.06);
   transition:
@@ -134,11 +134,11 @@
 }
 
 html[data-mode="dark"] .searchBar {
-  background: rgba(15, 23, 42, 0.74);
+  background: var(--kw-panel-gradient-strong);
 }
 
 html[data-mode="dark"] .resultCard {
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--kw-panel-gradient);
   border-color: rgba(var(--kw-accent-rgb), 0.24);
 }
 

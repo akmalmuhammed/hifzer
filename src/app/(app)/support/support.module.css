@@ -23,11 +23,91 @@
 .panel {
   border-radius: 18px;
   border: 1px solid var(--kw-border-2);
-  background: var(--kw-surface);
+  background:
+    radial-gradient(140% 140% at 0% 0%, rgba(var(--kw-accent-rgb), 0.08), transparent 58%),
+    radial-gradient(120% 120% at 100% 100%, rgba(10, 138, 119, 0.05), transparent 60%),
+    var(--kw-panel-gradient);
+  box-shadow: var(--kw-shadow-soft);
 }
 
 .tipCard {
   border-radius: 14px;
   border: 1px solid var(--kw-border-2);
-  background: var(--kw-surface-soft);
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(var(--kw-accent-rgb), 0.06), transparent 58%),
+    var(--kw-panel-gradient-strong);
+}
+
+.paymentPanel {
+  overflow: hidden;
+}
+
+.purchaseBadge {
+  min-width: 170px;
+  align-self: flex-start;
+  border-radius: 18px;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.18);
+  background: rgba(var(--kw-accent-rgb), 0.08);
+  padding: 0.8rem 0.95rem;
+}
+
+.reasonCard {
+  display: flex;
+  gap: 0.7rem;
+  border-radius: 16px;
+  border: 1px solid var(--kw-border-2);
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(var(--kw-accent-rgb), 0.05), transparent 60%),
+    var(--kw-panel-gradient-strong);
+  padding: 0.85rem 0.95rem;
+}
+
+.policyGrid {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.policySection {
+  border-radius: 18px;
+  border: 1px solid var(--kw-border-2);
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(var(--kw-accent-rgb), 0.06), transparent 58%),
+    var(--kw-panel-gradient-strong);
+  padding: 1rem;
+}
+
+.policyList {
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.policyItem {
+  display: flex;
+  gap: 0.65rem;
+  font-size: 0.92rem;
+  line-height: 1.75;
+  color: var(--kw-muted);
+}
+
+.policyDot {
+  margin-top: 0.62rem;
+  width: 0.42rem;
+  height: 0.42rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: rgba(var(--kw-accent-rgb), 1);
+}
+
+@media (min-width: 900px) {
+  .policyGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .purchaseBadge {
+    min-width: 0;
+    width: 100%;
+  }
 }

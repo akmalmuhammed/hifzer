@@ -26,11 +26,6 @@ export function MarketingNav(props: { authEnabled: boolean }) {
   const openAppLabel = language === "en.sahih" ? "Open App" : copy.marketing.openApp;
   const brandTagline =
     language === "en.sahih" ? "A quieter Qur'an companion" : copy.brandTagline;
-  const links = [
-    { href: "/#companion", label: "Companion", key: "companion" },
-    { href: "/#method", label: "Method", key: "method" },
-    { href: "/quran-preview", label: "Preview", key: "preview" },
-  ] as const;
 
   return (
     <header className="sticky top-0 z-40">
@@ -48,19 +43,6 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                 <span className="block text-xs text-[color:var(--kw-muted)]">{brandTagline}</span>
               </span>
             </TrackedLink>
-
-            <nav className="hidden items-center gap-1 lg:flex">
-              {links.map((link) => (
-                <TrackedLink
-                  key={link.href}
-                  href={link.href}
-                  telemetryName={`marketing.nav.${link.key}`}
-                  className="rounded-full px-3 py-2 text-sm font-semibold text-[color:var(--kw-muted)] transition hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)]"
-                >
-                  {link.label}
-                </TrackedLink>
-              ))}
-            </nav>
 
             <div className="hidden items-center gap-2 lg:flex">
               {showSignedIn ? (
@@ -109,18 +91,6 @@ export function MarketingNav(props: { authEnabled: boolean }) {
         <div className={clsx("lg:hidden", open ? "block" : "hidden")}>
           <div className="mt-2 rounded-[26px] border border-[color:var(--kw-border)] bg-[color:var(--kw-card-strong)] px-4 py-4 shadow-[var(--kw-shadow)] backdrop-blur">
             <div className="space-y-2">
-              {links.map((link) => (
-                <TrackedLink
-                  key={link.href}
-                  href={link.href}
-                  telemetryName={`marketing.mobile-nav.${link.key}`}
-                  onClick={() => setOpen(false)}
-                  className="block rounded-[18px] px-3 py-2.5 text-sm font-semibold text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-soft)]"
-                >
-                  {link.label}
-                </TrackedLink>
-              ))}
-
               <div className="grid gap-2 pt-2">
                 {showSignedIn ? (
                   <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
