@@ -1,16 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
-import { PageHeader } from "@/components/app/page-header";
+import { OnboardingShell } from "@/components/onboarding/onboarding-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
-import { QURAN_TRANSLATION_OPTIONS, type QuranTranslationId } from "@/hifzer/quran/translation-prefs";
+import {
+  QURAN_TRANSLATION_OPTIONS,
+  isSupportedQuranTranslationId,
+  type QuranTranslationId,
+} from "@/hifzer/quran/translation-prefs";
+import { getOnboardingAssessmentDraft, setOnboardingAssessmentDraft } from "@/hifzer/local/store";
 
 type AssessmentDraft = {
   dailyMinutes: number;
@@ -22,31 +25,59 @@ type AssessmentDraft = {
 };
 
 const TIMEZONE_PLACEHOLDER = "Detecting timezone...";
+const DEFAULT_DRAFT: AssessmentDraft = {
+  dailyMinutes: 20,
+  practiceDaysPerWeek: 6,
+  planBias: "BALANCED",
+  hasTeacher: false,
+  timezone: TIMEZONE_PLACEHOLDER,
+  quranTranslationId: "en.sahih",
+};
 
 export default function OnboardingAssessmentPage() {
   const router = useRouter();
   const { pushToast } = useToast();
 
-  const [draft, setDraft] = useState<AssessmentDraft>({
-    dailyMinutes: 20,
-    practiceDaysPerWeek: 6,
-    planBias: "BALANCED",
-    hasTeacher: false,
-    timezone: TIMEZONE_PLACEHOLDER,
-    quranTranslationId: "en.sahih",
-  });
+  const [draft, setDraft] = useState<AssessmentDraft>(DEFAULT_DRAFT);
+  const [saving, setSaving] = useState(false);
+  const [draftHydrated, setDraftHydrated] = useState(false);
 
   useEffect(() => {
     const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? "UTC";
+    const stored = getOnboardingAssessmentDraft();
+    const nextDraft: AssessmentDraft = stored
+      ? {
+          ...stored,
+          timezone: stored.timezone === TIMEZONE_PLACEHOLDER ? browserTimezone : stored.timezone,
+          quranTranslationId: isSupportedQuranTranslationId(stored.quranTranslationId)
+            ? stored.quranTranslationId
+            : "en.sahih",
+        }
+      : {
+          ...DEFAULT_DRAFT,
+          timezone: browserTimezone,
+        };
+
     const raf = window.requestAnimationFrame(() => {
-      setDraft((current) =>
-        current.timezone === browserTimezone ? current : { ...current, timezone: browserTimezone },
-      );
+      setDraft(nextDraft);
+      setDraftHydrated(true);
     });
     return () => window.cancelAnimationFrame(raf);
   }, []);
 
+  useEffect(() => {
+    if (!draftHydrated) {
+      return;
+    }
+    setOnboardingAssessmentDraft(draft);
+  }, [draft, draftHydrated]);
+
   async function saveAndNext() {
+    if (saving) {
+      return;
+    }
+
+    setSaving(true);
     try {
       const res = await fetch("/api/profile/assessment", {
         method: "POST",
@@ -57,42 +88,58 @@ export default function OnboardingAssessmentPage() {
       if (!res.ok) {
         throw new Error(payload.error || "Failed to save assessment.");
       }
+      setOnboardingAssessmentDraft(draft);
       pushToast({ title: "Saved", message: "Assessment persisted to your profile.", tone: "success" });
       router.push("/onboarding/start-point");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to save assessment.";
       pushToast({ title: "Save failed", message, tone: "warning" });
+    } finally {
+      setSaving(false);
     }
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        eyebrow="Onboarding"
-        title="Assessment"
-        subtitle="Five quick questions. We use this to shape your plan."
-      />
-
+    <OnboardingShell
+      step="assessment"
+      title="Shape a plan you can keep."
+      subtitle="These defaults tune your daily load, weekly cadence, and reading support so Hifzer starts at the right intensity."
+      backHref="/onboarding/welcome"
+      supportTitle="Recommended settings are already loaded"
+      supportBody="You can move quickly here. The goal is not to be perfect on day one, only to give the planner enough signal to stay realistic."
+      supportPoints={[
+        {
+          title: "Pace before pressure",
+          description: "A smaller plan you return to is better than an ambitious plan you abandon after three days.",
+        },
+        {
+          title: "Translation follows you",
+          description: "Your chosen translation becomes the default across Qur'an reading and session support text.",
+        },
+        {
+          title: "Editable later",
+          description: "Every setting on this step can be changed again from Settings once you are inside the app.",
+        },
+      ]}
+    >
       <Card>
-        <div className="flex flex-wrap items-start justify-between gap-6">
-          <div className="max-w-2xl">
-            <Pill tone="neutral">Prototype</Pill>
-            <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-              These answers shape your scheduling policy and are saved to your profile immediately.
-            </p>
-          </div>
-          <Link href="/onboarding/start-point" className="text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">
-            Skip <ArrowRight className="inline" size={16} />
-          </Link>
+        <div className="max-w-2xl">
+          <p className="text-sm leading-7 text-[color:var(--kw-muted)]">
+            We save these answers to your profile so the dashboard and planning engine can stay aligned from your first session.
+          </p>
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+            <label
+              htmlFor="assessment-daily-minutes"
+              className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]"
+            >
               Daily minutes
-            </p>
+            </label>
             <div className="mt-2 flex items-center gap-2">
               <Input
+                id="assessment-daily-minutes"
                 type="number"
                 min={5}
                 max={180}
@@ -104,11 +151,15 @@ export default function OnboardingAssessmentPage() {
           </div>
 
           <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+            <label
+              htmlFor="assessment-practice-days"
+              className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]"
+            >
               Practice days / week
-            </p>
+            </label>
             <div className="mt-2 flex items-center gap-2">
               <Input
+                id="assessment-practice-days"
                 type="number"
                 min={1}
                 max={7}
@@ -191,7 +242,7 @@ export default function OnboardingAssessmentPage() {
                 onChange={(e) =>
                   setDraft((d) => ({ ...d, quranTranslationId: e.target.value as QuranTranslationId }))
                 }
-                className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)] md:max-w-[520px]"
+                className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] outline-none transition focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)] md:max-w-[520px]"
               >
                 {QURAN_TRANSLATION_OPTIONS.map((option) => (
                   <option key={option.id} value={option.id}>
@@ -204,12 +255,14 @@ export default function OnboardingAssessmentPage() {
         </div>
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs text-[color:var(--kw-faint)]">Timezone: {draft.timezone}</p>
-          <Button onClick={saveAndNext} className="gap-2">
+          <p className="text-xs text-[color:var(--kw-faint)]">
+            Timezone detected: {draft.timezone}. Adjust it later if you travel often.
+          </p>
+          <Button onClick={saveAndNext} className="gap-2" loading={saving}>
             Continue <ArrowRight size={16} />
           </Button>
         </div>
       </Card>
-    </div>
+    </OnboardingShell>
   );
 }

@@ -349,6 +349,37 @@ export function LandingHome() {
             );
             })}
           </div>
+
+          <motion.div
+            className={styles.moduleCtaBand}
+            initial={reduceMotion ? undefined : { opacity: 0, y: 14 }}
+            whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: reduceMotion ? 0 : 0.28, ease: "easeOut" }}
+          >
+            <div className={styles.moduleCtaCopy}>
+              <Pill tone={isSignedIn ? "brand" : "accent"}>Ready to begin?</Pill>
+              <p className={styles.moduleCtaTitle}>Open the full Hifzer flow without more scrolling.</p>
+              <p className={styles.moduleCtaBody}>
+                If these five modules are the system you&apos;ve been looking for, step straight
+                into your account now or preview the reader first.
+              </p>
+            </div>
+
+            <div className={styles.moduleCtaActions}>
+              <Button asChild size="lg">
+                <PublicAuthLink signedInHref="/dashboard" signedOutHref="/signup">
+                  {isSignedIn ? "Open dashboard" : "Create free account"} <ArrowRight size={18} />
+                </PublicAuthLink>
+              </Button>
+
+              <Button asChild size="lg" variant="secondary">
+                <TrackedLink href={previewHref} telemetryName="landing.modules.preview">
+                  {isSignedIn ? "Open the reader" : "Preview first"}
+                </TrackedLink>
+              </Button>
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -477,4 +508,3 @@ export function LandingHome() {
     </div>
   );
 }
-

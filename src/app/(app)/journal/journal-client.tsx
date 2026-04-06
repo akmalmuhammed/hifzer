@@ -802,6 +802,7 @@ export function JournalClient(props: {
               onChange={(event) =>
                 setInsertDraft((current) => (current ? { ...current, title: event.target.value } : current))
               }
+              aria-label="Card title"
               placeholder={insertDraft.kind === "ayah" ? "Card title" : "Card title"}
             />
 
@@ -843,6 +844,7 @@ export function JournalClient(props: {
                         : current,
                     )
                   }
+                  aria-label="Ayah number"
                 />
                 <Button onClick={() => void handleInsertAyahBlock()} disabled={insertDraft.loading}>
                   <Sparkles size={16} />
@@ -921,6 +923,7 @@ export function JournalClient(props: {
           <Input
             value={noteDraft.title}
             onChange={(event) => updateDraft((current) => ({ ...current, title: event.target.value }))}
+            aria-label="Note title"
             placeholder="Name this note"
             className={styles.noteTitleInput}
           />
@@ -940,6 +943,7 @@ export function JournalClient(props: {
                         content: event.target.value,
                       }))
                     }
+                    aria-label="Note text block"
                     placeholder="Write quietly..."
                     className={styles.textBlock}
                   />
@@ -1030,6 +1034,7 @@ export function JournalClient(props: {
                         title: event.target.value,
                       }))
                     }
+                    aria-label="Dua card title"
                     placeholder="Card title"
                   />
 
@@ -1085,6 +1090,7 @@ export function JournalClient(props: {
                 value={tagInput}
                 onChange={(event) => setTagInput(event.target.value)}
                 onKeyDown={handleTagInputKeyDown}
+                aria-label="Tag name"
                 placeholder="Add a tag like family or sabr"
               />
               <Button variant="secondary" onClick={handleTagAdd}>

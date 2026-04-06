@@ -169,8 +169,8 @@ export default async function PracticePage() {
               ))}
             </div>
           ) : null}
-          <Link href="/progress/transitions" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
-            Open full seam view <ArrowRight size={14} />
+          <Link href="/dashboard" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
+            Return to dashboard <ArrowRight size={14} />
           </Link>
         </Card>
 

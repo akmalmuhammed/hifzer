@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import { PageHeader } from "@/components/app/page-header";
+import { SettingsDetailHeader } from "@/components/app/settings-detail-header";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { getQuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/server";
 import { QuranFoundationSettingsClient } from "./quran-foundation-client";
@@ -14,8 +14,7 @@ export default async function QuranFoundationSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        eyebrow="Settings"
+      <SettingsDetailHeader
         title="Quran.com"
         subtitle="Link a Quran.com account so bookmarks can sync and the reader can show Quran Foundation enrichment."
       />

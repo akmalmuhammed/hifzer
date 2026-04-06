@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
+import { SettingsDetailHeader } from "@/components/app/settings-detail-header";
 import { UiLanguageSwitcher } from "@/components/app/ui-language-switcher";
 import { useUiLanguage } from "@/components/providers/ui-language-provider";
-import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
@@ -75,8 +75,7 @@ export function LanguageSettingsClient(props: LanguageSettingsClientProps) {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        eyebrow={copy.languageSettings.eyebrow}
+      <SettingsDetailHeader
         title={copy.languageSettings.title}
         subtitle={copy.languageSettings.subtitle}
       />

@@ -118,16 +118,16 @@ export function NotificationsClient(props: NotificationsClientProps) {
           </div>
 
           <div className="mt-6">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Reminder time (local)</p>
             <Input
+              id="notifications-reminder-time"
+              label="Reminder time (local)"
+              description="This is your local clock time, not server time. It works best when your timezone stays accurate."
+              fieldClassName="max-w-[220px]"
+              labelClassName="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]"
               type="time"
               value={draft.reminderTimeLocal}
               onChange={(event) => setDraft((current) => ({ ...current, reminderTimeLocal: event.target.value }))}
-              className="mt-2 max-w-[220px]"
             />
-            <p className="mt-2 text-xs text-[color:var(--kw-faint)]">
-              This is your local clock time, not server time. It works best when your timezone stays accurate.
-            </p>
           </div>
 
           <div className="mt-6 flex justify-end">

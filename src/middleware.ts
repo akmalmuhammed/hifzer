@@ -5,7 +5,6 @@ import { clerkEnabled } from "@/lib/clerk-config";
 const isProtectedRoute = createRouteMatcher([
   "/onboarding(.*)",
   "/dashboard(.*)",
-  "/today(.*)",
   "/dua(.*)",
   "/hifz(.*)",
   "/session(.*)",
@@ -14,10 +13,8 @@ const isProtectedRoute = createRouteMatcher([
   "/history(.*)",
   "/roadmap(.*)",
   "/support(.*)",
-  "/progress(.*)",
   "/ramadan(.*)",
   "/settings(.*)",
-  "/streak(.*)",
   "/milestones(.*)",
   "/fluency(.*)",
   "/billing(.*)",
@@ -70,4 +67,3 @@ export default clerkMiddleware(async (auth, req) => {
 export const config = {
   matcher: ["/((?!_next|.*\\..*).*)"],
 };
-

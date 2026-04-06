@@ -31,6 +31,7 @@ import {
 import { AreaTrend } from "@/components/charts/area-trend";
 import { DonutProgress } from "@/components/charts/donut-progress";
 import { Sparkline } from "@/components/charts/sparkline";
+import { DashboardFirstRunGuide } from "@/components/app/dashboard-first-run-guide";
 import { PageHeader } from "@/components/app/page-header";
 import { SupportTextPanel } from "@/components/quran/support-text-panel";
 import { Button } from "@/components/ui/button";
@@ -79,6 +80,8 @@ export type DashboardOverview = {
     dueSoon6h: number;
     nextDueAt: string | null;
     weakTransitions: number;
+    reviewDebtMinutes: number;
+    debtRatioPct: number;
     byBand: Record<"ENCODING" | "SABQI" | "MANZIL" | "MASTERED", number>;
   };
   quran: {
@@ -832,6 +835,8 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
 
       {activeTab === "overview" && !loading && !error && overview ? (
         <div className="space-y-5">
+          <DashboardFirstRunGuide overview={overview} />
+
           <section className={`kw-fade-in ${styles.commandDeck} px-4 py-4 sm:px-5 sm:py-5`}>
             <div className={styles.pulseOrb} />
             <div className={styles.driftOrb} />
@@ -1276,4 +1281,3 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
     </div>
   );
 }
-

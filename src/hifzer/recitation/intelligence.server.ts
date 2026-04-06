@@ -573,7 +573,7 @@ function buildRescueSession(input: {
       minutes,
       href: weakSeams[0]
         ? `/quran/read?view=compact&surah=${getAyahById(weakSeams[0].fromAyahId)?.surahNumber ?? 1}&cursor=${weakSeams[0].fromAyahId}`
-        : "/progress/transitions",
+        : "/dashboard",
       items: weakSeams.map((seam) => `${seam.fromRef} -> ${seam.toRef}`),
     });
   }

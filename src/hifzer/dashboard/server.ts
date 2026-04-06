@@ -2,6 +2,7 @@ import "server-only";
 
 import type { AttemptStage, SrsGrade, SrsMode } from "@prisma/client";
 import { addIsoDaysUtc } from "@/hifzer/derived/dates";
+import { computeDebtRatioPct, computeReviewDebtMinutes } from "@/hifzer/engine/debt";
 import { isoDateInTimeZone } from "@/hifzer/engine/date";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { getAyahById, getSurahInfo } from "@/hifzer/quran/lookup.server";
@@ -63,6 +64,8 @@ export type DashboardOverview = {
     dueSoon6h: number;
     nextDueAt: string | null;
     weakTransitions: number;
+    reviewDebtMinutes: number;
+    debtRatioPct: number;
     byBand: BandMix;
   };
   quran: {
@@ -406,6 +409,13 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
   const retentionScore14d = gradedEventCount > 0
     ? Math.round((weightedGradeScore / (gradedEventCount * 3)) * 100)
     : 0;
+  const reviewDebtMinutes = computeReviewDebtMinutes({
+    dueReviewCount: dueNow,
+    dueRepairCount: weakTransitions,
+    avgReviewSeconds: profile.avgReviewSeconds,
+    avgLinkSeconds: profile.avgLinkSeconds,
+  });
+  const debtRatioPct = Number(computeDebtRatioPct(reviewDebtMinutes, profile.dailyMinutes).toFixed(1));
 
   const quranCursorAyahId = clamp(quranReadProgress.lastReadAyahId ?? profile.quranCursorAyahId, 1, TOTAL_AYAHS);
   const cursorAyah = getAyahById(quranCursorAyahId) ?? getAyahById(1);
@@ -472,6 +482,8 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
       dueSoon6h,
       nextDueAt: nextDue?.nextReviewAt ? nextDue.nextReviewAt.toISOString() : null,
       weakTransitions,
+      reviewDebtMinutes: Number(reviewDebtMinutes.toFixed(1)),
+      debtRatioPct,
       byBand,
     },
     quran: {

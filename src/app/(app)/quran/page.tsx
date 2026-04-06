@@ -3,12 +3,14 @@ import Link from "next/link";
 import { ArrowRight, BookMarked, BookOpen, Compass, MoonStar } from "lucide-react";
 import { DistractionFreeToggle } from "@/components/app/distraction-free-toggle";
 import { SurahProgressSection } from "@/components/progress/surah-progress-section";
+import { QuranFoundationConnectCard } from "@/components/quran/quran-foundation-connect-card";
 import { DisclosureCard } from "@/components/ui/disclosure-card";
 import { Pill } from "@/components/ui/pill";
 import { QuranOfflineStatus } from "@/components/quran/quran-offline-status";
 import { QuranMotivationHero } from "@/components/quran/quran-motivation-hero";
 import { listQuranSurahProgress } from "@/hifzer/progress/surah-progress.server";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
+import { getQuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/server";
 import { getAyahById, listJuzs, listSurahs } from "@/hifzer/quran/lookup.server";
 import { getQuranReadProgress } from "@/hifzer/quran/read-progress.server";
 import { clerkEnabled } from "@/lib/clerk-config";
@@ -31,14 +33,16 @@ export default async function QuranIndexPage() {
     lastReadAt: null as string | null,
   };
   let surahProgressItems = [] as Awaited<ReturnType<typeof listQuranSurahProgress>>;
+  let quranFoundationStatus = null as Awaited<ReturnType<typeof getQuranFoundationConnectionStatus>> | null;
   if (clerkEnabled()) {
     const { userId } = await auth();
     if (userId) {
       profile = await getOrCreateUserProfile(userId);
       if (profile) {
-        [readCoverage, surahProgressItems] = await Promise.all([
+        [readCoverage, surahProgressItems, quranFoundationStatus] = await Promise.all([
           getQuranReadProgress(profile.id),
           listQuranSurahProgress(userId),
+          getQuranFoundationConnectionStatus(userId),
         ]);
       }
     }
@@ -104,6 +108,13 @@ export default async function QuranIndexPage() {
         />
       </div>
 
+      <QuranFoundationConnectCard
+        initialStatus={quranFoundationStatus}
+        returnTo="/quran"
+        variant="hub"
+        className="mt-8"
+      />
+
       <div className="mt-8">
         <SurahProgressSection
           title="Surah progress"
@@ -121,7 +132,7 @@ export default async function QuranIndexPage() {
             <div>
               <p className="text-sm font-semibold text-[color:var(--kw-ink)]">More reading tools</p>
               <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
-                Open bookmarks, jump by surah or juz, save reading done elsewhere, or revisit the dua and progress pages when needed.
+                Open bookmarks, jump by surah or juz, save reading done elsewhere, or return to the dashboard when needed.
               </p>
             </div>
           )}

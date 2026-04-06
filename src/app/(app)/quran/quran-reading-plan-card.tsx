@@ -187,6 +187,7 @@ export function QuranReadingPlanCard(props: ReadingPlanCardProps) {
                   max={90}
                   value={customMinutes}
                   onChange={(event) => setCustomMinutes(event.target.value)}
+                  aria-label="Custom daily time budget in minutes"
                   className="h-9 w-24"
                 />
               ) : null}

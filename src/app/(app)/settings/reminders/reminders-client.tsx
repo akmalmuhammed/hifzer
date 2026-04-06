@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ArrowRight, Bell, BellOff } from "lucide-react";
-import { PageHeader } from "@/components/app/page-header";
+import { SettingsDetailHeader } from "@/components/app/settings-detail-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -51,8 +51,7 @@ export function RemindersSettingsClient(props: RemindersClientProps) {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        eyebrow="Settings"
+      <SettingsDetailHeader
         title="Reminders"
         subtitle="Daily reminder email schedule for your practice days."
       />
@@ -82,18 +81,16 @@ export function RemindersSettingsClient(props: RemindersClientProps) {
         </div>
 
         <div className="mt-6">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-            Reminder time (local)
-          </p>
           <Input
-            className="mt-2 max-w-[220px]"
+            id="settings-reminders-time"
+            label="Reminder time (local)"
+            description="The scheduler runs hourly and sends when your local time is near this value."
+            fieldClassName="max-w-[220px]"
+            labelClassName="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]"
             type="time"
             value={draft.reminderTimeLocal}
             onChange={(e) => setDraft((d) => ({ ...d, reminderTimeLocal: e.target.value }))}
           />
-          <p className="mt-2 text-xs text-[color:var(--kw-faint)]">
-            The scheduler runs hourly and sends when your local time is near this value.
-          </p>
         </div>
 
         <div className="mt-6 flex justify-end">

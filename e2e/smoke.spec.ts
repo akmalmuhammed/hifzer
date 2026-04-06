@@ -128,7 +128,7 @@ test("hifz advances and updates local cursor", async ({ page }) => {
 
   await page.goto("/hifz");
   await expect(page).toHaveURL(/\/hifz(?:\?|$)/);
-  await expect(page.getByRole("button", { name: /Back to Today/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /^hifz$/i })).toBeVisible();
 
   let cursor = 1;
   for (let i = 0; i < 6; i += 1) {

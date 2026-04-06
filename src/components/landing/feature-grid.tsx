@@ -63,7 +63,7 @@ export function FeatureGrid() {
 
   return (
     <section className="py-10 md:py-14">
-      <div className="grid gap-10 md:grid-cols-[1fr_1fr] md:items-end">
+      <div className="grid gap-6 sm:gap-8 md:grid-cols-[1fr_1fr] md:items-end md:gap-10">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
             Designed for retention
@@ -79,7 +79,7 @@ export function FeatureGrid() {
         </div>
 
         <Card className="overflow-hidden">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
                 Principle
@@ -97,7 +97,7 @@ export function FeatureGrid() {
             </span>
           </div>
 
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
             {[
               { label: "Clarity", value: "What is due and why" },
               { label: "Continuity", value: "Recovery when life happens" },
@@ -106,7 +106,7 @@ export function FeatureGrid() {
             ].map((row) => (
               <div
                 key={row.label}
-                className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2"
+                className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-3"
               >
                 <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
                   {row.label}
@@ -120,7 +120,7 @@ export function FeatureGrid() {
         </Card>
       </div>
 
-      <div className="mt-8 grid gap-4 md:grid-cols-3">
+      <div className="mt-6 grid gap-3 sm:mt-8 sm:gap-4 md:grid-cols-3">
         {FEATURES.map((f, idx) => (
           <motion.div
             key={f.title}
@@ -130,16 +130,18 @@ export function FeatureGrid() {
             transition={{ duration: reduceMotion ? 0 : 0.45, delay: idx * 0.04 }}
           >
             <Card className="h-full">
-              <div className="flex items-start justify-between gap-4">
-                <Pill tone={f.pill.tone}>{f.pill.label}</Pill>
-                <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)]">
-                  {f.icon}
-                </span>
+              <div className="flex h-full flex-col">
+                <div className="flex items-start justify-between gap-4">
+                  <Pill tone={f.pill.tone}>{f.pill.label}</Pill>
+                  <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)]">
+                    {f.icon}
+                  </span>
+                </div>
+                <p className="mt-3 text-base font-semibold tracking-tight text-[color:var(--kw-ink)] sm:text-lg">
+                  {f.title}
+                </p>
+                <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">{f.copy}</p>
               </div>
-              <p className="mt-3 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                {f.title}
-              </p>
-              <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">{f.copy}</p>
             </Card>
           </motion.div>
         ))}

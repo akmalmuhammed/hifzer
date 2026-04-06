@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
+import { SettingsDetailHeader } from "@/components/app/settings-detail-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { PageHeader } from "@/components/app/page-header";
 import { useToast } from "@/components/ui/toast";
 
 type PlanClientProps = {
@@ -49,8 +49,7 @@ export function PlanSettingsClient(props: PlanClientProps) {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        eyebrow="Settings"
+      <SettingsDetailHeader
         title="Plan"
         subtitle="Adjust your time, rhythm, and learning focus for the way you actually practice."
       />
@@ -58,27 +57,25 @@ export function PlanSettingsClient(props: PlanClientProps) {
       <Card>
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-              Daily minutes
-            </p>
             <Input
+              id="settings-plan-daily-minutes"
+              label="Daily minutes"
+              labelClassName="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]"
               type="number"
               min={5}
               max={240}
-              className="mt-2"
               value={draft.dailyMinutes}
               onChange={(e) => setDraft((d) => ({ ...d, dailyMinutes: Number(e.target.value) }))}
             />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-              Practice days / week
-            </p>
             <Input
+              id="settings-plan-practice-days"
+              label="Practice days / week"
+              labelClassName="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]"
               type="number"
               min={1}
               max={7}
-              className="mt-2"
               value={draft.practiceDaysPerWeek}
               onChange={(e) => setDraft((d) => ({ ...d, practiceDaysPerWeek: Number(e.target.value) }))}
             />

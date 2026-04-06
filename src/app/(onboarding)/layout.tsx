@@ -25,7 +25,7 @@ export default async function OnboardingLayout({ children }: { children: React.R
   }
 
   return (
-    <main id="main-content" className="mx-auto w-full max-w-[900px] px-4 py-10">
+    <main id="main-content" className="mx-auto w-full max-w-[1120px] px-4 py-6 sm:py-10">
       <ProfileHydrator profile={profile} />
       {children}
     </main>

@@ -23,7 +23,6 @@ const ROUTES = [
   { route: "/login", surface: "auth" },
   { route: "/signup", surface: "auth" },
   { route: "/forgot-password", surface: "auth" },
-  { route: "/today", surface: "app" },
   { route: "/hifz", surface: "app" },
   { route: "/session", surface: "app" },
   { route: "/quran", surface: "app" },
@@ -33,24 +32,17 @@ const ROUTES = [
   { route: "/quran/read", surface: "app" },
   { route: "/quran/surah/1", surface: "app" },
   { route: "/dashboard", surface: "app" },
-  { route: "/progress", surface: "app" },
-  { route: "/progress/map", surface: "app" },
-  { route: "/progress/mistakes", surface: "app" },
-  { route: "/progress/retention", surface: "app" },
-  { route: "/progress/transitions", surface: "app" },
   { route: "/practice", surface: "app" },
   { route: "/milestones", surface: "app" },
   { route: "/notifications", surface: "app" },
-  { route: "/streak", surface: "app" },
   { route: "/settings", surface: "app" },
   { route: "/settings/account", surface: "app" },
   { route: "/settings/display", surface: "app" },
+  { route: "/settings/language", surface: "app" },
   { route: "/settings/plan", surface: "app" },
-  { route: "/settings/privacy", surface: "app" },
+  { route: "/settings/quran-foundation", surface: "app" },
   { route: "/settings/reciter", surface: "app" },
   { route: "/settings/reminders", surface: "app" },
-  { route: "/settings/scoring", surface: "app" },
-  { route: "/settings/thresholds", surface: "app" },
   { route: "/support", surface: "app" },
   { route: "/roadmap", surface: "app" },
   { route: "/fluency", surface: "app" },
@@ -195,7 +187,7 @@ function toMarkdown(entries, generatedAt, baseUrl) {
   lines.push("## Reproduction Steps");
   lines.push("");
   lines.push("1. Open app on mobile browser (Safari iOS / Chrome Android).");
-  lines.push("2. Navigate to `/hifz`, `/today`, `/quran`, and `/quran/bookmarks`.");
+  lines.push("2. Navigate to `/dashboard`, `/hifz`, `/quran`, and `/quran/bookmarks`.");
   lines.push("3. Swipe horizontally left/right while near top and mid-page.");
   lines.push("4. Verify no blank canvas is revealed outside page content.");
   lines.push("5. Verify install CTA behavior:");

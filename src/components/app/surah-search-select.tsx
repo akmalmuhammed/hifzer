@@ -114,6 +114,7 @@ export function SurahSearchSelect(props: SurahSearchSelectProps) {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search by surah number or name"
+                aria-label="Search surahs by number or name"
                 className="pl-9"
                 autoFocus
               />

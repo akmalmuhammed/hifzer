@@ -65,7 +65,7 @@ const STEPS: TutorialStep[] = [
 ];
 
 type SessionFlowTutorialProps = {
-  surface: "today" | "session";
+  surface: "dashboard" | "session";
 };
 
 export function SessionFlowTutorial(props: SessionFlowTutorialProps) {
@@ -77,11 +77,11 @@ export function SessionFlowTutorial(props: SessionFlowTutorialProps) {
     return null;
   }
 
-  const heading = props.surface === "today"
+  const heading = props.surface === "dashboard"
     ? "Hifz tutorial"
     : "Practice tutorial";
-  const subtitle = props.surface === "today"
-    ? "This is the flow you will run inside Hifz."
+  const subtitle = props.surface === "dashboard"
+    ? "This is the flow you will run from the dashboard."
     : "Use this flow while you practice.";
 
   return (

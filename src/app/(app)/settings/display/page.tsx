@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, type ReactNode } from "react";
 import { Check, Moon, Sun } from "lucide-react";
-import { PageHeader } from "@/components/app/page-header";
+import { SettingsDetailHeader } from "@/components/app/settings-detail-header";
 import { useTheme, type AccentPreset, type ThemePreset } from "@/components/providers/theme-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -154,8 +154,7 @@ export default function DisplaySettingsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        eyebrow="Settings"
+      <SettingsDetailHeader
         title="Display"
         subtitle="Choose the mood, color, and contrast that make daily recitation easier to return to."
       />

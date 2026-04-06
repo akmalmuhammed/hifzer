@@ -4,6 +4,9 @@ import { isoDateLocal } from "@/hifzer/derived/dates";
 
 export const STORAGE_KEYS = {
   onboardingCompleted: "hifzer_onboarding_completed_v1",
+  onboardingStartLane: "hifzer_onboarding_start_lane_v1",
+  onboardingAssessment: "hifzer_onboarding_assessment_v1",
+  dashboardFirstRunGuide: "hifzer_dashboard_first_run_guide_v1",
   hifzActiveSurahNumber: "hifzer_hifz_active_surah_number_v1",
   hifzCursorAyahId: "hifzer_hifz_cursor_ayah_id_v1",
   quranActiveSurahNumber: "hifzer_quran_active_surah_number_v1",
@@ -44,6 +47,15 @@ export type StoredAttempt = {
 };
 
 export type SessionStatus = "OPEN" | "COMPLETED" | "ABANDONED";
+export type OnboardingStartLane = "hifz" | "fluency" | "listen" | "transitions";
+export type OnboardingAssessmentDraft = {
+  dailyMinutes: number;
+  practiceDaysPerWeek: number;
+  planBias: "BALANCED" | "RETENTION" | "SPEED";
+  hasTeacher: boolean;
+  timezone: string;
+  quranTranslationId: string;
+};
 
 export type StoredSession = {
   id: string;
@@ -87,6 +99,104 @@ export function setOnboardingCompleted() {
     return;
   }
   window.localStorage.setItem(STORAGE_KEYS.onboardingCompleted, "1");
+}
+
+export function getOnboardingStartLane(): OnboardingStartLane | null {
+  if (!isBrowser()) {
+    return null;
+  }
+
+  const value = window.localStorage.getItem(STORAGE_KEYS.onboardingStartLane);
+  if (value === "hifz" || value === "fluency" || value === "listen" || value === "transitions") {
+    return value;
+  }
+  return null;
+}
+
+export function setOnboardingStartLane(lane: OnboardingStartLane) {
+  if (!isBrowser()) {
+    return;
+  }
+  window.localStorage.setItem(STORAGE_KEYS.onboardingStartLane, lane);
+}
+
+export function getOnboardingAssessmentDraft(): OnboardingAssessmentDraft | null {
+  if (!isBrowser()) {
+    return null;
+  }
+
+  const parsed = safeJsonParse<Partial<OnboardingAssessmentDraft>>(
+    window.localStorage.getItem(STORAGE_KEYS.onboardingAssessment),
+  );
+  if (!parsed) {
+    return null;
+  }
+
+  const dailyMinutes = Number(parsed.dailyMinutes);
+  const practiceDaysPerWeek = Number(parsed.practiceDaysPerWeek);
+  const planBias = parsed.planBias;
+  const hasTeacher = parsed.hasTeacher === true;
+  const timezone = typeof parsed.timezone === "string" && parsed.timezone.trim()
+    ? parsed.timezone
+    : "UTC";
+  const quranTranslationId = typeof parsed.quranTranslationId === "string" && parsed.quranTranslationId.trim()
+    ? parsed.quranTranslationId
+    : "en.sahih";
+
+  if (!Number.isFinite(dailyMinutes) || !Number.isFinite(practiceDaysPerWeek)) {
+    return null;
+  }
+  if (planBias !== "BALANCED" && planBias !== "RETENTION" && planBias !== "SPEED") {
+    return null;
+  }
+
+  return {
+    dailyMinutes: Math.max(5, Math.min(240, Math.floor(dailyMinutes))),
+    practiceDaysPerWeek: Math.max(1, Math.min(7, Math.floor(practiceDaysPerWeek))),
+    planBias,
+    hasTeacher,
+    timezone,
+    quranTranslationId,
+  };
+}
+
+export function setOnboardingAssessmentDraft(draft: OnboardingAssessmentDraft) {
+  if (!isBrowser()) {
+    return;
+  }
+
+  window.localStorage.setItem(
+    STORAGE_KEYS.onboardingAssessment,
+    JSON.stringify({
+      dailyMinutes: Math.max(5, Math.min(240, Math.floor(draft.dailyMinutes))),
+      practiceDaysPerWeek: Math.max(1, Math.min(7, Math.floor(draft.practiceDaysPerWeek))),
+      planBias: draft.planBias,
+      hasTeacher: draft.hasTeacher,
+      timezone: draft.timezone || "UTC",
+      quranTranslationId: draft.quranTranslationId || "en.sahih",
+    } satisfies OnboardingAssessmentDraft),
+  );
+}
+
+export function shouldShowDashboardFirstRunGuide(): boolean {
+  if (!isBrowser()) {
+    return false;
+  }
+  return window.localStorage.getItem(STORAGE_KEYS.dashboardFirstRunGuide) === "pending";
+}
+
+export function setDashboardFirstRunGuidePending() {
+  if (!isBrowser()) {
+    return;
+  }
+  window.localStorage.setItem(STORAGE_KEYS.dashboardFirstRunGuide, "pending");
+}
+
+export function dismissDashboardFirstRunGuide() {
+  if (!isBrowser()) {
+    return;
+  }
+  window.localStorage.setItem(STORAGE_KEYS.dashboardFirstRunGuide, "dismissed");
 }
 
 function readStoredNumber(key: string): number | null {

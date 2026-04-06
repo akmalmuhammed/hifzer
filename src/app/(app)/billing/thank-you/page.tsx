@@ -20,7 +20,7 @@ export default function BillingThankYouPage() {
       <PageHeader
         eyebrow="Support"
         title="Thank you for your Hifzer order."
-        subtitle="Your payment was received successfully. You will be returned to Today in a few seconds."
+        subtitle="Your payment was received successfully. You will be returned to the dashboard in a few seconds."
       />
 
       <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
@@ -42,7 +42,7 @@ export default function BillingThankYouPage() {
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 <Button asChild>
                   <Link href="/dashboard">
-                    Return to today <MoveRight size={16} />
+                    Return to dashboard <MoveRight size={16} />
                   </Link>
                 </Button>
                 <Button asChild variant="secondary">
@@ -91,4 +91,3 @@ export default function BillingThankYouPage() {
     </div>
   );
 }
-

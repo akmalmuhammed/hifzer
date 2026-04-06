@@ -5,18 +5,16 @@ const CTA_ROUTES = ["/", "/pricing"] as const;
 const CORS_CHECK_ROUTES = ["/", "/pricing", "/quran-preview"] as const;
 
 const PROTECTED_PREFIXES = [
-  "/today",
+  "/dashboard",
   "/dua",
   "/hifz",
   "/session",
   "/quran",
-  "/progress",
   "/history",
   "/settings",
   "/onboarding",
   "/practice",
   "/notifications",
-  "/streak",
   "/milestones",
   "/fluency",
   "/billing",
@@ -93,7 +91,7 @@ test("signed-out GET /dua redirects to /login or Clerk sign-in flow", async ({ r
 
 test("pricing primary CTA navigates (no dead click)", async ({ page }) => {
   await clickPricingPrimaryCta(page);
-  await expect(page).toHaveURL(/\/(login|signup|today)(?:\?|$)/);
+  await expect(page).toHaveURL(/\/(login|signup|dashboard)(?:\?|$)/);
 });
 
 test("signed-out public pages avoid protected-route links", async ({ page, baseURL }) => {
@@ -149,7 +147,7 @@ test("sitemap has no double-slash URLs and no gated routes", async ({ request })
     "Sitemap contains malformed // URLs",
   ).toEqual([]);
 
-  const gatedPrefixes = ["/quran/", "/today", "/dua", "/hifz", "/session", "/progress", "/settings", "/history", "/billing"];
+  const gatedPrefixes = ["/quran/", "/dashboard", "/dua", "/hifz", "/session", "/settings", "/history", "/billing"];
   const gatedLocs = locs.filter((loc) => {
     try {
       const path = new URL(loc).pathname;

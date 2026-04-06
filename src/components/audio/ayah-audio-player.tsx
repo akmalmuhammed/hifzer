@@ -1,12 +1,23 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import clsx from "clsx";
-import { Forward, Pause, Play, Repeat2, Zap } from "lucide-react";
+import { Forward, Pause, Play, Repeat2, Volume2, Zap } from "lucide-react";
 import { audioUrl } from "@/hifzer/audio/config";
 import { claimSinglePlayback, releaseSinglePlayback } from "@/components/audio/single-playback";
 
 const SPEEDS = [0.75, 1, 1.25] as const;
+
+type RemoteAudioPayload = {
+  audio?: {
+    status: "available" | "not_configured" | "degraded" | "not_found";
+    detail: string;
+    verseKey: string;
+    recitationId: number | null;
+    recitationLabel: string | null;
+    url: string | null;
+  };
+};
 
 function readPersistedSpeedIndex(prefKey: string | undefined): number {
   if (typeof window === "undefined" || !prefKey) {
@@ -35,6 +46,14 @@ function formatSeconds(seconds: number): string {
   return `${m}:${r.toString().padStart(2, "0")}`;
 }
 
+function syncAudioSource(audio: HTMLAudioElement, nextSrc: string) {
+  if (audio.src === nextSrc || audio.currentSrc === nextSrc) {
+    return;
+  }
+  audio.src = nextSrc;
+  audio.load();
+}
+
 export function AyahAudioPlayer(props: {
   ayahId: number;
   reciterId?: string;
@@ -45,12 +64,9 @@ export function AyahAudioPlayer(props: {
   speedPrefKey?: string;
   onAutoAdvance?: () => void;
 }) {
-  const src = useMemo(
-    () => audioUrl(props.reciterId ?? "default", props.ayahId),
-    [props.ayahId, props.reciterId],
-  );
+  const initialSrc = audioUrl(props.reciterId ?? "default", props.ayahId);
   const playerKey = `${props.reciterId ?? "default"}:${props.ayahId}`;
-  return <AyahAudioPlayerInner key={playerKey} {...props} src={src} />;
+  return <AyahAudioPlayerInner key={playerKey} {...props} initialSrc={initialSrc} />;
 }
 
 function AyahAudioPlayerInner(props: {
@@ -62,16 +78,17 @@ function AyahAudioPlayerInner(props: {
   autoPlayPrefKey?: string;
   speedPrefKey?: string;
   onAutoAdvance?: () => void;
-  src: string | null;
+  initialSrc: string | null;
 }) {
-  const src = props.src;
-
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const repeatLeftRef = useRef(0);
   const streakMarkedRef = useRef(false);
   const isScrubbingRef = useRef(false);
   const speedRef = useRef(1);
   const repeatCountRef = useRef(1);
+  const fallbackAttemptedRef = useRef(false);
+  const pendingResumeRef = useRef(false);
+  const activeSrcRef = useRef<string | null>(props.initialSrc);
 
   const [playing, setPlaying] = useState(false);
   const [repeatCount, setRepeatCount] = useState(1);
@@ -79,6 +96,12 @@ function AyahAudioPlayerInner(props: {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [loadError, setLoadError] = useState(false);
+  const [activeSrc, setActiveSrc] = useState<string | null>(props.initialSrc);
+  const [sourceKind, setSourceKind] = useState<"local" | "quran_foundation" | "unavailable">(
+    props.initialSrc ? "local" : "unavailable",
+  );
+  const [sourceDetail, setSourceDetail] = useState<string | null>(null);
+  const [resolvingFallback, setResolvingFallback] = useState(false);
   const [autoPlayEnabled, setAutoPlayEnabled] = useState(() => {
     if (typeof window === "undefined" || !props.autoPlayPrefKey) {
       return false;
@@ -116,6 +139,71 @@ function AyahAudioPlayerInner(props: {
       // Fail open: playback still works even if streak logging fails.
     }
   }, [props.ayahId, props.streakTrackSource]);
+
+  const resolveRemoteFallback = useCallback(async () => {
+    if (fallbackAttemptedRef.current || resolvingFallback) {
+      return activeSrcRef.current;
+    }
+    fallbackAttemptedRef.current = true;
+    setResolvingFallback(true);
+    try {
+      const response = await fetch(
+        `/api/quran/audio-source?ayahId=${encodeURIComponent(String(props.ayahId))}&reciterId=${encodeURIComponent(
+          props.reciterId ?? "default",
+        )}`,
+        { cache: "no-store" },
+      );
+      const payload = (await response.json().catch(() => null)) as RemoteAudioPayload | null;
+      const remoteAudio = payload?.audio;
+      if (!response.ok || !remoteAudio?.url) {
+        setLoadError(true);
+        setPlaying(false);
+        setSourceDetail(remoteAudio?.detail ?? "Audio is unavailable for this ayah.");
+        pendingResumeRef.current = false;
+        return null;
+      }
+      setActiveSrc(remoteAudio.url);
+      setSourceKind("quran_foundation");
+      setSourceDetail(remoteAudio.detail);
+      setLoadError(false);
+      return remoteAudio.url;
+    } catch {
+      setLoadError(true);
+      setPlaying(false);
+      setSourceDetail("Could not reach Quran.com audio right now.");
+      pendingResumeRef.current = false;
+      return null;
+    } finally {
+      setResolvingFallback(false);
+    }
+  }, [props.ayahId, props.reciterId, resolvingFallback]);
+
+  const ensureSourceReady = useCallback(async () => {
+    if (activeSrcRef.current) {
+      return activeSrcRef.current;
+    }
+    return resolveRemoteFallback();
+  }, [resolveRemoteFallback]);
+
+  useEffect(() => {
+    activeSrcRef.current = activeSrc;
+  }, [activeSrc]);
+
+  useEffect(() => {
+    const nextSourceKind = props.initialSrc ? "local" : "unavailable";
+    fallbackAttemptedRef.current = false;
+    pendingResumeRef.current = false;
+    setActiveSrc(props.initialSrc);
+    setSourceKind(nextSourceKind);
+    setSourceDetail(
+      props.initialSrc
+        ? "Playing from the local Hifzer audio library."
+        : "No local audio file was found, so Hifzer will try Quran.com when you play.",
+    );
+    setLoadError(false);
+    setCurrentTime(0);
+    setDuration(0);
+  }, [props.initialSrc]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -155,6 +243,7 @@ function AyahAudioPlayerInner(props: {
         });
         return;
       }
+      pendingResumeRef.current = false;
       setPlaying(false);
       syncTime();
       if (autoAdvanceEnabledRef.current) {
@@ -163,8 +252,29 @@ function AyahAudioPlayerInner(props: {
     }
 
     function onError() {
-      setLoadError(true);
       setPlaying(false);
+      if (!fallbackAttemptedRef.current) {
+        void (async () => {
+          const nextSource = await resolveRemoteFallback();
+          const target = audioRef.current;
+          if (!nextSource || !target) {
+            return;
+          }
+          syncAudioSource(target, nextSource);
+          target.playbackRate = speedRef.current;
+          if (pendingResumeRef.current) {
+            claimSinglePlayback(target);
+            try {
+              await target.play();
+              void markStreakRecitation();
+            } catch {
+              setPlaying(false);
+            }
+          }
+        })();
+        return;
+      }
+      setLoadError(true);
     }
 
     audioEl.addEventListener("play", onPlay);
@@ -180,7 +290,7 @@ function AyahAudioPlayerInner(props: {
       audioEl.removeEventListener("error", onError);
       releaseSinglePlayback(audioEl);
     };
-  }, []);
+  }, [markStreakRecitation, resolveRemoteFallback]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -222,35 +332,51 @@ function AyahAudioPlayerInner(props: {
   }, [props.ayahId, props.streakTrackSource]);
 
   useEffect(() => {
-    if (!props.autoPlayPrefKey || !autoPlayEnabled || !src) {
+    let cancelled = false;
+    if (!props.autoPlayPrefKey || !autoPlayEnabled) {
       return;
     }
+
+    void (async () => {
+      const source = await ensureSourceReady();
+      const audio = audioRef.current;
+      if (cancelled || !audio || !source) {
+        return;
+      }
+      pendingResumeRef.current = true;
+      claimSinglePlayback(audio);
+      repeatLeftRef.current = Math.max(0, repeatCountRef.current - 1);
+      audio.playbackRate = speedRef.current;
+      syncAudioSource(audio, source);
+      audio.currentTime = 0;
+      void audio.play().then(() => {
+        void markStreakRecitation();
+      }).catch(() => {
+        setPlaying(false);
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [autoPlayEnabled, ensureSourceReady, markStreakRecitation, props.autoPlayPrefKey]);
+
+  async function onTogglePlayback() {
     const audio = audioRef.current;
     if (!audio) {
       return;
     }
 
-    claimSinglePlayback(audio);
-    repeatLeftRef.current = Math.max(0, repeatCountRef.current - 1);
-    audio.playbackRate = speedRef.current;
-    audio.currentTime = 0;
-    void audio.play().then(() => {
-      void markStreakRecitation();
-    }).catch(() => {
-      setPlaying(false);
-    });
-  }, [autoPlayEnabled, markStreakRecitation, props.autoPlayPrefKey, src]);
-
-  async function onTogglePlayback() {
-    const audio = audioRef.current;
-    if (!audio || !src) {
-      return;
-    }
-
     if (audio.paused) {
+      const source = await ensureSourceReady();
+      if (!source) {
+        return;
+      }
+      pendingResumeRef.current = true;
       claimSinglePlayback(audio);
       repeatLeftRef.current = Math.max(0, repeatCount - 1);
       audio.playbackRate = speed;
+      syncAudioSource(audio, source);
       try {
         await audio.play();
         void markStreakRecitation();
@@ -260,6 +386,7 @@ function AyahAudioPlayerInner(props: {
       return;
     }
 
+    pendingResumeRef.current = false;
     audio.pause();
   }
 
@@ -281,7 +408,7 @@ function AyahAudioPlayerInner(props: {
     seekToTime(value);
   }
 
-  const disabled = !src || loadError;
+  const disabled = (!activeSrc && resolvingFallback) || loadError;
 
   function toggleAutoPlay() {
     const prefKey = props.autoPlayPrefKey;
@@ -306,7 +433,7 @@ function AyahAudioPlayerInner(props: {
         props.className,
       )}
     >
-      <audio ref={audioRef} src={src ?? undefined} preload="none" />
+      <audio ref={audioRef} src={activeSrc ?? undefined} preload="none" />
 
       <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:justify-between">
         <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -320,12 +447,14 @@ function AyahAudioPlayerInner(props: {
                 ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]"
                 : "border-[rgba(43,75,255,0.22)] bg-[rgba(43,75,255,0.10)] text-[rgba(31,54,217,1)] hover:bg-[rgba(43,75,255,0.14)]",
             )}
-            aria-label={disabled ? "Audio unavailable" : playing ? "Pause" : "Play"}
+            aria-label={
+              loadError ? "Audio unavailable" : resolvingFallback ? "Loading audio" : playing ? "Pause" : "Play"
+            }
             title={
-              !src
-                ? "Audio base URL not configured"
-                : loadError
-                  ? "Audio file unavailable for this reciter"
+              loadError
+                ? "Audio is unavailable for this reciter"
+                : resolvingFallback
+                  ? "Loading Quran.com audio"
                   : playing
                     ? "Pause"
                     : "Play"
@@ -339,14 +468,16 @@ function AyahAudioPlayerInner(props: {
               <p className="truncate text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
                 Audio
               </p>
-              {disabled ? (
-                <span className="truncate text-xs text-[color:var(--kw-muted)]">
-                  {loadError ? "Unavailable" : "Not configured"}
-                </span>
-              ) : (
+              {loadError ? (
+                <span className="truncate text-xs text-[color:var(--kw-muted)]">Unavailable</span>
+              ) : resolvingFallback ? (
+                <span className="truncate text-xs text-[color:var(--kw-muted)]">Loading</span>
+              ) : activeSrc ? (
                 <span className="text-xs text-[color:var(--kw-muted)]">
                   {formatSeconds(currentTime)} / {formatSeconds(duration)}
                 </span>
+              ) : (
+                <span className="truncate text-xs text-[color:var(--kw-muted)]">Ready on demand</span>
               )}
             </div>
             <div className="relative mt-1 w-28 sm:w-44">
@@ -379,6 +510,14 @@ function AyahAudioPlayerInner(props: {
                 title="Drag to seek"
               />
             </div>
+            {sourceDetail ? (
+              <div className="mt-1.5 flex items-center gap-1 text-[11px] leading-5 text-[color:var(--kw-muted)]">
+                <Volume2 size={12} className="shrink-0" />
+                <span className="truncate">
+                  {sourceKind === "quran_foundation" ? "Quran.com" : "Hifzer local"} · {sourceDetail}
+                </span>
+              </div>
+            ) : null}
           </div>
         </div>
 
@@ -386,7 +525,7 @@ function AyahAudioPlayerInner(props: {
           <button
             type="button"
             disabled={disabled}
-            onClick={() => setRepeatCount((v) => (v >= 10 ? 1 : v + 1))}
+            onClick={() => setRepeatCount((value) => (value >= 10 ? 1 : value + 1))}
             className={clsx(
               "inline-flex items-center gap-1.5 rounded-2xl border px-2 py-1.5 text-[11px] font-semibold shadow-[var(--kw-shadow-soft)] transition sm:gap-2 sm:px-2.5 sm:py-2 sm:text-xs",
               disabled
@@ -403,7 +542,7 @@ function AyahAudioPlayerInner(props: {
           <button
             type="button"
             disabled={disabled}
-            onClick={() => setSpeedIndex((v) => (v + 1) % SPEEDS.length)}
+            onClick={() => setSpeedIndex((value) => (value + 1) % SPEEDS.length)}
             className={clsx(
               "inline-flex items-center gap-1.5 rounded-2xl border px-2 py-1.5 text-[11px] font-semibold shadow-[var(--kw-shadow-soft)] transition sm:gap-2 sm:px-2.5 sm:py-2 sm:text-xs",
               disabled

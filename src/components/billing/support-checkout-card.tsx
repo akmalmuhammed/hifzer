@@ -75,6 +75,11 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
     () => PRESETS.find((option) => normalizedAmount === option.amount.toFixed(2)) ?? null,
     [normalizedAmount],
   );
+  const amountError =
+    amount.trim().length > 0 && !normalizedAmount ? "Enter a valid amount from $1.00 upward." : "";
+  const amountDescribedBy = amountError
+    ? "support-amount-help support-amount-error"
+    : "support-amount-help";
 
   return (
     <div className={props.className}>
@@ -147,7 +152,15 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
         </div>
 
         <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="flex h-11 min-w-[220px] items-center rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-card-strong)] px-3 text-sm text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]">
+          <div
+            className={clsx(
+              "flex h-11 min-w-[220px] items-center rounded-xl border bg-[color:var(--kw-card-strong)] px-3 text-sm text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] transition",
+              "focus-within:border-[rgba(var(--kw-accent-rgb),0.55)] focus-within:ring-4 focus-within:ring-[rgba(var(--kw-accent-rgb),0.16)]",
+              amountError
+                ? "border-[rgba(225,29,72,0.42)] bg-[rgba(225,29,72,0.06)] focus-within:border-[rgba(225,29,72,0.6)] focus-within:ring-[rgba(225,29,72,0.18)]"
+                : "border-[color:var(--kw-border-2)]",
+            )}
+          >
             <span className="mr-2 text-[color:var(--kw-muted)]">$</span>
             <input
               id="support-amount"
@@ -158,7 +171,8 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
               onChange={(event) => setAmount(event.target.value)}
               className="w-full bg-transparent outline-none placeholder:text-[color:var(--kw-faint)]"
               placeholder="99.00"
-              aria-describedby="support-amount-help"
+              aria-describedby={amountDescribedBy}
+              aria-invalid={amountError ? "true" : undefined}
             />
           </div>
 
@@ -219,6 +233,16 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
         <p id="support-amount-help" className="mt-2 text-xs leading-6 text-[color:var(--kw-faint)]">
           One-time payment only. No subscription is created.
         </p>
+        {amountError ? (
+          <p
+            id="support-amount-error"
+            role="alert"
+            aria-live="polite"
+            className="mt-2 text-sm font-medium text-[color:var(--kw-rose-600)]"
+          >
+            {amountError}
+          </p>
+        ) : null}
       </div>
 
       <div className="mt-4 rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[rgba(var(--kw-accent-rgb),0.08)] p-4">

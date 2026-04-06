@@ -13,8 +13,11 @@ function resolvedDefaultReciter(): string {
   return trimmed || DEFAULT_PUBLIC_RECITER;
 }
 
-function resolvedReciterId(reciterId: ReciterId): string {
+export function resolveLocalAudioReciterId(reciterId: ReciterId): string | null {
   const safe = String(reciterId || "default").trim() || "default";
+  if (safe.startsWith("qf:")) {
+    return null;
+  }
   if (safe === "default") {
     return resolvedDefaultReciter();
   }
@@ -51,7 +54,10 @@ export function audioUrl(reciterId: ReciterId, ayahId: number): string | null {
   if (!base) {
     return null;
   }
-  const safeReciter = resolvedReciterId(reciterId);
+  const safeReciter = resolveLocalAudioReciterId(reciterId);
+  if (!safeReciter) {
+    return null;
+  }
   const id = Number(ayahId);
   if (!Number.isFinite(id) || id <= 0) {
     return null;

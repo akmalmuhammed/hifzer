@@ -1176,6 +1176,50 @@
   margin-top: 1.5rem;
 }
 
+.moduleCtaBand {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 1.15rem;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.18);
+  border-radius: 26px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.72));
+  box-shadow: var(--kw-shadow-soft);
+  padding: 1rem;
+}
+
+.moduleCtaCopy {
+  min-width: 0;
+}
+
+.moduleCtaTitle {
+  margin-top: 0.7rem;
+  max-width: 16ch;
+  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  color: var(--kw-ink);
+  text-wrap: balance;
+}
+
+.moduleCtaBody {
+  margin-top: 0.7rem;
+  max-width: 39rem;
+  font-size: 0.94rem;
+  line-height: 1.75;
+  color: var(--kw-muted);
+}
+
+.moduleCtaActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 .moduleCard {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -1493,6 +1537,7 @@
 
 :global(html[data-mode="dark"]) .heroPanel,
 :global(html[data-mode="dark"]) .moduleCard,
+:global(html[data-mode="dark"]) .moduleCtaBand,
 :global(html[data-mode="dark"]) .principleCard,
 :global(html[data-mode="dark"]) .promiseCardNew,
 :global(html[data-mode="dark"]) .heroStatCard,
@@ -1553,6 +1598,10 @@
   .heroGrid,
   .finalGrid {
     grid-template-columns: minmax(0, 1fr) minmax(290px, 360px);
+  }
+
+  .moduleCtaBand {
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
   .moduleCard {

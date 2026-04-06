@@ -4,62 +4,62 @@ import { hasClerkAuthE2EConfig, seedLocalStartPoint, signInAsClerkTestUser } fro
 test.describe("authenticated routing", () => {
   test.skip(!hasClerkAuthE2EConfig(), "Requires Clerk auth E2E env vars");
 
-  test("signed-in users hitting /login or /signup land on /today", async ({ page }) => {
+  test("signed-in users hitting /login or /signup land on /dashboard", async ({ page }) => {
     await signInAsClerkTestUser(page);
 
     await page.goto("/login");
-    await expect(page).toHaveURL(/\/today(?:\?|$)/);
+    await expect(page).toHaveURL(/\/dashboard(?:\?|$)/);
 
     await page.goto("/signup");
-    await expect(page).toHaveURL(/\/today(?:\?|$)/);
+    await expect(page).toHaveURL(/\/dashboard(?:\?|$)/);
   });
 
-  test("public auth CTAs route signed-in users to /today", async ({ page }) => {
+  test("public auth CTAs route signed-in users to /dashboard", async ({ page }) => {
     await signInAsClerkTestUser(page);
 
     for (const route of ["/", "/pricing"] as const) {
       await page.goto(route);
-      await page.locator('a[href="/today"]').first().click();
+      await page.locator('a[href="/dashboard"]').first().click();
 
-      await expect(page, `Expected signed-in CTA from ${route} to land on /today`).toHaveURL(
-        /\/today(?:\?|$)/,
+      await expect(page, `Expected signed-in CTA from ${route} to land on /dashboard`).toHaveURL(
+        /\/dashboard(?:\?|$)/,
       );
     }
   });
 
-  test("today side-nav and in-page CTAs route correctly", async ({ page }) => {
+  test("dashboard side-nav and in-page CTAs route correctly", async ({ page }) => {
     await signInAsClerkTestUser(page);
     await seedLocalStartPoint(page);
 
-    await page.goto("/today");
-    await expect(page.getByRole("heading", { name: /^today$/i })).toBeVisible();
+    await page.goto("/dashboard");
+    await expect(page.getByRole("heading", { name: /^dashboard$/i })).toBeVisible();
 
     const sideNavMatrix = [
-      { href: "/today", expected: /\/today(?:\?|$)/ },
+      { href: "/dashboard", expected: /\/dashboard(?:\?|$)/ },
       { href: "/hifz", expected: /\/hifz(?:\?|$)/ },
       { href: "/quran", expected: /\/quran(?:\?|$)/ },
-      { href: "/progress", expected: /\/progress(?:\/|$|\?)/ },
-      { href: "/history/sessions", expected: /\/history(?:\/|$|\?)/ },
-      { href: "/settings", expected: /\/settings(?:\/|$|\?)/ },
+      { href: "/dua", expected: /\/dua(?:\?|$)/ },
+      { href: "/journal", expected: /\/journal(?:\?|$)/ },
+      { href: "/roadmap", expected: /\/roadmap(?:\?|$)/ },
     ] as const;
 
     for (const item of sideNavMatrix) {
-      await page.goto("/today");
+      await page.goto("/dashboard");
       await page.locator(`aside a[href="${item.href}"]`).first().click();
       await expect(page, `Side-nav click failed for ${item.href}`).toHaveURL(item.expected);
     }
 
     const inPageCtaMatrix = [
       { href: "/hifz", expected: /\/hifz(?:\?|$)/ },
-      { href: "/quran", expected: /\/quran(?:\?|$)/ },
-      { href: "/settings/display", expected: /\/settings\/display(?:\?|$)/ },
-      { href: "/onboarding/start-point", expected: /\/onboarding\/start-point(?:\?|$)/ },
+      { href: "/quran/read?view=compact", expected: /\/quran\/read\?view=compact(?:&|$)/ },
+      { href: "/dua", expected: /\/dua(?:\?|$)/ },
+      { href: "/journal", expected: /\/journal(?:\?|$)/ },
     ] as const;
 
     for (const item of inPageCtaMatrix) {
-      await page.goto("/today");
+      await page.goto("/dashboard");
       await page.locator(`a[href="${item.href}"]`).first().click();
-      await expect(page, `Today CTA failed for ${item.href}`).toHaveURL(item.expected);
+      await expect(page, `Dashboard CTA failed for ${item.href}`).toHaveURL(item.expected);
     }
   });
 });

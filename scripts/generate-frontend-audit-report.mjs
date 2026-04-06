@@ -141,7 +141,6 @@ function classify(file) {
   }
 
   const b4 =
-    file.startsWith("src/app/(app)/today/") ||
     file.startsWith("src/app/(app)/hifz/") ||
     file.startsWith("src/app/(app)/session/") ||
     file.startsWith("src/app/(app)/quran/") ||
@@ -155,8 +154,6 @@ function classify(file) {
 
   const b5 =
     file.startsWith("src/app/(app)/dashboard/") ||
-    file.startsWith("src/app/(app)/progress/") ||
-    file.startsWith("src/app/(app)/streak/") ||
     file.startsWith("src/app/(app)/support/") ||
     file.startsWith("src/app/(app)/billing/") ||
     file.startsWith("src/app/(app)/fluency/") ||
@@ -407,7 +404,7 @@ async function main() {
   b7.push("1. Unblock QA automation environment (Playwright OS deps) and re-run routing/mobile audits.");
   b7.push("2. Fix platform/code-quality blockers (middleware deprecation, lint purity, typecheck mismatch).");
   b7.push("3. Close navigation/accessibility gaps on global/public shells.");
-  b7.push("4. Ship localization parity for core workflows (Today/Session/Quran/Onboarding/Settings)." );
+  b7.push("4. Ship localization parity for core workflows (Dashboard/Session/Quran/Onboarding/Settings)." );
   b7.push("5. Reduce structural risk (session monolith split, token migration away from dark-mode bridge hacks).");
   b7.push("6. Isolate or modernize legacy shell to stop design-system drift.");
   b7.push("");
@@ -438,7 +435,7 @@ async function main() {
 
   summary.push("## Validation Command Status");
   summary.push("");
-  summary.push("1. `pnpm lint src/app src/components` -> failed (1 error, 4 warnings). Primary blocker: `Date.now()` purity violation in `src/app/(app)/today/page.tsx:72`.");
+  summary.push("1. `pnpm lint src/app src/components` -> historical audit snapshot; rerun against the current dashboard-only route tree before reusing this status block.");
   summary.push("2. `pnpm tsc --noEmit` -> failed (`TS2719` in `src/hifzer/engine/queue-builder.test.ts:6`).");
   summary.push("3. `pnpm audit:clicks` -> failed (Playwright launch blocked by missing `libatk-1.0.so.0`).");
   summary.push("4. `pnpm audit:mobile:overflow` -> failed (same Playwright dependency blocker).");

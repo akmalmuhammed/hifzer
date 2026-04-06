@@ -26,13 +26,11 @@ import styles from "./app-shell.module.css";
 
 type NavKey =
   | "home"
-  | "today"
+  | "dashboard"
   | "hifz"
   | "quran"
   | "dua"
   | "journal"
-  | "progress"
-  | "streak"
   | "glossary"
   | "roadmap"
   | "support"
@@ -42,7 +40,7 @@ type NavItem = { href: string; key: NavKey; icon: typeof House; label?: string }
 
 const PRIMARY: NavItem[] = [
   { href: "/", key: "home", icon: House },
-  { href: "/dashboard", key: "today", icon: CalendarDays },
+  { href: "/dashboard", key: "dashboard", icon: CalendarDays },
   { href: "/hifz", key: "hifz", icon: PlayCircle },
   { href: "/quran", key: "quran", icon: BookOpenText },
   { href: "/dua", key: "dua", icon: MoonStar },
@@ -60,7 +58,7 @@ const PLATFORM: NavItem[] = [
 
 const MOBILE_NAV: NavItem[] = [
   { href: "/", key: "home", icon: House },
-  { href: "/dashboard", key: "today", icon: CalendarDays },
+  { href: "/dashboard", key: "dashboard", icon: CalendarDays },
   { href: "/hifz", key: "hifz", icon: PlayCircle },
   { href: "/quran", key: "quran", icon: BookOpenText },
   { href: "/dua", key: "dua", icon: MoonStar },
@@ -73,7 +71,7 @@ function isActive(pathname: string, href: string): boolean {
     return pathname === "/";
   }
   if (href === "/dashboard") {
-    return pathname === "/dashboard" || pathname === "/today";
+    return pathname === "/dashboard";
   }
   if (href === "/roadmap") {
     return pathname === "/roadmap";
@@ -86,12 +84,6 @@ function isActive(pathname: string, href: string): boolean {
   }
   if (href === "/settings") {
     return pathname === "/settings" || pathname.startsWith("/settings/");
-  }
-  if (href === "/progress") {
-    return pathname === "/progress" || pathname.startsWith("/progress/");
-  }
-  if (href === "/streak") {
-    return pathname === "/streak";
   }
   if (href === "/quran/glossary") {
     return pathname === "/quran/glossary";
@@ -323,4 +315,3 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
     </div>
   );
 }
-

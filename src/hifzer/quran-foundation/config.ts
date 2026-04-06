@@ -4,6 +4,7 @@ import { getSiteUrl } from "@/lib/site-url";
 
 const DEFAULT_OAUTH_BASE_URL = "https://oauth2.quran.foundation";
 const DEFAULT_USER_API_BASE_URL = "https://apis.quran.foundation/auth/v1";
+const DEFAULT_CONTENT_API_BASE_URL = "https://apis.quran.foundation/content/api/v4";
 const DEFAULT_BOOKMARK_MUSHAF_ID = 4;
 
 function trimEnv(value: string | undefined): string | null {
@@ -22,6 +23,7 @@ export type QuranFoundationRuntimeConfig = {
   encryptionSecret: string | null;
   oauthBaseUrl: string;
   userApiBaseUrl: string;
+  contentApiBaseUrl: string;
   redirectUri: string;
   bookmarkMushafId: number;
   contentTranslationResourceId: number | null;
@@ -40,6 +42,7 @@ export function getQuranFoundationConfig(): QuranFoundationRuntimeConfig {
     encryptionSecret: trimEnv(process.env.QF_TOKEN_ENCRYPTION_SECRET),
     oauthBaseUrl: trimEnv(process.env.QF_OAUTH_BASE_URL) ?? DEFAULT_OAUTH_BASE_URL,
     userApiBaseUrl: trimEnv(process.env.QF_USER_API_BASE_URL) ?? DEFAULT_USER_API_BASE_URL,
+    contentApiBaseUrl: trimEnv(process.env.QF_CONTENT_API_BASE_URL) ?? DEFAULT_CONTENT_API_BASE_URL,
     redirectUri,
     bookmarkMushafId:
       parseOptionalPositiveInt(process.env.QF_BOOKMARK_MUSHAF_ID) ?? DEFAULT_BOOKMARK_MUSHAF_ID,

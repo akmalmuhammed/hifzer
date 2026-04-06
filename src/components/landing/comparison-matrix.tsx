@@ -5,6 +5,7 @@ import { ArrowRight, Check, Minus } from "lucide-react";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { DisclosureCard } from "@/components/ui/disclosure-card";
 import { Pill } from "@/components/ui/pill";
 
 const ROWS = [
@@ -19,21 +20,42 @@ const ROWS = [
   { feature: "Tajweed correction", teacher: true, generic: false, hifzer: false },
 ] as const;
 
+const COLUMNS = [
+  { key: "teacher", label: "Teacher-only" },
+  { key: "generic", label: "Anki / Flashcards" },
+  { key: "hifzer", label: "Hifzer" },
+] as const;
+
+function getCellLabel(value: boolean | "partial") {
+  if (value === true) return "Included";
+  if (value === "partial") return "Partial";
+  return "Not included";
+}
+
 function CellIcon({ value }: { value: boolean | "partial" }) {
   if (value === true)
     return (
-      <span className="grid h-6 w-6 place-items-center rounded-full border border-[rgba(22,163,74,0.26)] bg-[rgba(22,163,74,0.10)] text-[color:var(--kw-lime-600)]">
+      <span
+        aria-hidden="true"
+        className="grid h-6 w-6 place-items-center rounded-full border border-[rgba(22,163,74,0.26)] bg-[rgba(22,163,74,0.10)] text-[color:var(--kw-lime-600)]"
+      >
         <Check size={14} />
       </span>
     );
   if (value === "partial")
     return (
-      <span className="grid h-6 w-6 place-items-center rounded-full border border-[rgba(234,179,8,0.26)] bg-[rgba(234,179,8,0.10)] text-sm font-bold text-[color:var(--kw-ember-600)]">
+      <span
+        aria-hidden="true"
+        className="grid h-6 w-6 place-items-center rounded-full border border-[rgba(234,179,8,0.26)] bg-[rgba(234,179,8,0.10)] text-sm font-bold text-[color:var(--kw-ember-600)]"
+      >
         ~
       </span>
     );
   return (
-    <span className="grid h-6 w-6 place-items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-faint)]">
+    <span
+      aria-hidden="true"
+      className="grid h-6 w-6 place-items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-faint)]"
+    >
       <Minus size={14} />
     </span>
   );
@@ -59,12 +81,63 @@ export function ComparisonMatrix() {
         </p>
       </div>
 
+      <div className="mt-6 md:hidden">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+          Tap a feature to compare
+        </p>
+        <div className="mt-3 grid gap-3">
+          {ROWS.map((row, idx) => (
+            <DisclosureCard
+              key={row.feature}
+              defaultOpen={idx === 0}
+              summaryClassName="rounded-[18px]"
+              contentClassName="space-y-3"
+              summary={
+                <div className="pr-2">
+                  <p className="text-base font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                    {row.feature}
+                  </p>
+                  <p className="mt-1 text-xs leading-6 text-[color:var(--kw-faint)]">
+                    Compare teacher-only, flashcards, and Hifzer at a glance.
+                  </p>
+                </div>
+              }
+            >
+              {COLUMNS.map((column) => {
+                const value = row[column.key];
+                return (
+                  <div
+                    key={column.key}
+                    className={[
+                      "flex items-center justify-between gap-3 rounded-[18px] border px-3 py-3",
+                      column.key === "hifzer"
+                        ? "border-[rgba(var(--kw-accent-rgb),0.24)] bg-[rgba(var(--kw-accent-rgb),0.08)]"
+                        : "border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)]",
+                    ].join(" ")}
+                  >
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+                        {column.label}
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
+                        {getCellLabel(value)}
+                      </p>
+                    </div>
+                    <CellIcon value={value} />
+                  </div>
+                );
+              })}
+            </DisclosureCard>
+          ))}
+        </div>
+      </div>
+
       <motion.div
         initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.15 }}
         transition={{ duration: reduceMotion ? 0 : 0.45 }}
-        className="mt-8"
+        className="mt-8 hidden md:block"
       >
         <Card className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -98,16 +171,19 @@ export function ComparisonMatrix() {
                   <td className="py-3 px-3 text-center">
                     <div className="flex justify-center">
                       <CellIcon value={row.teacher} />
+                      <span className="sr-only">{getCellLabel(row.teacher)}</span>
                     </div>
                   </td>
                   <td className="py-3 px-3 text-center">
                     <div className="flex justify-center">
                       <CellIcon value={row.generic} />
+                      <span className="sr-only">{getCellLabel(row.generic)}</span>
                     </div>
                   </td>
                   <td className="py-3 pl-3 text-center">
                     <div className="flex justify-center">
                       <CellIcon value={row.hifzer} />
+                      <span className="sr-only">{getCellLabel(row.hifzer)}</span>
                     </div>
                   </td>
                 </tr>
@@ -136,4 +212,3 @@ export function ComparisonMatrix() {
     </section>
   );
 }
-

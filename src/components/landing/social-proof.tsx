@@ -32,7 +32,7 @@ export function SocialProof() {
 
   return (
     <section className="py-10 md:py-14">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
             Methodology
@@ -48,7 +48,7 @@ export function SocialProof() {
         </p>
       </div>
 
-      <div className="mt-8 grid gap-4 md:grid-cols-2">
+      <div className="mt-6 grid gap-3 sm:mt-8 sm:gap-4 md:grid-cols-2">
         {PRINCIPLES.map((p, idx) => (
           <motion.div
             key={p.source}
@@ -58,12 +58,12 @@ export function SocialProof() {
             transition={{ duration: reduceMotion ? 0 : 0.45, delay: idx * 0.05 }}
           >
             <CardSoft className="h-full">
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3 sm:gap-4">
                 <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)]">
                   <Quote size={16} />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold leading-7 text-[color:var(--kw-ink)]">
+                  <p className="text-sm font-semibold leading-7 text-[color:var(--kw-ink)] sm:text-[0.95rem]">
                     &ldquo;{p.quote}&rdquo;
                   </p>
                   <p className="mt-2 text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
@@ -76,7 +76,7 @@ export function SocialProof() {
         ))}
       </div>
 
-      <div className="mt-6 flex items-center justify-center gap-2 text-center text-xs text-[color:var(--kw-faint)]">
+      <div className="mt-6 flex flex-col items-center justify-center gap-2 text-center text-xs leading-6 text-[color:var(--kw-faint)] sm:flex-row">
         <BookOpenText size={14} />
         <span>Built to protect daily recitation, review, and long-term memorization with one calm routine.</span>
       </div>

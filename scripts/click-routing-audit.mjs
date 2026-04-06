@@ -19,7 +19,7 @@ const DEFAULT_SEED_ROUTES = [
   "/legal/refund-policy",
   "/legal/sources",
   "/changelog",
-  "/today",
+  "/dashboard",
   "/hifz",
   "/session",
   "/quran",

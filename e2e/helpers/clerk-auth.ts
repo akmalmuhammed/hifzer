@@ -33,9 +33,9 @@ export async function signInAsClerkTestUser(
     });
   }
 
-  await page.goto("/today");
+  await page.goto("/dashboard");
   if (markOnboardingComplete) {
-    await expect(page).toHaveURL(/\/today(?:\?|$)/);
+    await expect(page).toHaveURL(/\/dashboard(?:\?|$)/);
   }
 }
 

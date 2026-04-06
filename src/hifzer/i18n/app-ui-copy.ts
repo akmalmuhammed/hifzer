@@ -8,12 +8,10 @@ export type AppUiCopy = {
   sectionProduct: string;
   nav: {
     home: string;
-    today: string;
+    dashboard: string;
     hifz: string;
     quran: string;
     dua: string;
-    progress: string;
-    streak: string;
     glossary: string;
     roadmap: string;
     support: string;
@@ -72,12 +70,10 @@ const APP_UI_COPY: Record<UiLanguage, AppUiCopy> = {
     sectionProduct: "Product",
     nav: {
       home: "Home",
-      today: "Dashboard",
+      dashboard: "Dashboard",
       hifz: "Hifz",
       quran: "Qur'an",
       dua: "Dua",
-      progress: "Progress",
-      streak: "Streak",
       glossary: "Glossary",
       roadmap: "Roadmap",
       support: "Support",
@@ -134,12 +130,10 @@ const APP_UI_COPY: Record<UiLanguage, AppUiCopy> = {
     sectionProduct: "پروڈکٹ",
     nav: {
       home: "ہوم",
-      today: "آج",
+      dashboard: "ڈیش بورڈ",
       hifz: "حفظ",
       quran: "قرآن",
       dua: "دعا",
-      progress: "پیش رفت",
-      streak: "تسلسل",
       glossary: "لغت",
       roadmap: "روڈ میپ",
       support: "مدد",
@@ -196,12 +190,10 @@ const APP_UI_COPY: Record<UiLanguage, AppUiCopy> = {
     sectionProduct: "Produk",
     nav: {
       home: "Beranda",
-      today: "Hari ini",
+      dashboard: "Dasbor",
       hifz: "Hifz",
       quran: "Qur'an",
       dua: "Doa",
-      progress: "Progres",
-      streak: "Streak",
       glossary: "Glosarium",
       roadmap: "Roadmap",
       support: "Dukungan",
@@ -258,12 +250,10 @@ const APP_UI_COPY: Record<UiLanguage, AppUiCopy> = {
     sectionProduct: "Ürün",
     nav: {
       home: "Ana sayfa",
-      today: "Bugün",
+      dashboard: "Gösterge paneli",
       hifz: "Hıfz",
       quran: "Kur'an",
       dua: "Dua",
-      progress: "İlerleme",
-      streak: "Seri",
       glossary: "Sözlük",
       roadmap: "Yol haritası",
       support: "Destek",
@@ -320,12 +310,10 @@ const APP_UI_COPY: Record<UiLanguage, AppUiCopy> = {
     sectionProduct: "محصول",
     nav: {
       home: "خانه",
-      today: "امروز",
+      dashboard: "داشبورد",
       hifz: "حفظ",
       quran: "قرآن",
       dua: "دعا",
-      progress: "پیشرفت",
-      streak: "تداوم",
       glossary: "واژه‌نامه",
       roadmap: "نقشه راه",
       support: "پشتیبانی",
@@ -382,12 +370,10 @@ const APP_UI_COPY: Record<UiLanguage, AppUiCopy> = {
     sectionProduct: "প্রোডাক্ট",
     nav: {
       home: "হোম",
-      today: "আজ",
+      dashboard: "ড্যাশবোর্ড",
       hifz: "হিফজ",
       quran: "কুরআন",
       dua: "দু'আ",
-      progress: "অগ্রগতি",
-      streak: "স্ট্রিক",
       glossary: "গ্লসারি",
       roadmap: "রোডম্যাপ",
       support: "সাপোর্ট",
@@ -444,12 +430,10 @@ const APP_UI_COPY: Record<UiLanguage, AppUiCopy> = {
     sectionProduct: "ഉൽപ്പന്നം",
     nav: {
       home: "ഹോം",
-      today: "ഇന്ന്",
+      dashboard: "ഡാഷ്ബോർഡ്",
       hifz: "ഹിഫ്‌സ്",
       quran: "ഖുർആൻ",
       dua: "ദുആ",
-      progress: "പുരോഗതി",
-      streak: "സ്റ്റ്രീക്ക്",
       glossary: "ഗ്ലോസറി",
       roadmap: "റോഡ്‌മാപ്",
       support: "സഹായം",

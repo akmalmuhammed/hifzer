@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, CheckCircle2, CornerDownLeft, Link2, PlayCircle, RotateCcw } from "lucide-react";
+import { ArrowRight, CheckCircle2, CornerDownLeft, Link2, PauseCircle, PlayCircle, RotateCcw } from "lucide-react";
 import clsx from "clsx";
 import { PageHeader } from "@/components/app/page-header";
 import { isSessionFlowTutorialHidden, setSessionFlowTutorialHidden } from "@/components/app/session-flow-tutorial";
@@ -201,14 +201,16 @@ function readStoredSessionProgress(storageKey: string): StoredSessionProgress | 
   }
 }
 
-function writeStoredSessionProgress(storageKey: string, progress: StoredSessionProgress): void {
+function writeStoredSessionProgress(storageKey: string, progress: StoredSessionProgress): boolean {
   if (typeof window === "undefined") {
-    return;
+    return false;
   }
   try {
     window.localStorage.setItem(storageKey, JSON.stringify(progress));
+    return true;
   } catch {
     // Ignore storage errors (private mode / quota).
+    return false;
   }
 }
 
@@ -681,6 +683,49 @@ export function SessionClient() {
     });
   }, [canRevealCurrentStep, pushToast]);
 
+  const saveAndQuit = useCallback(() => {
+    if (!run || done) {
+      router.replace("/dashboard");
+      return;
+    }
+
+    const saved = writeStoredSessionProgress(progressStorageKey, {
+      sessionId: run.sessionId,
+      localDate: run.localDate,
+      quickReviewMode,
+      stepIndex,
+      events,
+      warmupRetryUsed,
+      warmupInterstitial,
+      reviewOnlyLock,
+    });
+
+    pushToast(saved
+      ? {
+        tone: "success",
+        title: "Session paused",
+        message: "Your place is saved. Resume this Hifz run from the dashboard anytime.",
+      }
+      : {
+        tone: "warning",
+        title: "Could not confirm local save",
+        message: "Your session may not resume correctly on this device. Keep this tab open if you still need it.",
+      });
+    router.replace("/dashboard");
+  }, [
+    done,
+    events,
+    progressStorageKey,
+    pushToast,
+    quickReviewMode,
+    reviewOnlyLock,
+    router,
+    run,
+    stepIndex,
+    warmupInterstitial,
+    warmupRetryUsed,
+  ]);
+
   const switchSessionSurah = useCallback(async () => {
     const surah = Math.floor(targetSurahNumber);
     const selectedSurah = SURAH_INDEX.find((row) => row.surahNumber === surah);
@@ -889,8 +934,21 @@ export function SessionClient() {
     clearStoredSessionProgress(progressStorageKey);
   }, [done, progressStorageKey]);
 
+  const showSaveAndQuit = Boolean(run && !done && (currentStep || warmupInterstitial));
+
   const rightActions = (
     <div className="flex w-full flex-wrap items-stretch gap-2 sm:w-auto sm:items-center">
+      {showSaveAndQuit ? (
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={saveAndQuit}
+          className="w-full gap-2 border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] hover:bg-[rgba(var(--kw-accent-rgb),0.14)] sm:w-auto"
+        >
+          <PauseCircle size={16} />
+          Save &amp; quit
+        </Button>
+      ) : null}
       {canRevealCurrentStep ? (
         <Button
           type="button"
@@ -1118,7 +1176,7 @@ export function SessionClient() {
             <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
               <Link href="/dashboard">
                 <Button className="gap-2">
-                  Go to Today <ArrowRight size={16} />
+                  Go to dashboard <ArrowRight size={16} />
                 </Button>
               </Link>
               <Button variant="secondary" className="gap-2" onClick={() => void loadRun()}>
@@ -1148,7 +1206,7 @@ export function SessionClient() {
             action={
               <Link href="/dashboard">
                 <Button className="gap-2">
-                  Back to Today <ArrowRight size={16} />
+                  Back to dashboard <ArrowRight size={16} />
                 </Button>
               </Link>
             }
@@ -1228,7 +1286,7 @@ export function SessionClient() {
                   setTutorialHidden(false);
                   pushToast({
                     title: "Tutorial turned back on",
-                    message: "The Hifz tutorial will appear again on Today.",
+                    message: "The Hifz tutorial will appear again on the dashboard.",
                     tone: "success",
                   });
                 }}
@@ -1244,6 +1302,14 @@ export function SessionClient() {
             <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Practice flow</p>
             <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
               Expose, guided recall, blind recall, link practice, then grade. Expand helpers only when you need support.
+            </p>
+          </div>
+
+          <div className="rounded-[20px] border border-[rgba(var(--kw-accent-rgb),0.16)] bg-[rgba(var(--kw-accent-rgb),0.08)] p-4">
+            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Need to step away?</p>
+            <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
+              Use <span className="font-semibold text-[color:var(--kw-ink)]">Save &amp; quit</span> anytime. We keep your
+              current step, grades, and review mode ready to resume later from the dashboard.
             </p>
           </div>
 
@@ -1441,4 +1507,3 @@ export function SessionClient() {
     </div>
   );
 }
-
