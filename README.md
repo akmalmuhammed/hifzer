@@ -210,10 +210,49 @@ Main routes:
 
 Judge-facing product surfaces:
 
-- `/today` shows current Quran.com connection state
+- `/dashboard` shows current Quran.com connection state
 - `/quran/read?view=compact` shows Quran Foundation enrichment for the active ayah
 - `/quran/bookmarks` shows bookmark provider/sync state
 - `/settings/quran-foundation` is the control surface for linking and syncing
+
+## AI Gateway (Worker + Gemini)
+
+Hifzer now has a provider-agnostic AI gateway scaffold for grounded Qur'an assistance.
+
+Current launch shape:
+
+- Cloudflare Worker gateway at `workers/ai-gateway`
+- Gemini as the first live provider
+- Quran MCP grounding for the `Explain this ayah` reader feature
+- Next.js app proxy route at `POST /api/quran/ai-explain`
+
+Next.js app environment:
+
+- `HIFZER_AI_GATEWAY_URL`
+- `HIFZER_AI_GATEWAY_TOKEN`
+
+Cloudflare Worker environment:
+
+- `GEMINI_API_KEY`
+- `AI_GATEWAY_SHARED_SECRET`
+- `AI_PROVIDER=gemini`
+- `GEMINI_MODEL=gemini-2.5-flash`
+- `QURAN_MCP_URL=https://mcp.quran.ai`
+
+Useful commands:
+
+```bash
+pnpm ai:worker:login
+pnpm ai:worker:whoami
+pnpm ai:worker:dev
+pnpm ai:worker:deploy:dry
+pnpm ai:worker:deploy
+pnpm ai:worker:tail
+```
+
+Cloudflare deployment runbook:
+
+- [`docs/ai-gateway-cloudflare-setup.md`](/workspaces/hifzer/docs/ai-gateway-cloudflare-setup.md)
 
 ## Audio (Cloudflare R2 Ready)
 

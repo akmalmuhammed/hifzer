@@ -1,0 +1,10 @@
+{
+  "name": "hifzer-ai-gateway",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-04-06",
+  "vars": {
+    "AI_PROVIDER": "gemini",
+    "GEMINI_MODEL": "gemini-2.5-flash",
+    "QURAN_MCP_URL": "https://mcp.quran.ai"
+  }
+}

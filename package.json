@@ -19,6 +19,12 @@
     "test:e2e:routing": "playwright test e2e/routing.public.spec.ts e2e/routing.auth.spec.ts e2e/routing.onboarding.spec.ts e2e/routing.legacy.spec.ts",
     "audit:clicks": "node scripts/click-routing-audit.mjs",
     "audit:mobile:overflow": "node scripts/mobile-overflow-audit.mjs",
+    "ai:worker:login": "wrangler login",
+    "ai:worker:whoami": "wrangler whoami --json",
+    "ai:worker:dev": "wrangler dev --config workers/ai-gateway/wrangler.jsonc",
+    "ai:worker:deploy:dry": "wrangler deploy --config workers/ai-gateway/wrangler.jsonc --dry-run",
+    "ai:worker:deploy": "wrangler deploy --config workers/ai-gateway/wrangler.jsonc",
+    "ai:worker:tail": "wrangler tail --config workers/ai-gateway/wrangler.jsonc",
     "quran:translation:sahih": "node scripts/generate-sahih-translation.mjs",
     "audio:manifest": "node scripts/generate-audio-manifest.mjs",
     "db:generate": "prisma generate --config=./prisma.config.ts",
@@ -61,6 +67,7 @@
     "prisma": "^7.4.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.0.18"
+    "vitest": "^4.0.18",
+    "wrangler": "^4.80.0"
   }
 }

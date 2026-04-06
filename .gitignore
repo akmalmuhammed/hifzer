@@ -40,6 +40,9 @@ yarn-error.log*
 
 # vercel
 .vercel
+.wrangler
+workers/ai-gateway/.dev.vars
+workers/ai-gateway/.dev.vars.*
 
 # typescript
 *.tsbuildinfo
