@@ -59,18 +59,18 @@
 }
 
 .heroTitle {
-  max-width: 12ch;
+  max-width: 10.5ch;
   letter-spacing: -0.045em;
   line-height: 0.94;
 }
 
 .heroBody {
-  max-width: 50rem;
+  max-width: 44rem;
 }
 
 .actionRail {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   grid-template-columns: 1fr;
 }
 
@@ -79,11 +79,11 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 14px;
-  min-height: 132px;
-  border-radius: 20px;
+  min-height: 112px;
+  border-radius: 18px;
   border: 1px solid var(--kw-border-2);
   background: rgba(255, 255, 255, 0.78);
-  padding: 16px;
+  padding: 14px;
   box-shadow: 0 12px 26px rgba(11, 18, 32, 0.08);
   transition:
     transform 180ms ease,
@@ -113,26 +113,26 @@
 }
 
 .actionTitle {
-  margin-top: 10px;
-  font-size: 1rem;
+  margin-top: 8px;
+  font-size: 0.96rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--kw-ink);
 }
 
 .actionNote {
-  margin-top: 8px;
-  font-size: 0.85rem;
-  line-height: 1.5;
+  margin-top: 6px;
+  font-size: 0.82rem;
+  line-height: 1.45;
   color: var(--kw-muted);
 }
 
 .spotlightPanel {
-  border-radius: 22px;
+  border-radius: 20px;
   border: 1px solid rgba(var(--kw-accent-rgb), 0.16);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(245, 247, 252, 0.88));
-  padding: 18px;
+  padding: 16px;
   box-shadow: 0 18px 34px rgba(11, 18, 32, 0.08);
 }
 
@@ -177,7 +177,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 236px;
+  min-height: 208px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(249, 251, 255, 0.82));
 }
@@ -570,8 +570,8 @@
 
 .qualityOrb {
   position: relative;
-  width: 148px;
-  height: 148px;
+  width: 136px;
+  height: 136px;
   border-radius: 999px;
   padding: 2px;
   box-shadow: 0 16px 32px -20px rgba(11, 18, 32, 0.45), 0 0 0 1px rgba(11, 18, 32, 0.06);
@@ -607,7 +607,7 @@
     "IBM Plex Mono",
     ui-monospace,
     monospace;
-  font-size: 1.5rem;
+  font-size: 1.38rem;
   font-weight: 600;
   letter-spacing: -0.03em;
   color: var(--kw-ink);
@@ -645,8 +645,8 @@
 .calendarCell,
 .calendarBlank {
   aspect-ratio: 1 / 1;
-  min-height: 38px;
-  border-radius: 16px;
+  min-height: 34px;
+  border-radius: 14px;
   display: grid;
   place-items: center;
   font-family:
@@ -744,7 +744,7 @@
   }
 
   .heroTitle {
-    max-width: 14ch;
+    max-width: 12ch;
   }
 
   .duaArabic {

@@ -9,7 +9,7 @@ export function Card({
     <div
       className={clsx(
         "kw-glass-strong rounded-[var(--kw-radius-xl)]",
-        "px-4 py-4 sm:px-5",
+        "[padding-block:var(--kw-card-pad-y)] [padding-inline:var(--kw-card-pad-x)]",
         className,
       )}
       {...props}
@@ -25,7 +25,7 @@ export function CardSoft({
     <div
       className={clsx(
         "kw-glass rounded-[var(--kw-radius-xl)]",
-        "px-4 py-4 sm:px-5",
+        "[padding-block:var(--kw-card-pad-y)] [padding-inline:var(--kw-card-pad-x)]",
         className,
       )}
       {...props}
@@ -59,4 +59,3 @@ export function CardKpi({
     <div className={clsx("mt-2 flex items-baseline justify-between gap-4", className)} {...props} />
   );
 }
-

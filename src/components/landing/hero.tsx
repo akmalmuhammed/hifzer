@@ -3,24 +3,17 @@
 import Image from "next/image";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
-import { ArrowRight, ChevronDown, Download, Share } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import { WindLines } from "@/components/brand/wind-lines";
 import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { Button } from "@/components/ui/button";
-import { Pill } from "@/components/ui/pill";
-import { useToast } from "@/components/ui/toast";
-import { useInstallApp } from "@/components/pwa/use-install-app";
 import { trackGaEvent } from "@/lib/ga/client";
 import styles from "./landing.module.css";
 
-export function Hero(props: { primaryIntent?: "install" | "signup" }) {
-  const primaryIntent = props.primaryIntent ?? "install";
+export function Hero() {
   const reduceMotion = useReducedMotion();
   const { isSignedIn } = usePublicAuth();
-  const install = useInstallApp();
-  const { pushToast } = useToast();
-  const InstallIcon = install.canPrompt ? Download : Share;
   const sectionRef = useRef<HTMLElement>(null);
 
   // Scroll out of hero — drives all exit transforms
@@ -39,26 +32,6 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
 
   // Scroll indicator fades out almost immediately
   const indicatorOpacity = useTransform(scrollYProgress, [0, 0.12], reduceMotion ? [1, 1] : [1, 0]);
-
-  const onInstallNow = async () => {
-    trackGaEvent("landing.install_primary_click", { placement: "hero" });
-    const result = await install.requestInstall();
-
-    if (result === "accepted") {
-      trackGaEvent("landing.install_result.accepted", { placement: "hero" });
-      pushToast({ tone: "success", title: "Installed", message: "Hifzer was added to your home screen." });
-      return;
-    }
-
-    trackGaEvent("landing.install_result.dismissed", { placement: "hero", reason: result });
-
-    if (result === "ios_instructions") {
-      pushToast({ tone: "warning", title: "iPhone install", message: "Tap Share, then Add to Home Screen." });
-      return;
-    }
-
-    pushToast({ tone: "warning", title: "Install prompt not ready", message: "Use the install steps below to add Hifzer to your home screen." });
-  };
 
   return (
     <section
@@ -88,16 +61,8 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
           initial="hidden"
           animate="show"
           variants={{ show: { transition: { staggerChildren: 0.1, delayChildren: 0.15 } } }}
-          className="flex flex-col items-center gap-7"
+          className="flex flex-col items-center gap-6"
         >
-          {/* Eyebrow pill */}
-          <motion.p
-            variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } } }}
-            className="inline-flex items-center rounded-full border border-[rgba(var(--kw-accent-rgb),0.24)] bg-white/75 px-4 py-1.5 text-xs font-semibold tracking-[0.05em] text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)]"
-          >
-            Your Islamic companion
-          </motion.p>
-
           {/* Headline — gradient on H1 only, very large */}
           <motion.h1
             variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] } } }}
@@ -112,7 +77,7 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
             variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } } }}
             className={`${styles.publicHeroSummary} mx-auto text-center text-base leading-[1.7] text-[color:var(--kw-muted)] md:text-lg`}
           >
-            Your complete companion for Hifz, Qur&apos;an reading, duas, and daily reflection.
+            Hifz, Qur&apos;an reading, dua, and private reflection in one calm daily system.
           </motion.p>
 
           {/* CTA row */}
@@ -120,29 +85,22 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
             variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } } }}
             className={`${styles.publicHeroActions} flex flex-wrap items-center justify-center`}
           >
-            {primaryIntent === "signup" ? (
-              <Button asChild size="lg">
-                <PublicAuthLink
-                  signedInHref="/dashboard"
-                  signedOutHref="/signup"
-                  onClick={() => trackGaEvent("landing.secondary_start_free_click", { placement: "hero-primary" })}
-                >
-                  Start free <ArrowRight size={17} />
-                </PublicAuthLink>
-              </Button>
-            ) : (
-              <Button type="button" size="lg" onClick={() => { void onInstallNow(); }}>
-                <InstallIcon size={17} />
-                Add to Home Screen
-              </Button>
-            )}
-            <Button asChild size="lg" variant="secondary">
+            <Button asChild size="lg">
               <PublicAuthLink
                 signedInHref="/dashboard"
                 signedOutHref="/signup"
-                onClick={() => trackGaEvent("landing.secondary_start_free_click", { placement: "hero-auth-cta", state: isSignedIn ? "signed_in" : "signed_out" })}
+                onClick={() => trackGaEvent("landing.primary_open_app_click", { placement: "hero", state: isSignedIn ? "signed_in" : "signed_out" })}
               >
-                {isSignedIn ? "Open app" : "Start free in browser"} <ArrowRight size={17} />
+                {isSignedIn ? "Open app" : "Create free account"} <ArrowRight size={17} />
+              </PublicAuthLink>
+            </Button>
+            <Button asChild size="lg" variant="secondary">
+              <PublicAuthLink
+                signedInHref="/quran-preview"
+                signedOutHref="/quran-preview"
+                onClick={() => trackGaEvent("landing.preview_click", { placement: "hero", state: isSignedIn ? "signed_in" : "signed_out" })}
+              >
+                See Qur&apos;an preview <ArrowRight size={17} />
               </PublicAuthLink>
             </Button>
           </motion.div>
@@ -152,7 +110,7 @@ export function Hero(props: { primaryIntent?: "install" | "signup" }) {
             variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } } }}
           >
             <p className="text-xs text-[color:var(--kw-faint)]">
-              Free to start · No card required · Works on Android and iPhone
+              Start in the browser first. Install later if it earns a place on your phone.
             </p>
           </motion.div>
         </motion.div>

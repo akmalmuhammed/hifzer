@@ -21,11 +21,10 @@ export function MarketingNav(props: { authEnabled: boolean }) {
   const { language } = useUiLanguage();
   const copy = getAppUiCopy(language);
   const showSignedIn = props.authEnabled && isSignedIn;
-  const signInLabel = language === "en.sahih" ? "Sign in" : copy.marketing.signIn;
-  const getStartedLabel = language === "en.sahih" ? "Join Hifzer" : copy.marketing.getStarted;
-  const openAppLabel = language === "en.sahih" ? "Open App" : copy.marketing.openApp;
-  const brandTagline =
-    language === "en.sahih" ? "A quieter Qur'an companion" : copy.brandTagline;
+  const signInLabel = copy.marketing.signIn;
+  const getStartedLabel = copy.marketing.getStarted;
+  const openAppLabel = copy.marketing.openApp;
+  const brandTagline = copy.brandTagline;
 
   return (
     <header className="sticky top-0 z-40">
@@ -73,7 +72,12 @@ export function MarketingNav(props: { authEnabled: boolean }) {
                 </>
               )}
 
-              <UiLanguageSwitcher compact className="w-[132px]" />
+              <UiLanguageSwitcher
+                compact
+                showIcon
+                className="w-[118px]"
+                selectClassName="h-[var(--kw-control-md-height)] rounded-[var(--kw-control-md-radius)] bg-[color:var(--kw-surface)] pl-9 pr-3 shadow-[var(--kw-shadow-soft)]"
+              />
               <ThemeToggle className="ml-1" />
             </div>
 
@@ -132,7 +136,12 @@ export function MarketingNav(props: { authEnabled: boolean }) {
               </div>
 
               <div className="grid gap-2 pt-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-                <UiLanguageSwitcher compact onChanged={() => setOpen(false)} />
+                <UiLanguageSwitcher
+                  compact
+                  showIcon
+                  onChanged={() => setOpen(false)}
+                  selectClassName="h-[var(--kw-control-md-height)] rounded-[var(--kw-control-md-radius)] bg-[color:var(--kw-surface)] pl-9 pr-3 shadow-[var(--kw-shadow-soft)]"
+                />
                 <div className="flex justify-center sm:justify-end">
                   <ThemeToggle />
                 </div>

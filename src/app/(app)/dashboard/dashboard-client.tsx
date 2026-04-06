@@ -802,11 +802,11 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
         subtitle="Open Hifz, continue Qur'an, return to dua, and capture private reflections from one calm home."
         right={
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="secondary" className="gap-2" onClick={() => void load()}>
+            <Button variant="secondary" size="sm" className="gap-2" onClick={() => void load()}>
               Refresh <RefreshCcw size={16} />
             </Button>
             <Link href="/hifz">
-              <Button className="gap-2">
+              <Button size="sm" className="gap-2">
                 Open Hifz <ArrowRight size={16} />
               </Button>
             </Link>
@@ -832,7 +832,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
 
       {activeTab === "overview" && !loading && !error && overview ? (
         <div className="space-y-5">
-          <section className={`kw-fade-in ${styles.commandDeck} px-5 py-5 sm:px-6`}>
+          <section className={`kw-fade-in ${styles.commandDeck} px-4 py-4 sm:px-5 sm:py-5`}>
             <div className={styles.pulseOrb} />
             <div className={styles.driftOrb} />
             <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1fr)_260px]">
@@ -847,10 +847,10 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                 </div>
 
                 <div>
-                  <h2 className={`${styles.heroTitle} kw-marketing-display text-balance text-4xl text-[color:var(--kw-ink)] sm:text-5xl`}>
+                  <h2 className={`${styles.heroTitle} kw-marketing-display kw-app-hero-title text-balance text-[color:var(--kw-ink)]`}>
                     Start the right thing quickly, then keep the whole deen flow in view.
                   </h2>
-                  <p className={`${styles.heroBody} mt-3 text-sm leading-7 text-[color:var(--kw-muted)]`}>
+                  <p className={`${styles.heroBody} kw-app-hero-body mt-3 text-[color:var(--kw-muted)]`}>
                     Hifz, Qur&apos;an reading, dua, journal, streak, and momentum all stay here so you can move without hunting through separate surfaces first.
                   </p>
                 </div>

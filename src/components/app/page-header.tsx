@@ -16,11 +16,11 @@ export function PageHeader(props: {
             {props.eyebrow}
           </div>
         ) : null}
-        <h1 className="mt-2 truncate font-[family-name:var(--font-kw-display)] text-3xl tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
+        <h1 className="kw-page-title mt-2 truncate text-[color:var(--kw-ink)]">
           {props.title}
         </h1>
         {props.subtitle ? (
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
+          <p className="kw-page-subtitle mt-2 text-[color:var(--kw-muted)]">
             {props.subtitle}
           </p>
         ) : null}

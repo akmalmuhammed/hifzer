@@ -22,12 +22,12 @@
 }
 
 .brand {
-  gap: clamp(0.7rem, 0.95vw, 0.95rem);
+  gap: clamp(0.55rem, 0.8vw, 0.8rem);
 }
 
 .brandMark {
-  height: clamp(2.5rem, 2.8vw, 2.9rem);
-  width: clamp(2.5rem, 2.8vw, 2.9rem);
+  height: clamp(2.2rem, 2.45vw, 2.55rem);
+  width: clamp(2.2rem, 2.45vw, 2.55rem);
 }
 
 .navLink {
@@ -75,5 +75,5 @@
   width: min(100%, var(--kw-app-main-max));
   justify-content: flex-end;
   margin-inline-end: auto;
-  margin-bottom: clamp(0.85rem, 1.4vw, 1.2rem);
+  margin-bottom: clamp(0.65rem, 1vw, 0.95rem);
 }

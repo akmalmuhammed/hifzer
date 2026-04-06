@@ -29,12 +29,12 @@ function variantClasses(variant: ButtonVariant): string {
 
 function sizeClasses(size: ButtonSize): string {
   if (size === "sm") {
-    return "h-9 rounded-[12px] px-3 text-sm";
+    return "h-[var(--kw-control-sm-height)] rounded-[var(--kw-control-sm-radius)] px-3 text-sm";
   }
   if (size === "lg") {
-    return "h-12 rounded-[18px] px-5 text-base";
+    return "h-[var(--kw-control-lg-height)] rounded-[var(--kw-control-lg-radius)] px-5 text-[0.95rem]";
   }
-  return "h-11 rounded-[16px] px-4 text-sm";
+  return "h-[var(--kw-control-md-height)] rounded-[var(--kw-control-md-radius)] px-4 text-sm";
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(

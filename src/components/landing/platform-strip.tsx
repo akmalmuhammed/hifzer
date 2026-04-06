@@ -1,20 +1,20 @@
-import { Globe, Smartphone, Monitor } from "lucide-react";
+import { Smartphone, Monitor } from "lucide-react";
 
 const PLATFORMS = [
   {
     icon: Smartphone,
     label: "iPhone",
-    sub: "Open in Safari, tap Share, Add to Home Screen",
+    sub: "Open in Safari, then use Share to add it when you are ready.",
   },
   {
     icon: Smartphone,
     label: "Android",
-    sub: "Open in Chrome, tap the menu, Install app",
+    sub: "Open in Chrome, then install it later from the browser menu.",
   },
   {
     icon: Monitor,
-    label: "Any browser",
-    sub: "No install needed. Just open and start",
+    label: "Web app",
+    sub: "Read, review, reflect, and continue without installing anything.",
   },
 ];
 
@@ -24,10 +24,10 @@ export function PlatformStrip() {
       <div className="mx-auto max-w-[1200px] px-4 md:px-8">
         <div className="text-center">
           <h2 className="kw-marketing-display text-2xl text-[color:var(--kw-ink)] sm:text-3xl">
-            Works everywhere you are.
+            Start in the browser. Install later if you want.
           </h2>
           <p className="mt-3 text-sm leading-6 text-[color:var(--kw-muted)]">
-            No App Store. No waiting. Install in seconds from your browser on any device.
+            Hifzer works in any modern browser. Use the web app first, then add it to your home screen only if it earns the space.
           </p>
         </div>
 

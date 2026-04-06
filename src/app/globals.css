@@ -94,44 +94,73 @@
   --kw-radius-sm: 12px;
 
   --kw-noise-opacity: 0.08;
-  --kw-app-frame-max: 1240px;
+  --kw-root-font-size: 15.5px;
+  --kw-page-title-size: clamp(2.2rem, 2.7vw, 3rem);
+  --kw-page-subtitle-size: 0.98rem;
+  --kw-page-subtitle-leading: 1.65;
+  --kw-page-subtitle-max: 46rem;
+  --kw-app-hero-title-size: clamp(2.6rem, 3.8vw, 4rem);
+  --kw-app-hero-body-size: 1rem;
+  --kw-app-hero-body-leading: 1.72;
+  --kw-card-pad-x: clamp(0.95rem, 1.2vw, 1.15rem);
+  --kw-card-pad-y: clamp(0.95rem, 1.2vw, 1.1rem);
+  --kw-control-sm-height: 2.25rem;
+  --kw-control-md-height: 2.625rem;
+  --kw-control-lg-height: 2.875rem;
+  --kw-control-sm-radius: 12px;
+  --kw-control-md-radius: 15px;
+  --kw-control-lg-radius: 18px;
+  --kw-app-frame-max: 1180px;
   --kw-app-main-max: 100%;
-  --kw-app-sidebar-width: 240px;
-  --kw-app-shell-gap: clamp(1.25rem, 1.8vw, 1.75rem);
-  --kw-app-shell-pad-x: clamp(1rem, 1.8vw, 1.5rem);
-  --kw-app-shell-pad-y: clamp(1.25rem, 1.8vw, 1.75rem);
-  --kw-app-nav-height: 72px;
-  --kw-app-nav-icon-box: 40px;
-  --kw-app-nav-font-size: 0.95rem;
-  --kw-app-section-label-size: 0.68rem;
+  --kw-app-sidebar-width: 224px;
+  --kw-app-shell-gap: clamp(1rem, 1.4vw, 1.35rem);
+  --kw-app-shell-pad-x: clamp(0.9rem, 1.4vw, 1.25rem);
+  --kw-app-shell-pad-y: clamp(1rem, 1.4vw, 1.35rem);
+  --kw-app-nav-height: 64px;
+  --kw-app-nav-icon-box: 38px;
+  --kw-app-nav-font-size: 0.92rem;
+  --kw-app-section-label-size: 0.66rem;
 }
 
 html[data-display-tier="wide"] {
-  font-size: 16.5px;
-  --kw-app-frame-max: 1540px;
-  --kw-app-main-max: 1320px;
-  --kw-app-sidebar-width: 256px;
-  --kw-app-shell-gap: 2rem;
-  --kw-app-shell-pad-x: clamp(1.5rem, 2vw, 2.25rem);
-  --kw-app-shell-pad-y: clamp(1.5rem, 2vw, 2.25rem);
-  --kw-app-nav-height: 78px;
-  --kw-app-nav-icon-box: 44px;
-  --kw-app-nav-font-size: 0.98rem;
-  --kw-app-section-label-size: 0.7rem;
+  font-size: 16px;
+  --kw-app-frame-max: 1420px;
+  --kw-app-main-max: 1220px;
+  --kw-app-sidebar-width: 236px;
+  --kw-app-shell-gap: 1.5rem;
+  --kw-app-shell-pad-x: clamp(1.2rem, 1.8vw, 1.75rem);
+  --kw-app-shell-pad-y: clamp(1.2rem, 1.8vw, 1.75rem);
+  --kw-app-nav-height: 68px;
+  --kw-app-nav-icon-box: 40px;
+  --kw-app-nav-font-size: 0.94rem;
+  --kw-app-section-label-size: 0.68rem;
 }
 
 html[data-display-tier="ultra"] {
-  font-size: 17px;
-  --kw-app-frame-max: 1700px;
-  --kw-app-main-max: 1460px;
-  --kw-app-sidebar-width: 272px;
-  --kw-app-shell-gap: 2.25rem;
-  --kw-app-shell-pad-x: clamp(1.75rem, 2.4vw, 2.75rem);
-  --kw-app-shell-pad-y: clamp(1.75rem, 2.4vw, 2.5rem);
-  --kw-app-nav-height: 82px;
-  --kw-app-nav-icon-box: 46px;
-  --kw-app-nav-font-size: 1rem;
-  --kw-app-section-label-size: 0.72rem;
+  font-size: 16.5px;
+  --kw-app-frame-max: 1560px;
+  --kw-app-main-max: 1340px;
+  --kw-app-sidebar-width: 248px;
+  --kw-app-shell-gap: 1.75rem;
+  --kw-app-shell-pad-x: clamp(1.45rem, 2.2vw, 2.2rem);
+  --kw-app-shell-pad-y: clamp(1.45rem, 2.2vw, 2rem);
+  --kw-app-nav-height: 72px;
+  --kw-app-nav-icon-box: 42px;
+  --kw-app-nav-font-size: 0.96rem;
+  --kw-app-section-label-size: 0.69rem;
+}
+
+@media (min-width: 769px) and (max-width: 1600px) and (max-height: 980px) {
+  :root {
+    --kw-root-font-size: 15.2px;
+    --kw-page-title-size: clamp(2.05rem, 2.45vw, 2.7rem);
+    --kw-app-hero-title-size: clamp(2.35rem, 3.4vw, 3.45rem);
+    --kw-card-pad-x: clamp(0.9rem, 1vw, 1.05rem);
+    --kw-card-pad-y: clamp(0.88rem, 1vw, 1rem);
+    --kw-app-shell-pad-y: clamp(0.85rem, 1.1vw, 1.05rem);
+    --kw-app-nav-height: 60px;
+    --kw-app-nav-icon-box: 36px;
+  }
 }
 
 html[data-theme="paper"] {
@@ -289,6 +318,10 @@ body {
   overscroll-behavior-x: none;
 }
 
+html {
+  font-size: var(--kw-root-font-size);
+}
+
 @supports (overflow: clip) {
   html,
   body {
@@ -352,6 +385,38 @@ h2 {
 /* Base body letter-spacing for clean readability */
 body {
   letter-spacing: -0.011em;
+}
+
+.kw-page-title {
+  font-family:
+    var(--font-kw-display),
+    var(--font-kw-sans),
+    ui-sans-serif,
+    -apple-system,
+    "Helvetica Neue",
+    Helvetica,
+    Arial,
+    sans-serif;
+  font-size: var(--kw-page-title-size);
+  line-height: 0.98;
+  letter-spacing: -0.042em;
+}
+
+.kw-page-subtitle {
+  max-width: var(--kw-page-subtitle-max);
+  font-size: var(--kw-page-subtitle-size);
+  line-height: var(--kw-page-subtitle-leading);
+}
+
+.kw-app-hero-title {
+  font-size: var(--kw-app-hero-title-size);
+  line-height: 0.94;
+  letter-spacing: -0.048em;
+}
+
+.kw-app-hero-body {
+  font-size: var(--kw-app-hero-body-size);
+  line-height: var(--kw-app-hero-body-leading);
 }
 
 .kw-marketing-display {
@@ -528,6 +593,10 @@ html[data-mode="dark"] .kw-canvas::after {
 }
 
 @media (max-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+
   .kw-canvas::before {
     background:
       radial-gradient(

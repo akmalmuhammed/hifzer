@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { BookOpen, PenLine, Moon, Sun, Heart, Sunrise } from "lucide-react";
+import { BookOpen, PenLine, Moon, Heart, Sunrise } from "lucide-react";
 import { Pill } from "@/components/ui/pill";
-import { PublicAuthLink } from "@/components/landing/public-auth-link";
-import styles from "./landing.module.css";
 
 const FEATURES = [
   {
@@ -104,7 +102,7 @@ type Feature = (typeof FEATURES)[number];
 
 function DuaPreview({ preview }: { preview: Extract<Feature["preview"], { type: "dua" }> }) {
   return (
-    <div className="flex h-full flex-col">
+    <div className="grid h-full min-h-[28rem] grid-rows-[auto_1fr_auto] gap-3">
       <div className="flex items-center justify-between gap-2">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[color:var(--kw-faint)]">
@@ -115,19 +113,21 @@ function DuaPreview({ preview }: { preview: Extract<Feature["preview"], { type: 
         <Pill tone="brand">{preview.progress}/{preview.total}</Pill>
       </div>
 
-      <div className="mt-4 flex-1 rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-4 pb-5 pt-4">
+      <div className="grid min-h-[20rem] place-items-center rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-5 py-5">
+        <div className="w-full max-w-[44rem]">
         <p
           className="text-right font-[family-name:var(--font-quran-uthmani)] text-[1.45rem] leading-[2.4] text-[color:var(--kw-ink)]"
           dir="rtl"
         >
           {preview.arabic}
         </p>
-        <p className="mt-2 text-center text-[11px] italic text-[color:var(--kw-muted)]">
+        <p className="mt-3 text-center text-[11px] italic text-[color:var(--kw-muted)]">
           {preview.transliteration}
         </p>
+        </div>
       </div>
 
-      <div className="mt-3 rounded-[14px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3 py-2">
+      <div className="rounded-[14px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3 py-2">
         <p className="text-[10px] font-semibold uppercase tracking-[0.07em] text-[color:var(--kw-faint)]">Source</p>
         <p className="mt-0.5 text-sm font-semibold text-[color:var(--kw-ink)]">{preview.source}</p>
       </div>
@@ -137,7 +137,7 @@ function DuaPreview({ preview }: { preview: Extract<Feature["preview"], { type: 
 
 function JournalPreview({ preview }: { preview: Extract<Feature["preview"], { type: "journal" }> }) {
   return (
-    <div className="flex h-full flex-col gap-3">
+    <div className="grid h-full min-h-[28rem] grid-rows-[auto_1fr] gap-3">
       <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-4 pb-4 pt-3">
         <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[color:var(--kw-faint)]">
           {preview.surah}
@@ -165,11 +165,11 @@ function JournalPreview({ preview }: { preview: Extract<Feature["preview"], { ty
 
 function MilestonesPreview({ preview }: { preview: Extract<Feature["preview"], { type: "milestones" }> }) {
   return (
-    <div className="flex h-full flex-col">
+    <div className="grid h-full min-h-[28rem] grid-rows-[auto_1fr_auto] gap-3">
       <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[color:var(--kw-faint)]">
         Your journey
       </p>
-      <div className="mt-3 flex flex-1 flex-col gap-2">
+      <div className="flex flex-1 flex-col gap-2">
         {preview.entries.map((entry) => (
           <div
             key={entry.label}
@@ -183,7 +183,7 @@ function MilestonesPreview({ preview }: { preview: Extract<Feature["preview"], {
           </div>
         ))}
       </div>
-      <div className="mt-3 rounded-[14px] border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[rgba(var(--kw-accent-rgb),0.06)] px-3 py-2 text-center">
+      <div className="rounded-[14px] border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[rgba(var(--kw-accent-rgb),0.06)] px-3 py-2 text-center">
         <p className="text-[11px] font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
           Every milestone saved, always yours.
         </p>
@@ -236,7 +236,7 @@ export function SessionWalkthrough() {
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: reduceMotion ? 0 : 0.3, delay: idx * 0.05 }}
                 className={[
-                  "group flex w-full items-start gap-4 rounded-[20px] border px-4 py-4 text-left transition-all duration-200",
+                  "group grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-4 rounded-[20px] border px-4 py-4 text-left transition-all duration-200",
                   isActive
                     ? "border-[rgba(var(--kw-accent-rgb),0.3)] bg-[rgba(var(--kw-accent-rgb),0.07)] shadow-[var(--kw-shadow-soft)]"
                     : "border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] hover:bg-[color:var(--kw-surface-soft)]",
@@ -252,18 +252,20 @@ export function SessionWalkthrough() {
                 >
                   <Icon size={16} />
                 </span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className={["text-sm font-semibold", isActive ? "text-[color:var(--kw-ink)]" : "text-[color:var(--kw-ink-2)]"].join(" ")}>
+                <div className="min-w-0">
+                  <div className="flex items-start justify-between gap-3">
+                    <p className={["min-w-0 text-sm font-semibold", isActive ? "text-[color:var(--kw-ink)]" : "text-[color:var(--kw-ink-2)]"].join(" ")}>
                       {feature.label}
                     </p>
-                    <Pill tone={feature.tagTone}>{feature.tag}</Pill>
+                    <Pill tone={feature.tagTone} className="shrink-0">
+                      {feature.tag}
+                    </Pill>
                   </div>
                   <p className="mt-1 text-xs leading-5 text-[color:var(--kw-muted)]">{feature.headline}</p>
                 </div>
                 <span
                   className={[
-                    "mt-1 h-1.5 w-1.5 shrink-0 rounded-full transition-opacity",
+                    "mt-1 h-1.5 w-1.5 rounded-full transition-opacity",
                     isActive ? "bg-[rgba(var(--kw-accent-rgb),0.8)] opacity-100" : "opacity-0",
                   ].join(" ")}
                 />
@@ -278,7 +280,7 @@ export function SessionWalkthrough() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: reduceMotion ? 0 : 0.45 }}
-          className="kw-glass-strong min-h-[340px] rounded-[var(--kw-radius-xl)] px-5 py-5 md:min-h-0"
+          className="kw-glass-strong min-h-[34rem] rounded-[var(--kw-radius-xl)] px-5 py-5"
         >
           {/* Feature header */}
           <AnimatePresence mode="wait">

@@ -25,24 +25,24 @@ export default function LandingPage() {
       {/* 3–6. Feature cards */}
       <div className="mx-auto max-w-[1280px] py-4 md:py-6">
         <FeatureShowcase
-          boldIntro="Memorise without forgetting."
-          body="The classical Sabaq, Sabqi, and Manzil structure powered by spaced repetition that adapts to you. You only advance when truly ready, so nothing ever slips away."
+          boldIntro="Protect your Hifz before you add more."
+          body="Hifzer runs your Sabaq, Sabqi, and Manzil in one clear daily flow, then catches weak seams, similar ayahs, and fragile recall before they spread. Warm-up gates, blind recall, and rescue drills protect what you already memorised instead of letting today's new lesson quietly damage yesterday's work."
           imageSrc="/hifzer app 1.png"
           imageAlt="Hifzer Hifz session showing Arabic ayah and SRS grade buttons"
           reverse={false}
         />
 
         <FeatureShowcase
-          boldIntro="Read every day. Track every ayah."
-          body="Follow your reading with ayah-level progress and built-in audio recitation. Daily juz, Fajr recitation or any time you open the app, Hifzer keeps your streak going."
+          boldIntro="Never lose your Qur'an place again."
+          body="Hifzer saves your exact ayah, not just a vague streak. Jump by surah or juz, keep smart bookmarks with notes, mark reading done outside the app, search Qur'anic terms, and return to the same place even when you are offline."
           imageSrc="/hifzer app 1.png"
           imageAlt="Hifzer Qur'an reading view with progress tracker and audio player"
           reverse={true}
         />
 
         <FeatureShowcase
-          boldIntro="Duas grounded in sunnah."
-          body="Curated supplication journeys for morning, evening, gratitude and hardship. Every dua is sourced, transliterated and structured for reflection, not just recitation."
+          boldIntro="When you do not know what to say, start here."
+          body="Move through focused dua journeys for repentance, provision, protection, Allah's Names, and Laylat al-Qadr without feeling lost or performative. Every step keeps the source, meaning, transliteration, repetition support, and your own personal duas close, so the experience feels guided, personal, and honest."
           imageSrc="/hifzer app 1.png"
           imageAlt="Hifzer Dua journey with Arabic text and transliteration"
           reverse={false}
