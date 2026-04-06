@@ -58,16 +58,6 @@
   animation: orbitPulse 10s ease-in-out infinite reverse;
 }
 
-.heroTitle {
-  max-width: 10.5ch;
-  letter-spacing: -0.045em;
-  line-height: 0.94;
-}
-
-.heroBody {
-  max-width: 44rem;
-}
-
 .actionRail {
   display: grid;
   gap: 10px;
@@ -79,7 +69,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 14px;
-  min-height: 112px;
+  min-height: 96px;
   border-radius: 18px;
   border: 1px solid var(--kw-border-2);
   background: rgba(255, 255, 255, 0.78);
@@ -176,7 +166,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 208px;
+  min-height: 176px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(249, 251, 255, 0.82));
 }
@@ -200,7 +190,7 @@
 }
 
 .metricBody {
-  min-height: 3.6rem;
+  min-height: 2.1rem;
 }
 
 .metricFoot {
@@ -739,10 +729,6 @@
   .calendarBlank {
     min-height: 34px;
     border-radius: 14px;
-  }
-
-  .heroTitle {
-    max-width: 12ch;
   }
 
   .duaArabic {

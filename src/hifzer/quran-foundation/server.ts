@@ -24,6 +24,7 @@ import {
 type AccountContext = {
   profile: UserProfile;
   account: QuranFoundationAccount | null;
+  schemaReady: boolean;
 };
 
 type UserApiSession = {
@@ -33,6 +34,29 @@ type UserApiSession = {
   refreshToken: string | null;
 };
 
+function looksLikeMissingQuranFoundationSchema(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    message.includes("QuranFoundationAccount") ||
+    message.includes("quranFoundationAccount") ||
+    message.includes("P2021") ||
+    message.includes("P2022") ||
+    /column .* does not exist/i.test(message) ||
+    /relation .* does not exist/i.test(message)
+  );
+}
+
+function schemaUnavailableError(): QuranFoundationError {
+  return new QuranFoundationError(
+    "Quran.com linking is unavailable until the latest database migrations are applied.",
+    {
+      status: 503,
+      code: "qf_schema_missing",
+      retryable: false,
+    },
+  );
+}
+
 async function getAccountContext(clerkUserId: string): Promise<AccountContext | null> {
   if (!dbConfigured()) {
     return null;
@@ -41,10 +65,17 @@ async function getAccountContext(clerkUserId: string): Promise<AccountContext | 
   if (!profile) {
     return null;
   }
-  const account = await db().quranFoundationAccount.findUnique({
-    where: { userId: profile.id },
-  });
-  return { profile, account };
+  try {
+    const account = await db().quranFoundationAccount.findUnique({
+      where: { userId: profile.id },
+    });
+    return { profile, account, schemaReady: true };
+  } catch (error) {
+    if (looksLikeMissingQuranFoundationSchema(error)) {
+      return { profile, account: null, schemaReady: false };
+    }
+    throw error;
+  }
 }
 
 function looksExpired(accessTokenExpiresAt: Date | null | undefined): boolean {
@@ -55,10 +86,17 @@ function looksExpired(accessTokenExpiresAt: Date | null | undefined): boolean {
 }
 
 async function updateAccount(userId: string, data: Prisma.QuranFoundationAccountUpdateInput) {
-  await db().quranFoundationAccount.update({
-    where: { userId },
-    data,
-  });
+  try {
+    await db().quranFoundationAccount.update({
+      where: { userId },
+      data,
+    });
+  } catch (error) {
+    if (looksLikeMissingQuranFoundationSchema(error)) {
+      throw schemaUnavailableError();
+    }
+    throw error;
+  }
 }
 
 export async function storeQuranFoundationConnection(input: {
@@ -73,38 +111,48 @@ export async function storeQuranFoundationConnection(input: {
       code: "db_unavailable",
     });
   }
+  if (!context.schemaReady) {
+    throw schemaUnavailableError();
+  }
 
   const identity = input.identity ?? decodeQuranFoundationIdentity(input.tokenSet.idToken);
   const refreshTokenCiphertext = input.tokenSet.refreshToken
     ? encryptQuranFoundationSecret(input.tokenSet.refreshToken)
     : null;
 
-  await db().quranFoundationAccount.upsert({
-    where: { userId: context.profile.id },
-    create: {
-      userId: context.profile.id,
-      quranFoundationUserId: identity.sub,
-      displayName: identity.name,
-      email: identity.email,
-      accessTokenCiphertext: encryptQuranFoundationSecret(input.tokenSet.accessToken),
-      refreshTokenCiphertext,
-      scopes: input.tokenSet.scopes,
-      status: "connected",
-      accessTokenExpiresAt: input.tokenSet.accessTokenExpiresAt,
-      lastError: null,
-    },
-    update: {
-      quranFoundationUserId: identity.sub,
-      displayName: identity.name,
-      email: identity.email,
-      accessTokenCiphertext: encryptQuranFoundationSecret(input.tokenSet.accessToken),
-      refreshTokenCiphertext: refreshTokenCiphertext ?? undefined,
-      scopes: input.tokenSet.scopes,
-      status: "connected",
-      accessTokenExpiresAt: input.tokenSet.accessTokenExpiresAt,
-      lastError: null,
-    },
-  });
+  try {
+    await db().quranFoundationAccount.upsert({
+      where: { userId: context.profile.id },
+      create: {
+        userId: context.profile.id,
+        quranFoundationUserId: identity.sub,
+        displayName: identity.name,
+        email: identity.email,
+        accessTokenCiphertext: encryptQuranFoundationSecret(input.tokenSet.accessToken),
+        refreshTokenCiphertext,
+        scopes: input.tokenSet.scopes,
+        status: "connected",
+        accessTokenExpiresAt: input.tokenSet.accessTokenExpiresAt,
+        lastError: null,
+      },
+      update: {
+        quranFoundationUserId: identity.sub,
+        displayName: identity.name,
+        email: identity.email,
+        accessTokenCiphertext: encryptQuranFoundationSecret(input.tokenSet.accessToken),
+        refreshTokenCiphertext: refreshTokenCiphertext ?? undefined,
+        scopes: input.tokenSet.scopes,
+        status: "connected",
+        accessTokenExpiresAt: input.tokenSet.accessTokenExpiresAt,
+        lastError: null,
+      },
+    });
+  } catch (error) {
+    if (looksLikeMissingQuranFoundationSchema(error)) {
+      throw schemaUnavailableError();
+    }
+    throw error;
+  }
 }
 
 export async function disconnectQuranFoundationConnection(clerkUserId: string) {
@@ -112,9 +160,19 @@ export async function disconnectQuranFoundationConnection(clerkUserId: string) {
   if (!context?.account) {
     return;
   }
-  await db().quranFoundationAccount.delete({
-    where: { userId: context.profile.id },
-  });
+  if (!context.schemaReady) {
+    throw schemaUnavailableError();
+  }
+  try {
+    await db().quranFoundationAccount.delete({
+      where: { userId: context.profile.id },
+    });
+  } catch (error) {
+    if (looksLikeMissingQuranFoundationSchema(error)) {
+      throw schemaUnavailableError();
+    }
+    throw error;
+  }
 }
 
 export async function getQuranFoundationConnectionStatus(
@@ -156,6 +214,21 @@ export async function getQuranFoundationConnectionStatus(
   }
 
   const context = await getAccountContext(clerkUserId);
+  if (context && !context.schemaReady) {
+    return {
+      available: false,
+      state: "not_configured",
+      detail: "Quran.com linking is unavailable until the latest database migrations are applied.",
+      userApiReady,
+      contentApiReady,
+      displayName: null,
+      email: null,
+      quranFoundationUserId: null,
+      scopes: [],
+      lastSyncedAt: null,
+      lastError: null,
+    };
+  }
   if (!context?.account) {
     return {
       available: true,
@@ -212,9 +285,17 @@ async function refreshStoredAccountTokens(input: {
     lastError: null,
   });
 
-  const account = await db().quranFoundationAccount.findUnique({
-    where: { userId: input.context.profile.id },
-  });
+  let account: QuranFoundationAccount | null;
+  try {
+    account = await db().quranFoundationAccount.findUnique({
+      where: { userId: input.context.profile.id },
+    });
+  } catch (error) {
+    if (looksLikeMissingQuranFoundationSchema(error)) {
+      throw schemaUnavailableError();
+    }
+    throw error;
+  }
   if (!account) {
     throw new QuranFoundationError("Quran.com connection disappeared during token refresh.", {
       status: 409,

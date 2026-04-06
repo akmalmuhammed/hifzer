@@ -221,7 +221,7 @@ function QuickActionCard(props: {
   href: string;
   eyebrow: string;
   title: string;
-  note: string;
+  note?: ReactNode;
   icon: LucideIcon;
   tone?: "accent" | "neutral";
 }) {
@@ -238,7 +238,7 @@ function QuickActionCard(props: {
       <div className="min-w-0">
         <p className={styles.actionEyebrow}>{props.eyebrow}</p>
         <p className={styles.actionTitle}>{props.title}</p>
-        <p className={styles.actionNote}>{props.note}</p>
+        {props.note ? <p className={styles.actionNote}>{props.note}</p> : null}
       </div>
       <ArrowRight size={15} className="text-[color:var(--kw-faint)] transition group-hover:text-[rgba(var(--kw-accent-rgb),1)]" />
     </Link>
@@ -248,7 +248,7 @@ function QuickActionCard(props: {
 function MetricTile(props: {
   label: string;
   value: ReactNode;
-  detail: ReactNode;
+  detail?: ReactNode;
   icon: LucideIcon;
   tone: "accent" | "neutral" | "warn";
   foot?: ReactNode;
@@ -266,9 +266,11 @@ function MetricTile(props: {
             <div className={`${styles.numericValue} mt-3 text-3xl text-[color:var(--kw-ink)]`}>
               {props.value}
             </div>
-            <p className={`${styles.metricBody} mt-2 text-sm leading-6 text-[color:var(--kw-muted)]`}>
-              {props.detail}
-            </p>
+            {props.detail ? (
+              <p className={`${styles.metricBody} mt-2 text-sm leading-6 text-[color:var(--kw-muted)]`}>
+                {props.detail}
+              </p>
+            ) : null}
           </div>
           <span className={clsx(styles.iconBadge, iconToneClass(props.tone))}>
             <Icon size={17} />
@@ -283,7 +285,7 @@ function MetricTile(props: {
 function SectionHeader(props: {
   eyebrow: string;
   title: string;
-  description: string;
+  description?: ReactNode;
   icon: LucideIcon;
   tone?: "accent" | "neutral" | "warn";
   meta?: ReactNode;
@@ -302,9 +304,11 @@ function SectionHeader(props: {
           <p className="mt-1 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
             {props.title}
           </p>
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-[color:var(--kw-muted)]">
-            {props.description}
-          </p>
+          {props.description ? (
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-[color:var(--kw-muted)]">
+              {props.description}
+            </p>
+          ) : null}
         </div>
       </div>
       {props.meta ? <div className="flex shrink-0 flex-wrap items-center gap-2">{props.meta}</div> : null}
@@ -780,9 +784,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Dashboard"
         title="Dashboard"
-        subtitle="Your Hifz, Qur'an, dua, and journal in one place."
         right={
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="secondary" size="sm" className="gap-2" onClick={() => void load()}>
@@ -821,7 +823,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             <div className={styles.pulseOrb} />
             <div className={styles.driftOrb} />
             <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1fr)_260px]">
-              <div className="space-y-5">
+              <div className="space-y-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <Pill tone="accent">Today</Pill>
                   {status ? <Pill tone={status.tone}>{status.label}</Pill> : null}
@@ -830,24 +832,15 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                   </span>
                 </div>
 
-                <div>
-                  <h2 className={`${styles.heroTitle} kw-marketing-display kw-app-hero-title text-balance text-[color:var(--kw-ink)]`}>
-                    Pick up where you left off.
-                  </h2>
-                  <p className={`${styles.heroBody} kw-app-hero-body mt-3 text-[color:var(--kw-muted)]`}>
-                    Start Hifz, continue reading, open dua, or save a reflection from one calm home.
-                  </p>
-                </div>
-
                 <div className={styles.actionRail}>
                   <QuickActionCard
                     href="/hifz"
                     eyebrow="Hifz"
-                    title="Start your next recall block"
+                    title="Open Hifz"
                     note={
                       overview.reviewHealth.dueNow > 0
                         ? `${overview.reviewHealth.dueNow} due now`
-                        : "Queue is light today"
+                        : "Ready"
                     }
                     icon={PlayCircle}
                     tone="accent"
@@ -855,22 +848,20 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                   <QuickActionCard
                     href="/quran/read?view=compact"
                     eyebrow="Qur'an"
-                    title="Continue from your last place"
+                    title="Continue reading"
                     note={`${overview.quran.currentSurahName} | ${overview.quran.cursorRef}`}
                     icon={BookOpenText}
                   />
                   <QuickActionCard
                     href="/dua"
                     eyebrow="Dua"
-                    title="Return to your dua modules"
-                    note="Open your saved dua sets and continue where you stopped"
+                    title="Open dua"
                     icon={MoonStar}
                   />
                   <QuickActionCard
                     href="/journal"
                     eyebrow="Journal"
-                    title="Capture today&apos;s reflection"
-                    note="Save a private note, ayah, or dua for later"
+                    title="Open journal"
                     icon={SquarePen}
                   />
                 </div>
@@ -883,7 +874,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                     <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
                       {overview.reviewHealth.dueNow}
                     </p>
-                    <p className="mt-2 text-xs text-[color:var(--kw-muted)]">{overview.reviewHealth.weakTransitions} joins to fix</p>
+                    <p className="mt-2 text-xs text-[color:var(--kw-muted)]">{overview.reviewHealth.weakTransitions} joins</p>
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-2.5`}>
                     <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
@@ -892,7 +883,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                     <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
                       {overview.kpis.completedSessions7d}
                     </p>
-                    <p className="mt-2 text-xs text-[color:var(--kw-muted)]">{overview.kpis.totalSessionMinutes7d} min practiced</p>
+                    <p className="mt-2 text-xs text-[color:var(--kw-muted)]">{overview.kpis.totalSessionMinutes7d} min</p>
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-2.5`}>
                     <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
@@ -911,7 +902,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                       {overview.streak.currentStreakDays}d
                     </p>
                     <p className="mt-2 text-xs text-[color:var(--kw-muted)]">
-                      {overview.streak.todayQualifiedAyahs} ayahs qualified today
+                      {overview.streak.todayQualifiedAyahs} ayahs today
                     </p>
                   </div>
                 </div>
@@ -920,10 +911,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
               <div className={styles.spotlightPanel}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Quick look</p>
-                    <p className="mt-1 text-sm leading-6 text-[color:var(--kw-muted)]">
-                      The essentials before you continue.
-                    </p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Now</p>
                   </div>
                   <span className={clsx(styles.iconBadge, styles.iconAccent)}>
                     <Gauge size={17} />
@@ -935,7 +923,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                     <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
                       {overview.kpis.retentionScore14d}
                     </p>
-                    <p className="mt-1 text-xs text-[color:var(--kw-muted)]">How steady recent recall has felt.</p>
+                    <p className="mt-1 text-xs text-[color:var(--kw-muted)]">Last 14 days</p>
                   </div>
                   <div className={`${styles.kpiTile} px-3 py-3`}>
                     <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Reading place</p>
@@ -964,12 +952,12 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                 <div className="mt-4 flex flex-wrap items-center gap-2">
                   <Link href="/journal">
                     <Button variant="secondary" size="sm" className="gap-2">
-                      Open journal <SquarePen size={14} />
+                      Journal <SquarePen size={14} />
                     </Button>
                   </Link>
                   <Link href="/dua">
                     <Button size="sm" className="gap-2">
-                      Open dua <MoonStar size={14} />
+                      Dua <MoonStar size={14} />
                     </Button>
                   </Link>
                 </div>
@@ -981,7 +969,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             <MetricTile
               label="Practice time (7d)"
               value={overview.kpis.totalSessionMinutes7d}
-              detail={`Avg ${overview.kpis.avgSessionMinutes7d.toFixed(1)} min per session`}
+              detail={`${overview.kpis.avgSessionMinutes7d.toFixed(1)} min avg`}
               icon={Clock3}
               tone="accent"
               delayMs={40}
@@ -991,7 +979,6 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             <MetricTile
               label="Recall score"
               value={overview.kpis.retentionScore14d}
-              detail="Last 14 days"
               icon={Gauge}
               tone="neutral"
               delayMs={80}
@@ -1001,7 +988,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             <MetricTile
               label="Due review"
               value={overview.reviewHealth.dueNow}
-              detail={`${overview.reviewHealth.dueSoon6h} more due later today.`}
+              detail={overview.reviewHealth.dueSoon6h > 0 ? `${overview.reviewHealth.dueSoon6h} later today` : undefined}
               icon={RefreshCcw}
               tone="warn"
               delayMs={120}
@@ -1015,7 +1002,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             <MetricTile
               label="Streak"
               value={`${overview.streak.currentStreakDays}d`}
-              detail={`Best ${overview.streak.bestStreakDays}d${overview.streak.graceInUseToday ? " | grace active" : ""}`}
+              detail={`Best ${overview.streak.bestStreakDays}d${overview.streak.graceInUseToday ? " | grace" : ""}`}
               icon={Flame}
               tone="accent"
               delayMs={160}
@@ -1029,7 +1016,6 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                 <SectionHeader
                   eyebrow="Practice"
                   title="Last 14 days"
-                  description="A quick view of your recent time."
                   icon={TrendingUp}
                   tone="accent"
                   meta={<Pill tone="accent">{overview.profile.timezone}</Pill>}
@@ -1059,7 +1045,6 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                 <SectionHeader
                   eyebrow="Recall"
                   title="How recent sessions felt"
-                  description="A quick read on clean answers and easier recall."
                   icon={ShieldCheck}
                   tone="accent"
                   meta={<Pill tone="neutral">14d</Pill>}
@@ -1127,7 +1112,6 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                 <SectionHeader
                   eyebrow="Qur&apos;an"
                   title={`${overview.quran.currentSurahName} | ${overview.quran.cursorRef}`}
-                  description="Your reading place stays ready here."
                   icon={BookOpenText}
                   tone="accent"
                   meta={<Pill tone="accent">Ayah {overview.quran.cursorAyahId}</Pill>}
@@ -1174,8 +1158,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
               <Card className="h-full">
                 <SectionHeader
                   eyebrow="Consistency"
-                  title="Monthly activity"
-                  description="See the days you came back."
+                  title="Activity calendar"
                   icon={CalendarDays}
                   tone="neutral"
                 />
