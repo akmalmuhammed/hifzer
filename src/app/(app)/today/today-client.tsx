@@ -515,7 +515,7 @@ export function TodayClient({
 
       <SessionFlowTutorial surface="today" />
 
-      {data?.quranFoundation ? (
+      {data?.quranFoundation && data.quranFoundation.state !== "not_configured" ? (
         <Card className={styles.infoCard}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
