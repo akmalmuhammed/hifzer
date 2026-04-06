@@ -1,8 +1,8 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import type { NextFetchEvent, NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { clerkEnabled } from "@/lib/clerk-config";
 
-const isProtectedRoute = createRouteMatcher([
+const PROTECTED_ROUTE_PATTERNS = [
   "/onboarding(.*)",
   "/dashboard(.*)",
   "/dua(.*)",
@@ -18,7 +18,16 @@ const isProtectedRoute = createRouteMatcher([
   "/milestones(.*)",
   "/fluency(.*)",
   "/billing(.*)",
-]);
+] as const;
+
+function routeMatchesPattern(pathname: string, pattern: string): boolean {
+  const base = pattern.replace(/\(\.\*\)$/, "");
+  return pathname === base || pathname.startsWith(`${base}/`);
+}
+
+function isProtectedRoute(pathname: string): boolean {
+  return PROTECTED_ROUTE_PATTERNS.some((pattern) => routeMatchesPattern(pathname, pattern));
+}
 
 function isProtectedQuranPath(pathname: string): boolean {
   return pathname === "/quran" || pathname.startsWith("/quran/");
@@ -38,31 +47,36 @@ function safeRedirectPath(candidate: string | null | undefined, fallback = "/das
   return raw;
 }
 
-export default clerkMiddleware(async (auth, req) => {
+export default async function middleware(req: NextRequest, event: NextFetchEvent) {
   if (!clerkEnabled()) {
     return NextResponse.next();
   }
 
-  const pathname = req.nextUrl.pathname;
-  const shouldProtect = isProtectedRoute(req) || isProtectedQuranPath(pathname);
-  if (!shouldProtect) {
+  const { clerkMiddleware } = await import("@clerk/nextjs/server");
+  const handler = clerkMiddleware(async (auth, innerReq) => {
+    const pathname = innerReq.nextUrl.pathname;
+    const shouldProtect = isProtectedRoute(pathname) || isProtectedQuranPath(pathname);
+    if (!shouldProtect) {
+      return NextResponse.next();
+    }
+
+    const { userId } = await auth();
+    if (!userId) {
+      const signInUrl = new URL("/login", innerReq.url);
+      const search = new URLSearchParams(innerReq.nextUrl.searchParams);
+      search.delete("redirect_url");
+      const fallbackPath = `${pathname}${search.size > 0 ? `?${search.toString()}` : ""}`;
+      const requestedRedirect = innerReq.nextUrl.searchParams.get("redirect_url");
+      const redirectPath = safeRedirectPath(requestedRedirect, safeRedirectPath(fallbackPath));
+      signInUrl.searchParams.set("redirect_url", redirectPath);
+      return NextResponse.redirect(signInUrl);
+    }
+
     return NextResponse.next();
-  }
+  });
 
-  const { userId } = await auth();
-  if (!userId) {
-    const signInUrl = new URL("/login", req.url);
-    const search = new URLSearchParams(req.nextUrl.searchParams);
-    search.delete("redirect_url");
-    const fallbackPath = `${pathname}${search.size > 0 ? `?${search.toString()}` : ""}`;
-    const requestedRedirect = req.nextUrl.searchParams.get("redirect_url");
-    const redirectPath = safeRedirectPath(requestedRedirect, safeRedirectPath(fallbackPath));
-    signInUrl.searchParams.set("redirect_url", redirectPath);
-    return NextResponse.redirect(signInUrl);
-  }
-
-  return NextResponse.next();
-});
+  return handler(req, event);
+}
 
 export const config = {
   matcher: ["/((?!_next|.*\\..*).*)"],

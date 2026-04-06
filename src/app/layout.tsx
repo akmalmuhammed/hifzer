@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
+import type { ReactNode } from "react";
+import { Fragment } from "react";
 import { Inter, IBM_Plex_Mono, Amiri, Plus_Jakarta_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
-import { ClerkProvider } from "@clerk/nextjs";
 import { cookies } from "next/headers";
 import { AppProviders } from "@/components/providers/app-providers";
 import { InstallAppBanner } from "@/components/pwa/install-app-banner";
@@ -99,9 +100,10 @@ export const viewport: Viewport = {
 export default async function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
 }>) {
   const authEnabled = clerkEnabled();
+  const ClerkWrapper = authEnabled ? (await import("@clerk/nextjs")).ClerkProvider : Fragment;
   const cookieStore = await cookies();
   const uiLanguage = normalizeUiLanguage(cookieStore.get(UI_LANGUAGE_COOKIE)?.value);
   const distractionFree = normalizeDistractionFree(cookieStore.get(DISTRACTION_FREE_COOKIE)?.value);
@@ -122,7 +124,7 @@ export default async function RootLayout({
           {ui.skipToMain}
         </a>
         {authEnabled ? (
-          <ClerkProvider
+          <ClerkWrapper
             signInUrl={clerkAuthRoutes.signInUrl}
             signUpUrl={clerkAuthRoutes.signUpUrl}
             signInForceRedirectUrl={clerkAuthRoutes.signInForceRedirectUrl}
@@ -131,7 +133,7 @@ export default async function RootLayout({
             signUpFallbackRedirectUrl={clerkAuthRoutes.signUpFallbackRedirectUrl}
           >
             <AppProviders initialUiLanguage={uiLanguage} initialDistractionFree={distractionFree}>{children}</AppProviders>
-          </ClerkProvider>
+          </ClerkWrapper>
         ) : (
           <AppProviders initialUiLanguage={uiLanguage} initialDistractionFree={distractionFree}>{children}</AppProviders>
         )}
