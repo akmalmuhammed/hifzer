@@ -39,6 +39,7 @@ const STORAGE_KEYS = {
   accent: "hifzer_accent_v1",
 } as const;
 const THEME_CHANGE_EVENT = "hifzer:theme-change";
+let cachedThemeSnapshot: ThemeDocumentState | null = null;
 
 function readCookie(name: string): string | null {
   if (typeof document === "undefined") {
@@ -105,6 +106,22 @@ function readPersistedThemeState(fallback: ThemeDocumentState): ThemeDocumentSta
   };
 }
 
+function getThemeSnapshot(fallback: ThemeDocumentState): ThemeDocumentState {
+  const next = readPersistedThemeState(fallback);
+
+  if (
+    cachedThemeSnapshot &&
+    cachedThemeSnapshot.mode === next.mode &&
+    cachedThemeSnapshot.theme === next.theme &&
+    cachedThemeSnapshot.accent === next.accent
+  ) {
+    return cachedThemeSnapshot;
+  }
+
+  cachedThemeSnapshot = next;
+  return next;
+}
+
 function dispatchThemeChange() {
   if (typeof window === "undefined") {
     return;
@@ -129,6 +146,7 @@ function subscribeTheme(onStoreChange: () => void) {
 
 function persistThemeState(nextState: ThemeDocumentState) {
   const normalized = normalizeThemeDocumentState(nextState);
+  cachedThemeSnapshot = normalized;
   safeStorageSet(STORAGE_KEYS.mode, normalized.mode);
   safeStorageSet(STORAGE_KEYS.theme, normalized.theme);
   safeStorageSet(STORAGE_KEYS.accent, normalized.accent);
@@ -146,7 +164,7 @@ export function ThemeProvider(props: {
   const initialState = normalizeThemeDocumentState(props.initialState ?? DEFAULT_THEME_DOCUMENT_STATE);
   const themeState = useSyncExternalStore(
     subscribeTheme,
-    () => readPersistedThemeState(initialState),
+    () => getThemeSnapshot(initialState),
     () => initialState,
   );
   const { mode, theme, accent } = themeState;
