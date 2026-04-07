@@ -220,16 +220,43 @@ function unwrapMarkdownCodeFence(raw: string): string {
   return match ? match[1].trim() : trimmed;
 }
 
+function stripMarkdownCodeFenceMarkers(raw: string): string {
+  return raw
+    .replace(/^```(?:json)?\s*$/gim, "")
+    .replace(/^```\s*$/gim, "")
+    .trim();
+}
+
+function extractJsonObjectCandidate(raw: string): string {
+  const firstBrace = raw.indexOf("{");
+  const lastBrace = raw.lastIndexOf("}");
+  return firstBrace >= 0 && lastBrace > firstBrace ? raw.slice(firstBrace, lastBrace + 1) : raw;
+}
+
 export function parseJsonFromText(raw: string): JsonRecord {
-  const unfenced = unwrapMarkdownCodeFence(raw);
-  const firstBrace = unfenced.indexOf("{");
-  const lastBrace = unfenced.lastIndexOf("}");
-  const candidate = firstBrace >= 0 && lastBrace > firstBrace ? unfenced.slice(firstBrace, lastBrace + 1) : unfenced;
-  const parsed = JSON.parse(candidate) as unknown;
-  if (!isRecord(parsed)) {
-    throw new Error("Model response was not a JSON object.");
+  const attempts = Array.from(
+    new Set(
+      [raw.trim(), unwrapMarkdownCodeFence(raw), stripMarkdownCodeFenceMarkers(raw.trim())]
+        .flatMap((candidate) => [candidate, extractJsonObjectCandidate(candidate)])
+        .map((candidate) => candidate.trim())
+        .filter(Boolean),
+    ),
+  );
+
+  let lastError: Error | null = null;
+  for (const candidate of attempts) {
+    try {
+      const parsed = JSON.parse(candidate) as unknown;
+      if (!isRecord(parsed)) {
+        throw new Error("Model response was not a JSON object.");
+      }
+      return parsed;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error("Model response was not valid JSON.");
+    }
   }
-  return parsed;
+
+  throw lastError ?? new Error("Model response was not valid JSON.");
 }
 
 function extractGeminiText(payload: unknown): string {

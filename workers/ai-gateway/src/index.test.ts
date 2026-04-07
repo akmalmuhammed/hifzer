@@ -33,4 +33,21 @@ Here is the structured answer:
       reflectionPrompt: null,
     });
   });
+
+  it("parses JSON when prose wraps a fenced block", () => {
+    expect(
+      parseJsonFromText(`
+Here is the answer:
+
+\`\`\`json
+{"summary":"Wrapped fenced response","sources":[]}
+\`\`\`
+
+Use it carefully.
+`),
+    ).toEqual({
+      summary: "Wrapped fenced response",
+      sources: [],
+    });
+  });
 });
