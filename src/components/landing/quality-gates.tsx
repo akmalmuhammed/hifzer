@@ -84,7 +84,7 @@ export function QualityGates() {
             return (
               <motion.div
                 key={layer.title}
-                initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
+                initial={false}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.25 }}
                 transition={{ duration: reduceMotion ? 0 : 0.45, delay: idx * 0.05 }}

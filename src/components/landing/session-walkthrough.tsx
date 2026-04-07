@@ -289,7 +289,7 @@ export function SessionWalkthrough() {
                 }}
                 onClick={() => setActiveId(feature.id)}
                 onKeyDown={(event) => handleTabKeyDown(event, idx)}
-                initial={reduceMotion ? { opacity: 1, x: 0 } : { opacity: 0, x: -10 }}
+                initial={false}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: reduceMotion ? 0 : 0.3, delay: idx * 0.05 }}
@@ -338,14 +338,14 @@ export function SessionWalkthrough() {
           role="tabpanel"
           aria-labelledby={`session-walkthrough-tab-${active.id}`}
           tabIndex={0}
-          initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
+          initial={false}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: reduceMotion ? 0 : 0.45 }}
           className="kw-glass-strong min-h-[34rem] rounded-[var(--kw-radius-xl)] px-5 py-5"
         >
           {/* Feature header */}
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={active.id + "-header"}
               initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 6 }}
@@ -368,7 +368,7 @@ export function SessionWalkthrough() {
           </AnimatePresence>
 
           {/* Preview content */}
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={active.id + "-content"}
               initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 8 }}

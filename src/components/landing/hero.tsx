@@ -55,7 +55,7 @@ export function Hero() {
       >
         {/* Staggered entrance for all text children */}
         <motion.div
-          initial="hidden"
+          initial={false}
           animate="show"
           variants={{ show: { transition: { staggerChildren: 0.1, delayChildren: 0.15 } } }}
           className="flex flex-col items-center gap-6"
@@ -117,7 +117,7 @@ export function Hero() {
       {/* ── SCREENSHOT — parallax, peeks below fold ── */}
       <motion.div
         style={{ y: screenshotY, scale: screenshotScale }}
-        initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 60 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.9, delay: 0.65, ease: [0.22, 1, 0.36, 1] }}
         className={`${styles.publicHeroVisual} relative z-10`}

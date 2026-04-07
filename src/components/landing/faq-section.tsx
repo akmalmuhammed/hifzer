@@ -104,7 +104,7 @@ export function FaqSection() {
           {FAQS.map((faq, idx) => (
             <motion.div
               key={faq.q}
-              initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+              initial={false}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.25 }}
               transition={{ duration: reduceMotion ? 0 : 0.35, delay: idx * 0.04 }}

@@ -60,7 +60,7 @@ export function LandingFeatureRail() {
             return (
               <motion.article
                 key={card.title}
-                initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+                initial={false}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: reduceMotion ? 0 : 0.35, delay: index * 0.05 }}

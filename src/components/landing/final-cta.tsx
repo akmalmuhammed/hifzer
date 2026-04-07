@@ -12,7 +12,7 @@ export function FinalCta() {
   return (
     <section id="promise" className="py-10 md:py-14">
       <motion.div
-        initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+        initial={false}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: reduceMotion ? 0 : 0.55, ease: [0.22, 1, 0.36, 1] }}
