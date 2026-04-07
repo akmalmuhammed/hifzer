@@ -21,6 +21,17 @@
   z-index: 1;
 }
 
+.afterHero {
+  position: relative;
+  z-index: 4;
+  margin-top: clamp(-8rem, -14vh, -4rem);
+  padding-top: clamp(2rem, 4vh, 3.25rem);
+  border-radius: 48px 48px 0 0;
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(248, 250, 252, 0.9) 14%, transparent 100%);
+  box-shadow: 0 -28px 70px rgba(15, 23, 42, 0.08);
+}
+
 .navWrap {
   margin: 0 auto;
   max-width: 1200px;
@@ -757,5 +768,196 @@
 
   .publicHeroIndicator {
     display: none;
+  }
+}
+
+.fitnessHeroSection {
+  position: relative;
+  min-height: clamp(78rem, 180svh, 108rem);
+  padding-inline: 1rem;
+}
+
+.fitnessHeroSticky {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: flex-start;
+  min-height: 100svh;
+  padding-top: clamp(5rem, 9vh, 6.5rem);
+  padding-bottom: 2rem;
+}
+
+.fitnessHeroShell {
+  width: min(1180px, calc(100vw - 2rem));
+  margin: 0 auto;
+  padding: clamp(1.5rem, 3vw, 2.6rem);
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.12);
+  border-radius: 42px;
+  background:
+    radial-gradient(52rem 24rem at 50% 0%, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0) 70%),
+    radial-gradient(26rem 18rem at 12% 10%, rgba(10, 138, 119, 0.1), transparent 72%),
+    radial-gradient(26rem 18rem at 88% 16%, rgba(var(--kw-accent-rgb), 0.1), transparent 72%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.8));
+  box-shadow: 0 34px 100px rgba(15, 23, 42, 0.1);
+  backdrop-filter: blur(12px);
+}
+
+.fitnessHeroCopy {
+  max-width: 54rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.fitnessHeroEyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--kw-faint);
+}
+
+.fitnessHeroTitle {
+  max-width: 10.5ch;
+  margin: 0.85rem auto 0;
+  font-family: var(--font-kw-display);
+  font-size: clamp(3rem, 6.2vw, 6.1rem);
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  color: var(--kw-ink);
+}
+
+.fitnessHeroSummary {
+  max-width: 44rem;
+  margin: 1.25rem auto 0;
+  font-size: clamp(1rem, 1.2vw, 1.14rem);
+  line-height: 1.8;
+  color: var(--kw-muted);
+}
+
+.fitnessHeroActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.fitnessHeroMicro {
+  margin-top: 0.95rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.02em;
+  color: var(--kw-faint);
+}
+
+.fitnessHeroVisual {
+  width: min(1060px, 100%);
+  margin: clamp(2rem, 5vh, 3.5rem) auto 0;
+}
+
+.fitnessHeroValues {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin-top: clamp(1.5rem, 3vh, 2.25rem);
+  border-top: 1px solid rgba(var(--kw-accent-rgb), 0.12);
+}
+
+.fitnessHeroValue {
+  min-width: 0;
+  padding: 1.15rem 1.2rem 0;
+}
+
+.fitnessHeroValue + .fitnessHeroValue {
+  border-inline-start: 1px solid rgba(var(--kw-accent-rgb), 0.12);
+}
+
+.fitnessHeroValueLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--kw-faint);
+}
+
+.fitnessHeroValueBody {
+  margin-top: 0.55rem;
+  max-width: 28ch;
+  font-size: 0.97rem;
+  line-height: 1.7;
+  color: var(--kw-ink-2);
+}
+
+:global(html[data-mode="dark"]) .afterHero {
+  background:
+    linear-gradient(180deg, rgba(8, 14, 26, 0.96), rgba(8, 14, 26, 0.88) 14%, transparent 100%);
+  box-shadow: 0 -28px 70px rgba(0, 0, 0, 0.26);
+}
+
+:global(html[data-mode="dark"]) .fitnessHeroShell {
+  border-color: rgba(148, 163, 184, 0.14);
+  background:
+    radial-gradient(52rem 24rem at 50% 0%, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 70%),
+    radial-gradient(26rem 18rem at 12% 10%, rgba(10, 138, 119, 0.12), transparent 72%),
+    radial-gradient(26rem 18rem at 88% 16%, rgba(var(--kw-accent-rgb), 0.12), transparent 72%),
+    linear-gradient(180deg, rgba(8, 14, 26, 0.92), rgba(12, 18, 31, 0.84));
+  box-shadow: 0 34px 100px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 1023px) {
+  .afterHero {
+    margin-top: -2.5rem;
+    border-radius: 28px 28px 0 0;
+    padding-top: 0.75rem;
+  }
+
+  .fitnessHeroSection {
+    min-height: auto;
+    padding-inline: 0.75rem;
+  }
+
+  .fitnessHeroSticky {
+    position: relative;
+    top: auto;
+    min-height: auto;
+    padding-top: 1rem;
+    padding-bottom: 0;
+  }
+
+  .fitnessHeroShell {
+    width: min(100%, calc(100vw - 1.5rem));
+    padding: 1.25rem;
+    border-radius: 30px;
+  }
+
+  .fitnessHeroTitle {
+    max-width: 12ch;
+    font-size: clamp(2.4rem, 10vw, 4rem);
+  }
+
+  .fitnessHeroSummary {
+    max-width: 34rem;
+  }
+
+  .fitnessHeroVisual {
+    width: 100%;
+    margin-top: 1.75rem;
+  }
+
+  .fitnessHeroValues {
+    grid-template-columns: 1fr;
+    margin-top: 1.5rem;
+  }
+
+  .fitnessHeroValue {
+    padding: 1rem 0 0;
+  }
+
+  .fitnessHeroValue + .fitnessHeroValue {
+    border-inline-start: 0;
+    border-top: 1px solid rgba(var(--kw-accent-rgb), 0.12);
+  }
+
+  .fitnessHeroValueBody {
+    max-width: none;
   }
 }

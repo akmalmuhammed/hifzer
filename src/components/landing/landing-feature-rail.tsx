@@ -1,133 +1,107 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
-import { BookOpenText, HandHeart, NotebookPen, RefreshCcw } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { FeatureShowcase } from "@/components/landing/feature-showcase";
 
-type CompanionCard = {
-  title: string;
-  body: string;
-  icon: LucideIcon;
-  accentClass: string;
-};
-
-const FIT_REASONS = [
-  "You keep losing your place between sessions",
-  "You want hifz review to stop living in your head",
-  "You want duas and private notes close to the Qur'an",
+const CORE_POINTS = [
+  {
+    label: "Read with continuity.",
+    body: "Open the app and return to the exact ayah, surah, and place you last used.",
+  },
+  {
+    label: "Review with structure.",
+    body: "Keep Sabaq, Sabqi, and Manzil visible so memorisation does not drift into guesswork.",
+  },
+  {
+    label: "Keep the routine close.",
+    body: "Duas and private notes stay beside the Qur'an instead of being split into other tools.",
+  },
 ] as const;
 
-const CARDS: CompanionCard[] = [
+const CORE_FEATURES: Array<{
+  eyebrow: string;
+  title: string;
+  body: string;
+  imageSrc: string;
+  imageAlt: string;
+  reverse?: boolean;
+}> = [
   {
-    title: "Read from the exact ayah you left",
-    body: "Resume where you stopped, keep bookmarks nearby, and move through the Qur'an without hunting for your place.",
-    icon: BookOpenText,
-    accentClass:
-      "border-[rgba(var(--kw-accent-rgb),0.18)] bg-[radial-gradient(circle_at_top_left,rgba(var(--kw-accent-rgb),0.12),transparent_36%),linear-gradient(180deg,var(--kw-surface),var(--kw-surface-soft))]",
+    eyebrow: "Hifz review",
+    title: "Keep Sabaq, Sabqi, and Manzil honest.",
+    body:
+      "Hifzer keeps your review in front of you so weak ayahs surface early, recall stays deliberate, and progress does not depend on memory alone.",
+    imageSrc: "/landing/showcase/Hifz%20final.png",
+    imageAlt: "Hifzer hifz screen showing review controls and recall grading",
   },
   {
-    title: "Keep hifz review visible every day",
-    body: "Sabaq, recent review, and what needs attention stay in view so weak areas surface before they drift.",
-    icon: RefreshCcw,
-    accentClass:
-      "border-[rgba(10,138,119,0.18)] bg-[radial-gradient(circle_at_top_right,rgba(10,138,119,0.12),transparent_36%),linear-gradient(180deg,var(--kw-surface),var(--kw-surface-soft))]",
+    eyebrow: "Dua",
+    title: "Open taught duas without leaving the routine.",
+    body:
+      "Arabic, transliteration, and meaning stay together, so your daily adhkar feel close to the rest of your Qur'an habit instead of living in another app.",
+    imageSrc: "/landing/showcase/Dua.png",
+    imageAlt: "Hifzer dua screen showing a guided dua with Arabic and translation",
+    reverse: true,
   },
   {
-    title: "Open your daily duas in the same routine",
-    body: "Keep adhkar close when you need them, with Arabic, transliteration, and translation ready together.",
-    icon: HandHeart,
-    accentClass:
-      "border-[rgba(234,88,12,0.18)] bg-[radial-gradient(circle_at_bottom_right,rgba(234,88,12,0.12),transparent_36%),linear-gradient(180deg,var(--kw-surface),var(--kw-surface-soft))]",
+    eyebrow: "Journal",
+    title: "Keep reflections private and close to what mattered.",
+    body:
+      "When an ayah, reminder, or hard day stays with you, save it in your own journal instead of scattering that moment into another notes tool.",
+    imageSrc: "/landing/showcase/Journal%20final.png",
+    imageAlt: "Hifzer journal screen showing a private reflection entry",
   },
-  {
-    title: "Save private reflections without another app",
-    body: "Write notes next to the ayah or moment that mattered instead of scattering them across different tools.",
-    icon: NotebookPen,
-    accentClass:
-      "border-[rgba(var(--kw-accent-rgb),0.16)] bg-[radial-gradient(circle_at_bottom_left,rgba(var(--kw-accent-rgb),0.12),transparent_36%),linear-gradient(180deg,var(--kw-surface),var(--kw-surface-soft))]",
-  },
-];
+] as const;
 
 export function LandingFeatureRail() {
-  const reduceMotion = useReducedMotion();
-
   return (
-    <section className="mx-auto max-w-[1280px] px-4 py-4 md:px-8 md:py-6">
-      <div className="rounded-[34px] border border-[rgba(var(--kw-accent-rgb),0.12)] bg-[radial-gradient(circle_at_top_left,rgba(10,138,119,0.08),transparent_30%),radial-gradient(circle_at_top_right,rgba(var(--kw-accent-rgb),0.08),transparent_28%),linear-gradient(180deg,var(--kw-surface),var(--kw-surface-soft))] px-5 py-6 shadow-[var(--kw-shadow)] md:px-8 md:py-8">
-        <div className="max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[color:var(--kw-faint)]">
-            What Hifzer is
-          </p>
-          <h2 className="kw-marketing-display mt-3 text-balance text-3xl leading-tight text-[color:var(--kw-ink)] sm:text-4xl">
-            A calm daily Qur&apos;an companion for reading, hifz review, duas, and private notes.
-          </h2>
-          <p className="mt-4 text-sm leading-7 text-[color:var(--kw-muted)]">
-            Hifzer is for the Muslim who wants one place to return to. Instead of splitting your
-            routine across a Qur&apos;an app, adhkar list, notes app, and memory alone, Hifzer keeps
-            the core parts together in one clear flow.
-          </p>
-        </div>
+    <section className="mx-auto max-w-[1280px] px-4 py-12 md:px-8 md:py-20">
+      <div className="mx-auto max-w-[1040px]">
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--kw-faint)]">
+          What Hifzer helps with
+        </p>
+        <h2 className="kw-marketing-display mt-4 max-w-[12ch] text-balance text-4xl leading-[0.96] text-[color:var(--kw-ink)] sm:text-5xl md:text-6xl">
+          Keep the whole Qur&apos;an routine together.
+        </h2>
+        <p className="mt-5 max-w-[58ch] text-sm leading-7 text-[color:var(--kw-muted)] md:text-[15px]">
+          Hifzer is a calm daily companion for reading, hifz review, duas, and private
+          reflections. These are the parts that make it useful once you actually start using it.
+        </p>
+      </div>
 
-        <div className="mt-8 rounded-[30px] border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[radial-gradient(circle_at_top_left,rgba(var(--kw-accent-rgb),0.12),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(10,138,119,0.10),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.88),rgba(255,255,255,0.72))] px-5 py-5 shadow-[var(--kw-shadow-soft)] sm:px-6">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-2xl">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[rgba(var(--kw-accent-rgb),1)]">
-                Useful if
-              </p>
-              <h3 className="mt-2 text-balance text-2xl font-bold tracking-tight text-[color:var(--kw-ink)]">
-                You want the routine to feel easier to return to.
-              </h3>
-              <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-                Hifzer is most helpful when your practice already matters to you, but continuity
-                keeps breaking because the key parts live in different places.
-              </p>
-            </div>
-
-            <div className="grid gap-2 sm:grid-cols-3 lg:min-w-[23rem] lg:grid-cols-1">
-              {FIT_REASONS.map((item) => (
-                <div
-                  key={item}
-                  className="rounded-[18px] border border-[rgba(var(--kw-accent-rgb),0.14)] bg-white/80 px-4 py-3 text-sm font-semibold text-[color:var(--kw-ink)]"
-                >
-                  {item}
-                </div>
-              ))}
-            </div>
+      <div className="mx-auto mt-10 max-w-[1040px] divide-y divide-[rgba(var(--kw-accent-rgb),0.12)] border-y border-[rgba(var(--kw-accent-rgb),0.12)]">
+        {CORE_POINTS.map((point) => (
+          <div key={point.label} className="grid gap-3 py-6 md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] md:gap-8 md:py-7">
+            <p className="font-[family-name:var(--font-kw-display)] text-[clamp(1.6rem,3vw,2.7rem)] leading-[1] tracking-tight text-[color:var(--kw-ink)]">
+              {point.label}
+            </p>
+            <p className="max-w-[54ch] text-sm leading-7 text-[color:var(--kw-muted)] md:text-[15px]">
+              {point.body}
+            </p>
           </div>
-        </div>
+        ))}
+      </div>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {CARDS.map((card, index) => {
-            const Icon = card.icon;
-            return (
-              <motion.article
-                key={card.title}
-                initial={false}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: reduceMotion ? 0 : 0.35, delay: index * 0.05 }}
-                className={[
-                  "flex h-full flex-col overflow-hidden rounded-[28px] border px-5 py-5 shadow-[var(--kw-shadow-soft)] backdrop-blur-xl",
-                  card.accentClass,
-                ].join(" ")}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="grid h-11 w-11 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)]">
-                    <Icon size={18} />
-                  </div>
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--kw-faint)]">
-                    Hifzer
-                  </span>
-                </div>
+      <div className="mt-10 text-center">
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--kw-faint)]">
+          Core features
+        </p>
+        <h3 className="kw-marketing-display mt-3 text-balance text-3xl leading-tight text-[color:var(--kw-ink)] sm:text-4xl">
+          The main parts people actually come back for.
+        </h3>
+      </div>
 
-                <p className="mt-5 text-xl font-bold tracking-tight text-[color:var(--kw-ink)]">
-                  {card.title}
-                </p>
-                <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">{card.body}</p>
-              </motion.article>
-            );
-          })}
-        </div>
+      <div className="mt-8 space-y-6 md:mt-10 md:space-y-8">
+        {CORE_FEATURES.map((feature) => (
+          <FeatureShowcase
+            key={feature.title}
+            eyebrow={feature.eyebrow}
+            title={feature.title}
+            body={feature.body}
+            imageSrc={feature.imageSrc}
+            imageAlt={feature.imageAlt}
+            reverse={feature.reverse}
+          />
+        ))}
       </div>
     </section>
   );

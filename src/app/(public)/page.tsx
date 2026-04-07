@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Hero } from "@/components/landing/hero";
 import { LandingDeferredSections } from "@/components/landing/landing-deferred-sections";
 import { LandingFeatureRail } from "@/components/landing/landing-feature-rail";
+import styles from "@/components/landing/landing.module.css";
 
 const landingTitle = "Hifzer | Qur'an Reading, Review, Duas, and Notes";
 const landingDescription =
@@ -41,10 +42,12 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-    <div>
+    <div className={styles.page}>
       <Hero />
-      <LandingFeatureRail />
-      <LandingDeferredSections />
+      <div className={styles.afterHero}>
+        <LandingFeatureRail />
+        <LandingDeferredSections />
+      </div>
     </div>
   );
 }
