@@ -8,31 +8,31 @@ import clsx from "clsx";
 const FAQS = [
   {
     q: "Who is Hifzer for?",
-    a: "For anyone who wants one place for Qur'an reading, review, guided duas, and private notes. If you memorise, the review side becomes even more useful.",
+    a: "For readers who want continuity and hifz students who need structure. It works for both, and the same app keeps reading, review, dua, and notes together.",
   },
   {
-    q: "Do I need to be memorising to use it?",
-    a: "No. You can use Hifzer for reading, adhkar, and private reflection on its own. Review is there when you want to revise or memorise seriously.",
+    q: "Why create an account?",
+    a: "An account keeps your place, review, duas, and notes tied to you so the routine follows you across sessions and devices.",
   },
   {
-    q: "What makes Hifzer different from other Qur'an apps?",
-    a: "Most Qur'an apps help you read. Hifzer also keeps your place, your review, your duas, and your notes together so you do not rebuild the same routine across multiple tools.",
+    q: "What happens after signup?",
+    a: "You land in the app with your current reading place, the dashboard, and the core tools ready so you can continue instead of setting everything up again.",
   },
   {
-    q: "Can I use it with a teacher?",
-    a: "Yes. A teacher still guides recitation and tajweed. Hifzer helps you stay organised between lessons and keep review visible.",
+    q: "Why switch from another Qur'an app?",
+    a: "Most apps help you read. Hifzer also keeps hifz review, dua, and private notes in the same flow, which is better when you want the practice to feel connected.",
+  },
+  {
+    q: "Is Hifzer only for hifz students?",
+    a: "No. It works for anyone building a daily Qur'an habit. Hifz students get the most structure, but readers, revisers, and people using dua and journaling can all use it well.",
+  },
+  {
+    q: "Can I still use it with a teacher?",
+    a: "Yes. Hifzer is for keeping your practice organized between lessons. Your teacher still guides recitation and tajweed.",
   },
   {
     q: "Are my notes and reflections private?",
-    a: "Yes. Journal entries and private reflections stay in your own space. They are meant to support your practice, not turn it into a feed.",
-  },
-  {
-    q: "Do I need to install anything?",
-    a: "No. It works in the browser first. Add it to your phone later only if you want quicker access.",
-  },
-  {
-    q: "Is it free?",
-    a: "Yes. Qur'an reading, review tools, guided duas, and the journal are free.",
+    a: "Yes. Journal entries and private reflections stay in your own space and are not used like a social feed.",
   },
 ] as const;
 
@@ -96,7 +96,7 @@ export function FaqSection() {
             Questions
           </p>
           <h2 className="kw-marketing-display mt-3 text-balance text-3xl leading-tight text-[color:var(--kw-ink)] sm:text-4xl">
-            Questions before you start?
+            Questions before you try it?
           </h2>
         </div>
 

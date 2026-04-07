@@ -11,7 +11,7 @@ import styles from "./landing.module.css";
 const HERO_POINTS = [
   {
     label: "Hifz",
-    body: "Keep Sabaq, Sabqi, and Manzil visible so memorisation stays structured and deliberate.",
+    body: "Keep your lesson, recent revision, and longer-cycle review visible so memorisation stays structured.",
   },
   {
     label: "Qur'an",
@@ -49,10 +49,10 @@ export function Hero() {
         <motion.div style={{ scale: stageScale, y: stageY }} className={styles.fitnessHeroShell}>
           <motion.div style={{ y: copyY }} className={styles.fitnessHeroCopy}>
             <p className={styles.fitnessHeroEyebrow}>Hifzer</p>
-            <h1 className={styles.fitnessHeroTitle}>Keep your Qur&apos;an routine in one place.</h1>
+            <h1 className={styles.fitnessHeroTitle}>The all-in-one app for Qur&apos;an, hifz, dua, and notes.</h1>
             <p className={styles.fitnessHeroSummary}>
-              Read where you left off, revise hifz with structure, keep daily adhkar close, and
-              save private faith-based reflections in one app.
+              For Muslims building a daily Qur&apos;an habit, Hifzer replaces the mix of a Qur&apos;an
+              app, adhkar list, and notes app with one place to read, revise, ask, and reflect.
             </p>
 
             <div className={styles.fitnessHeroActions}>
@@ -62,22 +62,22 @@ export function Hero() {
                   telemetryName="landing.primary_open_app_click"
                   telemetryMeta={{ placement: "hero" }}
                 >
-                  Create free account <ArrowRight size={17} />
+                  Start your routine free <ArrowRight size={17} />
                 </TrackedLink>
               </Button>
               <Button asChild size="lg" variant="secondary">
                 <TrackedLink
-                  href="/quran-preview"
-                  telemetryName="landing.preview_click"
+                  href="#core-features"
+                  telemetryName="landing.hero_full_product_click"
                   telemetryMeta={{ placement: "hero" }}
                 >
-                  See Qur&apos;an preview <ArrowRight size={17} />
+                  See the full flow <ArrowRight size={17} />
                 </TrackedLink>
               </Button>
             </div>
 
             <p className={styles.fitnessHeroMicro}>
-              Browser first. No card required. Install later only if you want faster access.
+              No card required. Start in the browser and keep everything in one place.
             </p>
           </motion.div>
 

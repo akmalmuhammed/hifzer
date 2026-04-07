@@ -18,7 +18,7 @@ export function FinalCta() {
         transition={{ duration: reduceMotion ? 0 : 0.55, ease: [0.22, 1, 0.36, 1] }}
         className="relative overflow-hidden rounded-[28px] bg-[#0b1220] px-6 py-16 md:px-12 md:py-20"
       >
-        {/* Decorative wind lines on dark bg — same motif, inverted context */}
+        {/* Decorative wind lines on dark bg - same motif, inverted context */}
         <div className="pointer-events-none absolute inset-0 opacity-20">
           <WindLines className="h-full w-full opacity-70" animated={!reduceMotion} />
         </div>
@@ -38,13 +38,13 @@ export function FinalCta() {
           </p>
 
           <h2 className="kw-marketing-display mt-4 text-balance text-4xl font-bold leading-[1.0] text-[rgba(248,250,252,0.94)] sm:text-5xl">
-            Keep your Qur&apos;an routine{" "}
-            <span className="text-[#2dd4bf]">in one place.</span>
+            Keep your Qur&apos;an habit{" "}
+            <span className="text-[#2dd4bf]">in one app.</span>
           </h2>
 
           <p className="mx-auto mt-5 max-w-[46ch] text-base leading-[1.8] text-[rgba(248,250,252,0.58)]">
-            Create a free account to save your place, keep review visible, and keep your duas and
-            private notes close.
+            Start your routine free to keep reading, hifz review, dua, and private notes together
+            from the first session.
           </p>
 
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
@@ -54,22 +54,22 @@ export function FinalCta() {
                 telemetryName="landing.primary_open_app_click"
                 telemetryMeta={{ placement: "final-cta" }}
               >
-                Create free account <ArrowRight size={17} />
+                Start your routine free <ArrowRight size={17} />
               </TrackedLink>
             </Button>
             <Button asChild size="lg" variant="secondary">
               <TrackedLink
-                href="/quran-preview"
-                telemetryName="landing.preview_click"
+                href="#core-features"
+                telemetryName="landing.final_full_product_click"
                 telemetryMeta={{ placement: "final-cta" }}
               >
-                See Qur&apos;an preview <ArrowRight size={17} />
+                See the full flow <ArrowRight size={17} />
               </TrackedLink>
             </Button>
           </div>
 
           <p className="mt-5 text-xs text-[rgba(248,250,252,0.32)]">
-            Browser first · no card required · install later if you want
+            Browser first - no card required
           </p>
         </div>
       </motion.div>

@@ -17,8 +17,8 @@ export function MarketingNav() {
   const { language } = useUiLanguage();
   const copy = getAppUiCopy(language);
   const signInLabel = copy.marketing.signIn;
-  const getStartedLabel = copy.marketing.getStarted;
-  const brandTagline = "Read. Review. Reflect.";
+  const getStartedLabel = "Start free";
+  const brandTagline = "Your all-in-one Qur'an, hifz, dua, and notes app.";
 
   return (
     <header className="sticky top-0 z-40">

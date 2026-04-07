@@ -5,7 +5,6 @@ import { DistractionFreeToggle } from "@/components/app/distraction-free-toggle"
 import { SurahProgressSection } from "@/components/progress/surah-progress-section";
 import { DisclosureCard } from "@/components/ui/disclosure-card";
 import { Pill } from "@/components/ui/pill";
-import { QuranMotivationHero } from "@/components/quran/quran-motivation-hero";
 import { listQuranSurahProgress } from "@/hifzer/progress/surah-progress.server";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { getAyahById, listJuzs, listSurahs } from "@/hifzer/quran/lookup.server";
@@ -63,18 +62,13 @@ export default async function QuranIndexPage() {
         <Pill tone="neutral">Qur&apos;an</Pill>
         <DistractionFreeToggle />
       </div>
-      <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <QuranMotivationHero />
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Link
-              href={trackedHref}
-              className="kw-subtle-emphasis inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2.5 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
-            >
-              Continue reading <ArrowRight size={14} />
-            </Link>
-          </div>
-        </div>
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+        <Link
+          href={trackedHref}
+          className="kw-subtle-emphasis inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2.5 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+        >
+          Continue reading <ArrowRight size={14} />
+        </Link>
         <span className="grid h-12 w-12 place-items-center rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
           <BookOpen size={18} />
         </span>

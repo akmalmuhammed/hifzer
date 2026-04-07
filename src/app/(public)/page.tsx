@@ -4,9 +4,9 @@ import { LandingDeferredSections } from "@/components/landing/landing-deferred-s
 import { LandingFeatureRail } from "@/components/landing/landing-feature-rail";
 import styles from "@/components/landing/landing.module.css";
 
-const landingTitle = "Hifzer | Qur'an Reading, Review, Duas, and Notes";
+const landingTitle = "Hifzer | Qur'an, Hifz, Dua, and Notes";
 const landingDescription =
-  "Hifzer is a daily Qur'an companion that keeps your reading place, hifz review, duas, and private notes in one app.";
+  "Hifzer is an all-in-one Qur'an companion for daily reading, hifz review, memorization, dua, and journaling in one app.";
 const landingImage = "/opengraph-image";
 
 export const metadata: Metadata = {
@@ -45,7 +45,9 @@ export default function LandingPage() {
     <div className={styles.page}>
       <Hero />
       <div className={styles.afterHero}>
-        <LandingFeatureRail />
+        <div id="core-features">
+          <LandingFeatureRail />
+        </div>
         <LandingDeferredSections />
       </div>
     </div>

@@ -4,16 +4,16 @@ import { FeatureShowcase } from "@/components/landing/feature-showcase";
 
 const CORE_POINTS = [
   {
-    label: "Read with continuity.",
-    body: "Open the app and return to the exact ayah, surah, and place you last used.",
+    label: "One place for the routine.",
+    body: "Hifzer keeps Qur'an reading, hifz review, duas, and private notes in one app so you are not stitching the routine together across separate tools.",
   },
   {
-    label: "Review with structure.",
-    body: "Keep Sabaq, Sabqi, and Manzil visible so memorisation does not drift into guesswork.",
+    label: "For readers and hifz students.",
+    body: "If you are building a daily reading habit, Hifzer keeps your place. If you are revising seriously, it also keeps your review visible.",
   },
   {
-    label: "Keep the routine close.",
-    body: "Duas and private notes stay beside the Qur'an instead of being split into other tools.",
+    label: "What it replaces.",
+    body: "It replaces the mix of a Qur'an app, notes app, adhkar list, and memory alone with one focused companion.",
   },
 ] as const;
 
@@ -27,26 +27,26 @@ const CORE_FEATURES: Array<{
 }> = [
   {
     eyebrow: "Hifz review",
-    title: "Keep Sabaq, Sabqi, and Manzil honest.",
+    title: "Keep your review organized from day to day.",
     body:
-      "Hifzer keeps retrieval practice, spaced repetition, and deliberate review in front of you so weak ayahs surface early, recall stays active, and memorisation follows patterns that are proven to hold better over time.",
+      "Hifzer keeps your current lesson, recent revision, and harder verses in view so you can review on purpose instead of guessing what to revisit next.",
     imageSrc: "/landing/showcase/Hifz%20final.png",
     imageAlt: "Hifzer hifz screen showing review controls and recall grading",
   },
   {
     eyebrow: "Dua",
-    title: "Open taught duas without leaving the routine.",
+    title: "Keep daily adhkar close and personal.",
     body:
-      "Arabic, transliteration, and meaning stay together so your daily adhkar feel close, personal, and lived with, more like a daily way of asking Allah than a page you occasionally open.",
+      "Arabic, transliteration, and meaning stay together so the dua feels like part of the day you are living, not a separate list you open once in a while.",
     imageSrc: "/landing/showcase/Dua.png",
     imageAlt: "Hifzer dua screen showing a guided dua with Arabic and translation",
     reverse: true,
   },
   {
     eyebrow: "Journal",
-    title: "Keep reflections private and close to what mattered.",
+    title: "Turn reflections into faith-based journaling.",
     body:
-      "Hifzer gives you a faith-based journal for reflections, lessons, duas, and private entries, so what Allah teaches you through the day can stay organised, searchable, and close to your Qur'an practice.",
+      "Save lessons from an ayah, a reminder from the day, or a private dua note in one journal built around reflection, not social sharing.",
     imageSrc: "/landing/showcase/Journal%20final.png",
     imageAlt: "Hifzer journal screen showing a private reflection entry",
   },
@@ -57,14 +57,14 @@ export function LandingFeatureRail() {
     <section className="mx-auto max-w-[1280px] px-4 py-12 md:px-8 md:py-20">
       <div className="mx-auto max-w-[1040px]">
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--kw-faint)]">
-          What Hifzer helps with
+          Why people open it
         </p>
         <h2 className="kw-marketing-display mt-4 max-w-[12ch] text-balance text-4xl leading-[0.96] text-[color:var(--kw-ink)] sm:text-5xl md:text-6xl">
-          Keep the whole Qur&apos;an and hifz routine together.
+          Keep the Qur&apos;an and hifz routine in one place.
         </h2>
         <p className="mt-5 max-w-[58ch] text-sm leading-7 text-[color:var(--kw-muted)] md:text-[15px]">
-          Hifzer is a daily companion for Qur&apos;an reading, hifz review, duas, and faith-based
-          journaling. These are the parts that make it useful once you actually start using it.
+          Hifzer is the companion app for readers who want continuity and for hifz students who
+          need structure. It keeps the parts of the practice that matter most together.
         </p>
       </div>
 
@@ -86,7 +86,7 @@ export function LandingFeatureRail() {
           Core features
         </p>
         <h3 className="kw-marketing-display mt-3 text-balance text-3xl leading-tight text-[color:var(--kw-ink)] sm:text-4xl">
-          The main parts people actually come back for.
+          The parts that keep the routine usable.
         </h3>
       </div>
 
