@@ -8,11 +8,11 @@ export function LandingDeferredSections() {
   return (
     <>
       <div className="mx-auto max-w-[1200px] px-4 md:px-8">
-        <SessionWalkthrough />
+        <QualityGates />
       </div>
 
       <div className="mx-auto max-w-[1200px] px-4 md:px-8">
-        <QualityGates />
+        <SessionWalkthrough />
       </div>
 
       <div className="mx-auto max-w-[1200px] px-4 md:px-8">

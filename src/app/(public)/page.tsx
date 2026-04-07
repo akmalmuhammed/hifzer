@@ -5,7 +5,7 @@ import { LandingFeatureRail } from "@/components/landing/landing-feature-rail";
 
 const landingTitle = "Hifzer | Qur'an Reading, Review, Duas, and Notes";
 const landingDescription =
-  "Keep your place, your review, your duas, and your private notes in one place.";
+  "Hifzer is a daily Qur'an companion that keeps your reading place, hifz review, duas, and private notes in one calm app.";
 const landingImage = "/opengraph-image";
 
 export const metadata: Metadata = {

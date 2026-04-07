@@ -67,14 +67,14 @@ export function QualityGates() {
 
         <div className="relative max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[color:var(--kw-faint)]">
-            Why people keep using it
+            Why it helps
           </p>
           <h2 className="kw-marketing-display mt-3 max-w-3xl text-balance text-3xl leading-tight text-[color:var(--kw-ink)] sm:text-4xl">
-            Built for the days you come back.
+            Useful on the days you return tired, distracted, or already behind.
           </h2>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)] md:text-[15px]">
-            People usually fall off because their place disappears, their review gets fuzzy, or
-            their notes live somewhere else. Hifzer keeps those parts together.
+            Most routines break for ordinary reasons: your place disappears, your review gets
+            fuzzy, or your notes and duas live somewhere else. Hifzer reduces that friction.
           </p>
         </div>
 

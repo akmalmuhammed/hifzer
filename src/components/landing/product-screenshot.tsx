@@ -2,9 +2,6 @@
 
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, ShieldCheck } from "lucide-react";
-import { PublicAuthLink } from "@/components/landing/public-auth-link";
-import { Button } from "@/components/ui/button";
 import styles from "./landing.module.css";
 
 const PROOF_STATS = [
@@ -42,7 +39,7 @@ export function ProductScreenshot() {
         {/* Full-width screenshot — the product speaks for itself */}
         <div className="mt-8 overflow-hidden rounded-[20px] border border-[color:var(--kw-border-2)] shadow-[var(--kw-shadow)]">
           <Image
-            src="/hifzer app 1.png"
+            src="/landing/showcase/dashboard.png"
             alt="Hifzer dashboard showing daily flow, retention scores, and review queue"
             width={1400}
             height={900}

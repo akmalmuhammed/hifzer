@@ -256,14 +256,14 @@ export function SessionWalkthrough() {
       {/* Section header */}
       <div className="mb-8 md:mb-10">
         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[color:var(--kw-faint)]">
-          How it works
+          What using Hifzer looks like
         </p>
         <h2 className="kw-marketing-display mt-3 text-balance text-3xl leading-tight text-[color:var(--kw-ink)] sm:text-4xl">
           See the main parts before you sign up.
         </h2>
         <p className="mt-3 max-w-xl text-sm leading-7 text-[color:var(--kw-muted)]">
-          The reader stays central. Review, duas, and private notes sit around it instead of
-          sending you across separate tools.
+          Tap through the reader, review, duas, and private journal to see how Hifzer keeps the
+          routine in one place.
         </p>
       </div>
 

@@ -8,7 +8,6 @@ import {
   BookOpenText,
   ChevronLeft,
   ChevronRight,
-  CircleAlert,
   Coins,
   HandHeart,
   Heart,
@@ -314,7 +313,6 @@ export function DuaExperienceClient({
   const [deletingCustomId, setDeletingCustomId] = useState<string | null>(null);
   const [orderDrafts, setOrderDrafts] = useState<Record<string, string>>({});
   const [visibilityPrefs, setVisibilityPrefs] = useState<DuaVisibilityPrefs>(DEFAULT_VISIBILITY_PREFS);
-  const [showStudySupport, setShowStudySupport] = useState(false);
   const [stepSearch, setStepSearch] = useState("");
   const [activeStepFilter, setActiveStepFilter] = useState("All");
   const [loadedBrowserPrefs, setLoadedBrowserPrefs] = useState(false);
@@ -527,13 +525,6 @@ export function DuaExperienceClient({
       sortOrder: previous.sortOrder || String(nextSuggestedSortOrder),
     }));
   }, [currentModule, draft.id, nextSuggestedSortOrder]);
-
-  useEffect(() => {
-    if (initialView !== "experience") {
-      return;
-    }
-    setShowStudySupport(false);
-  }, [currentModule?.id, currentModuleState.currentIndex, initialView]);
 
   useEffect(() => {
     if (isNamesModule) {
@@ -1528,69 +1519,6 @@ export function DuaExperienceClient({
           </DisclosureCard>
         ) : null}
 
-        <Card className={styles.studyCard}>
-          <div className={styles.studyTop}>
-            <div>
-              <p className={styles.sectionLabel}>Study support</p>
-              <h3 className={styles.studyTitle}>Why this step is here</h3>
-              <p className={styles.studySummary}>
-                Sources, reflection, and authenticity notes stay secondary so the current step can stay primary.
-              </p>
-            </div>
-            <Button type="button" variant="secondary" onClick={() => setShowStudySupport((previous) => !previous)}>
-              {showStudySupport ? "Hide" : "Open"}
-            </Button>
-          </div>
-
-          {showStudySupport ? (
-            <div className={styles.supportGrid}>
-              <div className={styles.contextNotice}>
-                <span className={styles.boundaryIcon}>
-                  <CircleAlert size={16} />
-                </span>
-                <p>{currentModule.authenticityBoundary}</p>
-              </div>
-
-              {currentStep.reflectionPrompt ? (
-                <section className={styles.reflectionCard}>
-                  <p className={styles.sectionLabel}>Reflection</p>
-                  <p>{currentStep.reflectionPrompt}</p>
-                </section>
-              ) : null}
-
-              <section className={styles.evidenceSection}>
-                <p className={styles.sectionLabel}>Verified anchors</p>
-                <div className={styles.evidenceList}>
-                  {currentStep.evidence.map((item) => (
-                    <div key={`${item.eyebrow}-${item.title}`} className={styles.evidenceItem}>
-                      <div className={styles.evidenceBody}>
-                        <p className={styles.sectionLabel}>{item.eyebrow}</p>
-                        <p className={styles.evidenceTitle}>{item.title}</p>
-                        <p className={styles.evidenceDetail}>{item.detail}</p>
-                      </div>
-                      {item.source ? (
-                        <a
-                          href={item.source.href}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={styles.sourceLink}
-                        >
-                          {item.source.label} <ArrowRight size={14} />
-                        </a>
-                      ) : (
-                        <span className={styles.privateSource}>Private to your account</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </section>
-            </div>
-          ) : (
-            <p className={styles.studyClosed}>
-              Open this only when you want reflection, authenticity notes, or sources.
-            </p>
-          )}
-        </Card>
       </section>
     </div>
   );

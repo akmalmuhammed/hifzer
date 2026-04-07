@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
-import { ArrowRight, ChevronDown, Sparkles } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import { WindLines } from "@/components/brand/wind-lines";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { Button } from "@/components/ui/button";
@@ -66,7 +66,7 @@ export function Hero() {
             className={`${styles.publicHeroTitle} kw-marketing-display kw-gradient-headline mx-auto text-balance leading-[0.92]`}
             style={{ fontWeight: 800 }}
           >
-            One place for Qur&apos;an reading, review, duas, and notes.
+            Hifzer is a daily Qur&apos;an companion for reading, review, duas, and notes.
           </motion.h1>
 
           {/* Subheadline — single line */}
@@ -74,8 +74,8 @@ export function Hero() {
             variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } } }}
             className={`${styles.publicHeroSummary} mx-auto text-center text-base leading-[1.7] text-[color:var(--kw-muted)] md:text-lg`}
           >
-            Read where you left off, keep review visible, open your daily adhkar, and write
-            private reflections without stitching the routine together across different apps.
+            Keep your place in the Qur&apos;an, keep hifz review visible, open your daily adhkar,
+            and save private reflections without stitching the routine together across different apps.
           </motion.p>
 
           {/* CTA row */}
@@ -101,53 +101,6 @@ export function Hero() {
                 See Qur&apos;an preview <ArrowRight size={17} />
               </TrackedLink>
             </Button>
-          </motion.div>
-
-          <motion.div
-            variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } } }}
-            className="w-full max-w-3xl"
-          >
-            <div className={`${styles.heroSignalCard} px-4 py-4 text-left sm:px-5`}>
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--kw-faint)]">
-                    AI insights in the reader
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)] sm:text-[1rem]">
-                    Get a quick explanation when an ayah needs more context.
-                  </p>
-                </div>
-                <span className="inline-flex items-center gap-1 rounded-full border border-[rgba(var(--kw-accent-rgb),0.2)] bg-[rgba(var(--kw-accent-rgb),0.08)] px-3 py-1 text-[11px] font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
-                  <Sparkles size={13} />
-                  Smart help
-                </span>
-              </div>
-
-              <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-                Open AI insights for explanation notes, tafsir-backed takeaways, and word notes
-                without leaving the ayah you are reading.
-              </p>
-
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                {["Explanation insights", "Tafsir insights", "Word notes"].map((item) => (
-                  <span
-                    key={item}
-                    className="rounded-full border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-1 text-[11px] font-semibold text-[color:var(--kw-ink-2)]"
-                  >
-                    {item}
-                  </span>
-                ))}
-              </div>
-
-              <TrackedLink
-                href="/quran-preview"
-                telemetryName="landing.ai_spotlight_preview_click"
-                telemetryMeta={{ placement: "hero_ai_spotlight" }}
-                className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline"
-              >
-                See it in the Qur&apos;an preview <ArrowRight size={15} />
-              </TrackedLink>
-            </div>
           </motion.div>
 
           {/* Trust line */}
@@ -179,8 +132,8 @@ export function Hero() {
         {/* Clip the bottom so it "peeks" over the fold */}
         <div className="overflow-hidden rounded-t-[20px] border border-b-0 border-[color:var(--kw-border-2)] shadow-[0_32px_80px_rgba(11,18,32,0.18)]">
           <Image
-            src="/hifzer app 1.png"
-            alt="Hifzer dashboard showing Qur'an reading, review, and private notes"
+            src="/landing/showcase/dashboard.png"
+            alt="Hifzer dashboard showing daily Qur'an progress, review, and practice surfaces"
             width={1400}
             height={900}
             className="w-full"
