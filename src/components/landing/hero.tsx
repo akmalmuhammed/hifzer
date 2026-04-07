@@ -10,16 +10,20 @@ import styles from "./landing.module.css";
 
 const HERO_POINTS = [
   {
-    label: "Resume reading",
-    body: "Return to the exact ayah without rebuilding your place every time you come back.",
+    label: "Hifz",
+    body: "Keep Sabaq, Sabqi, and Manzil visible so memorisation stays structured and deliberate.",
   },
   {
-    label: "Keep review visible",
-    body: "Protect Sabaq, Sabqi, and Manzil in one flow instead of keeping review in your head.",
+    label: "Qur'an",
+    body: "Return to the exact ayah and continue reading without rebuilding your place every time.",
   },
   {
-    label: "Keep duas and notes close",
-    body: "Open daily adhkar and save private reflections without jumping to separate tools.",
+    label: "Dua",
+    body: "Keep daily adhkar close so asking Allah stays part of the same routine, not another app.",
+  },
+  {
+    label: "Journaling",
+    body: "Save faith-based reflections, lessons, and personal notes in your own private space.",
   },
 ] as const;
 
@@ -32,11 +36,11 @@ export function Hero() {
     offset: ["start start", "end end"],
   });
 
-  const stageScale = useTransform(scrollYProgress, [0, 0.5, 1], reduceMotion ? [1, 1, 1] : [1.08, 1.01, 0.95]);
-  const stageY = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [0, -68]);
-  const frameY = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [0, -24]);
-  const frameScale = useTransform(scrollYProgress, [0, 0.55, 1], reduceMotion ? [1, 1, 1] : [1.1, 1.02, 0.98]);
-  const copyY = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [0, -18]);
+  const stageScale = useTransform(scrollYProgress, [0, 0.5, 1], reduceMotion ? [1, 1, 1] : [1.14, 1.02, 0.86]);
+  const stageY = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [0, -92]);
+  const frameY = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [0, -36]);
+  const frameScale = useTransform(scrollYProgress, [0, 0.55, 1], reduceMotion ? [1, 1, 1] : [1.18, 1.04, 0.88]);
+  const copyY = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [0, -26]);
   const valuesOpacity = useTransform(scrollYProgress, [0, 0.18], reduceMotion ? [1, 1] : [0.62, 1]);
 
   return (
@@ -47,8 +51,8 @@ export function Hero() {
             <p className={styles.fitnessHeroEyebrow}>Hifzer</p>
             <h1 className={styles.fitnessHeroTitle}>Keep your Qur&apos;an routine in one place.</h1>
             <p className={styles.fitnessHeroSummary}>
-              Read where you left off, keep hifz review visible, open your daily adhkar, and save
-              private reflections in one calm app.
+              Read where you left off, revise hifz with structure, keep daily adhkar close, and
+              save private faith-based reflections in one app.
             </p>
 
             <div className={styles.fitnessHeroActions}>

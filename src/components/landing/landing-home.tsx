@@ -116,7 +116,7 @@ const MODULES: ModuleCard[] = [
     label: "Islamic guides",
     headline: "The basics you needed someone to just show you.",
     body:
-      "A growing how-to space for practical worship questions and guided practice moments, written to stay clear, calm, and easy to revisit.",
+    "A growing how-to space for practical worship questions and guided practice moments, written to stay clear and easy to revisit.",
     tags: ["Practical", "Clear", "Growing library"],
     icon: ScrollText,
     tone: "neutral",

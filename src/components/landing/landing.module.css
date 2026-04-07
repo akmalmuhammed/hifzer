@@ -791,15 +791,11 @@
   width: min(1180px, calc(100vw - 2rem));
   margin: 0 auto;
   padding: clamp(1.5rem, 3vw, 2.6rem);
-  border: 1px solid rgba(var(--kw-accent-rgb), 0.12);
+  border: 0;
   border-radius: 42px;
-  background:
-    radial-gradient(52rem 24rem at 50% 0%, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0) 70%),
-    radial-gradient(26rem 18rem at 12% 10%, rgba(10, 138, 119, 0.1), transparent 72%),
-    radial-gradient(26rem 18rem at 88% 16%, rgba(var(--kw-accent-rgb), 0.1), transparent 72%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.8));
-  box-shadow: 0 34px 100px rgba(15, 23, 42, 0.1);
-  backdrop-filter: blur(12px);
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .fitnessHeroCopy {
@@ -856,7 +852,7 @@
 
 .fitnessHeroValues {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0;
   margin-top: clamp(1.5rem, 3vh, 2.25rem);
   border-top: 1px solid rgba(var(--kw-accent-rgb), 0.12);
@@ -894,13 +890,8 @@
 }
 
 :global(html[data-mode="dark"]) .fitnessHeroShell {
-  border-color: rgba(148, 163, 184, 0.14);
-  background:
-    radial-gradient(52rem 24rem at 50% 0%, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 70%),
-    radial-gradient(26rem 18rem at 12% 10%, rgba(10, 138, 119, 0.12), transparent 72%),
-    radial-gradient(26rem 18rem at 88% 16%, rgba(var(--kw-accent-rgb), 0.12), transparent 72%),
-    linear-gradient(180deg, rgba(8, 14, 26, 0.92), rgba(12, 18, 31, 0.84));
-  box-shadow: 0 34px 100px rgba(0, 0, 0, 0.3);
+  background: transparent;
+  box-shadow: none;
 }
 
 @media (max-width: 1023px) {

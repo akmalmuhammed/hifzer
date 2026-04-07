@@ -29,7 +29,7 @@ const CORE_FEATURES: Array<{
     eyebrow: "Hifz review",
     title: "Keep Sabaq, Sabqi, and Manzil honest.",
     body:
-      "Hifzer keeps your review in front of you so weak ayahs surface early, recall stays deliberate, and progress does not depend on memory alone.",
+      "Hifzer keeps retrieval practice, spaced repetition, and deliberate review in front of you so weak ayahs surface early, recall stays active, and memorisation follows patterns that are proven to hold better over time.",
     imageSrc: "/landing/showcase/Hifz%20final.png",
     imageAlt: "Hifzer hifz screen showing review controls and recall grading",
   },
@@ -37,7 +37,7 @@ const CORE_FEATURES: Array<{
     eyebrow: "Dua",
     title: "Open taught duas without leaving the routine.",
     body:
-      "Arabic, transliteration, and meaning stay together, so your daily adhkar feel close to the rest of your Qur'an habit instead of living in another app.",
+      "Arabic, transliteration, and meaning stay together so your daily adhkar feel close, personal, and lived with, more like a daily way of asking Allah than a page you occasionally open.",
     imageSrc: "/landing/showcase/Dua.png",
     imageAlt: "Hifzer dua screen showing a guided dua with Arabic and translation",
     reverse: true,
@@ -46,7 +46,7 @@ const CORE_FEATURES: Array<{
     eyebrow: "Journal",
     title: "Keep reflections private and close to what mattered.",
     body:
-      "When an ayah, reminder, or hard day stays with you, save it in your own journal instead of scattering that moment into another notes tool.",
+      "Hifzer gives you a faith-based journal for reflections, lessons, duas, and private entries, so what Allah teaches you through the day can stay organised, searchable, and close to your Qur'an practice.",
     imageSrc: "/landing/showcase/Journal%20final.png",
     imageAlt: "Hifzer journal screen showing a private reflection entry",
   },
@@ -60,11 +60,11 @@ export function LandingFeatureRail() {
           What Hifzer helps with
         </p>
         <h2 className="kw-marketing-display mt-4 max-w-[12ch] text-balance text-4xl leading-[0.96] text-[color:var(--kw-ink)] sm:text-5xl md:text-6xl">
-          Keep the whole Qur&apos;an routine together.
+          Keep the whole Qur&apos;an and hifz routine together.
         </h2>
         <p className="mt-5 max-w-[58ch] text-sm leading-7 text-[color:var(--kw-muted)] md:text-[15px]">
-          Hifzer is a calm daily companion for reading, hifz review, duas, and private
-          reflections. These are the parts that make it useful once you actually start using it.
+          Hifzer is a daily companion for Qur&apos;an reading, hifz review, duas, and faith-based
+          journaling. These are the parts that make it useful once you actually start using it.
         </p>
       </div>
 

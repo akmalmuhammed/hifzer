@@ -78,7 +78,7 @@ export function SocialProof() {
 
       <div className="mt-6 flex flex-col items-center justify-center gap-2 text-center text-xs leading-6 text-[color:var(--kw-faint)] sm:flex-row">
         <BookOpenText size={14} />
-        <span>Built to protect daily recitation, review, and long-term memorization with one calm routine.</span>
+                    <span>Built to protect daily recitation, review, and long-term memorization with one steady routine.</span>
       </div>
     </section>
   );

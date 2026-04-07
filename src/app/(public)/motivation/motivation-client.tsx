@@ -23,7 +23,7 @@ const MOTIVATION_TILES: MotivationTile[] = [
   { category: "Qur'an", title: "Light enters the heart through repeated remembrance.", source: "Qur'an 29:45" },
   { category: "Hifz", title: "Accuracy first, speed second, barakah always.", source: "Hifzer Method" },
   { category: "Progress", title: "A focused 20 minutes can transform your day.", source: "Hifzer Principle" },
-  { category: "Qur'an", title: "Recite calmly. Depth grows where haste disappears.", source: "Qur'an 73:4" },
+  { category: "Qur'an", title: "Recite with steadiness. Depth grows where haste disappears.", source: "Qur'an 73:4" },
   { category: "Hifz", title: "Guard what you memorized before adding more.", source: "Sahih al-Bukhari 5033" },
   { category: "Progress", title: "Your future self will thank you for today's discipline.", source: "Hifzer Principle" },
   { category: "Qur'an", title: "The Qur'an elevates those who carry it with care.", source: "Sahih Muslim 817" },
