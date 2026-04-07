@@ -263,6 +263,9 @@ export function JournalClient(props: {
   const didAnnounceSyncRecoveryRef = useRef(!props.initialSyncError);
   const didAnnounceSyncIssueRef = useRef(false);
 
+  const [accountSyncEnabled, setAccountSyncEnabled] = useState(
+    () => props.syncEnabled && !props.initialSyncError,
+  );
   const [entries, setEntries] = useState<JournalEntry[]>(() => sortEntries(props.initialEntries));
   const [draft, setDraft] = useState<JournalDraft | null>(null);
   const [expandedEntryId, setExpandedEntryId] = useState<string | "new" | null>(null);
@@ -279,9 +282,12 @@ export function JournalClient(props: {
   const [ayahCardErrorById, setAyahCardErrorById] = useState<Record<number, string>>({});
   const [hydratingAyahIds, setHydratingAyahIds] = useState<number[]>([]);
   const [syncIssue, setSyncIssue] = useState<string | null>(() =>
-    props.initialSyncError ? "We could not reach your account journal yet. Retrying now." : null,
+    props.initialSyncError
+      ? "We could not reach your account journal yet. New notes will stay on this device while we reconnect."
+      : null,
   );
   const deferredSearch = useDeferredValue(search.trim().toLowerCase());
+  const effectiveSyncEnabled = props.syncEnabled && accountSyncEnabled;
 
   const defaultDuaValue = props.duaOptions[0] ? buildDuaOptionValue(props.duaOptions[0]) : "";
   const currentEntry = draft?.id ? entries.find((entry) => entry.id === draft.id) ?? null : null;
@@ -349,6 +355,7 @@ export function JournalClient(props: {
 
     try {
       const remoteEntries = sortEntries(await fetchSyncedEntries());
+      setAccountSyncEnabled(true);
       setEntries(remoteEntries);
       setIsLoaded(true);
       setSyncIssue(null);
@@ -456,7 +463,7 @@ export function JournalClient(props: {
     };
 
     let savedEntry: JournalEntry;
-    if (props.syncEnabled) {
+    if (effectiveSyncEnabled) {
       setIsSaving(true);
       try {
         savedEntry = await saveSyncedEntry(nextEntry);
@@ -496,7 +503,7 @@ export function JournalClient(props: {
       pushToast({
         tone: "success",
         title: draft.id ? "Note updated" : "Note saved",
-        message: props.syncEnabled
+        message: effectiveSyncEnabled
           ? "This note is saved to your account."
           : "This note is saved in this browser.",
       });
@@ -518,13 +525,27 @@ export function JournalClient(props: {
 
   useEffect(() => {
     if (props.syncEnabled) {
+      if (props.initialSyncError) {
+        setAccountSyncEnabled(false);
+        setEntries(listJournalEntries());
+        setIsLoaded(true);
+        setSyncIssue(
+          "We could not reach your account journal yet. New notes will stay on this device while we reconnect.",
+        );
+        didAnnounceSyncRecoveryRef.current = false;
+        void refreshSyncedEntries({ quiet: false });
+        return;
+      }
+
+      setAccountSyncEnabled(true);
       setEntries(sortEntries(props.initialEntries));
-      setIsLoaded(props.initialEntries.length > 0 || !props.initialSyncError);
-      setSyncIssue(props.initialSyncError ? "We could not reach your account journal yet. Retrying now." : null);
+      setIsLoaded(true);
+      setSyncIssue(null);
       didAnnounceSyncRecoveryRef.current = !props.initialSyncError;
       void refreshSyncedEntries({ quiet: !props.initialSyncError });
       return;
     }
+    setAccountSyncEnabled(false);
     const loadedEntries = listJournalEntries();
     setEntries(loadedEntries);
     setIsLoaded(true);
@@ -554,7 +575,13 @@ export function JournalClient(props: {
   }, [props.syncEnabled, refreshSyncedEntries]);
 
   useEffect(() => {
-    if (!props.syncEnabled || didAttemptLegacyImportRef.current) {
+    if (!effectiveSyncEnabled) {
+      didAttemptLegacyImportRef.current = false;
+    }
+  }, [effectiveSyncEnabled]);
+
+  useEffect(() => {
+    if (!effectiveSyncEnabled || didAttemptLegacyImportRef.current) {
       return;
     }
 
@@ -583,6 +610,7 @@ export function JournalClient(props: {
         if (cancelled) {
           return;
         }
+        didAttemptLegacyImportRef.current = false;
         pushToast({
           tone: "warning",
           title: "Could not import old local notes",
@@ -594,7 +622,7 @@ export function JournalClient(props: {
     return () => {
       cancelled = true;
     };
-  }, [props.syncEnabled, pushToast]);
+  }, [effectiveSyncEnabled, pushToast]);
 
   useEffect(() => {
     if (!draft) {
@@ -714,7 +742,7 @@ export function JournalClient(props: {
       return;
     }
 
-    if (props.syncEnabled) {
+    if (effectiveSyncEnabled) {
       setIsDeleting(true);
       try {
         await removeSyncedEntry(draft.id);
@@ -742,7 +770,7 @@ export function JournalClient(props: {
     pushToast({
       tone: "warning",
       title: "Note removed",
-      message: props.syncEnabled
+      message: effectiveSyncEnabled
         ? "That note was removed from your account."
         : "That note was removed from this browser.",
     });
@@ -1225,7 +1253,7 @@ export function JournalClient(props: {
 
         <div className={styles.noteSaveRow}>
           <p className={styles.privacyNote}>
-            {props.syncEnabled
+            {effectiveSyncEnabled
               ? "Private. Saved to your account so it follows you across devices."
               : "Private. Saved only in this browser for now."}
           </p>
@@ -1289,7 +1317,7 @@ export function JournalClient(props: {
         eyebrow="Private"
         title="Journal"
         subtitle={
-          props.syncEnabled
+          effectiveSyncEnabled
             ? "A private place for reflections, linked ayahs, and personal duas that stay with your account."
             : "A private place for reflections, linked ayahs, and personal duas that stay on this device for now."
         }
@@ -1297,7 +1325,9 @@ export function JournalClient(props: {
 
       {props.syncEnabled && syncIssue ? (
         <Card className="border-[rgba(var(--kw-accent-rgb),0.18)] bg-[rgba(var(--kw-accent-rgb),0.06)]">
-          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Reconnecting your account journal...</p>
+          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
+            {effectiveSyncEnabled ? "Reconnecting your account journal..." : "Keeping this journal on this device for now."}
+          </p>
           <p className="mt-1 text-sm leading-6 text-[color:var(--kw-muted)]">{syncIssue}</p>
         </Card>
       ) : null}

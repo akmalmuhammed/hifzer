@@ -50,7 +50,7 @@ export type AyahExplanationGatewaySuccess = {
 
 export type AyahExplanationGatewayFailure = {
   ok: false;
-  status: "not_configured" | "error";
+  status: "not_configured" | "timeout" | "error";
   detail: string;
 };
 

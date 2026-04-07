@@ -282,7 +282,10 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
       </div>
 
       <nav className="fixed bottom-3 left-1/2 z-40 w-[min(560px,calc(100vw-1.5rem))] -translate-x-1/2 rounded-[26px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-2 py-2 shadow-[var(--kw-shadow)] backdrop-blur md:hidden">
-        <div className="grid grid-cols-7 gap-1">
+        <div
+          className="grid gap-1"
+          style={{ gridTemplateColumns: `repeat(${MOBILE_NAV.length}, minmax(0, 1fr))` }}
+        >
           {MOBILE_NAV.map((item) => {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;

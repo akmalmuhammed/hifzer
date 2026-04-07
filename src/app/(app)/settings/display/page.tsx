@@ -38,7 +38,7 @@ function SelectPill(props: {
         "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition",
         props.selected
           ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-          : "border-[color:var(--kw-border-2)] bg-[color:var(--kw-card)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-card-strong)]",
+          : "border-[color:var(--kw-border-2)] kw-surface-gradient text-[color:var(--kw-ink)] hover:bg-white",
       ].join(" ")}
     >
       {props.selected ? <Check size={14} /> : null}
@@ -106,7 +106,7 @@ function ThemeCard(props: {
         "w-full rounded-[22px] border p-3 text-left transition",
         props.selected
           ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.08)] shadow-[var(--kw-shadow-soft)]"
-          : "border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] hover:bg-[color:var(--kw-surface)]",
+          : "border-[color:var(--kw-border-2)] kw-surface-gradient-soft hover:bg-white",
       ].join(" ")}
     >
       <div className={`h-16 rounded-[18px] bg-gradient-to-br ${props.previewClass}`} />
@@ -211,7 +211,7 @@ export default function DisplaySettingsPage() {
             {ACCENT_OPTIONS.map((option) => (
               <div
                 key={`${option.id}-swatch`}
-                className="inline-flex items-center gap-2 rounded-full border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3 py-2 text-sm text-[color:var(--kw-muted)]"
+                className="inline-flex items-center gap-2 rounded-full border border-[color:var(--kw-border-2)] kw-surface-gradient-soft px-3 py-2 text-sm text-[color:var(--kw-muted)]"
               >
                 <span className={`h-3 w-3 rounded-full ${option.swatchClass}`} />
                 {option.label}

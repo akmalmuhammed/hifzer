@@ -4,12 +4,12 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
 import { SupportTextPanel } from "@/components/quran/support-text-panel";
-import { QuranOfflineStatus } from "@/components/quran/quran-offline-status";
 import { QuranViewportProgressTracker } from "@/components/quran/quran-viewport-progress-tracker";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import { getDistractionFreeServer } from "@/hifzer/focus/server";
 import { getProfileSnapshot } from "@/hifzer/profile/server";
+import { getQuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/server";
 import {
   filterAyahs,
   getSurahInfo,
@@ -28,6 +28,7 @@ import { getPhoneticByAyahId, getQuranTranslationByAyahId } from "@/hifzer/quran
 import { clerkEnabled } from "@/lib/clerk-config";
 import { CompactReaderScroll } from "./compact-reader-scroll";
 import { CompactReaderClient } from "./compact-reader-client";
+import { QuranFoundationFilterAction } from "./quran-foundation-filter-action";
 import { ReaderPreferencesControls } from "./reader-preferences-controls";
 
 type ReaderView = "list" | "compact";
@@ -133,6 +134,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   const userId = authEnabled ? (await auth()).userId : null;
   const distractionFree = await getDistractionFreeServer();
   const profile = userId ? await getProfileSnapshot(userId) : null;
+  const quranFoundationStatus = await getQuranFoundationConnectionStatus(userId ?? null);
   const reciterId = profile?.reciterId ?? "default";
   const requestedView = parseView(searchParams.view);
   const view = distractionFree ? "compact" : requestedView;
@@ -166,8 +168,6 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   const listPage = Math.min(requestedPage, totalListPages);
   const listStartOffset = (listPage - 1) * LIST_PAGE_SIZE;
   const listAyahs = ayahs.slice(listStartOffset, listStartOffset + LIST_PAGE_SIZE);
-  const listStart = ayahs.length > 0 ? listStartOffset + 1 : 0;
-  const listEnd = listStartOffset + listAyahs.length;
   const surahs = listSurahs();
 
   // For compact view: pre-load the current surah's ayahs with translations so the
@@ -258,6 +258,10 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
         persistEnabled={Boolean(authEnabled && userId)}
         ui={ui}
       />
+
+      <div className="mt-4">
+        <QuranFoundationFilterAction status={quranFoundationStatus} />
+      </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <Link
@@ -405,7 +409,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
           </div>
 
           <div className="mt-8">
-            <details open className="group rounded-[24px] border border-[color:var(--kw-border-2)] bg-white/65 p-3 shadow-[var(--kw-shadow-soft)]">
+            <details className="group rounded-[24px] border border-[color:var(--kw-border-2)] bg-white/65 p-3 shadow-[var(--kw-shadow-soft)]">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/75 px-3 py-2.5 text-sm font-semibold text-[color:var(--kw-ink)]">
                 <span>{ui.readerFilters}</span>
                 <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/80 px-2 py-0.5 text-xs text-[color:var(--kw-muted)] group-open:hidden">
@@ -417,25 +421,6 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
               </summary>
               <div className="pt-3">{renderFilterControls()}</div>
             </details>
-          </div>
-
-          <QuranOfflineStatus compact showReadyHint scope="reader" />
-
-          <div className="mt-6 flex flex-wrap items-center gap-2">
-            <Pill tone="neutral">{ayahs.length} {ui.ayahsMatchedSuffix}</Pill>
-            <Pill tone={anonymous ? "warn" : "accent"}>{anonymous ? ui.anonymousMode : ui.trackingMode}</Pill>
-            <Pill tone="neutral">{ui.language}: {quranTranslationId}</Pill>
-            <Pill tone={showPhonetic ? "accent" : "warn"}>{showPhonetic ? ui.phoneticsOn : ui.phoneticsOff}</Pill>
-            <Pill tone={showTranslation ? "accent" : "warn"}>
-              {showTranslation ? ui.translationOn : ui.translationOff}
-            </Pill>
-            {view === "list" && ayahs.length > 0 ? (
-              <Pill tone="neutral">
-                {ui.showing} {listStart}-{listEnd}
-              </Pill>
-            ) : null}
-            {surahNumber != null ? <Pill tone="accent">{ui.surahLabel} {surahNumber}</Pill> : null}
-            {ayahId != null ? <Pill tone="accent">{ui.ayahLabel} #{ayahId}</Pill> : null}
           </div>
         </>
       ) : null}

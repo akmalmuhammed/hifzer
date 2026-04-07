@@ -135,7 +135,7 @@ export function ReciterSettingsClient(props: ReciterSettingsClientProps) {
               Used across the reader and Hifz.
             </p>
           </div>
-          <span className="grid h-12 w-12 place-items-center rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/75 text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
+          <span className="grid h-12 w-12 place-items-center rounded-[22px] border border-[color:var(--kw-border-2)] kw-surface-gradient text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
             <Music4 size={18} />
           </span>
         </div>
@@ -143,7 +143,7 @@ export function ReciterSettingsClient(props: ReciterSettingsClientProps) {
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.9fr)]">
         <Card>
-          <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/65 px-4 py-4">
+          <div className="rounded-[22px] border border-[color:var(--kw-border-2)] kw-surface-gradient-soft px-4 py-4">
             <div className="flex items-center gap-2">
               <RadioTower size={16} className="text-[color:var(--kw-faint)]" />
               <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Audio route</p>
@@ -171,7 +171,7 @@ export function ReciterSettingsClient(props: ReciterSettingsClientProps) {
                       "rounded-[22px] border px-4 py-4 text-left transition disabled:cursor-not-allowed disabled:opacity-60",
                       active
                         ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.10)]"
-                        : "border-[color:var(--kw-border-2)] bg-white/70 hover:bg-white",
+                        : "border-[color:var(--kw-border-2)] kw-surface-gradient hover:bg-white",
                     ].join(" ")}
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -212,7 +212,7 @@ export function ReciterSettingsClient(props: ReciterSettingsClientProps) {
                     "rounded-[22px] border px-4 py-4 text-left transition",
                     active
                       ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.10)]"
-                      : "border-[color:var(--kw-border-2)] bg-white/70 hover:bg-white",
+                      : "border-[color:var(--kw-border-2)] kw-surface-gradient hover:bg-white",
                   ].join(" ")}
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
@@ -248,7 +248,7 @@ export function ReciterSettingsClient(props: ReciterSettingsClientProps) {
                         "rounded-[22px] border px-4 py-4 text-left transition",
                         active
                           ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.10)]"
-                          : "border-[color:var(--kw-border-2)] bg-white/70 hover:bg-white",
+                          : "border-[color:var(--kw-border-2)] kw-surface-gradient hover:bg-white",
                       ].join(" ")}
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -266,7 +266,7 @@ export function ReciterSettingsClient(props: ReciterSettingsClientProps) {
                 })}
               </div>
             ) : (
-              <div className="mt-4 rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/60 px-4 py-4 text-sm leading-7 text-[color:var(--kw-muted)]">
+              <div className="mt-4 rounded-[22px] border border-[color:var(--kw-border-2)] kw-surface-gradient-soft px-4 py-4 text-sm leading-7 text-[color:var(--kw-muted)]">
                 Local Hifzer voices are available now. Quran.com voices will appear here when the catalog is reachable.
               </div>
             )}

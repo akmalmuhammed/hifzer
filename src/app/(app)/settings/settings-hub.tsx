@@ -163,7 +163,7 @@ export function SettingsHub(props: SettingsHubProps) {
                 "min-w-[190px] rounded-[20px] border px-4 py-3 text-left transition",
                 active
                   ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] shadow-[0_16px_30px_rgba(11,18,32,0.08)]"
-                  : "border-[color:var(--kw-border-2)] bg-white/70 hover:bg-white",
+                  : "border-[color:var(--kw-border-2)] kw-surface-gradient hover:bg-white",
               ].join(" ")}
             >
               <div className="flex items-center justify-between gap-3">
@@ -192,7 +192,7 @@ export function SettingsHub(props: SettingsHubProps) {
             const Icon = item.icon;
             return (
               <Link key={item.href} href={item.href}>
-                <Card className="group h-full transition hover:bg-white/60">
+                <Card className="group h-full transition kw-surface-gradient hover:bg-white/60">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <Pill tone={item.tone}>{item.eyebrow}</Pill>
@@ -201,7 +201,7 @@ export function SettingsHub(props: SettingsHubProps) {
                       </p>
                       <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">{item.desc}</p>
                     </div>
-                    <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
+                    <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] kw-surface-gradient text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
                       <Icon size={18} />
                     </span>
                   </div>

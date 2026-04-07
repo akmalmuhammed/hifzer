@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { QuranOfflineStatus } from "@/components/quran/quran-offline-status";
 import { Pill } from "@/components/ui/pill";
 import { QuranGlossaryClient, QuranGlossaryHeaderHint } from "./quran-glossary-client";
 
@@ -33,10 +32,6 @@ export default function QuranGlossaryPage() {
         <div className="mt-4">
           <QuranGlossaryHeaderHint />
         </div>
-      </div>
-
-      <div className="mt-8">
-        <QuranOfflineStatus compact showReadyHint scope="search" />
       </div>
 
       <div className="mt-6">

@@ -14,6 +14,7 @@ import { getQuranTranslationByAyahId } from "@/hifzer/quran/translation.server";
 import { clerkEnabled } from "@/lib/clerk-config";
 
 export const runtime = "nodejs";
+export const maxDuration = 65;
 
 type RequestShape = {
   ayahId?: unknown;
@@ -72,7 +73,7 @@ export async function POST(req: Request) {
 
   if (!payload.ok) {
     return NextResponse.json(payload, {
-      status: payload.status === "not_configured" ? 503 : 502,
+      status: payload.status === "not_configured" ? 503 : payload.status === "timeout" ? 504 : 502,
     });
   }
 

@@ -3,8 +3,6 @@ import "server-only";
 import type { AyahExplanationGatewayRequest, AyahExplanationGatewayResponse } from "./contracts";
 import { getHifzerAiGatewayConfig } from "./config";
 
-const AI_GATEWAY_TIMEOUT_MS = 25_000;
-
 function buildGatewayUrl(baseUrl: string): string {
   return new URL("/v1/quran/explain-ayah", baseUrl).toString();
 }
@@ -29,7 +27,7 @@ export async function requestAyahExplanation(
   }
 
   const abortController = new AbortController();
-  const timeout = setTimeout(() => abortController.abort(), AI_GATEWAY_TIMEOUT_MS);
+  const timeout = setTimeout(() => abortController.abort(), config.timeoutMs);
 
   try {
     const response = await fetch(buildGatewayUrl(config.baseUrl), {
@@ -63,13 +61,13 @@ export async function requestAyahExplanation(
 
     return payload;
   } catch (error) {
+    const timedOut = error instanceof Error && error.name === "AbortError";
     return {
       ok: false,
-      status: "error",
-      detail:
-        error instanceof Error && error.name === "AbortError"
-          ? "AI explanation timed out. Please try again."
-          : "AI explanation is unavailable right now.",
+      status: timedOut ? "timeout" : "error",
+      detail: timedOut
+        ? "AI explanation is taking longer than expected. Please try again."
+        : "AI explanation is unavailable right now.",
     };
   } finally {
     clearTimeout(timeout);

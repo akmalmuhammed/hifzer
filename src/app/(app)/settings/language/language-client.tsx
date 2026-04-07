@@ -122,7 +122,7 @@ export function LanguageSettingsClient(props: LanguageSettingsClientProps) {
             value={quranTranslationId}
             disabled={saving || props.persistEnabled === false}
             onChange={(e) => setQuranTranslationId(e.target.value as QuranTranslationId)}
-            className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)] md:max-w-[560px]"
+            className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] kw-surface-gradient px-3 text-sm text-[color:var(--kw-ink)] md:max-w-[560px]"
           >
             {QURAN_TRANSLATION_OPTIONS.map((option) => (
               <option key={option.id} value={option.id}>

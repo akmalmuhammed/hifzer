@@ -97,7 +97,7 @@ export function PlanSettingsClient(props: PlanClientProps) {
                     "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
                     draft.planBias === bias
                       ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-                      : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)] hover:bg-white",
+                      : "border-[color:var(--kw-border-2)] kw-surface-gradient text-[color:var(--kw-ink)] hover:bg-white",
                   ].join(" ")}
                 >
                   {bias}
@@ -119,7 +119,7 @@ export function PlanSettingsClient(props: PlanClientProps) {
                     "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
                     draft.hasTeacher === value
                       ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-                      : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)] hover:bg-white",
+                      : "border-[color:var(--kw-border-2)] kw-surface-gradient text-[color:var(--kw-ink)] hover:bg-white",
                   ].join(" ")}
                 >
                   {value ? "Yes" : "No"}
