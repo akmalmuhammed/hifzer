@@ -62,6 +62,10 @@ export type ReaderUiCopy = {
   readerDetailsHidden: string;
   failedSaveLanguage: string;
   failedSaveReaderPreferences: string;
+  saveFiltersLabel?: string;
+  filtersSavedMessage?: string;
+  failedSaveFilters?: string;
+  saveFiltersHint?: string;
   persistenceUnavailable: string;
   saveIssue: string;
 };
@@ -129,6 +133,10 @@ const READER_UI_COPY: Record<QuranTranslationId, ReaderUiCopy> = {
     readerDetailsHidden: "Reader details hidden.",
     failedSaveLanguage: "Failed to save language preference.",
     failedSaveReaderPreferences: "Failed to save reader preferences.",
+    saveFiltersLabel: "Save filters",
+    filtersSavedMessage: "Reader filters saved.",
+    failedSaveFilters: "Failed to save reader filters.",
+    saveFiltersHint: "Saved filters become your default reader view when no query override is present.",
     persistenceUnavailable: "Persistence unavailable",
     saveIssue: "Save issue",
   },

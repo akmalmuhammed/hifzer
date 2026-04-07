@@ -61,7 +61,6 @@ export function AyahAiExplanationPanel(props: { ayahId: number; compact?: boolea
     <Card className={props.compact ? "mt-3" : "mt-4"}>
       <div className="flex flex-wrap items-center gap-2">
         <Pill tone="accent">AI beta</Pill>
-        {ready ? <Pill tone="neutral">{ready.provider} · {ready.model}</Pill> : null}
       </div>
 
       {state.phase === "idle" ? (

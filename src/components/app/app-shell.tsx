@@ -146,6 +146,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
         ...INSIGHTS.map((item) => item.href),
         ...PLATFORM.map((item) => item.href),
         "/settings",
+        "/",
       ]),
     ).filter((href) => href !== pathname);
 
@@ -201,7 +202,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
       <div className={styles.frame}>
         <aside className={clsx(styles.sidebar, "hidden shrink-0 md:block")}>
           <div className={clsx(styles.sidebarSticky, "space-y-4")}>
-            <TrackedLink href="/dashboard" className={clsx(styles.brand, "flex items-center")} telemetryName="shell.logo">
+            <TrackedLink href="/" className={clsx(styles.brand, "flex items-center")} telemetryName="shell.logo">
               <span className={clsx(styles.brandMark, "grid place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[color:var(--kw-surface-soft)] text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] backdrop-blur-md")}>
                 <HifzerMark />
               </span>

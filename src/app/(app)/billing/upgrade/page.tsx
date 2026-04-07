@@ -11,7 +11,7 @@ import { getProfileSnapshot } from "@/hifzer/profile/server";
 import { clerkEnabled } from "@/lib/clerk-config";
 
 export const metadata = {
-  title: "Paid Product Work",
+  title: "One-Time Support",
 };
 
 const CORE_FEATURES = [
@@ -22,9 +22,9 @@ const CORE_FEATURES = [
 ];
 
 const SUPPORT_REASONS = [
-  "Request custom development tied to your Hifzer workflow",
-  "Fund feature implementation or priority product work",
-  "Pay for software-related setup, guidance, or delivery",
+  "Get Hifzer-related help without starting a subscription",
+  "Support the product while raising a concrete improvement request",
+  "Pay for Hifzer account assistance or product-linked follow-up",
   "Use one-time checkout instead of a recurring subscription",
 ];
 
@@ -46,8 +46,8 @@ export default async function BillingUpgradePage() {
     <div className="space-y-6">
       <PageHeader
         eyebrow="Billing"
-        title="Paid Hifzer product work"
-        subtitle="Use one-time Paddle checkout for custom development, implementation help, or paid feature work related to Hifzer."
+        title="One-time Hifzer support"
+        subtitle="Use one-time Paddle checkout for Hifzer-related support, account help, and product-linked requests."
       />
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -80,12 +80,12 @@ export default async function BillingUpgradePage() {
         <Card>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <Pill tone="accent">One-time product work</Pill>
+              <Pill tone="accent">One-time support</Pill>
               <p className="mt-3 text-3xl font-[family-name:var(--font-kw-display)] tracking-tight text-[color:var(--kw-ink)]">
                 Custom scope
               </p>
               <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                One-time checkout for custom Hifzer work through Paddle. No recurring billing and no subscription plan change.
+                One-time checkout for Hifzer-related support through Paddle. No recurring billing and no subscription plan change.
               </p>
             </div>
             <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] text-[color:var(--kw-ink)]">

@@ -203,6 +203,7 @@ model UserProfile {
   quranFoundationAccount QuranFoundationAccount?
   privateJournalEntries PrivateJournalEntry[]
   quranBrowseEvents     QuranBrowseEvent[]
+  quranReaderFilterPreference QuranReaderFilterPreference?
   customDuas           CustomDua[]
   duaDeckOrders        DuaDeckOrder[]
   ownedTeacherCircles   TeacherCircle[]           @relation("OwnedTeacherCircles")
@@ -501,6 +502,24 @@ model QuranBrowseEvent {
   @@index([userId, lastSeenAt])
   @@index([userId, ayahId, lastSeenAt])
   @@index([userId, localDate, source])
+}
+
+model QuranReaderFilterPreference {
+  id              String      @id @default(cuid())
+  userId          String      @unique
+  view            String      @default("list")
+  surahNumber     Int?
+  ayahId          Int?
+  showPhonetic    Boolean     @default(true)
+  showTranslation Boolean     @default(true)
+  showTafsir      Boolean     @default(false)
+  tafsirId        Int?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user            UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, updatedAt])
 }
 
 model CustomDua {

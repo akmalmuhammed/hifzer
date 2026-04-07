@@ -474,7 +474,7 @@ export function LandingHome() {
                 whenever you return. Your deen. Your pace. No drama.
               </p>
               <p className={styles.finalSupport}>
-                Need private features or custom product work?{" "}
+                Need private help or want to back a Hifzer improvement?{" "}
                 <PublicAuthLink
                   signedInHref="/support"
                   signedOutHref="/login?redirect_url=%2Fsupport"

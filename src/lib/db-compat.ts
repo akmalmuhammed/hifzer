@@ -7,6 +7,7 @@ let coreSchemaCapabilitiesPromise: Promise<CoreSchemaCapabilities> | null = null
 
 export type CoreSchemaCapabilities = {
   hasQuranLaneColumns: boolean;
+  hasQuranReaderFilterTable: boolean;
   hasSessionModernColumns: boolean;
   hasSessionPlanJson: boolean;
   hasQuranBrowseTable: boolean;
@@ -36,6 +37,7 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
   if (!dbConfigured()) {
     return {
       hasQuranLaneColumns: false,
+      hasQuranReaderFilterTable: false,
       hasSessionModernColumns: false,
       hasSessionPlanJson: false,
       hasQuranBrowseTable: false,
@@ -86,6 +88,21 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
               LOWER('source'),
               LOWER('firstSeenAt'),
               LOWER('lastSeenAt')
+            )
+          )
+          OR (
+            LOWER(table_name) = LOWER('QuranReaderFilterPreference')
+            AND LOWER(column_name) IN (
+              LOWER('userId'),
+              LOWER('view'),
+              LOWER('surahNumber'),
+              LOWER('ayahId'),
+              LOWER('showPhonetic'),
+              LOWER('showTranslation'),
+              LOWER('showTafsir'),
+              LOWER('tafsirId'),
+              LOWER('createdAt'),
+              LOWER('updatedAt')
             )
           )
           OR (
@@ -159,6 +176,11 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
         .filter((row) => row.table_name.toLowerCase() === "quranbrowseevent")
         .map((row) => row.column_name.toLowerCase()),
     );
+    const quranReaderFilterColumns = new Set(
+      rows
+        .filter((row) => row.table_name.toLowerCase() === "quranreaderfilterpreference")
+        .map((row) => row.column_name.toLowerCase()),
+    );
     const customDuaColumns = new Set(
       rows
         .filter((row) => row.table_name.toLowerCase() === "customdua")
@@ -194,6 +216,17 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
         sessionColumns.has("warmupretryused") &&
         sessionColumns.has("weeklygaterequired") &&
         sessionColumns.has("weeklygatepassed"),
+      hasQuranReaderFilterTable:
+        quranReaderFilterColumns.has("userid") &&
+        quranReaderFilterColumns.has("view") &&
+        quranReaderFilterColumns.has("surahnumber") &&
+        quranReaderFilterColumns.has("ayahid") &&
+        quranReaderFilterColumns.has("showphonetic") &&
+        quranReaderFilterColumns.has("showtranslation") &&
+        quranReaderFilterColumns.has("showtafsir") &&
+        quranReaderFilterColumns.has("tafsirid") &&
+        quranReaderFilterColumns.has("createdat") &&
+        quranReaderFilterColumns.has("updatedat"),
       hasSessionPlanJson: sessionColumns.has("planjson"),
       hasQuranBrowseTable:
         quranBrowseColumns.has("userid") &&
@@ -241,6 +274,7 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
     // Fail-safe: assume legacy schema if capability probing fails.
     return {
       hasQuranLaneColumns: false,
+      hasQuranReaderFilterTable: false,
       hasSessionModernColumns: false,
       hasSessionPlanJson: false,
       hasQuranBrowseTable: false,
@@ -484,6 +518,22 @@ export async function ensureCoreSchemaCompatibility(): Promise<void> {
         );
       `);
       await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "QuranReaderFilterPreference" (
+          "id" TEXT NOT NULL,
+          "userId" TEXT NOT NULL,
+          "view" TEXT NOT NULL DEFAULT 'list',
+          "surahNumber" INTEGER,
+          "ayahId" INTEGER,
+          "showPhonetic" BOOLEAN NOT NULL DEFAULT true,
+          "showTranslation" BOOLEAN NOT NULL DEFAULT true,
+          "showTafsir" BOOLEAN NOT NULL DEFAULT false,
+          "tafsirId" INTEGER,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "QuranReaderFilterPreference_pkey" PRIMARY KEY ("id")
+        );
+      `);
+      await prisma.$executeRawUnsafe(`
         CREATE TABLE IF NOT EXISTS "CustomDua" (
           "id" TEXT NOT NULL,
           "userId" TEXT NOT NULL,
@@ -517,6 +567,21 @@ export async function ensureCoreSchemaCompatibility(): Promise<void> {
       await prisma.$executeRawUnsafe(`
         ALTER TABLE "DuaDeckOrder"
         ADD COLUMN IF NOT EXISTS "moduleId" TEXT NOT NULL DEFAULT 'laylat-al-qadr';
+      `);
+      await prisma.$executeRawUnsafe(`
+        DO $$
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'QuranReaderFilterPreference_userId_fkey'
+          ) THEN
+            ALTER TABLE "QuranReaderFilterPreference"
+            ADD CONSTRAINT "QuranReaderFilterPreference_userId_fkey"
+            FOREIGN KEY ("userId") REFERENCES "UserProfile"("id")
+            ON DELETE CASCADE ON UPDATE CASCADE;
+          END IF;
+        END $$;
       `);
       await prisma.$executeRawUnsafe(`
         DO $$
@@ -595,6 +660,14 @@ export async function ensureCoreSchemaCompatibility(): Promise<void> {
         ON "QuranBrowseEvent"("userId", "localDate", "ayahId", "source");
       `);
       await prisma.$executeRawUnsafe(`
+        CREATE UNIQUE INDEX IF NOT EXISTS "QuranReaderFilterPreference_userId_key"
+        ON "QuranReaderFilterPreference"("userId");
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "QuranReaderFilterPreference_userId_updatedAt_idx"
+        ON "QuranReaderFilterPreference"("userId", "updatedAt");
+      `);
+      await prisma.$executeRawUnsafe(`
         CREATE INDEX IF NOT EXISTS "QuranBrowseEvent_userId_lastSeenAt_idx" ON "QuranBrowseEvent"("userId", "lastSeenAt");
       `);
       await prisma.$executeRawUnsafe(`
@@ -669,6 +742,7 @@ export async function ensureCoreSchemaCompatibility(): Promise<void> {
       `);
       coreSchemaCapabilitiesPromise = Promise.resolve({
         hasQuranLaneColumns: true,
+        hasQuranReaderFilterTable: true,
         hasSessionModernColumns: true,
         hasSessionPlanJson: true,
         hasQuranBrowseTable: true,

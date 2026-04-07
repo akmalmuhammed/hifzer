@@ -65,20 +65,20 @@ export async function POST(req: Request) {
       },
       customData: {
         clerk_user_id: userId,
-        product_work_amount: normalizedAmount.display,
+        support_amount: normalizedAmount.display,
       },
       items: [
         {
           quantity: 1,
           price: {
-            description: "One-time Hifzer product work, implementation help, or custom feature request.",
+            description: "One-time Hifzer product support and account assistance.",
             unitPrice: {
               amount: normalizedAmount.cents,
               currencyCode: currencyCode as never,
             },
             product: {
-              name: "Hifzer Product Work",
-              description: `One-time Hifzer product work purchase of ${currencyCode} ${normalizedAmount.display}.`,
+              name: "Hifzer Product Support",
+              description: `One-time Hifzer product support purchase of ${currencyCode} ${normalizedAmount.display}.`,
               taxCategory: "standard",
             },
           },

@@ -6,7 +6,7 @@ export const metadata = {
   title: "Refund Policy",
 };
 
-const LAST_UPDATED = "February 17, 2026";
+const LAST_UPDATED = "April 7, 2026";
 
 export default function LegalRefundPolicyPage() {
   return (
@@ -24,8 +24,8 @@ export default function LegalRefundPolicyPage() {
         <Card>
           <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">1. Scope</h2>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-            This policy applies to all paid subscriptions and one-time payments purchased through
-            Hifzer&apos;s checkout provider, Paddle.
+            This policy applies to all paid subscriptions and one-time Hifzer support purchases
+            processed through Hifzer&apos;s checkout provider, Paddle.
           </p>
         </Card>
 
@@ -33,7 +33,8 @@ export default function LegalRefundPolicyPage() {
           <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">2. Refund window</h2>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
             We provide a 30 calendar day money-back guarantee on all charges. This includes
-            first-time subscription payments, renewal payments, and one-time payments.
+            first-time subscription payments, renewal payments, and one-time Hifzer support
+            purchases.
           </p>
         </Card>
 

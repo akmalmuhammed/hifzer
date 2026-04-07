@@ -19,7 +19,7 @@ export default function BillingThankYouPage() {
 
       <PageHeader
         eyebrow="Support"
-        title="Thank you for your Hifzer order."
+        title="Thank you for supporting Hifzer."
         subtitle="Your payment was received successfully. You will be returned to the dashboard in a few seconds."
       />
 
@@ -32,11 +32,12 @@ export default function BillingThankYouPage() {
             <div className="min-w-0">
               <Pill tone="success">Payment received</Pill>
               <p className="mt-3 text-xl font-[family-name:var(--font-kw-display)] tracking-tight text-[color:var(--kw-ink)] sm:text-2xl">
-                Your one-time product-work payment went through successfully.
+                Your one-time Hifzer support payment went through successfully.
               </p>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
-                Paddle should send your receipt and payment confirmation to the email used during checkout.
-                If you already sent the project scope or feature request, we can continue from that thread.
+                Paddle should send your receipt and payment confirmation to the email used during checkout. If you need
+                follow-up on a Hifzer issue, account question, or product request, continue through support and include
+                the purchase email.
               </p>
 
               <div className="mt-5 flex flex-wrap items-center gap-3">
@@ -63,7 +64,7 @@ export default function BillingThankYouPage() {
               <ul className="mt-3 space-y-2 text-sm leading-7 text-[color:var(--kw-muted)]">
                 <li>Paddle handles the receipt and buyer support details.</li>
                 <li>Your Hifzer account stays available as normal.</li>
-                <li>Use the support page if you still need to send project scope or requirements.</li>
+                <li>Use the support page if you need follow-up on a Hifzer issue or request.</li>
               </ul>
 
               <div className="mt-4 rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-4 py-4">

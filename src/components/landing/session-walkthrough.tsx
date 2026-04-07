@@ -83,19 +83,19 @@ type Feature = (typeof FEATURES)[number];
 
 function ReaderPreview({ preview }: { preview: Extract<Feature["preview"], { type: "reader" }> }) {
   return (
-    <div className="grid h-full min-h-[28rem] grid-rows-[auto_1fr_auto] gap-3">
-      <div className="flex items-center justify-between gap-2">
+    <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-3">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[color:var(--kw-faint)]">
             Current place
           </p>
           <p className="mt-0.5 text-sm font-semibold text-[color:var(--kw-ink)]">{preview.surah}</p>
         </div>
-        <Pill tone="brand">Saved</Pill>
+        <Pill tone="brand" className="shrink-0 self-start">Saved</Pill>
       </div>
 
-      <div className="grid min-h-[20rem] place-items-center rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-5 py-5">
-        <div className="w-full max-w-[44rem]">
+      <div className="grid min-h-[16rem] place-items-center rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-5 py-6 md:px-6">
+        <div className="w-full max-w-[40rem]">
           <p
             className="text-right font-[family-name:var(--font-quran-uthmani)] text-[1.45rem] leading-[2.4] text-[color:var(--kw-ink)]"
             dir="rtl"
@@ -122,7 +122,7 @@ function ReaderPreview({ preview }: { preview: Extract<Feature["preview"], { typ
 
 function ReviewPreview({ preview }: { preview: Extract<Feature["preview"], { type: "review" }> }) {
   return (
-    <div className="grid h-full min-h-[28rem] grid-rows-[auto_1fr_auto] gap-3">
+    <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-3">
       <div>
         <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[color:var(--kw-faint)]">
           {preview.title}
@@ -153,28 +153,28 @@ function ReviewPreview({ preview }: { preview: Extract<Feature["preview"], { typ
 
 function DuaPreview({ preview }: { preview: Extract<Feature["preview"], { type: "dua" }> }) {
   return (
-    <div className="grid h-full min-h-[28rem] grid-rows-[auto_1fr_auto] gap-3">
-      <div className="flex items-center justify-between gap-2">
+    <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-3">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[color:var(--kw-faint)]">
             {preview.title}
           </p>
           <p className="mt-0.5 text-sm font-semibold text-[color:var(--kw-ink)]">{preview.subtitle}</p>
         </div>
-        <Pill tone="brand">{preview.progress}/{preview.total}</Pill>
+        <Pill tone="brand" className="shrink-0 self-start">{preview.progress}/{preview.total}</Pill>
       </div>
 
-      <div className="grid min-h-[20rem] place-items-center rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-5 py-5">
-        <div className="w-full max-w-[44rem]">
-        <p
-          className="text-right font-[family-name:var(--font-quran-uthmani)] text-[1.45rem] leading-[2.4] text-[color:var(--kw-ink)]"
-          dir="rtl"
-        >
-          {preview.arabic}
-        </p>
-        <p className="mt-3 text-center text-[11px] italic text-[color:var(--kw-muted)]">
-          {preview.transliteration}
-        </p>
+      <div className="grid min-h-[16rem] place-items-center rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-5 py-6 md:px-6">
+        <div className="w-full max-w-[40rem]">
+          <p
+            className="text-right font-[family-name:var(--font-quran-uthmani)] text-[1.45rem] leading-[2.4] text-[color:var(--kw-ink)]"
+            dir="rtl"
+          >
+            {preview.arabic}
+          </p>
+          <p className="mt-3 text-center text-[11px] italic text-[color:var(--kw-muted)]">
+            {preview.transliteration}
+          </p>
         </div>
       </div>
 
@@ -188,7 +188,7 @@ function DuaPreview({ preview }: { preview: Extract<Feature["preview"], { type: 
 
 function JournalPreview({ preview }: { preview: Extract<Feature["preview"], { type: "journal" }> }) {
   return (
-    <div className="grid h-full min-h-[28rem] grid-rows-[auto_1fr] gap-3">
+    <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-3">
       <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-4 pb-4 pt-3">
         <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[color:var(--kw-faint)]">
           {preview.surah}
@@ -267,7 +267,7 @@ export function SessionWalkthrough() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-[1fr_1.1fr] md:items-stretch">
+      <div className="grid gap-6 md:grid-cols-[minmax(0,0.96fr)_minmax(0,1.04fr)] md:items-start">
         {/* Left — feature tabs */}
         <div className="flex flex-col gap-2" role="tablist" aria-label="Session walkthrough features">
           {FEATURES.map((feature, idx) => {
@@ -342,7 +342,7 @@ export function SessionWalkthrough() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: reduceMotion ? 0 : 0.45 }}
-          className="kw-glass-strong min-h-[34rem] rounded-[var(--kw-radius-xl)] px-5 py-5"
+          className="kw-glass-strong flex min-h-[30rem] flex-col rounded-[var(--kw-radius-xl)] px-5 py-5"
         >
           {/* Feature header */}
           <AnimatePresence mode="wait" initial={false}>
@@ -352,9 +352,9 @@ export function SessionWalkthrough() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: reduceMotion ? 0 : 0.2 }}
-              className="mb-4 flex items-center justify-between gap-3"
+              className="mb-4 flex items-start justify-between gap-3"
             >
-              <div>
+              <div className="min-w-0 pr-2">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[color:var(--kw-faint)]">
                   {active.tag}
                 </p>
@@ -363,7 +363,7 @@ export function SessionWalkthrough() {
                   {active.body}
                 </p>
               </div>
-              <Pill tone={active.tagTone}>{active.tag}</Pill>
+              <Pill tone={active.tagTone} className="shrink-0 self-start">{active.tag}</Pill>
             </motion.div>
           </AnimatePresence>
 
@@ -375,7 +375,7 @@ export function SessionWalkthrough() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: reduceMotion ? 0 : 0.25 }}
-              className="h-full"
+              className="min-h-0 flex-1"
             >
               <PreviewPanel feature={active} />
             </motion.div>

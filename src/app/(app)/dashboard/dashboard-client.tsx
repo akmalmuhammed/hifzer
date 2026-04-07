@@ -822,7 +822,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
           <section className={`kw-fade-in ${styles.commandDeck} px-4 py-4 sm:px-5 sm:py-5`}>
             <div className={styles.pulseOrb} />
             <div className={styles.driftOrb} />
-            <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1fr)_260px]">
+            <div className="relative space-y-4">
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <Pill tone="accent">Today</Pill>
@@ -865,101 +865,104 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                     icon={SquarePen}
                   />
                 </div>
+              </div>
 
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  <div className={`${styles.kpiTile} px-3 py-2.5`}>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
-                      Due now
-                    </p>
-                    <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
-                      {overview.reviewHealth.dueNow}
-                    </p>
-                    <p className="mt-2 text-xs text-[color:var(--kw-muted)]">{overview.reviewHealth.weakTransitions} joins</p>
+              <div className="grid gap-3 lg:grid-cols-3">
+                <div className={`${styles.kpiTile} px-3 py-3`}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Now</p>
+                      <p className={`${styles.numericValue} mt-2 text-2xl text-[color:var(--kw-ink)]`}>
+                        {overview.kpis.retentionScore14d}
+                      </p>
+                      <p className="mt-1 text-xs text-[color:var(--kw-muted)]">Recall score (14d)</p>
+                    </div>
+                    <span className={clsx(styles.iconBadge, styles.iconAccent)}>
+                      <Gauge size={17} />
+                    </span>
                   </div>
-                  <div className={`${styles.kpiTile} px-3 py-2.5`}>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
-                      Sessions (7d)
-                    </p>
-                    <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
-                      {overview.kpis.completedSessions7d}
-                    </p>
-                    <p className="mt-2 text-xs text-[color:var(--kw-muted)]">{overview.kpis.totalSessionMinutes7d} min</p>
+                </div>
+
+                <div className={`${styles.kpiTile} px-3 py-3`}>
+                  <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Reading place</p>
+                  <p className="mt-2 text-base font-semibold text-[color:var(--kw-ink)]">
+                    {overview.quran.currentSurahName} | {overview.quran.cursorRef}
+                  </p>
+                  <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
+                    {overview.quran.currentSurahProgressPct}% through this surah
+                  </p>
+                </div>
+
+                <div className={`${styles.kpiTile} px-3 py-3`}>
+                  <div className="grid gap-2">
+                    <div className="flex items-center justify-between gap-3 text-xs text-[color:var(--kw-muted)]">
+                      <span>Next review</span>
+                      <strong className="text-right font-semibold text-[color:var(--kw-ink)]">
+                        {formatMaybeDateTime(overview.reviewHealth.nextDueAt)}
+                      </strong>
+                    </div>
+                    <div className="flex items-center justify-between gap-3 text-xs text-[color:var(--kw-muted)]">
+                      <span>Reminder</span>
+                      <strong className="font-semibold text-[color:var(--kw-ink)]">{overview.profile.reminderTimeLocal}</strong>
+                    </div>
+                    <div className="flex items-center justify-between gap-3 text-xs text-[color:var(--kw-muted)]">
+                      <span>Timezone</span>
+                      <strong className="font-semibold text-[color:var(--kw-ink)]">{overview.profile.timezone}</strong>
+                    </div>
                   </div>
-                  <div className={`${styles.kpiTile} px-3 py-2.5`}>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
-                      Qur&apos;an progress
-                    </p>
-                    <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
-                      {overview.kpis.quranCompletionPct.toFixed(1)}%
-                    </p>
-                    <p className="mt-2 text-xs text-[color:var(--kw-muted)]">{overview.quran.completedKhatmahCount} khatmah</p>
-                  </div>
-                  <div className={`${styles.kpiTile} px-3 py-2.5`}>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
-                      Streak
-                    </p>
-                    <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
-                      {overview.streak.currentStreakDays}d
-                    </p>
-                    <p className="mt-2 text-xs text-[color:var(--kw-muted)]">
-                      {overview.streak.todayQualifiedAyahs} ayahs today
-                    </p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <Link href="/journal">
+                      <Button variant="secondary" size="sm" className="gap-2">
+                        Journal <SquarePen size={14} />
+                      </Button>
+                    </Link>
+                    <Link href="/dua">
+                      <Button size="sm" className="gap-2">
+                        Dua <MoonStar size={14} />
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>
 
-              <div className={styles.spotlightPanel}>
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Now</p>
-                  </div>
-                  <span className={clsx(styles.iconBadge, styles.iconAccent)}>
-                    <Gauge size={17} />
-                  </span>
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div className={`${styles.kpiTile} px-3 py-2.5`}>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
+                    Due now
+                  </p>
+                  <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
+                    {overview.reviewHealth.dueNow}
+                  </p>
+                  <p className="mt-2 text-xs text-[color:var(--kw-muted)]">{overview.reviewHealth.weakTransitions} joins</p>
                 </div>
-                <div className="mt-4 grid gap-3">
-                  <div className={`${styles.kpiTile} px-3 py-3`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Recall score (14d)</p>
-                    <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
-                      {overview.kpis.retentionScore14d}
-                    </p>
-                    <p className="mt-1 text-xs text-[color:var(--kw-muted)]">Last 14 days</p>
-                  </div>
-                  <div className={`${styles.kpiTile} px-3 py-3`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Reading place</p>
-                    <p className="mt-1 text-base font-semibold text-[color:var(--kw-ink)]">
-                      {overview.quran.currentSurahName} | {overview.quran.cursorRef}
-                    </p>
-                    <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
-                      {overview.quran.currentSurahProgressPct}% through this surah
-                    </p>
-                  </div>
+                <div className={`${styles.kpiTile} px-3 py-2.5`}>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
+                    Sessions (7d)
+                  </p>
+                  <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
+                    {overview.kpis.completedSessions7d}
+                  </p>
+                  <p className="mt-2 text-xs text-[color:var(--kw-muted)]">{overview.kpis.totalSessionMinutes7d} min</p>
                 </div>
-                <div className={styles.spotlightMeta}>
-                  <div className={styles.spotlightMetaRow}>
-                    <span>Next review</span>
-                    <strong>{formatMaybeDateTime(overview.reviewHealth.nextDueAt)}</strong>
-                  </div>
-                  <div className={styles.spotlightMetaRow}>
-                    <span>Reminder</span>
-                    <strong>{overview.profile.reminderTimeLocal}</strong>
-                  </div>
-                  <div className={styles.spotlightMetaRow}>
-                    <span>Timezone</span>
-                    <strong>{overview.profile.timezone}</strong>
-                  </div>
+                <div className={`${styles.kpiTile} px-3 py-2.5`}>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
+                    Qur&apos;an progress
+                  </p>
+                  <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
+                    {overview.kpis.quranCompletionPct.toFixed(1)}%
+                  </p>
+                  <p className="mt-2 text-xs text-[color:var(--kw-muted)]">{overview.quran.completedKhatmahCount} khatmah</p>
                 </div>
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <Link href="/journal">
-                    <Button variant="secondary" size="sm" className="gap-2">
-                      Journal <SquarePen size={14} />
-                    </Button>
-                  </Link>
-                  <Link href="/dua">
-                    <Button size="sm" className="gap-2">
-                      Dua <MoonStar size={14} />
-                    </Button>
-                  </Link>
+                <div className={`${styles.kpiTile} px-3 py-2.5`}>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
+                    Streak
+                  </p>
+                  <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
+                    {overview.streak.currentStreakDays}d
+                  </p>
+                  <p className="mt-2 text-xs text-[color:var(--kw-muted)]">
+                    {overview.streak.todayQualifiedAyahs} ayahs today
+                  </p>
                 </div>
               </div>
             </div>

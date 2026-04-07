@@ -28,16 +28,19 @@ import {
   QURAN_TRANSLATION_COOKIE,
 } from "@/hifzer/quran/translation-prefs";
 import { getReaderUiCopy } from "@/hifzer/quran/reader-ui-copy";
+import { getQuranReaderFilterPrefs } from "@/hifzer/quran/reader-filter-prefs.server";
 import { getPhoneticByAyahId, getQuranTranslationByAyahId } from "@/hifzer/quran/translation.server";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { CompactOfficialTafsir } from "./compact-official-tafsir";
 import { CompactReaderScroll } from "./compact-reader-scroll";
 import { CompactReaderClient } from "./compact-reader-client";
 import { QuranFoundationFilterAction } from "./quran-foundation-filter-action";
+import { ReaderFilterSaveButton } from "./reader-filter-save-button";
 import { ReaderPreferencesControls } from "./reader-preferences-controls";
 
 type ReaderView = "list" | "compact";
 const COMPACT_READER_ANCHOR = "compact-reader";
+const READER_FILTER_FORM_ID = "quran-reader-filter-form";
 const LIST_PAGE_SIZE = 40;
 const QURAN_AUDIO_SPEED_PREF_KEY = "hifzer_quran_audio_speed_v1";
 
@@ -52,6 +55,7 @@ type SearchParamShape = {
   translation?: string | string[];
   tafsir?: string | string[];
   tafsirId?: string | string[];
+  ignoreSaved?: string | string[];
 };
 
 function readSingle(raw: string | string[] | undefined): string | null {
@@ -102,6 +106,13 @@ function parseVisibility(raw: string | string[] | undefined, fallback: boolean):
     return false;
   }
   return fallback;
+}
+
+function booleanToParam(value: boolean | undefined | null): string | undefined {
+  if (typeof value !== "boolean") {
+    return undefined;
+  }
+  return value ? "1" : "0";
 }
 
 function buildHref(filters: AyahFilters & {
@@ -161,16 +172,41 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   const userId = authEnabled ? (await auth()).userId : null;
   const distractionFree = await getDistractionFreeServer();
   const profile = userId ? await getProfileSnapshot(userId) : null;
+  const anonymous = readSingle(searchParams.anon) === "1";
+  const ignoreSavedFilters = readSingle(searchParams.ignoreSaved) === "1";
+  const hasExplicitReaderFilterQuery = Boolean(
+    readSingle(searchParams.view) ||
+    readSingle(searchParams.surah) ||
+    readSingle(searchParams.ayah) ||
+    readSingle(searchParams.phonetic) ||
+    readSingle(searchParams.translation) ||
+    readSingle(searchParams.tafsir) ||
+    readSingle(searchParams.tafsirId),
+  );
+  const persistedReaderFilters = userId && !anonymous ? await getQuranReaderFilterPrefs(userId) : null;
+  const savedReaderFilters =
+    !anonymous && !ignoreSavedFilters && !hasExplicitReaderFilterQuery
+      ? persistedReaderFilters
+      : null;
   const quranFoundationStatus = await getQuranFoundationConnectionStatus(userId ?? null);
   const reciterId = profile?.reciterId ?? "default";
-  const requestedView = parseView(searchParams.view);
+  const requestedView = parseView(searchParams.view ?? savedReaderFilters?.view);
   const view = distractionFree ? "compact" : requestedView;
-  const requestedSurahNumber = parseBoundedInt(searchParams.surah, 1, 114);
-  const ayahId = parseBoundedInt(searchParams.ayah, 1, 6236);
+  const requestedSurahNumber = parseBoundedInt(
+    searchParams.surah ?? (savedReaderFilters?.surahNumber != null ? String(savedReaderFilters.surahNumber) : undefined),
+    1,
+    114,
+  );
+  const ayahId = parseBoundedInt(
+    searchParams.ayah ?? (savedReaderFilters?.ayahId != null ? String(savedReaderFilters.ayahId) : undefined),
+    1,
+    6236,
+  );
   const requestedCursorAyahId = parseBoundedInt(searchParams.cursor, 1, 6236);
   const requestedPage = parseBoundedInt(searchParams.page, 1, 500) ?? 1;
-  const anonymous = readSingle(searchParams.anon) === "1";
-  const requestedTafsirId = parsePositiveInt(searchParams.tafsirId);
+  const requestedTafsirId = parsePositiveInt(
+    searchParams.tafsirId ?? (savedReaderFilters?.tafsirId != null ? String(savedReaderFilters.tafsirId) : undefined),
+  );
   const surahNumber = anonymous
     ? requestedSurahNumber
     : requestedSurahNumber ?? (ayahId == null ? (profile?.quranActiveSurahNumber ?? 1) : undefined);
@@ -181,8 +217,12 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
     cookieStore.get(QURAN_TRANSLATION_COOKIE)?.value ?? profile?.quranTranslationId ?? DEFAULT_QURAN_TRANSLATION_ID,
   );
   const quranShowDetails = profile?.quranShowDetails ?? true;
-  const showPhonetic = distractionFree ? false : parseVisibility(searchParams.phonetic, quranShowDetails);
-  const showTranslation = distractionFree ? false : parseVisibility(searchParams.translation, quranShowDetails);
+  const showPhonetic = distractionFree
+    ? false
+    : parseVisibility(searchParams.phonetic ?? booleanToParam(savedReaderFilters?.showPhonetic), quranShowDetails);
+  const showTranslation = distractionFree
+    ? false
+    : parseVisibility(searchParams.translation ?? booleanToParam(savedReaderFilters?.showTranslation), quranShowDetails);
   const quranFoundationCatalog = quranFoundationStatus.contentApiReady ? await getQuranFoundationContentCatalog() : null;
   const availableTafsirs = quranFoundationCatalog?.tafsirs ?? [];
   const defaultTafsirId = quranFoundationCatalog?.defaultTafsirIds[0] ?? availableTafsirs[0]?.id ?? null;
@@ -196,7 +236,9 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
     requestedTafsirId != null && availableTafsirs.some((resource) => resource.id === requestedTafsirId)
       ? String(requestedTafsirId)
       : "";
-  const showTafsir = distractionFree ? false : parseVisibility(searchParams.tafsir, false) && selectedTafsirId != null;
+  const showTafsir = distractionFree
+    ? false
+    : parseVisibility(searchParams.tafsir ?? booleanToParam(savedReaderFilters?.showTafsir), false) && selectedTafsirId != null;
   const showAnyDetails = showPhonetic || showTranslation || showTafsir;
   const ui = getReaderUiCopy(quranTranslationId);
   const selectedTranslation = QURAN_TRANSLATION_OPTIONS.find((option) => option.id === quranTranslationId);
@@ -297,7 +339,11 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
     page: view === "list" ? listPage : undefined,
     anonymous,
   });
-  const clearHref = anonymous ? "/quran/read?anon=1" : "/quran/read";
+  const clearHref = anonymous
+    ? "/quran/read?anon=1"
+    : persistedReaderFilters
+      ? "/quran/read?ignoreSaved=1"
+      : "/quran/read";
   const currentSurahInfo = compact.current ? getSurahInfo(compact.current.surahNumber) : null;
   const nextSurahNumber = currentSurahInfo &&
       compact.current &&
@@ -404,7 +450,12 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
         ) : null}
       </div>
 
-      <form className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4" method="get" action="/quran/read">
+      <form
+        id={READER_FILTER_FORM_ID}
+        className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4"
+        method="get"
+        action="/quran/read"
+      >
         <input type="hidden" name="view" value={view} />
         {anonymous ? <input type="hidden" name="anon" value="1" /> : null}
         <input type="hidden" name="phonetic" value={showPhonetic ? "1" : "0"} />
@@ -456,7 +507,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
             </select>
           </label>
         ) : null}
-        <div className="flex items-end gap-2">
+        <div className="flex flex-wrap items-start gap-2">
           <button
             type="submit"
             className="h-10 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
@@ -469,6 +520,11 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
           >
             {ui.clear}
           </Link>
+          <ReaderFilterSaveButton
+            formId={READER_FILTER_FORM_ID}
+            persistEnabled={Boolean(authEnabled && userId)}
+            ui={ui}
+          />
         </div>
       </form>
     </Card>

@@ -20,7 +20,7 @@ const LINKS = [
   {
     href: "/legal/refund-policy",
     title: "Refund policy",
-    description: "Subscription and one-time product work refund handling.",
+    description: "Subscription and one-time Hifzer support refund handling.",
   },
   {
     href: "/legal/sources",

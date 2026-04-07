@@ -6,7 +6,7 @@ export const metadata = {
   title: "Terms of Service",
 };
 
-const LAST_UPDATED = "February 17, 2026";
+const LAST_UPDATED = "April 7, 2026";
 
 export default function LegalTermsPage() {
   return (
@@ -38,11 +38,17 @@ export default function LegalTermsPage() {
         </Card>
 
         <Card>
-          <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">3. Billing and one-time product work purchases</h2>
+          <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">3. Billing and one-time support purchases</h2>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-            Hifzer may offer one-time paid product work, implementation help, or software-related
-            service purchases. These charges are processed by our billing provider (currently Paddle).
-            At the moment, this flow is not a recurring subscription.
+            Hifzer may offer one-time payments for Hifzer-related product support, account
+            assistance, and other software-linked help tied to the Hifzer service. These charges are
+            processed by our billing provider (currently Paddle). At the moment, this flow is not a
+            recurring subscription.
+          </p>
+          <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
+            These one-time payments support the Hifzer product and related assistance. They do not
+            transfer ownership, buy open-ended consulting, or guarantee delivery of custom
+            commissioned development.
           </p>
           <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
             Our order process is conducted by our online reseller Paddle.com. Paddle.com is the

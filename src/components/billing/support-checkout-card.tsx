@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import clsx from "clsx";
-import { ArrowUpRight, BriefcaseBusiness, Check, Sparkles } from "lucide-react";
+import { ArrowUpRight, Check, LifeBuoy, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
@@ -11,24 +11,24 @@ import { usePaddle } from "@/components/billing/paddle-provider";
 const PRESET_OPTIONS = [
   {
     amount: 49,
-    label: "Small fix",
-    detail: "Good for a narrow tweak, copy pass, or one small product polish request.",
+    label: "Quick support",
+    detail: "Good for a small Hifzer question, account issue, or narrow product polish request.",
   },
   {
     amount: 99,
-    label: "Focused help",
-    detail: "Best starting point for one clear issue, scoped improvement, or account-specific workflow help.",
+    label: "Priority support",
+    detail: "Best starting point for one clear Hifzer issue, product question, or account-specific help.",
     recommended: true,
   },
   {
     amount: 249,
-    label: "Build sprint",
-    detail: "A stronger block for a meaningful polish pass, implementation step, or deeper investigation.",
+    label: "Deep support",
+    detail: "For a deeper investigation, broader product feedback pass, or multi-step help inside Hifzer.",
   },
   {
     amount: 499,
-    label: "Priority block",
-    detail: "For heavier scoped work, a launch push, or a larger product improvement conversation.",
+    label: "Extended support",
+    detail: "For heavier Hifzer support needs, a larger product review, or a higher-impact feedback block.",
   },
 ] as const;
 
@@ -42,9 +42,9 @@ type PresetOption = {
 const PRESETS: readonly PresetOption[] = PRESET_OPTIONS;
 
 const TRUST_POINTS = [
-  "One-time checkout",
-  "Direct email follow-up",
-  "Can count toward larger scoped work",
+  "One-time payment",
+  "Hifzer-linked support",
+  "Paddle receipt included",
 ] as const;
 
 type CheckoutPayload = {
@@ -85,36 +85,36 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
     <div className={props.className}>
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">
-          Choose a starting scope
+          Choose a starting amount
         </p>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           {PRESETS.map((option) => {
             const formatted = option.amount.toFixed(2);
-          const active = normalizedAmount === formatted;
-          return (
-            <button
-              key={option.amount}
-              type="button"
-              onClick={() => setAmount(formatted)}
-              className={clsx(
-                "group rounded-[18px] border px-3 py-3 text-left transition",
-                active
-                  ? "border-[rgba(var(--kw-accent-rgb),0.32)] bg-[rgba(var(--kw-accent-rgb),0.12)] shadow-[var(--kw-shadow-soft)]"
-                  : "border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-strong)] hover:border-[rgba(var(--kw-accent-rgb),0.18)] hover:bg-[color:var(--kw-card-strong)]",
-              )}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-base font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                    {option.label}
-                  </p>
-                  <p className="mt-1 text-sm text-[color:var(--kw-muted)]">${option.amount}</p>
+            const active = normalizedAmount === formatted;
+            return (
+              <button
+                key={option.amount}
+                type="button"
+                onClick={() => setAmount(formatted)}
+                className={clsx(
+                  "group rounded-[18px] border px-3 py-3 text-left transition",
+                  active
+                    ? "border-[rgba(var(--kw-accent-rgb),0.32)] bg-[rgba(var(--kw-accent-rgb),0.12)] shadow-[var(--kw-shadow-soft)]"
+                    : "border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-strong)] hover:border-[rgba(var(--kw-accent-rgb),0.18)] hover:bg-[color:var(--kw-card-strong)]",
+                )}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-base font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                      {option.label}
+                    </p>
+                    <p className="mt-1 text-sm text-[color:var(--kw-muted)]">${option.amount}</p>
+                  </div>
+                  {option.recommended ? <Pill tone="accent">Recommended</Pill> : null}
                 </div>
-                {option.recommended ? <Pill tone="accent">Recommended</Pill> : null}
-              </div>
-              <p className="mt-3 text-sm leading-6 text-[color:var(--kw-muted)]">{option.detail}</p>
-            </button>
-          );
+                <p className="mt-3 text-sm leading-6 text-[color:var(--kw-muted)]">{option.detail}</p>
+              </button>
+            );
           })}
         </div>
       </div>
@@ -138,13 +138,13 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
               Use your own amount
             </label>
             <p className="mt-1 max-w-[42ch] text-sm leading-6 text-[color:var(--kw-muted)]">
-              If your request is larger or smaller than the starting scopes above, set a custom amount here.
+              If your Hifzer support need is larger or smaller than the starting amounts above, set a custom amount here.
             </p>
           </div>
           {selectedPreset ? (
             <div className="rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[rgba(var(--kw-accent-rgb),0.08)] px-3 py-2">
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
-                Selected scope
+                Selected amount
               </p>
               <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">{selectedPreset.label}</p>
             </div>
@@ -248,19 +248,21 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
       <div className="mt-4 rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[rgba(var(--kw-accent-rgb),0.08)] p-4">
         <div className="flex items-start gap-3">
           <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-white/60 text-[rgba(var(--kw-accent-rgb),1)]">
-            <BriefcaseBusiness size={18} />
+            <LifeBuoy size={18} />
           </span>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-sm font-semibold text-[color:var(--kw-ink)]">What happens after checkout</p>
               <Pill tone="brand" className="gap-1">
                 <Sparkles size={12} />
-                Personal follow-up
+                Product-linked follow-up
               </Pill>
             </div>
             <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">
-              You will receive a receipt through Paddle, then the request can be scoped directly by email. If the work is
-              larger than the selected amount, the purchase can still count toward a fuller quoted block.
+              You will receive a receipt through Paddle, and the payment can stay linked to your Hifzer account. If you
+              need follow-up, use support so we can review the Hifzer issue, account question, or product request in
+              that thread. One-time payments support Hifzer and related help, but they do not guarantee custom
+              development delivery.
             </p>
             {props.hasPortal ? (
               <p className="mt-2 text-xs text-[color:var(--kw-faint)]">
