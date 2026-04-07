@@ -3,22 +3,12 @@ import type { ReactNode } from "react";
 import { Fragment } from "react";
 import { Inter, IBM_Plex_Mono, Amiri, Plus_Jakarta_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
-import { cookies } from "next/headers";
-import { AppProviders } from "@/components/providers/app-providers";
 import { InstallAppBanner } from "@/components/pwa/install-app-banner";
 import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
 import { GoogleAnalytics } from "@/components/telemetry/google-analytics";
-import { DISTRACTION_FREE_COOKIE, normalizeDistractionFree } from "@/hifzer/focus/distraction-free";
 import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
-import { normalizeUiLanguage, UI_LANGUAGE_COOKIE, uiLanguageToHtmlLang } from "@/hifzer/i18n/ui-language";
-import {
-  normalizeAccentPreset,
-  normalizeThemeMode,
-  normalizeThemePreset,
-  THEME_ACCENT_COOKIE,
-  THEME_MODE_COOKIE,
-  THEME_PRESET_COOKIE,
-} from "@/hifzer/theme/preferences";
+import { DEFAULT_UI_LANGUAGE, uiLanguageToHtmlLang } from "@/hifzer/i18n/ui-language";
+import { DEFAULT_THEME_DOCUMENT_STATE } from "@/hifzer/theme/preferences";
 import { clerkAuthRoutes } from "@/lib/auth-redirects";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { getSiteUrl } from "@/lib/site-url";
@@ -57,7 +47,7 @@ export const metadata: Metadata = {
     template: "%s | Hifzer",
   },
   description:
-    "A calm Qur'an companion for reading, reciting, and memorizing with structure.",
+    "Keep your place, your review, your duas, and your private notes in one place.",
   applicationName: "Hifzer",
   manifest: "/manifest.webmanifest",
   icons: {
@@ -80,14 +70,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     title: "Hifzer",
-    description: "A calm Qur'an companion for reading, reciting, and memorizing with structure.",
+    description: "Keep your place, your review, your duas, and your private notes in one place.",
     url: "/",
     siteName: "Hifzer",
   },
   twitter: {
     card: "summary_large_image",
     title: "Hifzer",
-    description: "A calm Qur'an companion for reading, reciting, and memorizing with structure.",
+    description: "Keep your place, your review, your duas, and your private notes in one place.",
   },
   robots: {
     index: true,
@@ -112,23 +102,15 @@ export default async function RootLayout({
 }>) {
   const authEnabled = clerkEnabled();
   const ClerkWrapper = authEnabled ? (await import("@clerk/nextjs")).ClerkProvider : Fragment;
-  const cookieStore = await cookies();
-  const uiLanguage = normalizeUiLanguage(cookieStore.get(UI_LANGUAGE_COOKIE)?.value);
-  const distractionFree = normalizeDistractionFree(cookieStore.get(DISTRACTION_FREE_COOKIE)?.value);
-  const initialThemeState = {
-    mode: normalizeThemeMode(cookieStore.get(THEME_MODE_COOKIE)?.value),
-    theme: normalizeThemePreset(cookieStore.get(THEME_PRESET_COOKIE)?.value),
-    accent: normalizeAccentPreset(cookieStore.get(THEME_ACCENT_COOKIE)?.value),
-  };
-  const ui = getAppUiCopy(uiLanguage);
+  const ui = getAppUiCopy(DEFAULT_UI_LANGUAGE);
   return (
       <html
-        lang={uiLanguageToHtmlLang(uiLanguage)}
-        data-mode={initialThemeState.mode}
-        data-theme={initialThemeState.theme}
-        data-accent={initialThemeState.accent}
+        lang={uiLanguageToHtmlLang(DEFAULT_UI_LANGUAGE)}
+        data-mode={DEFAULT_THEME_DOCUMENT_STATE.mode}
+        data-theme={DEFAULT_THEME_DOCUMENT_STATE.theme}
+        data-accent={DEFAULT_THEME_DOCUMENT_STATE.accent}
         className={`${inter.variable} ${mono.variable} ${amiri.variable} ${marketingDisplay.variable}`}
-        style={{ colorScheme: initialThemeState.mode }}
+        style={{ colorScheme: DEFAULT_THEME_DOCUMENT_STATE.mode }}
       >
       <body className="kw-canvas min-h-dvh bg-[color:var(--kw-bg)] text-[color:var(--kw-ink)] antialiased">
         <a
@@ -146,10 +128,10 @@ export default async function RootLayout({
             signUpForceRedirectUrl={clerkAuthRoutes.signUpForceRedirectUrl}
             signUpFallbackRedirectUrl={clerkAuthRoutes.signUpFallbackRedirectUrl}
           >
-            <AppProviders initialUiLanguage={uiLanguage} initialDistractionFree={distractionFree} initialThemeState={initialThemeState}>{children}</AppProviders>
+            {children}
           </ClerkWrapper>
         ) : (
-          <AppProviders initialUiLanguage={uiLanguage} initialDistractionFree={distractionFree} initialThemeState={initialThemeState}>{children}</AppProviders>
+          children
         )}
         <InstallAppBanner />
         <ServiceWorkerRegistration />

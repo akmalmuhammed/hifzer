@@ -21,19 +21,19 @@ const PLATFORMS: Array<{
     id: "iphone",
     icon: Smartphone,
     label: "iPhone",
-    sub: "Tap for the latest Safari and Chrome add-to-home-screen steps.",
+    sub: "See the Safari and Chrome steps for saving Hifzer to your Home Screen.",
   },
   {
     id: "android",
     icon: Smartphone,
     label: "Android",
-    sub: "Tap to trigger install when Chrome has the prompt ready.",
+    sub: "Open the Android steps here, then install only when you are ready.",
   },
   {
     id: "web",
     icon: Monitor,
     label: "Web app",
-    sub: "Use Hifzer in the browser if you do not want to install anything.",
+    sub: "Stay in the browser if you do not want to install anything.",
   },
 ] as const;
 
@@ -45,10 +45,11 @@ function WebGuide() {
         <Pill tone="brand">Browser first</Pill>
       </div>
       <p className="mt-3 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
-        Hifzer already works as a normal web app.
+        You can use Hifzer in the browser right away.
       </p>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-[color:var(--kw-muted)]">
-        If you prefer, stay in the browser. Your reading place, hifz flow, and private features still work without adding anything to your home screen.
+        If you prefer, stay in the browser. Your reading place, review, duas, and private notes
+        still work without adding anything to your Home Screen.
       </p>
     </div>
   );
@@ -67,15 +68,16 @@ function AndroidGuide(props: { canInstall: boolean; onInstall: () => void }) {
       <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <div>
           <p className="text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
-            Install from Chrome when the prompt is available.
+            Install from Chrome when you are ready.
           </p>
           <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">
-            Hifzer uses the normal Android install prompt. If you are in Chrome on Android and install is available, tapping Android above or the button below will open it.
+            If Chrome offers the install prompt, use the button below. If it does not, you can
+            keep using the browser and try again later.
           </p>
           <ol className="mt-4 space-y-2 text-sm leading-6 text-[color:var(--kw-ink-2)]">
             <li>1. Open this page in Chrome on Android.</li>
-            <li>2. Tap Android here to trigger the browser install prompt.</li>
-            <li>3. If Chrome does not prompt yet, use the browser menu when Install app becomes available.</li>
+            <li>2. Use the install button here when Chrome shows the prompt.</li>
+            <li>3. If Chrome does not prompt yet, keep using the browser or try the browser menu later.</li>
           </ol>
         </div>
 
@@ -120,10 +122,6 @@ export function PlatformStrip() {
 
   async function handlePlatformSelect(platformId: PlatformId) {
     setActivePlatform(platformId);
-
-    if (platformId === "android") {
-      await triggerAndroidInstall();
-    }
   }
 
   return (
@@ -131,10 +129,11 @@ export function PlatformStrip() {
       <div className="mx-auto max-w-[1200px] px-4 md:px-8">
         <div className="text-center">
           <h2 className="kw-marketing-display text-2xl text-[color:var(--kw-ink)] sm:text-3xl">
-            Start in the browser. Install later if you want.
+            Use the browser first. Install later if you want.
           </h2>
           <p className="mt-3 text-sm leading-6 text-[color:var(--kw-muted)]">
-            Hifzer works in any modern browser. Use the web app first, then add it to your home screen only if it earns the space.
+            You do not need an app-store step to try Hifzer. Start in the browser, then save it to
+            your Home Screen only if you want faster access.
           </p>
         </div>
 

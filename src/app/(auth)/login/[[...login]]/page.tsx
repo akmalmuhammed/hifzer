@@ -11,6 +11,10 @@ import { clerkEnabled } from "@/lib/clerk-config";
 
 export const metadata = {
   title: "Login",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function LoginPage() {
@@ -71,4 +75,3 @@ CLERK_SECRET_KEY=...`}
     </div>
   );
 }
-

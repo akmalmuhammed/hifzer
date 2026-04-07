@@ -5,15 +5,12 @@ import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion
 import { useRef } from "react";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { WindLines } from "@/components/brand/wind-lines";
-import { usePublicAuth } from "@/components/landing/public-auth-context";
-import { PublicAuthLink } from "@/components/landing/public-auth-link";
+import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { Button } from "@/components/ui/button";
-import { trackGaEvent } from "@/lib/ga/client";
 import styles from "./landing.module.css";
 
 export function Hero() {
   const reduceMotion = useReducedMotion();
-  const { isSignedIn } = usePublicAuth();
   const sectionRef = useRef<HTMLElement>(null);
 
   // Scroll out of hero — drives all exit transforms
@@ -69,7 +66,7 @@ export function Hero() {
             className={`${styles.publicHeroTitle} kw-marketing-display kw-gradient-headline mx-auto text-balance leading-[0.92]`}
             style={{ fontWeight: 800 }}
           >
-            Recite the Qur&apos;an. It will intercede for you.
+            One place for Qur&apos;an reading, review, duas, and notes.
           </motion.h1>
 
           {/* Subheadline — single line */}
@@ -77,7 +74,8 @@ export function Hero() {
             variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } } }}
             className={`${styles.publicHeroSummary} mx-auto text-center text-base leading-[1.7] text-[color:var(--kw-muted)] md:text-lg`}
           >
-            Hifz, Qur&apos;an reading, dua, and private reflection in one calm place.
+            Read where you left off, keep review visible, open your daily adhkar, and write
+            private reflections without stitching the routine together across different apps.
           </motion.p>
 
           {/* CTA row */}
@@ -86,22 +84,22 @@ export function Hero() {
             className={`${styles.publicHeroActions} flex flex-wrap items-center justify-center`}
           >
             <Button asChild size="lg">
-              <PublicAuthLink
-                signedInHref="/dashboard"
-                signedOutHref="/signup"
-                onClick={() => trackGaEvent("landing.primary_open_app_click", { placement: "hero", state: isSignedIn ? "signed_in" : "signed_out" })}
+              <TrackedLink
+                href="/signup"
+                telemetryName="landing.primary_open_app_click"
+                telemetryMeta={{ placement: "hero" }}
               >
-                {isSignedIn ? "Open app" : "Create free account"} <ArrowRight size={17} />
-              </PublicAuthLink>
+                Create free account <ArrowRight size={17} />
+              </TrackedLink>
             </Button>
             <Button asChild size="lg" variant="secondary">
-              <PublicAuthLink
-                signedInHref="/quran-preview"
-                signedOutHref="/quran-preview"
-                onClick={() => trackGaEvent("landing.preview_click", { placement: "hero", state: isSignedIn ? "signed_in" : "signed_out" })}
+              <TrackedLink
+                href="/quran-preview"
+                telemetryName="landing.preview_click"
+                telemetryMeta={{ placement: "hero" }}
               >
                 See Qur&apos;an preview <ArrowRight size={17} />
-              </PublicAuthLink>
+              </TrackedLink>
             </Button>
           </motion.div>
 
@@ -110,7 +108,7 @@ export function Hero() {
             variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } } }}
           >
             <p className="text-xs text-[color:var(--kw-faint)]">
-              Start in the browser first. Install later if it earns a place on your phone.
+              Start in the browser first. Install only if you want quicker access later.
             </p>
           </motion.div>
         </motion.div>
@@ -135,7 +133,7 @@ export function Hero() {
         <div className="overflow-hidden rounded-t-[20px] border border-b-0 border-[color:var(--kw-border-2)] shadow-[0_32px_80px_rgba(11,18,32,0.18)]">
           <Image
             src="/hifzer app 1.png"
-            alt="Hifzer app dashboard — daily session, retention scores, Qur'an reading"
+            alt="Hifzer dashboard showing Qur'an reading, review, and private notes"
             width={1400}
             height={900}
             className="w-full"

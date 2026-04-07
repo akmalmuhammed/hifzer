@@ -140,6 +140,7 @@ const cspScriptSrc = unique([
   "https://www.googletagmanager.com",
   "https://cdn.paddle.com",
   "https://public.profitwell.com",
+  "https://va.vercel-scripts.com",
 ]);
 const cspStyleSrc = unique([
   "'self'",
@@ -172,6 +173,7 @@ const cspConnectSrc = unique([
   "https://*.ingest.sentry.io",
   "https://www.googletagmanager.com",
   "https://www.google-analytics.com",
+  "https://va.vercel-scripts.com",
   "https://*.paddle.com",
   "https://*.paddle.io",
 ]);

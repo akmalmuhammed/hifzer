@@ -6,6 +6,10 @@ import { Pill } from "@/components/ui/pill";
 
 export const metadata = {
   title: "Forgot Password",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function ForgotPasswordPage() {
@@ -40,4 +44,3 @@ export default function ForgotPasswordPage() {
     </div>
   );
 }
-

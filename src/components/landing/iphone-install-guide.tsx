@@ -54,7 +54,7 @@ export function IphoneInstallGuide() {
         <div className="max-w-2xl">
           <div className="flex flex-wrap items-center gap-2">
             <Pill tone="accent">iPhone install guide</Pill>
-            <Pill tone="neutral">Verified path</Pill>
+            <Pill tone="neutral">Step by step</Pill>
           </div>
           <p className="mt-3 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
             Choose the browser you use on iPhone.
@@ -123,10 +123,10 @@ export function IphoneInstallGuide() {
           </p>
           <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">{activeBrowser.detail}</p>
 
-          <div className="mt-4 rounded-[18px] border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[rgba(var(--kw-accent-rgb),0.07)] px-3 py-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[rgba(var(--kw-accent-rgb),1)]">
-              Verified against
-            </p>
+            <div className="mt-4 rounded-[18px] border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[rgba(var(--kw-accent-rgb),0.07)] px-3 py-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[rgba(var(--kw-accent-rgb),1)]">
+                Official guide
+              </p>
             <a
               href={activeBrowser.supportHref}
               target="_blank"

@@ -3,11 +3,8 @@
 import { useState } from "react";
 import clsx from "clsx";
 import { ArrowRight, Menu, X } from "lucide-react";
-import { UserButton } from "@clerk/nextjs";
 import { UiLanguageSwitcher } from "@/components/app/ui-language-switcher";
 import { HifzerMark } from "@/components/brand/hifzer-mark";
-import { PublicAuthLink } from "@/components/landing/public-auth-link";
-import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { useUiLanguage } from "@/components/providers/ui-language-provider";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { Button } from "@/components/ui/button";
@@ -15,16 +12,13 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
 import styles from "./landing-home.module.css";
 
-export function MarketingNav(props: { authEnabled: boolean }) {
+export function MarketingNav() {
   const [open, setOpen] = useState(false);
-  const { isSignedIn } = usePublicAuth();
   const { language } = useUiLanguage();
   const copy = getAppUiCopy(language);
-  const showSignedIn = props.authEnabled && isSignedIn;
   const signInLabel = copy.marketing.signIn;
   const getStartedLabel = copy.marketing.getStarted;
-  const openAppLabel = copy.marketing.openApp;
-  const brandTagline = copy.brandTagline;
+  const brandTagline = "Read. Review. Reflect.";
 
   return (
     <header className="sticky top-0 z-40">
@@ -44,33 +38,18 @@ export function MarketingNav(props: { authEnabled: boolean }) {
             </TrackedLink>
 
             <div className="hidden items-center gap-2 lg:flex">
-              {showSignedIn ? (
-                <>
-                  <Button asChild size="md">
-                    <TrackedLink href="/dashboard" telemetryName="marketing.open-app">
-                      {openAppLabel}
-                    </TrackedLink>
-                  </Button>
-                  <div className="grid h-11 w-11 place-items-center rounded-[16px] border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] shadow-[var(--kw-shadow-soft)]">
-                    <UserButton afterSignOutUrl="/" />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <PublicAuthLink
-                    signedInHref="/dashboard"
-                    signedOutHref="/login"
-                    className="rounded-[16px] px-3 py-2.5 text-sm font-semibold text-[color:var(--kw-muted)] transition hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)]"
-                  >
-                    {signInLabel}
-                  </PublicAuthLink>
-                  <Button asChild size="md">
-                    <PublicAuthLink signedInHref="/dashboard" signedOutHref="/signup">
-                      {getStartedLabel} <ArrowRight size={16} />
-                    </PublicAuthLink>
-                  </Button>
-                </>
-              )}
+              <TrackedLink
+                href="/login"
+                telemetryName="marketing.sign-in"
+                className="rounded-[16px] px-3 py-2.5 text-sm font-semibold text-[color:var(--kw-muted)] transition hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)]"
+              >
+                {signInLabel}
+              </TrackedLink>
+              <Button asChild size="md">
+                <TrackedLink href="/signup" telemetryName="marketing.get-started">
+                  {getStartedLabel} <ArrowRight size={16} />
+                </TrackedLink>
+              </Button>
 
               <UiLanguageSwitcher
                 compact
@@ -96,43 +75,25 @@ export function MarketingNav(props: { authEnabled: boolean }) {
           <div className="mt-2 rounded-[26px] border border-[color:var(--kw-border)] bg-[color:var(--kw-card-strong)] px-4 py-4 shadow-[var(--kw-shadow)] backdrop-blur">
             <div className="space-y-2">
               <div className="grid gap-2 pt-2">
-                {showSignedIn ? (
-                  <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <TrackedLink
+                    href="/login"
+                    telemetryName="marketing.mobile-sign-in"
+                    onClick={() => setOpen(false)}
+                    className="rounded-[18px] border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 py-2.5 text-center text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]"
+                  >
+                    {signInLabel}
+                  </TrackedLink>
+                  <Button asChild className="w-full">
                     <TrackedLink
-                      href="/dashboard"
-                      telemetryName="marketing.mobile-open-app"
+                      href="/signup"
+                      telemetryName="marketing.mobile-get-started"
                       onClick={() => setOpen(false)}
-                      className="rounded-[18px] border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 py-2.5 text-center text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]"
                     >
-                      {openAppLabel}
+                      {getStartedLabel} <ArrowRight size={16} />
                     </TrackedLink>
-                    <div className="flex justify-center sm:justify-end">
-                      <div className="grid h-11 w-11 place-items-center rounded-[16px] border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] shadow-[var(--kw-shadow-soft)]">
-                        <UserButton afterSignOutUrl="/" />
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    <PublicAuthLink
-                      signedInHref="/dashboard"
-                      signedOutHref="/login"
-                      onClick={() => setOpen(false)}
-                      className="rounded-[18px] border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 py-2.5 text-center text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]"
-                    >
-                      {signInLabel}
-                    </PublicAuthLink>
-                    <Button asChild className="w-full">
-                      <PublicAuthLink
-                        signedInHref="/dashboard"
-                        signedOutHref="/signup"
-                        onClick={() => setOpen(false)}
-                      >
-                        {getStartedLabel} <ArrowRight size={16} />
-                      </PublicAuthLink>
-                    </Button>
-                  </div>
-                )}
+                  </Button>
+                </div>
               </div>
 
               <div className="grid gap-2 pt-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
@@ -153,4 +114,3 @@ export function MarketingNav(props: { authEnabled: boolean }) {
     </header>
   );
 }
-

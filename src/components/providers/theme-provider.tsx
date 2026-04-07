@@ -1,12 +1,18 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useSyncExternalStore } from "react";
 import {
   buildThemeAccentCookieValue,
   buildThemeModeCookieValue,
   buildThemePresetCookieValue,
   DEFAULT_THEME_DOCUMENT_STATE,
+  THEME_ACCENT_COOKIE,
+  THEME_MODE_COOKIE,
+  THEME_PRESET_COOKIE,
+  normalizeAccentPreset,
   normalizeThemeDocumentState,
+  normalizeThemeMode,
+  normalizeThemePreset,
   type AccentPreset,
   type ThemeDocumentState,
   type ThemeMode,
@@ -32,6 +38,31 @@ const STORAGE_KEYS = {
   theme: "hifzer_theme_v1",
   accent: "hifzer_accent_v1",
 } as const;
+const THEME_CHANGE_EVENT = "hifzer:theme-change";
+
+function readCookie(name: string): string | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+  const token = document.cookie
+    .split("; ")
+    .find((entry) => entry.startsWith(`${name}=`));
+  if (!token) {
+    return null;
+  }
+  return token.slice(name.length + 1);
+}
+
+function safeStorageGet(key: string): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
 
 function safeStorageSet(key: string, value: string): void {
   if (typeof window === "undefined") {
@@ -62,32 +93,66 @@ function applyToDocument(mode: ThemeMode, theme: ThemePreset, accent: AccentPres
   root.style.colorScheme = mode;
 }
 
+function readPersistedThemeState(fallback: ThemeDocumentState): ThemeDocumentState {
+  const persistedMode = safeStorageGet(STORAGE_KEYS.mode) ?? readCookie(THEME_MODE_COOKIE);
+  const persistedTheme = safeStorageGet(STORAGE_KEYS.theme) ?? readCookie(THEME_PRESET_COOKIE);
+  const persistedAccent = safeStorageGet(STORAGE_KEYS.accent) ?? readCookie(THEME_ACCENT_COOKIE);
+
+  return {
+    mode: normalizeThemeMode(persistedMode ?? fallback.mode),
+    theme: normalizeThemePreset(persistedTheme ?? fallback.theme),
+    accent: normalizeAccentPreset(persistedAccent ?? fallback.accent),
+  };
+}
+
+function dispatchThemeChange() {
+  if (typeof window === "undefined") {
+    return;
+  }
+  window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
+}
+
+function subscribeTheme(onStoreChange: () => void) {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+  const handleChange = () => onStoreChange();
+  window.addEventListener(THEME_CHANGE_EVENT, handleChange);
+  window.addEventListener("storage", handleChange);
+  window.addEventListener("focus", handleChange);
+  return () => {
+    window.removeEventListener(THEME_CHANGE_EVENT, handleChange);
+    window.removeEventListener("storage", handleChange);
+    window.removeEventListener("focus", handleChange);
+  };
+}
+
+function persistThemeState(nextState: ThemeDocumentState) {
+  const normalized = normalizeThemeDocumentState(nextState);
+  safeStorageSet(STORAGE_KEYS.mode, normalized.mode);
+  safeStorageSet(STORAGE_KEYS.theme, normalized.theme);
+  safeStorageSet(STORAGE_KEYS.accent, normalized.accent);
+  safeCookieSet(buildThemeModeCookieValue(normalized.mode));
+  safeCookieSet(buildThemePresetCookieValue(normalized.theme));
+  safeCookieSet(buildThemeAccentCookieValue(normalized.accent));
+  applyToDocument(normalized.mode, normalized.theme, normalized.accent);
+  dispatchThemeChange();
+}
+
 export function ThemeProvider(props: {
   children: React.ReactNode;
   initialState?: ThemeDocumentState;
 }) {
   const initialState = normalizeThemeDocumentState(props.initialState ?? DEFAULT_THEME_DOCUMENT_STATE);
-  const [mode, setMode] = useState<ThemeMode>(initialState.mode);
-  const [theme, setTheme] = useState<ThemePreset>(initialState.theme);
-  const [accent, setAccent] = useState<AccentPreset>(initialState.accent);
-  const hasMountedRef = useRef(false);
+  const themeState = useSyncExternalStore(
+    subscribeTheme,
+    () => readPersistedThemeState(initialState),
+    () => initialState,
+  );
+  const { mode, theme, accent } = themeState;
 
   useEffect(() => {
     applyToDocument(mode, theme, accent);
-  }, [accent, mode, theme]);
-
-  useEffect(() => {
-    if (!hasMountedRef.current) {
-      hasMountedRef.current = true;
-      return;
-    }
-
-    safeStorageSet(STORAGE_KEYS.mode, mode);
-    safeStorageSet(STORAGE_KEYS.theme, theme);
-    safeStorageSet(STORAGE_KEYS.accent, accent);
-    safeCookieSet(buildThemeModeCookieValue(mode));
-    safeCookieSet(buildThemePresetCookieValue(theme));
-    safeCookieSet(buildThemeAccentCookieValue(accent));
   }, [accent, mode, theme]);
 
   const value = useMemo<ThemeState>(
@@ -95,10 +160,15 @@ export function ThemeProvider(props: {
       mode,
       theme,
       accent,
-      setMode,
-      setTheme,
-      setAccent,
-      toggleMode: () => setMode((m) => (m === "dark" ? "light" : "dark")),
+      setMode: (nextMode) => persistThemeState({ mode: nextMode, theme, accent }),
+      setTheme: (nextTheme) => persistThemeState({ mode, theme: nextTheme, accent }),
+      setAccent: (nextAccent) => persistThemeState({ mode, theme, accent: nextAccent }),
+      toggleMode: () =>
+        persistThemeState({
+          mode: mode === "dark" ? "light" : "dark",
+          theme,
+          accent,
+        }),
     }),
     [accent, mode, theme],
   );

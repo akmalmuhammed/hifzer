@@ -1,14 +1,13 @@
 const FEATURES = [
-  { label: "Daily Hifz review" },
+  { label: "Reading by ayah" },
   { label: "Qur'an reading" },
   { label: "Guided duas" },
   { label: "Private journal" },
   { label: "Bookmarks and notes" },
   { label: "Exact reading place" },
-  { label: "Review before forgetting" },
+  { label: "Daily review" },
   { label: "Morning and evening adhkar" },
   { label: "Streaks and milestones" },
-  { label: "Works Offline" },
   { label: "Audio recitation" },
   { label: "Simple daily flow" },
 ];

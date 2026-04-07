@@ -3,14 +3,11 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { WindLines } from "@/components/brand/wind-lines";
-import { usePublicAuth } from "@/components/landing/public-auth-context";
-import { PublicAuthLink } from "@/components/landing/public-auth-link";
+import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { Button } from "@/components/ui/button";
-import { trackGaEvent } from "@/lib/ga/client";
 
 export function FinalCta() {
   const reduceMotion = useReducedMotion();
-  const { isSignedIn } = usePublicAuth();
 
   return (
     <section id="promise" className="py-10 md:py-14">
@@ -37,58 +34,45 @@ export function FinalCta() {
 
         <div className="relative mx-auto max-w-[720px] text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#2dd4bf]">
-            Begin today
+            Start now
           </p>
 
           <h2 className="kw-marketing-display mt-4 text-balance text-4xl font-bold leading-[1.0] text-[rgba(248,250,252,0.94)] sm:text-5xl">
-            Your return to the Book{" "}
-            <span className="text-[#2dd4bf]">starts here.</span>
+            Keep your Qur&apos;an routine{" "}
+            <span className="text-[#2dd4bf]">in one place.</span>
           </h2>
 
           <p className="mx-auto mt-5 max-w-[46ch] text-base leading-[1.8] text-[rgba(248,250,252,0.58)]">
-            No complicated setup. No flashcard grind. Open the app, follow today&apos;s session,
-            and let Hifzer handle the rest.
+            Create a free account to save your place, keep review visible, and keep your duas and
+            private notes close.
           </p>
 
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Button asChild size="lg" className="sm:w-auto">
-              <PublicAuthLink
-                signedInHref="/dashboard"
-                signedOutHref="/signup"
-                onClick={() => {
-                  trackGaEvent("landing.primary_open_app_click", { placement: "final-cta", state: isSignedIn ? "signed_in" : "signed_out" });
-                }}
+              <TrackedLink
+                href="/signup"
+                telemetryName="landing.primary_open_app_click"
+                telemetryMeta={{ placement: "final-cta" }}
               >
-                {isSignedIn ? "Open app" : "Create free account"} <ArrowRight size={17} />
-              </PublicAuthLink>
+                Create free account <ArrowRight size={17} />
+              </TrackedLink>
             </Button>
             <Button asChild size="lg" variant="secondary">
-              <PublicAuthLink
-                signedInHref="/quran-preview"
-                signedOutHref="/quran-preview"
-                onClick={() => {
-                  trackGaEvent("landing.preview_click", { placement: "final-cta", state: isSignedIn ? "signed_in" : "signed_out" });
-                }}
+              <TrackedLink
+                href="/quran-preview"
+                telemetryName="landing.preview_click"
+                telemetryMeta={{ placement: "final-cta" }}
               >
                 See Qur&apos;an preview <ArrowRight size={17} />
-              </PublicAuthLink>
+              </TrackedLink>
             </Button>
           </div>
 
           <p className="mt-5 text-xs text-[rgba(248,250,252,0.32)]">
-            Browser first · no card required · install only if it earns the space
-          </p>
-
-          {/* Qur'anic closing — earned position, not repeated from above */}
-          <p className="mt-10 border-t border-[rgba(255,255,255,0.08)] pt-8 text-sm italic text-[rgba(248,250,252,0.4)]">
-            &ldquo;Your return is never lost.&rdquo;
-            <span className="ml-2 not-italic text-[11px] tracking-wide text-[rgba(248,250,252,0.25)]">
-              Adapted from Sahih Muslim 798a
-            </span>
+            Browser first · no card required · install later if you want
           </p>
         </div>
       </motion.div>
     </section>
   );
 }
-

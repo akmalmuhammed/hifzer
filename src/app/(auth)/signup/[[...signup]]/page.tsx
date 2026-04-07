@@ -11,6 +11,10 @@ import { clerkEnabled } from "@/lib/clerk-config";
 
 export const metadata = {
   title: "Signup",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function SignupPage() {
@@ -72,4 +76,3 @@ export default async function SignupPage() {
     </div>
   );
 }
-

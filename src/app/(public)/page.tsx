@@ -1,66 +1,41 @@
-import dynamic from "next/dynamic";
+import type { Metadata } from "next";
 import { Hero } from "@/components/landing/hero";
-import { MarqueeStrip } from "@/components/landing/marquee-strip";
+import { LandingDeferredSections } from "@/components/landing/landing-deferred-sections";
+import { LandingFeatureRail } from "@/components/landing/landing-feature-rail";
 
-function SkeletonBlock(props: { className: string }) {
-  return <div aria-hidden="true" className={`animate-pulse rounded-[24px] bg-[color:var(--kw-skeleton)] ${props.className}`} />;
-}
+const landingTitle = "Hifzer | Qur'an Reading, Review, Duas, and Notes";
+const landingDescription =
+  "Keep your place, your review, your duas, and your private notes in one place.";
+const landingImage = "/opengraph-image";
 
-function FeatureRailLoading() {
-  return (
-    <div className="mx-auto max-w-[1280px] py-4 md:py-6">
-      <div className="space-y-4 px-3 py-2 sm:px-4 md:px-6 md:py-3">
-        <SkeletonBlock className="h-[420px] w-full rounded-[28px]" />
-        <SkeletonBlock className="h-[420px] w-full rounded-[28px]" />
-        <SkeletonBlock className="h-[420px] w-full rounded-[28px]" />
-      </div>
-    </div>
-  );
-}
-
-function DeferredSectionsLoading() {
-  return (
-    <div aria-hidden="true">
-      <div className="mx-auto max-w-[1200px] px-4 md:px-8">
-        <SkeletonBlock className="h-[620px] w-full rounded-[32px] py-10 md:py-14" />
-      </div>
-
-      <div className="mx-auto mt-10 max-w-[1200px] px-4 md:px-8">
-        <SkeletonBlock className="h-[760px] w-full rounded-[32px] py-10 md:py-14" />
-      </div>
-
-      <div className="mx-auto mt-10 max-w-[1200px] px-4 md:px-8">
-        <SkeletonBlock className="h-[360px] w-full rounded-[32px]" />
-      </div>
-
-      <div className="mx-auto mt-10 max-w-[1200px] px-4 md:px-8">
-        <SkeletonBlock className="h-[520px] w-full rounded-[32px] py-10 md:py-14" />
-      </div>
-
-      <div className="mx-auto mt-10 max-w-[1200px] px-4 pb-4 md:px-8">
-        <SkeletonBlock className="h-[340px] w-full rounded-[32px] py-10 md:py-14" />
-      </div>
-    </div>
-  );
-}
-
-const LandingFeatureRail = dynamic(
-  () => import("@/components/landing/landing-feature-rail").then((mod) => mod.LandingFeatureRail),
-  {
-    loading: () => <FeatureRailLoading />,
+export const metadata: Metadata = {
+  title: {
+    absolute: landingTitle,
   },
-);
-
-const LandingDeferredSections = dynamic(
-  () => import("@/components/landing/landing-deferred-sections").then((mod) => mod.LandingDeferredSections),
-  {
-    loading: () => <DeferredSectionsLoading />,
-  },
-);
-
-export const metadata = {
+  description: landingDescription,
   alternates: {
     canonical: "/",
+  },
+  openGraph: {
+    title: landingTitle,
+    description: landingDescription,
+    url: "/",
+    siteName: "Hifzer",
+    type: "website",
+    images: [
+      {
+        url: landingImage,
+        width: 1200,
+        height: 630,
+        alt: "Hifzer landing page share image",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: landingTitle,
+    description: landingDescription,
+    images: [landingImage],
   },
 };
 
@@ -68,7 +43,6 @@ export default function LandingPage() {
   return (
     <div>
       <Hero />
-      <MarqueeStrip />
       <LandingFeatureRail />
       <LandingDeferredSections />
     </div>

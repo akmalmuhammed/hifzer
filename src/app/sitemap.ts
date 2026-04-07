@@ -13,9 +13,6 @@ const STATIC_ROUTES = [
   "/legal/refund-policy",
   "/legal/sources",
   "/changelog",
-  "/signup",
-  "/login",
-  "/forgot-password",
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
