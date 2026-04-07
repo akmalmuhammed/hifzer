@@ -214,11 +214,17 @@ function normalizeWordNotes(value: unknown): Array<{ term: string; detail: strin
   return out.slice(0, 4);
 }
 
-function parseJsonFromText(raw: string): JsonRecord {
+function unwrapMarkdownCodeFence(raw: string): string {
   const trimmed = raw.trim();
-  const firstBrace = trimmed.indexOf("{");
-  const lastBrace = trimmed.lastIndexOf("}");
-  const candidate = firstBrace >= 0 && lastBrace > firstBrace ? trimmed.slice(firstBrace, lastBrace + 1) : trimmed;
+  const match = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  return match ? match[1].trim() : trimmed;
+}
+
+export function parseJsonFromText(raw: string): JsonRecord {
+  const unfenced = unwrapMarkdownCodeFence(raw);
+  const firstBrace = unfenced.indexOf("{");
+  const lastBrace = unfenced.lastIndexOf("}");
+  const candidate = firstBrace >= 0 && lastBrace > firstBrace ? unfenced.slice(firstBrace, lastBrace + 1) : unfenced;
   const parsed = JSON.parse(candidate) as unknown;
   if (!isRecord(parsed)) {
     throw new Error("Model response was not a JSON object.");
