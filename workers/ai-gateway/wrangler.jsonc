@@ -3,8 +3,10 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-04-06",
   "vars": {
-    "AI_PROVIDER": "gemini",
+    "AI_PROVIDER": "groq",
     "GEMINI_MODEL": "gemini-2.5-flash",
+    "GROQ_MODEL": "openai/gpt-oss-20b",
+    "GROQ_FORMAT_MODEL": "openai/gpt-oss-20b",
     "QURAN_MCP_URL": "https://mcp.quran.ai"
   }
 }
