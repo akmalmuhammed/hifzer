@@ -61,17 +61,11 @@ export function AyahAiExplanationPanel(props: { ayahId: number; compact?: boolea
     <Card className={props.compact ? "mt-3" : "mt-4"}>
       <div className="flex flex-wrap items-center gap-2">
         <Pill tone="accent">AI beta</Pill>
-        <Pill tone="neutral">Grounded with Quran MCP</Pill>
         {ready ? <Pill tone="neutral">{ready.provider} · {ready.model}</Pill> : null}
       </div>
 
-      <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
-        Plain-language ayah guidance for the current verse, grounded before it speaks. Official translation and tafsir stay
-        the source of truth underneath.
-      </p>
-
       {state.phase === "idle" ? (
-        <div className="mt-4 flex flex-wrap items-center gap-3">
+        <div className="mt-4">
           <button
             type="button"
             onClick={loadExplanation}
@@ -80,9 +74,6 @@ export function AyahAiExplanationPanel(props: { ayahId: number; compact?: boolea
             <Sparkles size={15} />
             Explain this ayah
           </button>
-          <p className="text-xs leading-6 text-[color:var(--kw-faint)]">
-            Best for quick context, key themes, and scholar-backed framing before you read the full tafsir.
-          </p>
         </div>
       ) : null}
 
@@ -110,24 +101,11 @@ export function AyahAiExplanationPanel(props: { ayahId: number; compact?: boolea
       {ready ? (
         <div className="mt-4 space-y-4">
           <div className="space-y-2">
-            {sectionHeading("Plain-language explanation")}
+            {sectionHeading("Explanation insights")}
             <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3">
               <p className="text-sm leading-7 text-[color:var(--kw-ink)]">{ready.explanation.summary}</p>
             </div>
           </div>
-
-          {ready.explanation.keyThemes.length ? (
-            <div className="space-y-2">
-              {sectionHeading("Key themes")}
-              <div className="flex flex-wrap gap-2">
-                {ready.explanation.keyThemes.map((theme) => (
-                  <Pill key={theme} tone="neutral">
-                    {theme}
-                  </Pill>
-                ))}
-              </div>
-            </div>
-          ) : null}
 
           {ready.explanation.tafsirInsights.length ? (
             <div className="space-y-3">
@@ -164,40 +142,6 @@ export function AyahAiExplanationPanel(props: { ayahId: number; compact?: boolea
               ))}
             </div>
           ) : null}
-
-          {ready.explanation.reflectionPrompt ? (
-            <div className="space-y-2">
-              {sectionHeading("Reflection prompt")}
-              <div className="rounded-[20px] border border-[rgba(var(--kw-accent-rgb),0.20)] bg-[rgba(var(--kw-accent-rgb),0.08)] px-4 py-3">
-                <p className="text-sm leading-7 text-[color:var(--kw-ink)]">{ready.explanation.reflectionPrompt}</p>
-              </div>
-            </div>
-          ) : null}
-
-          <div className="space-y-2">
-            {sectionHeading("Grounding")}
-            <p className="text-xs leading-6 text-[color:var(--kw-faint)]">
-              AI explanation beta. Always verify with the official translation and tafsir shown above.
-            </p>
-            {ready.explanation.groundingTools.length ? (
-              <div className="flex flex-wrap gap-2">
-                {ready.explanation.groundingTools.map((tool) => (
-                  <Pill key={tool} tone="neutral">
-                    {tool}
-                  </Pill>
-                ))}
-              </div>
-            ) : null}
-            {ready.explanation.sources.length ? (
-              <div className="flex flex-wrap gap-2">
-                {ready.explanation.sources.map((source) => (
-                  <Pill key={`${source.kind}-${source.label}`} tone="neutral">
-                    {source.kind}: {source.label}
-                  </Pill>
-                ))}
-              </div>
-            ) : null}
-          </div>
 
           <button
             type="button"

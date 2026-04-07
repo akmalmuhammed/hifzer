@@ -9,6 +9,7 @@ import { AyahAiExplanationPanel } from "@/components/quran/ayah-ai-explanation-p
 import { SupportTextPanel } from "@/components/quran/support-text-panel";
 import { Card } from "@/components/ui/card";
 import type { ReaderUiCopy } from "@/hifzer/quran/reader-ui-copy";
+import { CompactOfficialTafsir, type InitialCompactOfficialTafsir } from "./compact-official-tafsir";
 import { ReadProgressSync, type ReadProgressSyncHandle } from "./read-progress-sync";
 
 const QURAN_AUDIO_SPEED_PREF_KEY = "hifzer_quran_audio_speed_v1";
@@ -53,6 +54,10 @@ type Props = {
   anonymous: boolean;
   showPhonetic: boolean;
   showTranslation: boolean;
+  showTafsir: boolean;
+  selectedTafsirId: number | null;
+  selectedTafsirLabel: string | null;
+  initialOfficialTafsir: InitialCompactOfficialTafsir | null;
   ui: ReaderUiCopy;
   translationDir: "ltr" | "rtl";
   translationAlignClass: string;
@@ -71,6 +76,10 @@ export function CompactReaderClient({
   anonymous,
   showPhonetic,
   showTranslation,
+  showTafsir,
+  selectedTafsirId,
+  selectedTafsirLabel,
+  initialOfficialTafsir,
   ui,
   translationDir,
   translationAlignClass,
@@ -172,6 +181,10 @@ export function CompactReaderClient({
     params.set("surah", String(current.surahNumber + 1));
     params.set("phonetic", showPhonetic ? "1" : "0");
     params.set("translation", showTranslation ? "1" : "0");
+    params.set("tafsir", showTafsir ? "1" : "0");
+    if (selectedTafsirId != null) {
+      params.set("tafsirId", String(selectedTafsirId));
+    }
     if (anonymous) {
       params.set("anon", "1");
     }
@@ -248,7 +261,7 @@ export function CompactReaderClient({
     `${btnBase} border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]`;
   const btnSecondary =
     `${btnBase} border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]`;
-  const showAnyDetails = !focusMode && (showPhonetic || showTranslation);
+  const showAnyDetails = !focusMode && (showPhonetic || showTranslation || showTafsir);
 
   return (
     <div id={compactReaderAnchor} className={focusMode ? "mx-auto max-w-4xl pt-2" : "mt-8"}>
@@ -352,6 +365,15 @@ export function CompactReaderClient({
               >
                 {current.translation ?? ui.translationUnavailable}
               </SupportTextPanel>
+            ) : null}
+            {showTafsir ? (
+              <CompactOfficialTafsir
+                key={`${current.id}:${selectedTafsirId ?? "default"}`}
+                ayahId={current.id}
+                tafsirId={selectedTafsirId}
+                fallbackLabel={selectedTafsirLabel}
+                initial={current.id === initialAyahId ? initialOfficialTafsir : null}
+              />
             ) : null}
           </div>
         ) : !focusMode ? (

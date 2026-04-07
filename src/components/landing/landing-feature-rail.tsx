@@ -1,8 +1,9 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { BookOpenText, HandHeart, NotebookPen } from "lucide-react";
+import { ArrowRight, BookOpenText, HandHeart, NotebookPen, Sparkles } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { TrackedLink } from "@/components/telemetry/tracked-link";
 
 type CompanionCard = {
   title: string;
@@ -12,6 +13,13 @@ type CompanionCard = {
 };
 
 const CARDS: CompanionCard[] = [
+  {
+    title: "Ask for ayah insights without leaving the reader",
+    body: "Open AI help for a quick explanation, tafsir-backed insights, and word notes right where you are reading.",
+    icon: Sparkles,
+    accentClass:
+      "border-[rgba(var(--kw-accent-rgb),0.22)] bg-[radial-gradient(circle_at_top_left,rgba(var(--kw-accent-rgb),0.16),transparent_36%),radial-gradient(circle_at_bottom_right,rgba(10,138,119,0.10),transparent_40%),linear-gradient(180deg,var(--kw-surface),var(--kw-surface-soft))]",
+  },
   {
     title: "Return to the exact ayah",
     body: "Resume where you stopped, keep bookmarks nearby, and move through the Qur'an without hunting for your place.",
@@ -54,7 +62,48 @@ export function LandingFeatureRail() {
           </p>
         </div>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
+        <div className="mt-8 rounded-[30px] border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[radial-gradient(circle_at_top_left,rgba(var(--kw-accent-rgb),0.12),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(10,138,119,0.10),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.88),rgba(255,255,255,0.72))] px-5 py-5 shadow-[var(--kw-shadow-soft)] sm:px-6">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-2xl">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[rgba(var(--kw-accent-rgb),1)]">
+                AI insights
+              </p>
+              <h3 className="mt-2 text-balance text-2xl font-bold tracking-tight text-[color:var(--kw-ink)]">
+                A helpful entry point when an ayah feels hard to unpack.
+              </h3>
+              <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
+                Instead of leaving the reader to search around, open AI insights for a quick
+                explanation, tafsir-backed takeaways, and word notes for the ayah in front of you.
+              </p>
+            </div>
+
+            <div className="grid gap-2 sm:grid-cols-3 lg:min-w-[23rem] lg:grid-cols-1">
+              {[
+                "Explanation insights",
+                "Tafsir insights",
+                "Word notes",
+              ].map((item) => (
+                <div
+                  key={item}
+                  className="rounded-[18px] border border-[rgba(var(--kw-accent-rgb),0.14)] bg-white/80 px-4 py-3 text-sm font-semibold text-[color:var(--kw-ink)]"
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <TrackedLink
+            href="/quran-preview"
+            telemetryName="landing.ai_highlight_preview_click"
+            telemetryMeta={{ placement: "feature_rail_ai_highlight" }}
+            className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline"
+          >
+            Preview the reader experience <ArrowRight size={15} />
+          </TrackedLink>
+        </div>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {CARDS.map((card, index) => {
             const Icon = card.icon;
             return (

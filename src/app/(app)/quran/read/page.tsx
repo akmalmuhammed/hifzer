@@ -9,6 +9,10 @@ import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import { getDistractionFreeServer } from "@/hifzer/focus/server";
 import { getProfileSnapshot } from "@/hifzer/profile/server";
+import {
+  getQuranFoundationAyahEnrichment,
+  getQuranFoundationContentCatalog,
+} from "@/hifzer/quran-foundation/content";
 import { getQuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/server";
 import {
   filterAyahs,
@@ -26,6 +30,7 @@ import {
 import { getReaderUiCopy } from "@/hifzer/quran/reader-ui-copy";
 import { getPhoneticByAyahId, getQuranTranslationByAyahId } from "@/hifzer/quran/translation.server";
 import { clerkEnabled } from "@/lib/clerk-config";
+import { CompactOfficialTafsir } from "./compact-official-tafsir";
 import { CompactReaderScroll } from "./compact-reader-scroll";
 import { CompactReaderClient } from "./compact-reader-client";
 import { QuranFoundationFilterAction } from "./quran-foundation-filter-action";
@@ -45,6 +50,8 @@ type SearchParamShape = {
   anon?: string | string[];
   phonetic?: string | string[];
   translation?: string | string[];
+  tafsir?: string | string[];
+  tafsirId?: string | string[];
 };
 
 function readSingle(raw: string | string[] | undefined): string | null {
@@ -64,6 +71,18 @@ function parseBoundedInt(raw: string | string[] | undefined, min: number, max: n
     return undefined;
   }
   if (parsed < min || parsed > max) {
+    return undefined;
+  }
+  return parsed;
+}
+
+function parsePositiveInt(raw: string | string[] | undefined): number | undefined {
+  const value = readSingle(raw);
+  if (!value) {
+    return undefined;
+  }
+  const parsed = Math.floor(Number(value));
+  if (!Number.isFinite(parsed) || parsed < 1) {
     return undefined;
   }
   return parsed;
@@ -92,6 +111,8 @@ function buildHref(filters: AyahFilters & {
   anonymous?: boolean;
   showPhonetic?: boolean;
   showTranslation?: boolean;
+  showTafsir?: boolean;
+  tafsirId?: number | null;
 }): string {
   const params = new URLSearchParams();
   if (filters.view) {
@@ -118,6 +139,12 @@ function buildHref(filters: AyahFilters & {
   if (typeof filters.showTranslation === "boolean") {
     params.set("translation", filters.showTranslation ? "1" : "0");
   }
+  if (typeof filters.showTafsir === "boolean") {
+    params.set("tafsir", filters.showTafsir ? "1" : "0");
+  }
+  if (filters.tafsirId != null) {
+    params.set("tafsirId", String(filters.tafsirId));
+  }
 
   const query = params.toString();
   return query ? `/quran/read?${query}` : "/quran/read";
@@ -143,6 +170,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   const requestedCursorAyahId = parseBoundedInt(searchParams.cursor, 1, 6236);
   const requestedPage = parseBoundedInt(searchParams.page, 1, 500) ?? 1;
   const anonymous = readSingle(searchParams.anon) === "1";
+  const requestedTafsirId = parsePositiveInt(searchParams.tafsirId);
   const surahNumber = anonymous
     ? requestedSurahNumber
     : requestedSurahNumber ?? (ayahId == null ? (profile?.quranActiveSurahNumber ?? 1) : undefined);
@@ -155,7 +183,21 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
   const quranShowDetails = profile?.quranShowDetails ?? true;
   const showPhonetic = distractionFree ? false : parseVisibility(searchParams.phonetic, quranShowDetails);
   const showTranslation = distractionFree ? false : parseVisibility(searchParams.translation, quranShowDetails);
-  const showAnyDetails = showPhonetic || showTranslation;
+  const quranFoundationCatalog = quranFoundationStatus.contentApiReady ? await getQuranFoundationContentCatalog() : null;
+  const availableTafsirs = quranFoundationCatalog?.tafsirs ?? [];
+  const defaultTafsirId = quranFoundationCatalog?.defaultTafsirIds[0] ?? availableTafsirs[0]?.id ?? null;
+  const selectedTafsirId =
+    requestedTafsirId != null && availableTafsirs.some((resource) => resource.id === requestedTafsirId)
+      ? requestedTafsirId
+      : defaultTafsirId;
+  const selectedTafsirResource =
+    selectedTafsirId != null ? availableTafsirs.find((resource) => resource.id === selectedTafsirId) ?? null : null;
+  const tafsirSelectValue =
+    requestedTafsirId != null && availableTafsirs.some((resource) => resource.id === requestedTafsirId)
+      ? String(requestedTafsirId)
+      : "";
+  const showTafsir = distractionFree ? false : parseVisibility(searchParams.tafsir, false) && selectedTafsirId != null;
+  const showAnyDetails = showPhonetic || showTranslation || showTafsir;
   const ui = getReaderUiCopy(quranTranslationId);
   const selectedTranslation = QURAN_TRANSLATION_OPTIONS.find((option) => option.id === quranTranslationId);
   const translationDir = selectedTranslation?.rtl ? "rtl" : "ltr";
@@ -186,9 +228,15 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
         translation: getQuranTranslationByAyahId(ayah.id, quranTranslationId),
       }))
     : [];
+  const initialCompactTafsir =
+    view === "compact" && compact.current && showTafsir && selectedTafsirId != null
+      ? await getQuranFoundationAyahEnrichment(`${compact.current.surahNumber}:${compact.current.ayahNumber}`, {
+          tafsirIds: [selectedTafsirId],
+        })
+      : null;
 
   const baseQuery = { surahNumber, ayahId };
-  const detailQuery = { showPhonetic, showTranslation };
+  const detailQuery = { showPhonetic, showTranslation, showTafsir, tafsirId: selectedTafsirId };
   const cursorForLinks = compact.current?.id ?? cursorAyahId;
   const listHref = buildHref({
     ...baseQuery,
@@ -220,6 +268,8 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
     ...baseQuery,
     showPhonetic: !showPhonetic,
     showTranslation,
+    showTafsir,
+    tafsirId: selectedTafsirId,
     view,
     cursor: view === "compact" ? cursorForLinks : undefined,
     page: view === "list" ? listPage : undefined,
@@ -229,6 +279,19 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
     ...baseQuery,
     showPhonetic,
     showTranslation: !showTranslation,
+    showTafsir,
+    tafsirId: selectedTafsirId,
+    view,
+    cursor: view === "compact" ? cursorForLinks : undefined,
+    page: view === "list" ? listPage : undefined,
+    anonymous,
+  });
+  const tafsirToggleHref = buildHref({
+    ...baseQuery,
+    showPhonetic,
+    showTranslation,
+    showTafsir: !showTafsir,
+    tafsirId: selectedTafsirId,
     view,
     cursor: view === "compact" ? cursorForLinks : undefined,
     page: view === "list" ? listPage : undefined,
@@ -327,13 +390,26 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
         >
           {showTranslation ? ui.disableTranslation : ui.enableTranslation}
         </Link>
+        {availableTafsirs.length ? (
+          <Link
+            href={tafsirToggleHref}
+            className={`rounded-full border px-3 py-2 text-sm font-semibold ${
+              showTafsir
+                ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+                : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
+            }`}
+          >
+            {showTafsir ? "Hide tafsir" : "Show tafsir"}
+          </Link>
+        ) : null}
       </div>
 
-      <form className="mt-4 grid gap-3 md:grid-cols-3" method="get" action="/quran/read">
+      <form className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4" method="get" action="/quran/read">
         <input type="hidden" name="view" value={view} />
         {anonymous ? <input type="hidden" name="anon" value="1" /> : null}
         <input type="hidden" name="phonetic" value={showPhonetic ? "1" : "0"} />
         <input type="hidden" name="translation" value={showTranslation ? "1" : "0"} />
+        <input type="hidden" name="tafsir" value={showTafsir ? "1" : "0"} />
         <label className="text-sm text-[color:var(--kw-muted)]">
           {ui.surah}
           <select
@@ -361,6 +437,25 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
             className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
           />
         </label>
+        {availableTafsirs.length ? (
+          <label className="text-sm text-[color:var(--kw-muted)]">
+            Official tafsir
+            <select
+              name="tafsirId"
+              defaultValue={tafsirSelectValue}
+              className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
+            >
+              <option value="">
+                {selectedTafsirResource ? `Recommended - ${selectedTafsirResource.label}` : "Recommended"}
+              </option>
+              {availableTafsirs.map((resource) => (
+                <option key={resource.id} value={resource.id}>
+                  {[resource.label, resource.languageName].filter(Boolean).join(" - ")}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
         <div className="flex items-end gap-2">
           <button
             type="submit"
@@ -488,6 +583,15 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
                         `${ui.translationUnavailable} (${quranTranslationId})`}
                     </SupportTextPanel>
                   ) : null}
+                  {showTafsir ? (
+                    <CompactOfficialTafsir
+                      key={`${ayah.id}:${selectedTafsirId ?? "default"}`}
+                      ayahId={ayah.id}
+                      tafsirId={selectedTafsirId}
+                      fallbackLabel={selectedTafsirResource?.label ?? null}
+                      initial={null}
+                    />
+                  ) : null}
                 </div>
               ) : (
                 <p dir={translationDir} className="mt-3 text-sm leading-7 text-[color:var(--kw-faint)]">
@@ -557,6 +661,19 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
           anonymous={anonymous}
           showPhonetic={showPhonetic}
           showTranslation={showTranslation}
+          showTafsir={showTafsir}
+          selectedTafsirId={selectedTafsirId}
+          selectedTafsirLabel={selectedTafsirResource?.label ?? null}
+          initialOfficialTafsir={
+            initialCompactTafsir
+              ? {
+                  ayahId: compact.current.id,
+                  status: initialCompactTafsir.status,
+                  detail: initialCompactTafsir.detail,
+                  tafsir: initialCompactTafsir.officialTafsirs[0] ?? null,
+                }
+              : null
+          }
           ui={ui}
           translationDir={translationDir}
           translationAlignClass={translationAlignClass}
