@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
 import { ReaderBookmarkControl } from "@/components/bookmarks/reader-bookmark-control";
+import { JournalPrefillLink } from "@/components/journal/journal-prefill-link";
 import { AyahAiExplanationPanel } from "@/components/quran/ayah-ai-explanation-panel";
 import { SupportTextPanel } from "@/components/quran/support-text-panel";
 import { Card } from "@/components/ui/card";
@@ -297,13 +298,21 @@ export function CompactReaderClient({
                   speedPrefKey={QURAN_AUDIO_SPEED_PREF_KEY}
                   onAutoAdvance={handleAutoAdvance}
                   trailingControl={
-                    <ReaderBookmarkControl
-                      ayahId={current.id}
-                      surahNumber={current.surahNumber}
-                      ayahNumber={current.ayahNumber}
-                      anonymous={anonymous}
-                      variant="inline"
-                    />
+                    <div className="flex items-center gap-2">
+                      <JournalPrefillLink
+                        ayahId={current.id}
+                        label="Add this ayah to journal"
+                        ariaLabel={`Add Surah ${current.surahNumber}:${current.ayahNumber} to journal`}
+                        variant="icon"
+                      />
+                      <ReaderBookmarkControl
+                        ayahId={current.id}
+                        surahNumber={current.surahNumber}
+                        ayahNumber={current.ayahNumber}
+                        anonymous={anonymous}
+                        variant="inline"
+                      />
+                    </div>
                   }
                 />
               </div>

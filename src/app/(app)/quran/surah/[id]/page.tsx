@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
+import { JournalPrefillLink } from "@/components/journal/journal-prefill-link";
 import { QuranViewportProgressTracker } from "@/components/quran/quran-viewport-progress-tracker";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
@@ -106,6 +107,13 @@ export default async function SurahPage(props: { params: Promise<{ id: string }>
             <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
               {getSahihTranslationByAyahId(a.id) ?? "Translation unavailable"}
             </p>
+            <div className="mt-4">
+              <JournalPrefillLink
+                ayahId={a.id}
+                label="Add to journal"
+                ariaLabel={`Add Surah ${info.surahNumber}:${a.ayahNumber} to journal`}
+              />
+            </div>
           </Card>
         ))}
       </div>

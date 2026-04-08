@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowRight,
   BookOpenText,
@@ -240,6 +241,10 @@ function ensureTextBlock(blocks: JournalBlock[]): JournalBlock[] {
   return blocks.length > 0 ? blocks : [createTextBlock("")];
 }
 
+function normalizePrefillType(value: string | null): JournalEntryType {
+  return JOURNAL_ENTRY_TYPES.includes(value as JournalEntryType) ? (value as JournalEntryType) : "reflection";
+}
+
 async function readApiJson<T>(response: Response): Promise<T> {
   const payload = (await response.json().catch(() => null)) as { error?: string } | null;
   if (!response.ok) {
@@ -258,10 +263,12 @@ export function JournalClient(props: {
   translationDir: "ltr" | "rtl";
   translationAlignClass: string;
 }) {
+  const searchParams = useSearchParams();
   const { pushToast } = useToast();
   const didAttemptLegacyImportRef = useRef(false);
   const didAnnounceSyncRecoveryRef = useRef(!props.initialSyncError);
   const didAnnounceSyncIssueRef = useRef(false);
+  const consumedPrefillRef = useRef<string | null>(null);
 
   const [accountSyncEnabled, setAccountSyncEnabled] = useState(
     () => props.syncEnabled && !props.initialSyncError,
@@ -384,11 +391,11 @@ export function JournalClient(props: {
     }
   }, [props.syncEnabled, pushToast]);
 
-  const fetchAyahCard = async (ayahId: number) => {
+  const fetchAyahCard = useCallback(async (ayahId: number) => {
     const response = await fetch(`/api/quran/ayah-card?ayahId=${encodeURIComponent(String(ayahId))}`);
     const payload = await readApiJson<{ ok: true; ayah: AyahCardResponse }>(response);
     return payload.ayah;
-  };
+  }, []);
 
   const updateDraft = (
     updater: (current: JournalDraft) => JournalDraft,
@@ -523,6 +530,9 @@ export function JournalClient(props: {
     return savedEntry !== null;
   };
 
+  const persistDraftRef = useRef(persistDraft);
+  persistDraftRef.current = persistDraft;
+
   useEffect(() => {
     if (props.syncEnabled) {
       if (props.initialSyncError) {
@@ -625,6 +635,101 @@ export function JournalClient(props: {
   }, [effectiveSyncEnabled, pushToast]);
 
   useEffect(() => {
+    const signature = searchParams.toString();
+    if (!signature || consumedPrefillRef.current === signature) {
+      return;
+    }
+
+    if (searchParams.get("newEntry") !== "1") {
+      return;
+    }
+
+    const ayahId = Number(searchParams.get("ayahId"));
+    if (!Number.isFinite(ayahId) || ayahId < 1) {
+      return;
+    }
+
+    consumedPrefillRef.current = signature;
+    let cancelled = false;
+
+    void (async () => {
+      if (draft && isDirty) {
+        if (!hasMeaningfulDraftContent(draft)) {
+          setIsDirty(false);
+        } else {
+          const savedEntry = await persistDraftRef.current({ quiet: true });
+          if (cancelled || !savedEntry) {
+            consumedPrefillRef.current = null;
+            return;
+          }
+        }
+      }
+
+      const prompt = searchParams.get("prompt")?.trim() ?? "";
+      const title = searchParams.get("title")?.trim() ?? "";
+      const type = normalizePrefillType(searchParams.get("type"));
+
+      let ayah: AyahCardResponse | null = null;
+      try {
+        ayah = await fetchAyahCard(ayahId);
+        if (cancelled) {
+          return;
+        }
+        setAyahCardById((current) => ({ ...current, [ayahId]: ayah as AyahCardResponse }));
+      } catch (error) {
+        if (!cancelled) {
+          pushToast({
+            tone: "warning",
+            title: "Could not prefill linked ayah",
+            message: error instanceof Error ? error.message : "You can still write the note manually.",
+          });
+        }
+      }
+
+      if (cancelled) {
+        return;
+      }
+
+      const blocks: JournalBlock[] = [];
+      if (ayah) {
+        blocks.push(
+          createAyahBlock({
+            title: `${ayah.surahNameTransliteration} ${ayah.surahNumber}:${ayah.ayahNumber}`,
+            ayah: {
+              ayahId: ayah.id,
+              surahNumber: ayah.surahNumber,
+              ayahNumber: ayah.ayahNumber,
+              surahNameArabic: ayah.surahNameArabic,
+              surahNameTransliteration: ayah.surahNameTransliteration,
+              textUthmani: ayah.textUthmani,
+              translation: ayah.translation,
+            },
+          }),
+        );
+      }
+      blocks.push(createTextBlock(prompt));
+
+      const nextDraft = createEmptyDraft(type);
+      nextDraft.title = title;
+      nextDraft.blocks = ensureTextBlock(blocks);
+
+      setDraft(nextDraft);
+      setExpandedEntryId("new");
+      setTagInput("");
+      setInsertDraft(null);
+      setIsDirty(false);
+
+      if (typeof window !== "undefined") {
+        window.history.replaceState(null, "", "/journal");
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [draft, fetchAyahCard, isDirty, pushToast, searchParams]);
+
+  useEffect(() => {
     if (!draft) {
       return;
     }
@@ -703,7 +808,7 @@ export function JournalClient(props: {
     return () => {
       cancelled = true;
     };
-  }, [ayahCardById, draft, hydratingAyahIds]);
+  }, [ayahCardById, draft, fetchAyahCard, hydratingAyahIds]);
 
   const handleCreateNew = async (type: JournalEntryType = "reflection") => {
     const shouldContinue = await maybePersistBeforeSwitch();

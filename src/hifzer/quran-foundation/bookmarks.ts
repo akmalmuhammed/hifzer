@@ -352,3 +352,68 @@ export async function hydrateBookmarksFromQuranFoundation(clerkUserId: string) {
     imported,
   };
 }
+
+export async function reconcileQuranFoundationBookmarks(clerkUserId: string) {
+  const hydrated = await hydrateBookmarksFromQuranFoundation(clerkUserId);
+
+  if (!dbConfigured()) {
+    throw new QuranFoundationError("Database not configured.", {
+      status: 503,
+      code: "db_unavailable",
+    });
+  }
+
+  const profile = await getOrCreateUserProfile(clerkUserId);
+  if (!profile) {
+    throw new QuranFoundationError("Database not configured.", {
+      status: 503,
+      code: "db_unavailable",
+    });
+  }
+  if (!(await getQuranFoundationUserApiSession(clerkUserId))) {
+    throw new QuranFoundationError("Link a Quran.com account before syncing bookmarks.", {
+      status: 412,
+      code: "qf_not_linked",
+      retryable: false,
+    });
+  }
+
+  const pendingBookmarks = await db().bookmark.findMany({
+    where: {
+      userId: profile.id,
+      deletedAt: null,
+      OR: [
+        { quranFoundationBookmarkId: null },
+        { quranFoundationSyncState: { in: ["local_only", "error", "not_linked"] } },
+      ],
+    },
+    orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
+  });
+
+  let synced = 0;
+  let failed = 0;
+
+  for (const bookmark of pendingBookmarks) {
+    try {
+      await syncBookmarkToQuranFoundation({
+        clerkUserId,
+        bookmarkId: bookmark.id,
+        action: "create_or_restore",
+      });
+      synced += 1;
+    } catch {
+      failed += 1;
+    }
+  }
+
+  const pushed = {
+    total: pendingBookmarks.length,
+    synced,
+    failed,
+  };
+
+  return {
+    hydrated,
+    pushed,
+  };
+}

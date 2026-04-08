@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
+import { JournalPrefillLink } from "@/components/journal/journal-prefill-link";
 import { SupportTextPanel } from "@/components/quran/support-text-panel";
 import { QuranViewportProgressTracker } from "@/components/quran/quran-viewport-progress-tracker";
 import { Card } from "@/components/ui/card";
@@ -654,6 +655,14 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
                   {ui.detailsHiddenInFilters}
                 </p>
               )}
+
+              <div className="mt-4">
+                <JournalPrefillLink
+                  ayahId={ayah.id}
+                  label="Add to journal"
+                  ariaLabel={`Add Surah ${ayah.surahNumber}:${ayah.ayahNumber} to journal`}
+                />
+              </div>
             </Card>
           ))}
 

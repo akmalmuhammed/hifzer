@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { BookOpenText, Loader2, RefreshCw, Sparkles } from "lucide-react";
+import { JournalPrefillLink } from "@/components/journal/journal-prefill-link";
 import { useOnlineStatus } from "@/components/pwa/use-online-status";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
@@ -150,6 +151,15 @@ export function AyahAiExplanationPanel(props: { ayahId: number; compact?: boolea
             <RefreshCw size={13} />
             Refresh explanation
           </button>
+
+          {ready.explanation.reflectionPrompt ? (
+            <JournalPrefillLink
+              ayahId={props.ayahId}
+              prompt={ready.explanation.reflectionPrompt}
+              label="Save reflection to journal"
+              ariaLabel="Save this AI reflection to your journal"
+            />
+          ) : null}
         </div>
       ) : null}
     </Card>
