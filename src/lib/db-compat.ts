@@ -758,6 +758,7 @@ export async function ensureCoreSchemaCompatibility(): Promise<void> {
       `);
       coreSchemaCapabilitiesPromise = Promise.resolve({
         hasQuranLaneColumns: true,
+        hasOnboardingStateColumns: true,
         hasQuranReaderFilterTable: true,
         hasSessionModernColumns: true,
         hasSessionPlanJson: true,

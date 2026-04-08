@@ -8,7 +8,8 @@ import { OnboardingShell } from "@/components/onboarding/onboarding-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
-import { getOnboardingStartLane, setOnboardingStartLane, type OnboardingStartLane } from "@/hifzer/local/store";
+import { getOnboardingStartLane, setOnboardingStartLane } from "@/hifzer/local/store";
+import type { OnboardingStartLane } from "@/hifzer/profile/onboarding";
 
 export function OnboardingFluencyCheckClient() {
   const router = useRouter();
