@@ -30,10 +30,10 @@ Delete all Clerk-related env vars in all environments, then add only:
 - Recommended:
   - `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/login`
   - `NEXT_PUBLIC_CLERK_SIGN_UP_URL=/signup`
-  - `NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=/today`
-  - `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/today`
-  - `NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/today`
-  - `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/today`
+  - `NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=/dashboard`
+  - `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/dashboard`
+  - `NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/dashboard`
+  - `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/dashboard`
 
 Keep unset during phase-1 isolation:
 
@@ -53,7 +53,7 @@ Browser checks (Incognito):
 
 1. `/login` renders complete Clerk sign-in form.
 2. `/signup` renders complete Clerk sign-up form.
-3. Sign-in success lands on `/today`.
+3. Sign-in success lands on `/dashboard`.
 
 Network + console checks:
 
@@ -70,7 +70,7 @@ curl -sSI https://www.hifzer.com/login | grep -i '^content-security-policy:'
 App behavior checks:
 
 1. Signed-out `/dashboard` redirects to `/login`.
-2. Signed-in `/dashboard`, `/today`, `/quran` are accessible.
+2. Signed-in `/dashboard`, `/hifz`, and `/quran` are accessible.
 3. Protected APIs return authenticated responses.
 
 ## 5) Optional Phase 2: Re-enable Custom Domain

@@ -38,6 +38,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
+import type { OnboardingStartLane } from "@/hifzer/profile/onboarding";
 import { laylatAlQadrGuide } from "@/hifzer/ramadan/laylat-al-qadr";
 import { readSessionCache, writeSessionCache } from "@/lib/client-session-cache";
 import styles from "./dashboard.module.css";
@@ -50,6 +51,7 @@ export type DashboardOverview = {
     dailyMinutes: number;
     practiceDaysPerWeek: number;
     reminderTimeLocal: string;
+    onboardingStartLane: OnboardingStartLane | null;
   };
   today: {
     localDate: string;
@@ -817,7 +819,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
 
       {activeTab === "overview" && !loading && !error && overview ? (
         <div className="space-y-5">
-          <DashboardFirstRunGuide overview={overview} />
+          <DashboardFirstRunGuide overview={overview} initialLane={overview.profile.onboardingStartLane} />
 
           <section className={`kw-fade-in ${styles.commandDeck} px-4 py-4 sm:px-5 sm:py-5`}>
             <div className={styles.pulseOrb} />

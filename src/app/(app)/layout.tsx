@@ -8,6 +8,7 @@ import { AppProviders } from "@/components/providers/app-providers";
 import { ProfileHydrator } from "@/components/providers/profile-hydrator";
 import { DISTRACTION_FREE_COOKIE, normalizeDistractionFree } from "@/hifzer/focus/distraction-free";
 import { normalizeUiLanguage, UI_LANGUAGE_COOKIE } from "@/hifzer/i18n/ui-language";
+import { onboardingPathForStep } from "@/hifzer/profile/onboarding";
 import { getProfileSnapshot } from "@/hifzer/profile/server";
 import {
   normalizeAccentPreset,
@@ -50,7 +51,7 @@ export default async function AppGroupLayout({ children }: { children: React.Rea
     // 1. Profile is null (creation failed or new user with DB error) - safer than rendering broken app
     // 2. Profile exists but onboarding was never completed
     if (dbConfigured() && (!profile || !profile.onboardingCompleted)) {
-      redirect("/onboarding/welcome");
+      redirect(profile ? onboardingPathForStep(profile.onboardingStep) : "/onboarding/welcome");
     }
   }
 

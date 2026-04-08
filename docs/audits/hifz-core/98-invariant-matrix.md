@@ -1,5 +1,7 @@
 # Hifz Invariant Matrix
 
+> Archive note: This matrix predates the current super-app pivot and still references older route structures such as `/today`. Treat it as historical analysis, not the current spec.
+
 ## Scope
 - Audited paths: `src/hifzer/{engine,srs,profile,quran,local,focus}`, `src/app/api/{session,profile}`, `src/app/(app)/{hifz,session,today}`
 - Reviewed files: 57

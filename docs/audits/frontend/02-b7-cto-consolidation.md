@@ -1,5 +1,7 @@
 # B7 — CTO Consolidation
 
+> Archive note: This audit snapshot predates the current super-app pivot and still references older route structures such as `/today`. Treat it as historical analysis, not the current spec.
+
 Generated: 2026-02-25T11:03:32.988Z
 
 ## Consolidated Counts
@@ -31,4 +33,3 @@ Generated: 2026-02-25T11:03:32.988Z
 4. Ship localization parity for core workflows (Today/Session/Quran/Onboarding/Settings).
 5. Reduce structural risk (session monolith split, token migration away from dark-mode bridge hacks).
 6. Isolate or modernize legacy shell to stop design-system drift.
-

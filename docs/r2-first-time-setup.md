@@ -30,7 +30,7 @@ Choose one of these approaches:
 After setup, you need a base URL like:
 
 - `https://pub-xxxxxxxx.r2.dev`
-- or `https://audio.hifzer.app`
+- or `https://audio.hifzer.com`
 
 ## 3. Configure CORS on the bucket
 
@@ -41,11 +41,11 @@ Use this policy (adjust origins as needed):
 ```json
 [
   {
-    "AllowedOrigins": [
-      "http://localhost:3000",
-      "https://hifzer.app",
-      "https://www.hifzer.app"
-    ],
+      "AllowedOrigins": [
+        "http://localhost:3000",
+        "https://hifzer.com",
+        "https://www.hifzer.com"
+      ],
     "AllowedMethods": ["GET", "HEAD"],
     "AllowedHeaders": ["*"],
     "ExposeHeaders": ["ETag", "Content-Length", "Content-Type"],
@@ -68,7 +68,7 @@ Required minimum set for MVP:
 
 ## 5. Generate a manifest before upload
 
-From `D:\hifzer`:
+From the repo root:
 
 ```bash
 pnpm audio:manifest -- --reciters default --out tmp/audio-manifest.csv
@@ -77,7 +77,7 @@ pnpm audio:manifest -- --reciters default --out tmp/audio-manifest.csv
 Optional with a base URL preview:
 
 ```bash
-pnpm audio:manifest -- --reciters default --base-path https://audio.hifzer.app --out tmp/audio-manifest.csv
+pnpm audio:manifest -- --reciters default --base-path https://audio.hifzer.com --out tmp/audio-manifest.csv
 ```
 
 This creates a CSV you can use to audit missing uploads.
@@ -107,7 +107,7 @@ R2 supports S3-compatible API credentials. If you prefer `aws s3`/`rclone`, conf
 In your app env file (for example `.env.local`):
 
 ```env
-NEXT_PUBLIC_HIFZER_AUDIO_BASE_URL=https://audio.hifzer.app
+NEXT_PUBLIC_HIFZER_AUDIO_BASE_URL=https://audio.hifzer.com
 NEXT_PUBLIC_HIFZER_DEFAULT_RECITER_ID=alafasy
 NEXT_PUBLIC_HIFZER_AUDIO_AYAH_ID_WIDTH=6
 ```
@@ -118,12 +118,12 @@ Restart dev server after updating env.
 
 1. Open `/quran/surah/1`
 2. Confirm each ayah row shows playable audio
-3. Open `/session` and confirm player appears in queue items
+3. Open `/quran/read?view=compact&surah=1&cursor=1` and confirm compact-reader audio works
 
 Quick direct check:
 
 ```bash
-curl -I https://audio.hifzer.app/alafasy/000001.mp3
+curl -I https://audio.hifzer.com/alafasy/000001.mp3
 ```
 
 Expect `200 OK` and audio content type.

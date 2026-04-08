@@ -83,8 +83,8 @@ type Feature = (typeof FEATURES)[number];
 
 function ReaderPreview({ preview }: { preview: Extract<Feature["preview"], { type: "reader" }> }) {
   return (
-    <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-3">
-      <div className="flex items-start justify-between gap-3">
+    <div className="grid min-h-0 grid-rows-[auto_auto_auto] gap-3 sm:h-full sm:grid-rows-[auto_minmax(0,1fr)_auto]">
+      <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[color:var(--kw-faint)]">
             Current place
@@ -94,10 +94,10 @@ function ReaderPreview({ preview }: { preview: Extract<Feature["preview"], { typ
         <Pill tone="brand" className="shrink-0 self-start">Saved</Pill>
       </div>
 
-      <div className="grid min-h-[16rem] place-items-center rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-5 py-6 md:px-6">
+      <div className="flex min-h-[10.5rem] flex-col justify-start rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-4 py-4 sm:grid sm:min-h-[16rem] sm:place-items-center sm:px-5 sm:py-6 md:px-6">
         <div className="w-full max-w-[40rem]">
           <p
-            className="text-right font-[family-name:var(--font-quran-uthmani)] text-[1.45rem] leading-[2.4] text-[color:var(--kw-ink)]"
+            className="text-right font-[family-name:var(--font-quran-uthmani)] text-[1.15rem] leading-[2.05] text-[color:var(--kw-ink)] sm:text-[1.45rem] sm:leading-[2.4]"
             dir="rtl"
           >
             {preview.arabic}
@@ -122,7 +122,7 @@ function ReaderPreview({ preview }: { preview: Extract<Feature["preview"], { typ
 
 function ReviewPreview({ preview }: { preview: Extract<Feature["preview"], { type: "review" }> }) {
   return (
-    <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-3">
+    <div className="grid min-h-0 grid-rows-[auto_auto_auto] gap-3 sm:h-full sm:grid-rows-[auto_minmax(0,1fr)_auto]">
       <div>
         <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[color:var(--kw-faint)]">
           {preview.title}
@@ -153,8 +153,8 @@ function ReviewPreview({ preview }: { preview: Extract<Feature["preview"], { typ
 
 function DuaPreview({ preview }: { preview: Extract<Feature["preview"], { type: "dua" }> }) {
   return (
-    <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-3">
-      <div className="flex items-start justify-between gap-3">
+    <div className="grid min-h-0 grid-rows-[auto_auto_auto] gap-3 sm:h-full sm:grid-rows-[auto_minmax(0,1fr)_auto]">
+      <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[color:var(--kw-faint)]">
             {preview.title}
@@ -164,15 +164,15 @@ function DuaPreview({ preview }: { preview: Extract<Feature["preview"], { type: 
         <Pill tone="brand" className="shrink-0 self-start">{preview.progress}/{preview.total}</Pill>
       </div>
 
-      <div className="grid min-h-[16rem] place-items-center rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-5 py-6 md:px-6">
+      <div className="flex min-h-[10rem] flex-col justify-start rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-4 py-4 sm:grid sm:min-h-[16rem] sm:place-items-center sm:px-5 sm:py-6 md:px-6">
         <div className="w-full max-w-[40rem]">
           <p
-            className="text-right font-[family-name:var(--font-quran-uthmani)] text-[1.45rem] leading-[2.4] text-[color:var(--kw-ink)]"
+            className="text-right font-[family-name:var(--font-quran-uthmani)] text-[1.15rem] leading-[2.05] text-[color:var(--kw-ink)] sm:text-[1.45rem] sm:leading-[2.4]"
             dir="rtl"
           >
             {preview.arabic}
           </p>
-          <p className="mt-3 text-center text-[11px] italic text-[color:var(--kw-muted)]">
+          <p className="mt-3 text-center text-[11px] italic leading-5 text-[color:var(--kw-muted)]">
             {preview.transliteration}
           </p>
         </div>
@@ -188,21 +188,21 @@ function DuaPreview({ preview }: { preview: Extract<Feature["preview"], { type: 
 
 function JournalPreview({ preview }: { preview: Extract<Feature["preview"], { type: "journal" }> }) {
   return (
-    <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-3">
+    <div className="grid min-h-0 grid-rows-[auto_auto] gap-3 sm:h-full sm:grid-rows-[auto_minmax(0,1fr)]">
       <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-4 pb-4 pt-3">
         <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[color:var(--kw-faint)]">
           {preview.surah}
         </p>
         <p
-          className="mt-2 text-right font-[family-name:var(--font-quran-uthmani)] text-[1.3rem] leading-[2.2] text-[color:var(--kw-ink)]"
+          className="mt-2 text-right font-[family-name:var(--font-quran-uthmani)] text-[1.1rem] leading-[2] text-[color:var(--kw-ink)] sm:text-[1.3rem] sm:leading-[2.2]"
           dir="rtl"
         >
           {preview.arabic}
         </p>
       </div>
 
-      <div className="flex-1 rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-4 py-3">
-        <div className="flex items-center justify-between gap-2">
+      <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-4 py-3 sm:flex-1">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-[10px] font-semibold uppercase tracking-[0.07em] text-[color:var(--kw-faint)]">
             My reflection
           </p>
@@ -342,7 +342,7 @@ export function SessionWalkthrough() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: reduceMotion ? 0 : 0.45 }}
-          className="kw-glass-strong flex min-h-[30rem] flex-col rounded-[var(--kw-radius-xl)] px-5 py-5"
+          className="kw-glass-strong flex min-h-0 flex-col rounded-[var(--kw-radius-xl)] px-4 py-4 sm:min-h-[30rem] sm:px-5 sm:py-5"
         >
           {/* Feature header */}
           <AnimatePresence mode="wait" initial={false}>
@@ -352,7 +352,7 @@ export function SessionWalkthrough() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: reduceMotion ? 0 : 0.2 }}
-              className="mb-4 flex items-start justify-between gap-3"
+              className="mb-4 flex flex-wrap items-start justify-between gap-3"
             >
               <div className="min-w-0 pr-2">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[color:var(--kw-faint)]">
@@ -375,7 +375,7 @@ export function SessionWalkthrough() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: reduceMotion ? 0 : 0.25 }}
-              className="min-h-0 flex-1"
+              className="sm:min-h-0 sm:flex-1"
             >
               <PreviewPanel feature={active} />
             </motion.div>

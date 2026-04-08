@@ -12,8 +12,21 @@ import type {
 import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
 import { getSurahInfo } from "@/hifzer/quran/lookup.server";
 import { DEFAULT_QURAN_TRANSLATION_ID, type QuranTranslationId } from "@/hifzer/quran/translation-prefs";
+import {
+  canAdvanceOnboardingStep,
+  maxOnboardingStep,
+  normalizeOnboardingStartLane,
+  normalizeOnboardingStep,
+  onboardingStepRank,
+  type OnboardingStartLane,
+  type OnboardingStep,
+} from "@/hifzer/profile/onboarding";
 import { normalizeReciterId } from "@/hifzer/audio/reciters";
-import { ensureCoreSchemaCompatibility, getCoreSchemaCapabilities } from "@/lib/db-compat";
+import {
+  ensureCoreSchemaCompatibility,
+  getCoreSchemaCapabilities,
+  type CoreSchemaCapabilities,
+} from "@/lib/db-compat";
 import { db, dbConfigured } from "@/lib/db";
 
 const DEFAULT_PRACTICE_DAYS = [0, 1, 2, 3, 4, 5, 6];
@@ -28,6 +41,8 @@ export type ProfileSnapshot = {
   clerkUserId: string;
   onboardingCompleted: boolean;
   onboardingCompletedAt: string | null;
+  onboardingStep: OnboardingStep;
+  onboardingStartLane: OnboardingStartLane | null;
   timezone: string;
   dailyMinutes: number;
   practiceDays: number[];
@@ -84,7 +99,15 @@ function defaultStartPoint() {
   return { activeSurahNumber: first.surahNumber, cursorAyahId: first.startAyahId };
 }
 
-function defaultCreateData(clerkUserId: string, input?: { includeQuranLane?: boolean }) {
+type ProfileSchemaCapabilities = Pick<
+  CoreSchemaCapabilities,
+  "hasQuranLaneColumns" | "hasOnboardingStateColumns"
+>;
+
+function defaultCreateData(
+  clerkUserId: string,
+  input?: { includeQuranLane?: boolean; includeOnboardingState?: boolean },
+) {
   const { activeSurahNumber, cursorAyahId } = defaultStartPoint();
   const base = {
     clerkUserId,
@@ -98,6 +121,12 @@ function defaultCreateData(clerkUserId: string, input?: { includeQuranLane?: boo
     themePreset: DEFAULT_THEME,
     accentPreset: DEFAULT_ACCENT,
     reciterId: DEFAULT_RECITER,
+    ...(input?.includeOnboardingState === false
+      ? {}
+      : {
+          onboardingStep: "welcome",
+          onboardingStartLane: null,
+        }),
   };
   if (input?.includeQuranLane === false) {
     return base;
@@ -127,6 +156,8 @@ function toSnapshot(row: UserProfile): ProfileSnapshot {
     clerkUserId: row.clerkUserId,
     onboardingCompleted: Boolean(row.onboardingCompletedAt),
     onboardingCompletedAt: row.onboardingCompletedAt ? row.onboardingCompletedAt.toISOString() : null,
+    onboardingStep: normalizeOnboardingStep(row.onboardingStep),
+    onboardingStartLane: normalizeOnboardingStartLane(row.onboardingStartLane),
     timezone: row.timezone,
     dailyMinutes: row.dailyMinutes,
     practiceDays: row.practiceDays,
@@ -162,7 +193,7 @@ function toSnapshot(row: UserProfile): ProfileSnapshot {
   };
 }
 
-type MinimalUserProfileRow = Pick<
+type CompatUserProfileRow = Pick<
   UserProfile,
   | "id"
   | "clerkUserId"
@@ -181,9 +212,19 @@ type MinimalUserProfileRow = Pick<
   | "reciterId"
   | "createdAt"
   | "updatedAt"
+> & Partial<
+  Pick<
+    UserProfile,
+    | "quranActiveSurahNumber"
+    | "quranCursorAyahId"
+    | "quranTranslationId"
+    | "quranShowDetails"
+    | "onboardingStep"
+    | "onboardingStartLane"
+  >
 >;
 
-const MINIMAL_USER_PROFILE_SELECT = {
+const BASE_USER_PROFILE_SELECT = {
   id: true,
   clerkUserId: true,
   timezone: true,
@@ -203,7 +244,27 @@ const MINIMAL_USER_PROFILE_SELECT = {
   updatedAt: true,
 } satisfies Prisma.UserProfileSelect;
 
-function withCompatDefaults(row: MinimalUserProfileRow): UserProfile {
+function buildCompatUserProfileSelect(capabilities: ProfileSchemaCapabilities): Prisma.UserProfileSelect {
+  return {
+    ...BASE_USER_PROFILE_SELECT,
+    ...(capabilities.hasQuranLaneColumns
+      ? {
+          quranActiveSurahNumber: true,
+          quranCursorAyahId: true,
+          quranTranslationId: true,
+          quranShowDetails: true,
+        }
+      : {}),
+    ...(capabilities.hasOnboardingStateColumns
+      ? {
+          onboardingStep: true,
+          onboardingStartLane: true,
+        }
+      : {}),
+  };
+}
+
+function withCompatDefaults(row: CompatUserProfileRow, capabilities: ProfileSchemaCapabilities): UserProfile {
   return {
     ...row,
     emailRemindersEnabled: true,
@@ -217,10 +278,24 @@ function withCompatDefaults(row: MinimalUserProfileRow): UserProfile {
     consolidationThresholdPct: 25,
     catchUpThresholdPct: 45,
     rebalanceUntil: null,
-    quranActiveSurahNumber: row.activeSurahNumber,
-    quranCursorAyahId: row.cursorAyahId,
-    quranTranslationId: DEFAULT_QURAN_TRANSLATION_ID,
-    quranShowDetails: DEFAULT_QURAN_SHOW_DETAILS,
+    quranActiveSurahNumber: capabilities.hasQuranLaneColumns
+      ? (row.quranActiveSurahNumber ?? row.activeSurahNumber)
+      : row.activeSurahNumber,
+    quranCursorAyahId: capabilities.hasQuranLaneColumns
+      ? (row.quranCursorAyahId ?? row.cursorAyahId)
+      : row.cursorAyahId,
+    quranTranslationId: capabilities.hasQuranLaneColumns
+      ? (row.quranTranslationId ?? DEFAULT_QURAN_TRANSLATION_ID)
+      : DEFAULT_QURAN_TRANSLATION_ID,
+    quranShowDetails: capabilities.hasQuranLaneColumns
+      ? (row.quranShowDetails ?? DEFAULT_QURAN_SHOW_DETAILS)
+      : DEFAULT_QURAN_SHOW_DETAILS,
+    onboardingStep: capabilities.hasOnboardingStateColumns
+      ? normalizeOnboardingStep(row.onboardingStep)
+      : "welcome",
+    onboardingStartLane: capabilities.hasOnboardingStateColumns
+      ? normalizeOnboardingStartLane(row.onboardingStartLane)
+      : null,
     plan: "FREE",
     paddleCustomerId: null,
     paddleSubscriptionId: null,
@@ -231,20 +306,26 @@ function withCompatDefaults(row: MinimalUserProfileRow): UserProfile {
 
 async function upsertProfileCompat(input: {
   clerkUserId: string;
-  buildCreate: (hasQuranLaneColumns: boolean) => Prisma.UserProfileCreateInput;
-  buildUpdate: (hasQuranLaneColumns: boolean) => Prisma.UserProfileUpdateInput;
+  buildCreate: (capabilities: ProfileSchemaCapabilities) => Prisma.UserProfileCreateInput;
+  buildUpdate: (capabilities: ProfileSchemaCapabilities) => Prisma.UserProfileUpdateInput;
   refreshCapabilities?: boolean;
 }): Promise<UserProfile> {
   const capabilities = await getCoreSchemaCapabilities({ refresh: input.refreshCapabilities === true });
-  const hasQuranLaneColumns = capabilities.hasQuranLaneColumns;
+  const profileCapabilities: ProfileSchemaCapabilities = {
+    hasQuranLaneColumns: capabilities.hasQuranLaneColumns,
+    hasOnboardingStateColumns: capabilities.hasOnboardingStateColumns,
+  };
+  const hasFullProfileColumns =
+    profileCapabilities.hasQuranLaneColumns &&
+    profileCapabilities.hasOnboardingStateColumns;
   const prisma = db();
 
-  if (hasQuranLaneColumns) {
+  if (hasFullProfileColumns) {
     try {
       return await prisma.userProfile.upsert({
         where: { clerkUserId: input.clerkUserId },
-        create: input.buildCreate(true),
-        update: input.buildUpdate(true),
+        create: input.buildCreate(profileCapabilities),
+        update: input.buildUpdate(profileCapabilities),
       });
     } catch (error) {
       if (!looksLikeMissingCoreSchema(error)) {
@@ -256,11 +337,11 @@ async function upsertProfileCompat(input: {
 
   const row = await prisma.userProfile.upsert({
     where: { clerkUserId: input.clerkUserId },
-    create: input.buildCreate(false),
-    update: input.buildUpdate(false),
-    select: MINIMAL_USER_PROFILE_SELECT,
+    create: input.buildCreate(profileCapabilities),
+    update: input.buildUpdate(profileCapabilities),
+    select: buildCompatUserProfileSelect(profileCapabilities),
   });
-  return withCompatDefaults(row as MinimalUserProfileRow);
+  return withCompatDefaults(row as CompatUserProfileRow, profileCapabilities);
 }
 
 function looksLikeMissingCoreSchema(error: unknown): boolean {
@@ -270,6 +351,8 @@ function looksLikeMissingCoreSchema(error: unknown): boolean {
     message.includes("quranCursorAyahId") ||
     message.includes("quranTranslationId") ||
     message.includes("quranShowDetails") ||
+    message.includes("onboardingStep") ||
+    message.includes("onboardingStartLane") ||
     message.includes("planJson") ||
     message.includes("P2021") ||
     message.includes("P2022") ||
@@ -299,8 +382,11 @@ async function getOrCreateUserProfileUncached(clerkUserId: string): Promise<User
     }
     return await upsertProfileCompat({
       clerkUserId,
-      buildCreate: (hasQuranLaneColumns) =>
-        defaultCreateData(clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
+      buildCreate: (capabilities) =>
+        defaultCreateData(clerkUserId, {
+          includeQuranLane: capabilities.hasQuranLaneColumns,
+          includeOnboardingState: capabilities.hasOnboardingStateColumns,
+        }),
       buildUpdate: () => ({}),
     });
   } catch (error) {
@@ -316,8 +402,11 @@ async function getOrCreateUserProfileUncached(clerkUserId: string): Promise<User
     }
     return upsertProfileCompat({
       clerkUserId,
-      buildCreate: (hasQuranLaneColumns) =>
-        defaultCreateData(clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
+      buildCreate: (capabilities) =>
+        defaultCreateData(clerkUserId, {
+          includeQuranLane: capabilities.hasQuranLaneColumns,
+          includeOnboardingState: capabilities.hasOnboardingStateColumns,
+        }),
       buildUpdate: () => ({}),
       refreshCapabilities: true,
     });
@@ -341,18 +430,108 @@ export async function getProfileSnapshot(clerkUserId: string): Promise<ProfileSn
   return getProfileSnapshotCached(clerkUserId);
 }
 
-export async function saveStartPoint(clerkUserId: string, activeSurahNumber: number, cursorAyahId: number) {
+export class OnboardingStateError extends Error {
+  status: number;
+  code: string;
+
+  constructor(message: string, status = 409, code = "onboarding_state_invalid") {
+    super(message);
+    this.name = "OnboardingStateError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
+export async function saveOnboardingProgress(input: {
+  clerkUserId: string;
+  step: OnboardingStep;
+  onboardingStartLane?: OnboardingStartLane;
+}) {
   if (!dbConfigured()) {
     return null;
   }
+
+  const profile = await getOrCreateUserProfile(input.clerkUserId);
+  if (!profile) {
+    return null;
+  }
+  if (profile.onboardingCompletedAt) {
+    return toSnapshot(profile);
+  }
+
+  const currentStep = normalizeOnboardingStep(profile.onboardingStep);
+  if (!canAdvanceOnboardingStep(currentStep, input.step)) {
+    throw new OnboardingStateError("Finish the current onboarding step before moving ahead.", 409, "onboarding_step_locked");
+  }
+
+  const effectiveLane = input.onboardingStartLane ?? normalizeOnboardingStartLane(profile.onboardingStartLane) ?? null;
+  if (input.step === "permissions" && !effectiveLane) {
+    throw new OnboardingStateError("Choose a starting lane before opening permissions.", 409, "onboarding_lane_required");
+  }
+  if (input.step === "complete" && !effectiveLane) {
+    throw new OnboardingStateError("Choose a starting lane before finishing onboarding.", 409, "onboarding_lane_required");
+  }
+
+  const nextStep = maxOnboardingStep(currentStep, input.step);
+  const row = await upsertProfileCompat({
+    clerkUserId: input.clerkUserId,
+    buildCreate: (capabilities) => ({
+      ...defaultCreateData(input.clerkUserId, {
+        includeQuranLane: capabilities.hasQuranLaneColumns,
+        includeOnboardingState: capabilities.hasOnboardingStateColumns,
+      }),
+      ...(capabilities.hasOnboardingStateColumns
+        ? {
+            onboardingStep: nextStep,
+            ...(effectiveLane ? { onboardingStartLane: effectiveLane } : {}),
+          }
+        : {}),
+    }),
+    buildUpdate: (capabilities) => (
+      capabilities.hasOnboardingStateColumns
+        ? {
+            onboardingStep: nextStep,
+            ...(input.onboardingStartLane ? { onboardingStartLane: effectiveLane } : {}),
+          }
+        : {}
+    ),
+  });
+  return toSnapshot(row);
+}
+
+export async function saveStartPoint(
+  clerkUserId: string,
+  activeSurahNumber: number,
+  cursorAyahId: number,
+  input?: { onboardingStep?: OnboardingStep },
+) {
+  if (!dbConfigured()) {
+    return null;
+  }
+  const profile = input?.onboardingStep ? await getOrCreateUserProfile(clerkUserId) : null;
+  const nextOnboardingStep = input?.onboardingStep
+    ? maxOnboardingStep(normalizeOnboardingStep(profile?.onboardingStep), input.onboardingStep)
+    : null;
   const row = await upsertProfileCompat({
     clerkUserId,
-    buildCreate: (hasQuranLaneColumns) => ({
-      ...defaultCreateData(clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
+    buildCreate: (capabilities) => ({
+      ...defaultCreateData(clerkUserId, {
+        includeQuranLane: capabilities.hasQuranLaneColumns,
+        includeOnboardingState: capabilities.hasOnboardingStateColumns,
+      }),
       activeSurahNumber,
       cursorAyahId,
+      ...(capabilities.hasOnboardingStateColumns && nextOnboardingStep
+        ? { onboardingStep: nextOnboardingStep }
+        : {}),
     }),
-    buildUpdate: () => ({ activeSurahNumber, cursorAyahId }),
+    buildUpdate: (capabilities) => ({
+      activeSurahNumber,
+      cursorAyahId,
+      ...(capabilities.hasOnboardingStateColumns && nextOnboardingStep
+        ? { onboardingStep: nextOnboardingStep }
+        : {}),
+    }),
   });
   return toSnapshot(row);
 }
@@ -373,14 +552,17 @@ export async function saveQuranStartPoint(clerkUserId: string, quranActiveSurahN
   const row = await upsertProfileCompat({
     clerkUserId,
     refreshCapabilities: true,
-    buildCreate: (hasQuranLaneColumns) => ({
-      ...defaultCreateData(clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
-      ...(hasQuranLaneColumns
+    buildCreate: (capabilities) => ({
+      ...defaultCreateData(clerkUserId, {
+        includeQuranLane: capabilities.hasQuranLaneColumns,
+        includeOnboardingState: capabilities.hasOnboardingStateColumns,
+      }),
+      ...(capabilities.hasQuranLaneColumns
         ? { quranActiveSurahNumber, quranCursorAyahId }
         : {}),
     }),
-    buildUpdate: (hasQuranLaneColumns) =>
-      hasQuranLaneColumns
+    buildUpdate: (capabilities) =>
+      capabilities.hasQuranLaneColumns
         ? { quranActiveSurahNumber, quranCursorAyahId }
         : {},
   });
@@ -404,28 +586,39 @@ export async function saveAssessment(input: {
     Math.max(1, Math.min(7, Math.floor(input.practiceDaysPerWeek))),
   );
   const boundedDailyMinutes = Math.max(5, Math.min(240, Math.floor(input.dailyMinutes)));
+  const profile = await getOrCreateUserProfile(input.clerkUserId);
+  const nextOnboardingStep = maxOnboardingStep(normalizeOnboardingStep(profile?.onboardingStep), "start-point");
   const row = await upsertProfileCompat({
     clerkUserId: input.clerkUserId,
-    buildCreate: (hasQuranLaneColumns) => ({
-      ...defaultCreateData(input.clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
+    buildCreate: (capabilities) => ({
+      ...defaultCreateData(input.clerkUserId, {
+        includeQuranLane: capabilities.hasQuranLaneColumns,
+        includeOnboardingState: capabilities.hasOnboardingStateColumns,
+      }),
       dailyMinutes: boundedDailyMinutes,
       practiceDays,
       planBias: input.planBias,
-      ...(hasQuranLaneColumns ? { hasTeacher: input.hasTeacher } : {}),
-      ...(hasQuranLaneColumns && input.quranTranslationId
+      ...(capabilities.hasQuranLaneColumns ? { hasTeacher: input.hasTeacher } : {}),
+      ...(capabilities.hasQuranLaneColumns && input.quranTranslationId
         ? { quranTranslationId: input.quranTranslationId }
         : {}),
       timezone: input.timezone || "UTC",
+      ...(capabilities.hasOnboardingStateColumns
+        ? { onboardingStep: nextOnboardingStep }
+        : {}),
     }),
-    buildUpdate: (hasQuranLaneColumns) => ({
+    buildUpdate: (capabilities) => ({
       dailyMinutes: boundedDailyMinutes,
       practiceDays,
       planBias: input.planBias,
-      ...(hasQuranLaneColumns ? { hasTeacher: input.hasTeacher } : {}),
-      ...(hasQuranLaneColumns && input.quranTranslationId
+      ...(capabilities.hasQuranLaneColumns ? { hasTeacher: input.hasTeacher } : {}),
+      ...(capabilities.hasQuranLaneColumns && input.quranTranslationId
         ? { quranTranslationId: input.quranTranslationId }
         : {}),
       timezone: input.timezone || "UTC",
+      ...(capabilities.hasOnboardingStateColumns
+        ? { onboardingStep: nextOnboardingStep }
+        : {}),
     }),
   });
   return toSnapshot(row);
@@ -435,14 +628,46 @@ export async function markOnboardingComplete(clerkUserId: string) {
   if (!dbConfigured()) {
     return null;
   }
+  const profile = await getOrCreateUserProfile(clerkUserId);
+  if (!profile) {
+    return null;
+  }
+  if (profile.onboardingCompletedAt) {
+    return toSnapshot(profile);
+  }
+  const currentStep = normalizeOnboardingStep(profile.onboardingStep);
+  if (onboardingStepRank(currentStep) < onboardingStepRank("complete")) {
+    throw new OnboardingStateError("Finish the required onboarding steps before opening the dashboard.", 409, "onboarding_step_locked");
+  }
+  const startLane = normalizeOnboardingStartLane(profile.onboardingStartLane);
+  if (!startLane) {
+    throw new OnboardingStateError("Choose your opening lane before completing onboarding.", 409, "onboarding_lane_required");
+  }
   const completedAt = new Date();
   const row = await upsertProfileCompat({
     clerkUserId,
-    buildCreate: (hasQuranLaneColumns) => ({
-      ...defaultCreateData(clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
+    buildCreate: (capabilities) => ({
+      ...defaultCreateData(clerkUserId, {
+        includeQuranLane: capabilities.hasQuranLaneColumns,
+        includeOnboardingState: capabilities.hasOnboardingStateColumns,
+      }),
       onboardingCompletedAt: completedAt,
+      ...(capabilities.hasOnboardingStateColumns
+        ? {
+            onboardingStep: "complete",
+            onboardingStartLane: startLane,
+          }
+        : {}),
     }),
-    buildUpdate: () => ({ onboardingCompletedAt: completedAt }),
+    buildUpdate: (capabilities) => ({
+      onboardingCompletedAt: completedAt,
+      ...(capabilities.hasOnboardingStateColumns
+        ? {
+            onboardingStep: "complete",
+            onboardingStartLane: startLane,
+          }
+        : {}),
+    }),
   });
   return toSnapshot(row);
 }
@@ -458,19 +683,22 @@ export async function saveReminderPrefs(input: {
   const unsubscribedAt = input.emailRemindersEnabled ? null : new Date();
   const row = await upsertProfileCompat({
     clerkUserId: input.clerkUserId,
-    buildCreate: (hasQuranLaneColumns) => ({
-      ...defaultCreateData(input.clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
+    buildCreate: (capabilities) => ({
+      ...defaultCreateData(input.clerkUserId, {
+        includeQuranLane: capabilities.hasQuranLaneColumns,
+        includeOnboardingState: capabilities.hasOnboardingStateColumns,
+      }),
       reminderTimeLocal: input.reminderTimeLocal,
-      ...(hasQuranLaneColumns
+      ...(capabilities.hasQuranLaneColumns
         ? {
             emailRemindersEnabled: input.emailRemindersEnabled,
             emailUnsubscribedAt: unsubscribedAt,
           }
         : {}),
     }),
-    buildUpdate: (hasQuranLaneColumns) => ({
+    buildUpdate: (capabilities) => ({
       reminderTimeLocal: input.reminderTimeLocal,
-      ...(hasQuranLaneColumns
+      ...(capabilities.hasQuranLaneColumns
         ? {
             emailRemindersEnabled: input.emailRemindersEnabled,
             emailUnsubscribedAt: unsubscribedAt,
@@ -492,8 +720,11 @@ export async function saveDisplayPrefs(input: {
   }
   const row = await upsertProfileCompat({
     clerkUserId: input.clerkUserId,
-    buildCreate: (hasQuranLaneColumns) => ({
-      ...defaultCreateData(input.clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
+    buildCreate: (capabilities) => ({
+      ...defaultCreateData(input.clerkUserId, {
+        includeQuranLane: capabilities.hasQuranLaneColumns,
+        includeOnboardingState: capabilities.hasOnboardingStateColumns,
+      }),
       darkMode: input.darkMode,
       themePreset: input.themePreset,
       accentPreset: input.accentPreset,
@@ -517,8 +748,11 @@ export async function saveReciterPrefs(input: {
   const reciterId = normalizeReciterId(input.reciterId);
   const row = await upsertProfileCompat({
     clerkUserId: input.clerkUserId,
-    buildCreate: (hasQuranLaneColumns) => ({
-      ...defaultCreateData(input.clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
+    buildCreate: (capabilities) => ({
+      ...defaultCreateData(input.clerkUserId, {
+        includeQuranLane: capabilities.hasQuranLaneColumns,
+        includeOnboardingState: capabilities.hasOnboardingStateColumns,
+      }),
       reciterId,
     }),
     buildUpdate: () => ({ reciterId }),
@@ -535,12 +769,15 @@ export async function saveLanguagePrefs(input: {
   }
   const row = await upsertProfileCompat({
     clerkUserId: input.clerkUserId,
-    buildCreate: (hasQuranLaneColumns) => ({
-      ...defaultCreateData(input.clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
-      ...(hasQuranLaneColumns ? { quranTranslationId: input.quranTranslationId } : {}),
+    buildCreate: (capabilities) => ({
+      ...defaultCreateData(input.clerkUserId, {
+        includeQuranLane: capabilities.hasQuranLaneColumns,
+        includeOnboardingState: capabilities.hasOnboardingStateColumns,
+      }),
+      ...(capabilities.hasQuranLaneColumns ? { quranTranslationId: input.quranTranslationId } : {}),
     }),
-    buildUpdate: (hasQuranLaneColumns) =>
-      hasQuranLaneColumns
+    buildUpdate: (capabilities) =>
+      capabilities.hasQuranLaneColumns
         ? { quranTranslationId: input.quranTranslationId }
         : {},
   });
@@ -556,12 +793,15 @@ export async function saveQuranReaderPrefs(input: {
   }
   const row = await upsertProfileCompat({
     clerkUserId: input.clerkUserId,
-    buildCreate: (hasQuranLaneColumns) => ({
-      ...defaultCreateData(input.clerkUserId, { includeQuranLane: hasQuranLaneColumns }),
-      ...(hasQuranLaneColumns ? { quranShowDetails: input.quranShowDetails } : {}),
+    buildCreate: (capabilities) => ({
+      ...defaultCreateData(input.clerkUserId, {
+        includeQuranLane: capabilities.hasQuranLaneColumns,
+        includeOnboardingState: capabilities.hasOnboardingStateColumns,
+      }),
+      ...(capabilities.hasQuranLaneColumns ? { quranShowDetails: input.quranShowDetails } : {}),
     }),
-    buildUpdate: (hasQuranLaneColumns) =>
-      hasQuranLaneColumns
+    buildUpdate: (capabilities) =>
+      capabilities.hasQuranLaneColumns
         ? { quranShowDetails: input.quranShowDetails }
         : {},
   });

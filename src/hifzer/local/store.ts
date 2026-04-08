@@ -1,6 +1,7 @@
 import type { AyahReviewState, SrsGrade, SrsMode, TodayQueue } from "@/hifzer/srs/types";
 import { defaultReviewState, applyGrade } from "@/hifzer/srs/update";
 import { isoDateLocal } from "@/hifzer/derived/dates";
+import type { OnboardingStartLane } from "@/hifzer/profile/onboarding";
 
 export const STORAGE_KEYS = {
   onboardingCompleted: "hifzer_onboarding_completed_v1",
@@ -47,7 +48,6 @@ export type StoredAttempt = {
 };
 
 export type SessionStatus = "OPEN" | "COMPLETED" | "ABANDONED";
-export type OnboardingStartLane = "hifz" | "fluency" | "listen" | "transitions";
 export type OnboardingAssessmentDraft = {
   dailyMinutes: number;
   practiceDaysPerWeek: number;
@@ -101,6 +101,13 @@ export function setOnboardingCompleted() {
   window.localStorage.setItem(STORAGE_KEYS.onboardingCompleted, "1");
 }
 
+export function clearOnboardingCompleted() {
+  if (!isBrowser()) {
+    return;
+  }
+  window.localStorage.removeItem(STORAGE_KEYS.onboardingCompleted);
+}
+
 export function getOnboardingStartLane(): OnboardingStartLane | null {
   if (!isBrowser()) {
     return null;
@@ -118,6 +125,13 @@ export function setOnboardingStartLane(lane: OnboardingStartLane) {
     return;
   }
   window.localStorage.setItem(STORAGE_KEYS.onboardingStartLane, lane);
+}
+
+export function clearOnboardingStartLane() {
+  if (!isBrowser()) {
+    return;
+  }
+  window.localStorage.removeItem(STORAGE_KEYS.onboardingStartLane);
 }
 
 export function getOnboardingAssessmentDraft(): OnboardingAssessmentDraft | null {

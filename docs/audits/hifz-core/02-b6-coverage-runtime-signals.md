@@ -1,5 +1,7 @@
 # B6 - Coverage + Runtime Signals
 
+> Archive note: This audit snapshot predates the current super-app pivot and still references older route structures such as `/today`. Treat it as historical analysis, not the current spec.
+
 ## Scope
 - Unit tests under `src/hifzer/engine/*.test.ts`, `src/hifzer/srs/*.test.ts`
 - Lint/runtime checks over audited paths

@@ -1,4 +1,8 @@
-These examples should be used as guidance when configuring Sentry functionality within a project.
+# Hifzer Sentry Rules
+
+These examples should be used as guidance when configuring Sentry functionality in Hifzer.
+
+This file is observability-specific. For current product and architecture context, read `AGENTS.md`, `README.md`, and `docs/HIFZER_PROJECT_HANDOFF.md` first.
 
 # Exception Catching
 

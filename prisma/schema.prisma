@@ -152,6 +152,8 @@ model UserProfile {
   timezone              String
 
   onboardingCompletedAt DateTime?
+  onboardingStep        String   @default("welcome")
+  onboardingStartLane   String?
 
   dailyMinutes          Int
   practiceDays          Int[]

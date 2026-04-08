@@ -1,71 +1,114 @@
 # Hifzer AI Gateway
 
-Cloudflare Worker gateway for grounded AI features in Hifzer.
+Cloudflare Worker for grounded Qur'an AI features.
 
-Current launch shape:
+## Current Role
 
-- Provider abstraction is built in the Worker.
-- Gemini is the first live provider.
-- Quran MCP powers grounded Qur'an retrieval for `Explain this ayah`.
-- Hifzer calls the Worker server-to-server through `HIFZER_AI_GATEWAY_URL`.
+The Worker powers the `Explain this ayah` flow in the Qur'an reader.
 
-## Worker env
+Current live shape:
 
-Required for the first launch:
+- Next.js app calls the Worker server-to-server
+- Worker grounds the request with Quran MCP
+- Worker formats the final explanation through the configured model provider
+- default provider is currently Groq
 
-- `GEMINI_API_KEY`
+Provider fallback code for Gemini still exists, but Groq is the current default deployment path.
+
+## Current Grounded Flow
+
+1. The app sends an ayah explanation request to `POST /api/quran/ai-explain`.
+2. The app forwards that request to the Worker using `HIFZER_AI_GATEWAY_URL`.
+3. The Worker fetches grounded Qur'an context from Quran MCP.
+4. The Worker asks the model to produce a structured, ayah-specific explanation.
+5. The app displays:
+   - explanation insights
+   - tafsir insights
+   - word notes
+
+## Worker Env
+
+Required for the current default deployment:
+
+- `AI_GATEWAY_SHARED_SECRET`
+- `AI_PROVIDER=groq`
+- `GROQ_API_KEY`
 
 Recommended:
 
-- `AI_GATEWAY_SHARED_SECRET`
-- `AI_PROVIDER=gemini`
-- `GEMINI_MODEL=gemini-2.5-flash`
+- `GROQ_MODEL=openai/gpt-oss-20b`
+- `GROQ_FORMAT_MODEL=openai/gpt-oss-20b`
 - `QURAN_MCP_URL=https://mcp.quran.ai`
 
-## Hifzer app env
+Optional Gemini fallback configuration:
 
-Set these in the Next.js app deployment:
+- `GEMINI_API_KEY`
+- `GEMINI_MODEL=gemini-2.5-flash`
+
+## Hifzer App Env
+
+Set these in the Next.js app:
 
 - `HIFZER_AI_GATEWAY_URL`
 - `HIFZER_AI_GATEWAY_TOKEN`
+- `HIFZER_AI_GATEWAY_TIMEOUT_MS` optional
 
 `HIFZER_AI_GATEWAY_TOKEN` should match `AI_GATEWAY_SHARED_SECRET` in the Worker.
 
-## Local dev
+## Local Dev
 
 ```bash
 cp workers/ai-gateway/.dev.vars.example workers/ai-gateway/.dev.vars
 pnpm ai:worker:dev
 ```
 
-Add local secrets in `workers/ai-gateway/.dev.vars`:
+Suggested `.dev.vars` for current default setup:
 
 ```env
-GEMINI_API_KEY=...
 AI_GATEWAY_SHARED_SECRET=...
-AI_PROVIDER=gemini
-GEMINI_MODEL=gemini-2.5-flash
+AI_PROVIDER=groq
+GROQ_API_KEY=...
+GROQ_MODEL=openai/gpt-oss-20b
+GROQ_FORMAT_MODEL=openai/gpt-oss-20b
 QURAN_MCP_URL=https://mcp.quran.ai
 ```
+
+Optional Gemini fallback values can also be added when needed.
 
 ## Deploy
 
 ```bash
 pnpm ai:worker:login
 pnpm ai:worker:whoami
-printf '%s' 'YOUR_GEMINI_API_KEY' | pnpm exec wrangler secret put GEMINI_API_KEY --config workers/ai-gateway/wrangler.jsonc
+printf '%s' 'YOUR_GROQ_API_KEY' | pnpm exec wrangler secret put GROQ_API_KEY --config workers/ai-gateway/wrangler.jsonc
 printf '%s' 'YOUR_SHARED_SECRET' | pnpm exec wrangler secret put AI_GATEWAY_SHARED_SECRET --config workers/ai-gateway/wrangler.jsonc
 pnpm ai:worker:deploy:dry
 pnpm ai:worker:deploy
 ```
 
-After deploy, point the app at the Worker:
+Then point the app at the deployed Worker:
 
 ```env
 HIFZER_AI_GATEWAY_URL=https://your-worker.your-subdomain.workers.dev
 HIFZER_AI_GATEWAY_TOKEN=the-same-shared-secret
 ```
 
-Full Cloudflare setup:
+## Verify
 
-- [`docs/ai-gateway-cloudflare-setup.md`](/workspaces/hifzer/docs/ai-gateway-cloudflare-setup.md)
+Worker health:
+
+```bash
+curl https://your-worker.your-subdomain.workers.dev/health
+```
+
+App-level smoke test:
+
+```bash
+curl -X POST https://your-app-domain.com/api/quran/ai-explain \
+  -H 'content-type: application/json' \
+  --data '{"ayahId":1}'
+```
+
+## Related Docs
+
+- `../../docs/ai-gateway-cloudflare-setup.md`

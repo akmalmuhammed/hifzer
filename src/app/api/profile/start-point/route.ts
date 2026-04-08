@@ -12,6 +12,7 @@ type Payload = {
   ayahNumber?: unknown;
   cursorAyahId?: unknown;
   source?: unknown;
+  onboarding?: unknown;
   resetOpenSession?: unknown;
 };
 
@@ -57,6 +58,7 @@ export async function POST(req: Request) {
   const cursorAyahIdRaw = payload.cursorAyahId;
   const cursorAyahId = cursorAyahIdRaw == null ? null : Number(cursorAyahIdRaw);
   const source = typeof payload.source === "string" ? payload.source : null;
+  const onboarding = payload.onboarding === true || source === "onboarding";
   const resetOpenSession = payload.resetOpenSession === true;
   const quranSource = source === "quran_read";
 
@@ -97,7 +99,7 @@ export async function POST(req: Request) {
     try {
       profile = quranSource
         ? await saveQuranStartPoint(userId, surahNumber, expectedAyahId)
-        : await saveStartPoint(userId, surahNumber, expectedAyahId);
+        : await saveStartPoint(userId, surahNumber, expectedAyahId, onboarding ? { onboardingStep: "plan-preview" } : undefined);
     } catch (error) {
       if (!looksLikeMissingCoreSchema(error)) {
         throw error;

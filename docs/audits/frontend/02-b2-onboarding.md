@@ -1,5 +1,7 @@
 # B2 — Onboarding
 
+> Archive note: This audit snapshot predates the current super-app pivot and still references older route structures such as `/today`. Treat it as historical analysis, not the current spec.
+
 Generated: 2026-02-25T11:03:32.988Z
 
 ## Scope Coverage
@@ -92,4 +94,3 @@ Generated: 2026-02-25T11:03:32.988Z
 5. F-B2-006 (P2) — Plan preview date loop coerces local date to UTC midnight.
 6. F-B2-005 (P3) — Local storage writes are unguarded in onboarding save flow.
 7. F-B2-007 (P3) — Plan-preview error state lacks direct recovery affordance.
-

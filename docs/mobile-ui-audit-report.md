@@ -1,5 +1,7 @@
 # Mobile UI Audit Report
 
+> Archive note: This report is a February 2026 snapshot. It predates the current super-app pivot, the landing rewrite, and the removal of `/today`. Use `AGENTS.md`, `README.md`, and `docs/HIFZER_PROJECT_HANDOFF.md` for current product truth.
+
 Generated: 2026-02-20T11:43:43.593Z
 
 Base URL: `http://127.0.0.1:3130`

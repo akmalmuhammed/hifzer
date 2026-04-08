@@ -3,9 +3,9 @@
 Hifzer now has dedicated progress simulation harnesses for regression testing:
 
 ```bash
-npm run test:progress:week
-npm run test:progress:14d
-npm run test:progress:failures
+pnpm test:progress:week
+pnpm test:progress:14d
+pnpm test:progress:failures
 ```
 
 What it does:
@@ -45,3 +45,5 @@ Environment requirements:
 - optional `TEST_SCHEMA` is not required; the test creates a unique schema per run
 
 The harness does not touch the production `hifzer` schema.
+
+This remains a current regression tool even after the broader product pivot because it still verifies one of the most important internal boundaries in the app: Qur'an reading continuity and hifz progression should reinforce each other without collapsing into the same state lane.

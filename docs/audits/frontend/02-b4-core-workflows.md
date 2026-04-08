@@ -1,5 +1,7 @@
 # B4 — Core Feature Workflows
 
+> Archive note: This audit snapshot predates the current super-app pivot and still references older route structures such as `/today`. Treat it as historical analysis, not the current spec.
+
 Generated: 2026-02-25T11:03:32.988Z
 
 ## Scope Coverage
@@ -97,4 +99,3 @@ Generated: 2026-02-25T11:03:32.988Z
 
 - Browser-interaction validation is currently blocked in this environment due missing Playwright system dependency (`libatk-1.0.so.0`).
 - Static/code-level evidence and command outputs were used for this batch.
-

@@ -1,328 +1,331 @@
 # Hifzer
 
-Front-heavy Next.js prototype for a Qur'an hifz system: marketing + Qur'an browser + the foundations for onboarding, sessions, and SRS-driven retention.
+Hifzer is a Qur'an-centered web app that has grown beyond its original hifz-only plan into a broader companion product: Qur'an reading, hifz review, memorization support, dua, private journaling, practice drills, fluency work, milestones, reminders, and support tools all live in one app.
 
-## Stack
+## Current Product Shape
 
-- Next.js App Router + TypeScript
-- Tailwind v4 (CSS variable tokens in `src/app/globals.css`)
-- Framer Motion (reduced-motion aware)
-- Custom SVG charts (no chart library)
+User-facing surfaces that exist today:
 
-## Routes (Current)
+- `Dashboard`
+  Daily overview, KPIs, streaks, review health, Qur'an progress, and quick actions.
+- `Qur'an`
+  Hub, reader, smart bookmarks, glossary, progress, jump tools, progress backfill, official tafsir, and grounded AI explanation.
+- `Hifz`
+  Session engine, SRS review, quality gates, and memorization flow.
+- `Practice`
+  Rescue sessions, mushabihat radar, seam trainer, and meaning-linked memorization cues.
+- `Fluency`
+  Listening-led loops, hesitation cleanup, transition smoothing, and retest flow.
+- `Dua`
+  Guided dua modules plus user-managed custom duas and deck ordering.
+- `Journal`
+  Private notes with ayah and dua attachments, account sync, and local fallback.
+- `Milestones`, `Notifications`, `Settings`, `Billing`, `Support`
+  The rest of the operating surface around the core product.
 
-Public:
+The public-site message has also shifted: Hifzer is now pitched more as an all-in-one Qur'an companion than a narrow memorization tracker.
 
-- `/` landing
-- `/pricing`
+## Route Map
+
+Public routes:
+
+- `/`
+- `/compare`
+- `/changelog`
+- `/motivation`
+- `/pay`
+- `/quran-preview`
+- `/welcome`
 - `/legal`
-- `/legal/terms`
 - `/legal/privacy`
+- `/legal/terms`
 - `/legal/refund-policy`
 - `/legal/sources`
-- `/changelog`
 - `/unsubscribe`
+
+Auth routes:
+
 - `/login`
 - `/signup`
 - `/forgot-password`
 
-App routes:
+Onboarding routes:
+
+- `/onboarding/welcome`
+- `/onboarding/start-point`
+- `/onboarding/assessment`
+- `/onboarding/fluency-check`
+- `/onboarding/plan-preview`
+- `/onboarding/permissions`
+- `/onboarding/complete`
+
+Main app routes:
 
 - `/dashboard`
-- `/today`
-- `/session`
+- `/hifz`
+- `/hifz/progress`
+- `/session` -> redirects to `/hifz`
 - `/quran`
+- `/quran/read`
+- `/quran/bookmarks`
+- `/quran/glossary`
+- `/quran/progress`
 - `/quran/surah/[id]`
 - `/quran/juz/[id]`
-- `/progress/*`
+- `/dua`
+- `/dua/[moduleId]`
+- `/dua/[moduleId]/deck`
+- `/journal`
+- `/practice`
+- `/fluency`
+- `/fluency/lesson/[id]`
+- `/fluency/retest`
+- `/milestones`
+- `/notifications`
+- `/ramadan`
 - `/roadmap`
+- `/settings`
+- `/settings/account`
+- `/settings/display`
+- `/settings/language`
+- `/settings/plan`
+- `/settings/quran-foundation`
+- `/settings/reciter`
+- `/settings/reminders`
 - `/support`
-- `/settings/*`
+- `/billing/upgrade`
+- `/billing/manage`
+- `/billing/success`
+- `/billing/thank-you`
 
-Legacy namespace (preserved):
+Legacy namespace retained for compatibility:
 
-- `/legacy/app`
-- `/legacy/app/goals`
-- `/legacy/app/goals/[okrId]`
-- `/legacy/app/projects`
-- `/legacy/app/projects/[projectId]`
-- `/legacy/app/insights`
-- `/legacy/app/team`
-- `/legacy/app/settings`
-- `/legacy/sign-in`
+- `/legacy/*`
+- `/app` and `/app/*` redirect into `/legacy/*`
+- `/sign-in` redirects to `/legacy/sign-in`
 
-Compatibility redirects:
+Important:
 
-- `/app` -> `/legacy/app`
-- `/app/*` -> `/legacy/app/*`
-- `/sign-in` -> `/legacy/sign-in`
+- There is no current `/today` page.
+- Post-auth redirects should land on `/dashboard`.
 
-## Auth (Clerk)
+## Architecture
 
-Clerk is enabled when both `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` are set.
+Top-level code map:
 
-Route model:
+- `src/app`
+  App Router route groups, layouts, and API routes.
+- `src/hifzer`
+  Product/domain services.
+- `src/components`
+  App shell, landing, Qur'an UI, settings, billing, providers, and primitives.
+- `workers/ai-gateway`
+  Cloudflare Worker for grounded AI.
+- `prisma/schema.prisma`
+  Persistence model.
 
-- Public auth URLs remain `/login` and `/signup`.
-- Internally these now use catch-all routes:
-  - `src/app/(auth)/login/[[...login]]/page.tsx`
-  - `src/app/(auth)/signup/[[...signup]]/page.tsx`
-- Do not point Clerk app-domain auth to `/sign-in` in this repo:
-  `/sign-in` is reserved as a legacy redirect to `/legacy/sign-in`.
+Key domain modules:
+
+- `src/hifzer/quran`
+- `src/hifzer/srs`
+- `src/hifzer/recitation`
+- `src/hifzer/bookmarks`
+- `src/hifzer/journal`
+- `src/hifzer/quran-foundation`
+- `src/hifzer/dashboard`
+- `src/hifzer/streak`
+- `src/hifzer/ai`
+- `src/hifzer/ramadan`
+
+## Integrations
+
+### Clerk
+
+Clerk is enabled when `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` are set.
 
 Recommended redirect contract:
 
 - `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/login`
 - `NEXT_PUBLIC_CLERK_SIGN_UP_URL=/signup`
-- `NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=/today`
-- `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/today`
-- `NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/today`
-- `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/today`
+- `NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=/dashboard`
+- `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/dashboard`
+- `NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/dashboard`
+- `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/dashboard`
 
-Fresh-start baseline:
+Runbook:
 
-- Keep only required Clerk env vars for initial rollout:
-  - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-  - `CLERK_SECRET_KEY`
-- For phase-1 isolation, leave these unset:
-  - `HIFZER_TEST_AUTH_BYPASS`
-  - `NEXT_PUBLIC_CLERK_FRONTEND_API_URL`
-  - `CLERK_FRONTEND_API_URL`
-  - `NEXT_PUBLIC_CLERK_DOMAIN`
-  - `CLERK_DOMAIN`
-  - `NEXT_PUBLIC_CLERK_PROXY_URL`
-  - `CLERK_PROXY_URL`
+- `docs/clerk-reset-runbook.md`
 
-- `middleware.ts` protects app + onboarding routes when Clerk is configured.
-- App gating now also checks Prisma `UserProfile.onboardingCompletedAt` in `(app)` layout.
-- Onboarding redirects are driven by DB-backed profile state, not middleware cookie checks.
+### Database
 
-Runbook: see `docs/clerk-reset-runbook.md`.
+Hifzer uses Prisma v7 + Postgres/Neon.
 
-## Monitoring (No DB Writes)
+Core persisted areas include:
 
-The app now uses managed monitoring providers for error visibility instead of writing telemetry to Prisma.
-
-Sentry (errors, API exceptions, traces):
-
-- `NEXT_PUBLIC_SENTRY_DSN`
-- `SENTRY_DSN` (optional server-specific override)
-- `SENTRY_ORG` (for source map upload in CI, optional locally)
-- `SENTRY_PROJECT` (for source map upload in CI, optional locally)
-- `SENTRY_TRACES_SAMPLE_RATE` (optional, default `0.1`)
-- `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` (optional, default `0.1`)
-- `NEXT_PUBLIC_SENTRY_REPLAY_SESSION_SAMPLE_RATE` (optional, default `0`)
-- `NEXT_PUBLIC_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE` (optional, default `1.0`)
-
-## Email (Resend)
-
-Transactional reminder emails are wired with a Resend-first provider layer.
-
-Required environment:
-
-- `EMAIL_PROVIDER=resend`
-- `RESEND_API_KEY`
-- `EMAIL_FROM` (example: `Hifzer <noreply@yourdomain.com>`)
-- `EMAIL_REPLY_TO` (optional)
-- `EMAIL_DRY_RUN` (optional, default `false`)
-- `EMAIL_DAILY_CAP` (optional, default `90`)
-- `EMAIL_MONTHLY_CAP` (optional, default `2800`)
-- `EMAIL_UNSUBSCRIBE_SIGNING_SECRET`
-- `CRON_SECRET`
-- `NEXT_PUBLIC_APP_URL`
-
-Email routes:
-
-- `GET|POST /api/jobs/email-reminders` (cron trigger, bearer `CRON_SECRET`)
-- `POST /api/profile/reminders` (user reminder preferences)
-- `GET /api/email/unsubscribe?token=...` (public one-click unsubscribe)
-
-Recommended Resend domain setup checklist before production sends:
-
-- SPF record present and verified
-- DKIM records present and verified
-- DMARC policy published (`p=none` minimum, tighten after monitoring)
-
-AI editor guidance:
-
-- `sentry_rules.md` is included at repo root for code-assistant/editor rules ingestion.
-
-## Billing (Paddle)
-
-Pricing is currently wired for Paddle-style configuration checks (UI gating).
-
-- `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN`
-
-Required policy paths for checkout verification:
-
-- `/legal/terms`
-- `/legal/privacy`
-- `/legal/refund-policy`
-
-## Qur'an Data
-
-Local seed files live in:
-
-- `src/hifzer/quran/data/ayahs.full.json` (6,236 ayahs; global `id` 1..6236)
-- `src/hifzer/quran/data/quran-data.js` (Tanzil metadata source)
-- `src/hifzer/quran/data/surah-index.ts` (generated)
-- `src/hifzer/quran/data/translations/en.sahih.by-ayah-id.json` (Saheeh International English translation, indexed by global ayah id)
-
-Generate surah index:
-
-```bash
-node scripts/generate-surah-index.mjs
-```
-
-Generate English translation seed:
-
-```bash
-pnpm quran:translation:sahih
-```
-
-## Quran Foundation / Quran.com
-
-Hifzer now supports a minimal Quran Foundation integration path for the hackathon:
-
-- Optional Quran.com account linking at `/settings/quran-foundation`
-- Bookmark sync via Quran Foundation User APIs
-- Official ayah enrichment inside the compact reader via Quran Foundation content APIs
-
-Environment variables:
-
-- `QF_CLIENT_ID`
-- `QF_CLIENT_SECRET` (required for content enrichment)
-- `QF_TOKEN_ENCRYPTION_SECRET` (required for storing linked-account tokens)
-- `QF_OAUTH_REDIRECT_URI` (optional; defaults to `/api/quran-foundation/callback`)
-- `QF_BOOKMARK_MUSHAF_ID` (optional; defaults to `4`)
-- `QF_CONTENT_TRANSLATION_RESOURCE_ID` (optional)
-- `QF_CONTENT_TAFSIR_RESOURCE_ID` (optional)
-
-Main routes:
-
-- `GET /api/quran-foundation/connect`
-- `GET /api/quran-foundation/callback`
-- `GET /api/quran-foundation/status`
-- `POST /api/quran-foundation/disconnect`
-- `POST /api/quran-foundation/bookmarks/push`
-- `POST /api/quran-foundation/bookmarks/hydrate`
-- `GET /api/quran/content-panel?ayahId=...`
-
-Judge-facing product surfaces:
-
-- `/dashboard` shows current Quran.com connection state
-- `/quran/read?view=compact` shows Quran Foundation enrichment for the active ayah
-- `/quran/bookmarks` shows bookmark provider/sync state
-- `/settings/quran-foundation` is the control surface for linking and syncing
-
-## AI Gateway (Worker + Gemini)
-
-Hifzer now has a provider-agnostic AI gateway scaffold for grounded Qur'an assistance.
-
-Current launch shape:
-
-- Cloudflare Worker gateway at `workers/ai-gateway`
-- Gemini as the first live provider
-- Quran MCP grounding for the `Explain this ayah` reader feature
-- Next.js app proxy route at `POST /api/quran/ai-explain`
-
-Next.js app environment:
-
-- `HIFZER_AI_GATEWAY_URL`
-- `HIFZER_AI_GATEWAY_TOKEN`
-
-Cloudflare Worker environment:
-
-- `GEMINI_API_KEY`
-- `AI_GATEWAY_SHARED_SECRET`
-- `AI_PROVIDER=gemini`
-- `GEMINI_MODEL=gemini-2.5-flash`
-- `QURAN_MCP_URL=https://mcp.quran.ai`
+- user profile and onboarding state
+- hifz sessions and attempts
+- SRS review state and weak transitions
+- Qur'an browse events and streak state
+- bookmarks and bookmark sync state
+- Quran.com linked account state
+- reader filter preferences
+- journal entries
+- custom duas and deck order
+- billing/subscription state
 
 Useful commands:
 
 ```bash
-pnpm ai:worker:login
-pnpm ai:worker:whoami
-pnpm ai:worker:dev
-pnpm ai:worker:deploy:dry
-pnpm ai:worker:deploy
-pnpm ai:worker:tail
+pnpm db:generate
+pnpm db:migrate
+pnpm db:deploy
+pnpm db:studio
 ```
 
-Cloudflare deployment runbook:
+### Quran.com / Quran Foundation
 
-- [`docs/ai-gateway-cloudflare-setup.md`](/workspaces/hifzer/docs/ai-gateway-cloudflare-setup.md)
+Current live integration:
 
-## Audio (Cloudflare R2 Ready)
+- linked Quran.com account in `/settings/quran-foundation`
+- bookmark push/import sync
+- official content enrichment in the reader
+- official tafsir selection in reader filters
 
-Configure the base URL (optional for now):
+Important current limitation:
 
-- `NEXT_PUBLIC_HIFZER_AUDIO_BASE_URL=https://<your-domain-or-r2-public-base>`
-- `NEXT_PUBLIC_HIFZER_DEFAULT_RECITER_ID=alafasy` (optional, defaults to `alafasy`)
-- `NEXT_PUBLIC_HIFZER_AUDIO_AYAH_ID_WIDTH=6` (optional, defaults to `6`)
+- the app currently requests bookmark-oriented user scopes, not the full broader Quran.com user-API surface
 
-Current convention:
+Key env vars:
 
-`{base}/{publicReciterId}/{zero-padded-ayahId}.mp3`
+- `QF_CLIENT_ID`
+- `QF_CLIENT_SECRET`
+- `QF_TOKEN_ENCRYPTION_SECRET`
+- `QF_OAUTH_REDIRECT_URI`
+- `QF_BOOKMARK_MUSHAF_ID`
+- `QF_CONTENT_TRANSLATION_RESOURCE_ID`
+- `QF_CONTENT_TAFSIR_RESOURCE_ID`
 
-Example:
+### AI Gateway
 
-`https://.../alafasy/000001.mp3`
+The current AI explanation path is:
 
-When not configured, audio players render a disabled "Not configured" state (no crashes).
+- Next.js app route: `POST /api/quran/ai-explain`
+- Cloudflare Worker: `workers/ai-gateway`
+- default provider: Groq
+- grounding source: Quran MCP (`https://mcp.quran.ai`)
 
-First-time R2 setup guide:
+Key app env vars:
+
+- `HIFZER_AI_GATEWAY_URL`
+- `HIFZER_AI_GATEWAY_TOKEN`
+- `HIFZER_AI_GATEWAY_TIMEOUT_MS` (optional)
+
+Key worker env vars:
+
+- `AI_GATEWAY_SHARED_SECRET`
+- `AI_PROVIDER=groq`
+- `GROQ_API_KEY`
+- `GROQ_MODEL`
+- `GROQ_FORMAT_MODEL`
+- `QURAN_MCP_URL`
+
+Provider fallback code for Gemini still exists, but Groq is the current default.
+
+Runbooks:
+
+- `workers/ai-gateway/README.md`
+- `docs/ai-gateway-cloudflare-setup.md`
+
+### Email
+
+Resend is used for reminder emails.
+
+Key env vars:
+
+- `EMAIL_PROVIDER=resend`
+- `RESEND_API_KEY`
+- `EMAIL_FROM`
+- `EMAIL_REPLY_TO`
+- `EMAIL_UNSUBSCRIBE_SIGNING_SECRET`
+- `CRON_SECRET`
+- `NEXT_PUBLIC_APP_URL`
+
+### Billing
+
+Paddle powers upgrade/support flows.
+
+Key env vars:
+
+- `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN`
+
+### Audio
+
+Qur'an audio is designed around a Cloudflare R2-compatible public base URL.
+
+Key env vars:
+
+- `NEXT_PUBLIC_HIFZER_AUDIO_BASE_URL`
+- `NEXT_PUBLIC_HIFZER_DEFAULT_RECITER_ID`
+- `NEXT_PUBLIC_HIFZER_AUDIO_AYAH_ID_WIDTH`
+
+Runbook:
 
 - `docs/r2-first-time-setup.md`
-- Generate expected object keys: `pnpm audio:manifest -- --reciters default`
 
-## Database (Prisma + Neon)
+## Local Qur'an Data
 
-Prisma is configured via `prisma.config.ts` (Prisma v7 style). Set `DATABASE_URL` before running Prisma commands.
+Main checked-in data files:
+
+- `src/hifzer/quran/data/ayahs.full.json`
+- `src/hifzer/quran/data/quran-data.js`
+- `src/hifzer/quran/data/surah-index.ts`
+- `src/hifzer/quran/data/translations/en.sahih.by-ayah-id.json`
+
+Useful generation commands:
 
 ```bash
-pnpm db:generate
+node scripts/generate-surah-index.mjs
+pnpm quran:translation:sahih
 ```
 
-Recommended first-time setup:
+More details:
 
-```bash
-pnpm db:migrate
-```
-
-Notes:
-
-- This project uses a dedicated Postgres schema (`schema=hifzer`) in `DATABASE_URL` to avoid clashing with other apps in the same Neon database.
-- Onboarding start-point and display preferences persist to `UserProfile`.
-- Completed sessions are synced to Prisma via `/api/session/sync`.
-
-## SEO + Crawlability
-
-- `src/app/robots.ts`
-- `src/app/sitemap.ts`
-
-Sitemap includes public routes plus all Surah and Juz pages.
+- `src/hifzer/quran/data/SOURCES.md`
 
 ## Development
+
+Install and run:
 
 ```bash
 pnpm install
 pnpm dev
 ```
 
-Tests:
+Useful commands:
 
 ```bash
+pnpm lint
 pnpm test
 pnpm test:e2e
 pnpm test:e2e:routing
 pnpm audit:clicks
+pnpm audit:mobile:overflow
 ```
 
-E2E auth behavior:
+Progress simulation harnesses:
 
-- Playwright global setup uses `@clerk/testing/playwright` (`clerkSetup`) for deterministic bot-protection bypass.
-- Signed-in routing specs require `E2E_CLERK_TEST_EMAIL` plus Clerk keys.
-- In CI, Clerk testing env vars are required.
-- `pnpm audit:clicks` writes JSON + Markdown artifacts to `test-results/click-audit`.
+```bash
+pnpm test:progress:week
+pnpm test:progress:14d
+pnpm test:progress:failures
+```
+
+## Docs To Read First
+
+- `AGENTS.md`
+- `docs/HIFZER_PROJECT_HANDOFF.md`
+- `docs/README.md`
+
+Important:
+
+- `docs/audits/**`, `docs/mobile-ui-audit-report.md`, and `docs/performance-mobile-audit.md` are historical snapshots. They are useful for background, but they are not current product truth.

@@ -1,5 +1,7 @@
 # B1 - SRS + Queue Kernel
 
+> Archive note: This audit snapshot predates the current super-app pivot and still references older route structures such as `/today`. Treat it as historical analysis, not the current spec.
+
 ## Scope
 - `engine/{debt,mode-manager,review-allocation,gates,transitions,checkpoints,queue-builder}`
 - `srs/{intervals,update,queue}`

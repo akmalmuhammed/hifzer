@@ -4,6 +4,10 @@ import type { AttemptStage, SrsGrade, SrsMode } from "@prisma/client";
 import { addIsoDaysUtc } from "@/hifzer/derived/dates";
 import { computeDebtRatioPct, computeReviewDebtMinutes } from "@/hifzer/engine/debt";
 import { isoDateInTimeZone } from "@/hifzer/engine/date";
+import {
+  normalizeOnboardingStartLane,
+  type OnboardingStartLane,
+} from "@/hifzer/profile/onboarding";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { getAyahById, getSurahInfo } from "@/hifzer/quran/lookup.server";
 import { ayahIdsByDate } from "@/hifzer/quran/read-progress.logic";
@@ -40,6 +44,7 @@ export type DashboardOverview = {
     dailyMinutes: number;
     practiceDaysPerWeek: number;
     reminderTimeLocal: string;
+    onboardingStartLane: OnboardingStartLane | null;
   };
   today: {
     localDate: string;
@@ -458,6 +463,7 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
       dailyMinutes: profile.dailyMinutes,
       practiceDaysPerWeek: profile.practiceDays.length,
       reminderTimeLocal: profile.reminderTimeLocal,
+      onboardingStartLane: normalizeOnboardingStartLane(profile.onboardingStartLane),
     },
     today: {
       localDate: todayLocalDate,

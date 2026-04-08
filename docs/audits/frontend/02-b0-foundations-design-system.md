@@ -1,5 +1,7 @@
 # B0 — Foundations + Design System
 
+> Archive note: This audit snapshot predates the current super-app pivot and still references older route structures such as `/today`. Treat it as historical analysis, not the current spec.
+
 Generated: 2026-02-25T11:03:32.988Z
 
 ## Scope Coverage
@@ -120,4 +122,3 @@ Generated: 2026-02-25T11:03:32.988Z
 6. F-B0-003 (P2) — Home and Today can both appear active on `/`.
 7. F-B0-004 (P2) — Button loading state is hardcoded and variant-insensitive.
 8. F-B0-005 (P2) — Dark mode depends on broad class-substring overrides with `!important`.
-

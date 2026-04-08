@@ -59,10 +59,10 @@ export function LandingFeatureRail() {
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--kw-faint)]">
           Why people open it
         </p>
-        <h2 className="kw-marketing-display mt-4 max-w-[12ch] text-balance text-4xl leading-[0.96] text-[color:var(--kw-ink)] sm:text-5xl md:text-6xl">
+        <h2 className="kw-marketing-display mt-4 max-w-none text-balance text-4xl leading-[0.96] text-[color:var(--kw-ink)] sm:max-w-[12ch] sm:text-5xl md:text-6xl">
           Keep the Qur&apos;an and hifz routine in one place.
         </h2>
-        <p className="mt-5 max-w-[58ch] text-sm leading-7 text-[color:var(--kw-muted)] md:text-[15px]">
+        <p className="mt-5 max-w-none text-sm leading-7 text-[color:var(--kw-muted)] sm:max-w-[58ch] md:text-[15px]">
           Hifzer is the companion app for readers who want continuity and for hifz students who
           need structure. It keeps the parts of the practice that matter most together.
         </p>

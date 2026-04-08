@@ -1,5 +1,7 @@
 # CTO Summary - Hifz Core Concept Audit
 
+> Archive note: This summary predates the current super-app pivot and still references older route structures such as `/today`. Treat it as historical analysis, not the current spec.
+
 ## Executive Verdict
 The Hifz core concept is strong in intent and policy structure, but current implementation has **critical integrity gaps** at the completion trust boundary. Under honest client behavior, flow works. Under adversarial or malformed input, core guarantees can be bypassed.
 

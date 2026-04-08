@@ -1,5 +1,7 @@
 # B3 — Core App Navigation + Settings
 
+> Archive note: This audit snapshot predates the current super-app pivot and still references older route structures such as `/today`. Treat it as historical analysis, not the current spec.
+
 Generated: 2026-02-25T11:03:32.988Z
 
 ## Scope Coverage
@@ -92,4 +94,3 @@ Generated: 2026-02-25T11:03:32.988Z
 5. F-B3-005 (P2) — Language settings surface raw backend persistence diagnostics to users.
 6. F-B3-007 (P2) — Distraction-free mode force-redirects users from non-core routes without context.
 7. F-B3-006 (P3) — Language-copy schema and settings UI interaction model are out of sync.
-

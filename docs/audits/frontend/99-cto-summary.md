@@ -1,5 +1,7 @@
 # Frontend CTO Summary
 
+> Archive note: This summary predates the current super-app pivot and still references older route structures such as `/today`. Treat it as historical analysis, not the current spec.
+
 Generated: 2026-02-25T11:03:32.988Z
 
 ## Executive Snapshot
@@ -44,4 +46,3 @@ Generated: 2026-02-25T11:03:32.988Z
 3. UX core: fix nav active-state bug and public mobile menu a11y semantics.
 4. Global language: implement `dir` propagation and localize critical workflow copy.
 5. Architecture: decompose `session-client.tsx` and remove dark-mode compatibility bridge debt.
-

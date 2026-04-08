@@ -1,23 +1,53 @@
 # Quran Foundation Hackathon Demo
 
-Use the current Hifzer app, not a separate MVP.
+Use the current Hifzer product, not a separate hackathon-only branch.
 
-## Demo path
+## Demo Goal
 
-1. Open `/settings/quran-foundation`
-2. Link the Quran.com account
-3. Trigger `Sync local bookmarks` or `Import Quran.com bookmarks`
-4. Open `/today`
-5. Show the Quran.com status card and continue into the reader
-6. Open `/quran/read?view=compact`
-7. Move between ayahs and show the `Quran Foundation` enrichment panel
-8. Save a bookmark from the reader
-9. Open `/quran/bookmarks` and show the `Quran.com` provider state on that bookmark
-10. Finish in `/journal` to show reflection stays a Hifzer-native layer on top
+Show Hifzer as a Qur'an-centered retention product that uses:
 
-## What this proves
+- Quran.com account linking and bookmark sync
+- official Quran.com content enrichment
+- grounded AI explanation through Quran MCP
 
-- Quran Foundation User API usage through bookmark linking and sync
-- Quran Foundation Content API usage through official ayah enrichment in the reader
-- Hifzer remains the main product experience instead of becoming a thin wrapper
-- The post-Ramadan story is clear: return to the Qur'an, bookmark, reflect, continue tomorrow
+Keep the demo focused on one believable reader flow instead of trying to show every feature in the app.
+
+## Recommended Demo Path
+
+1. Open `/settings/quran-foundation`.
+2. Show the linked Quran.com state or connect flow.
+3. Trigger `Sync local bookmarks` or `Import Quran.com bookmarks`.
+4. Open `/dashboard`.
+5. Use the dashboard to continue into the Qur'an lane.
+6. Open `/quran/read?view=compact`.
+7. Open reader filters and show:
+   - translation toggle
+   - tafsir toggle
+   - official tafsir dropdown
+   - Quran.com action dropdown
+8. Move between ayahs and show official tafsir loading for the current ayah.
+9. Trigger `Explain this ayah`.
+10. Show the simplified AI card:
+    - explanation insights
+    - tafsir insights
+    - word notes
+11. Save a bookmark from the reader.
+12. Open `/quran/bookmarks` and show provider/sync state.
+13. Finish in `/journal` to show how reflections stay inside Hifzer while the reading and bookmark layer connects to Quran.com.
+
+## What This Proves
+
+- Quran Foundation user API usage through account linking and bookmark sync
+- Quran Foundation content API usage through official reader enrichment and tafsir selection
+- Quran MCP usage in a real end-user flow, not a separate demo widget
+- Hifzer is a real product surface, not a thin wrapper around one API
+
+## Important Framing
+
+- The current product is broader than hifz alone, but the hackathon demo should stay Qur'an-first.
+- Do not bring back outdated `/today` references in the demo script.
+- If time is short, prioritize:
+  1. Quran.com link state
+  2. reader tafsir
+  3. AI explain
+  4. bookmark sync state

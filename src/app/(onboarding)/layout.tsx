@@ -42,6 +42,9 @@ export default async function OnboardingLayout({ children }: { children: React.R
       });
       profile = null;
     }
+    if (profile?.onboardingCompleted) {
+      redirect("/dashboard");
+    }
   }
 
   return (

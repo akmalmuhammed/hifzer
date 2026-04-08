@@ -17,8 +17,8 @@ import {
   dismissDashboardFirstRunGuide,
   getOnboardingStartLane,
   shouldShowDashboardFirstRunGuide,
-  type OnboardingStartLane,
 } from "@/hifzer/local/store";
+import type { OnboardingStartLane } from "@/hifzer/profile/onboarding";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
@@ -243,10 +243,13 @@ function modeStep(overview: DashboardGuideOverview): GuideStep {
   };
 }
 
-export function DashboardFirstRunGuide(props: { overview: DashboardGuideOverview }) {
+export function DashboardFirstRunGuide(props: {
+  overview: DashboardGuideOverview;
+  initialLane?: OnboardingStartLane | null;
+}) {
   const [visible, setVisible] = useState(() => shouldShowDashboardFirstRunGuide());
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [lane] = useState<OnboardingStartLane | null>(() => getOnboardingStartLane());
+  const lane = props.initialLane ?? getOnboardingStartLane();
 
   const steps: GuideStep[] = [
     nextActionStep(lane, props.overview),

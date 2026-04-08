@@ -1,53 +1,39 @@
-# Seed Sources
+# Qur'an Data Sources
 
-- Canonical Arabic text: Tanzil Uthmani export (local file, no runtime fetch).
-- Metadata (page/juz/hizb): provide local JSON mapping keyed by `surahNumber + ayahNumber`.
-- English translation: Saheeh International (`en.sahih`) from Tanzil.
+This folder contains the checked-in runtime data Hifzer uses for its local Qur'an experience.
 
-## Required local files
+## Current Runtime Files
 
-1. `prisma/seeds/tanzil-uthmani.txt`
-2. `prisma/seeds/ayah-metadata.json`
-3. (optional source) `prisma/seeds/quran-data.js`
+- `ayahs.full.json`
+  Canonical local ayah dataset used by lookup and reader flows.
+- `quran-data.js`
+  Tanzil-derived metadata source retained in-repo.
+- `surah-index.ts`
+  Generated surah index used by local lookup helpers.
+- `translations/en.sahih.by-ayah-id.json`
+  Saheeh International English translation indexed by global ayah id.
 
-Both files are gitignored by default to avoid committing licensed/raw source payloads.
+## Provenance
 
-## Build metadata from Tanzil `quran-data.js`
+- Arabic text and structural metadata trace back to Tanzil-compatible source material.
+- English translation bundle is generated from the Saheeh International source used by the repo tooling.
 
-```bash
-curl -L -o prisma/seeds/quran-data.js "https://tanzil.net/res/text/metadata/quran-data.js"
-pnpm seed:metadata -- \
-  --in prisma/seeds/quran-data.js \
-  --out prisma/seeds/ayah-metadata.json
-```
+## Current Regeneration Commands
 
-## Build canonical JSON for Prisma seed
-
-```bash
-pnpm seed:build -- \
-  --tanzil prisma/seeds/tanzil-uthmani.txt \
-  --metadata prisma/seeds/ayah-metadata.json \
-  --out prisma/seeds/ayahs.full.json
-```
-
-Then seed Postgres:
+Regenerate the surah index:
 
 ```bash
-AYAHS_SEED_PATH=./prisma/seeds/ayahs.full.json pnpm seed
+node scripts/generate-surah-index.mjs
 ```
 
-## Build English translation bundle (Saheeh International)
-
-Default source URL:
-
-- `https://tanzil.net/trans/en.sahih`
-
-Generate local translation file:
+Regenerate the Saheeh translation bundle:
 
 ```bash
 pnpm quran:translation:sahih
 ```
 
-Output:
+## Notes
 
-- `src/hifzer/quran/data/translations/en.sahih.by-ayah-id.json`
+- These files are part of the app's local-first Qur'an experience.
+- Official Quran.com enrichment is layered on top through `src/hifzer/quran-foundation`, not by replacing these local files.
+- Older seed docs that mention missing `seed:*` package scripts are no longer the best reference for day-to-day work in this repo.

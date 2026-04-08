@@ -7,6 +7,7 @@ let coreSchemaCapabilitiesPromise: Promise<CoreSchemaCapabilities> | null = null
 
 export type CoreSchemaCapabilities = {
   hasQuranLaneColumns: boolean;
+  hasOnboardingStateColumns: boolean;
   hasQuranReaderFilterTable: boolean;
   hasSessionModernColumns: boolean;
   hasSessionPlanJson: boolean;
@@ -37,6 +38,7 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
   if (!dbConfigured()) {
     return {
       hasQuranLaneColumns: false,
+      hasOnboardingStateColumns: false,
       hasQuranReaderFilterTable: false,
       hasSessionModernColumns: false,
       hasSessionPlanJson: false,
@@ -62,7 +64,9 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
               LOWER('quranActiveSurahNumber'),
               LOWER('quranCursorAyahId'),
               LOWER('quranTranslationId'),
-              LOWER('quranShowDetails')
+              LOWER('quranShowDetails'),
+              LOWER('onboardingStep'),
+              LOWER('onboardingStartLane')
             )
           )
           OR (
@@ -208,6 +212,9 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
         profileColumns.has("qurancursorayahid") &&
         profileColumns.has("qurantranslationid") &&
         profileColumns.has("quranshowdetails"),
+      hasOnboardingStateColumns:
+        profileColumns.has("onboardingstep") &&
+        profileColumns.has("onboardingstartlane"),
       hasSessionModernColumns:
         sessionColumns.has("mode") &&
         sessionColumns.has("newunlocked") &&
@@ -272,9 +279,10 @@ async function readCoreSchemaCapabilities(): Promise<CoreSchemaCapabilities> {
     };
   } catch {
     // Fail-safe: assume legacy schema if capability probing fails.
-    return {
-      hasQuranLaneColumns: false,
-      hasQuranReaderFilterTable: false,
+      return {
+        hasQuranLaneColumns: false,
+        hasOnboardingStateColumns: false,
+        hasQuranReaderFilterTable: false,
       hasSessionModernColumns: false,
       hasSessionPlanJson: false,
       hasQuranBrowseTable: false,
@@ -394,7 +402,9 @@ export async function ensureCoreSchemaCompatibility(): Promise<void> {
         ADD COLUMN IF NOT EXISTS "quranActiveSurahNumber" INTEGER,
         ADD COLUMN IF NOT EXISTS "quranCursorAyahId" INTEGER,
         ADD COLUMN IF NOT EXISTS "quranTranslationId" TEXT NOT NULL DEFAULT 'en.sahih',
-        ADD COLUMN IF NOT EXISTS "quranShowDetails" BOOLEAN NOT NULL DEFAULT true;
+        ADD COLUMN IF NOT EXISTS "quranShowDetails" BOOLEAN NOT NULL DEFAULT true,
+        ADD COLUMN IF NOT EXISTS "onboardingStep" TEXT NOT NULL DEFAULT 'welcome',
+        ADD COLUMN IF NOT EXISTS "onboardingStartLane" TEXT;
       `);
       await prisma.$executeRawUnsafe(`
         ALTER TABLE "Bookmark"
@@ -409,6 +419,12 @@ export async function ensureCoreSchemaCompatibility(): Promise<void> {
           "quranActiveSurahNumber" = COALESCE("quranActiveSurahNumber", "activeSurahNumber", 1),
           "quranCursorAyahId" = COALESCE("quranCursorAyahId", "cursorAyahId", 1)
         WHERE "quranActiveSurahNumber" IS NULL OR "quranCursorAyahId" IS NULL;
+      `);
+      await prisma.$executeRawUnsafe(`
+        UPDATE "UserProfile"
+        SET "onboardingStep" = 'complete'
+        WHERE "onboardingCompletedAt" IS NOT NULL
+          AND COALESCE("onboardingStep", 'welcome') <> 'complete';
       `);
       await prisma.$executeRawUnsafe(`
         ALTER TABLE "UserProfile"

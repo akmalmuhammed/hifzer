@@ -4,8 +4,11 @@ import { useEffect } from "react";
 import { useTheme } from "@/components/providers/theme-provider";
 import {
   applyFreshStartBridge,
+  clearOnboardingCompleted,
+  clearOnboardingStartLane,
   setHifzActiveSurahCursor,
   setOnboardingCompleted,
+  setOnboardingStartLane,
   setQuranActiveSurahCursor,
 } from "@/hifzer/local/store";
 import type { ProfileSnapshot } from "@/hifzer/profile/server";
@@ -26,6 +29,13 @@ export function ProfileHydrator(props: { profile: ProfileSnapshot | null }) {
     setQuranActiveSurahCursor(profile.quranActiveSurahNumber, profile.quranCursorAyahId);
     if (profile.onboardingCompleted) {
       setOnboardingCompleted();
+    } else {
+      clearOnboardingCompleted();
+    }
+    if (profile.onboardingStartLane) {
+      setOnboardingStartLane(profile.onboardingStartLane);
+    } else {
+      clearOnboardingStartLane();
     }
 
     setMode(profile.darkMode ? "dark" : "light");

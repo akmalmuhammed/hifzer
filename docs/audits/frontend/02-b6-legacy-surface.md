@@ -1,5 +1,7 @@
 # B6 — Legacy Surface
 
+> Archive note: This audit snapshot predates the current super-app pivot and still references older route structures such as `/today`. Treat it as historical analysis, not the current spec.
+
 Generated: 2026-02-25T11:03:32.988Z
 
 ## Scope Coverage
@@ -72,4 +74,3 @@ Generated: 2026-02-25T11:03:32.988Z
 3. F-B6-003 (P2) — Legacy shell copy remains English-only and shortcut-centric.
 4. F-B6-005 (P2) — Active shell wrapper re-exports legacy protected layout directly.
 5. F-B6-004 (P3) — Legacy nav links do not expose active route semantics.
-

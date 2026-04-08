@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { MacbookFrame } from "@/components/landing/feature-showcase";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
@@ -27,21 +27,46 @@ const HERO_POINTS = [
   },
 ] as const;
 
+const MOBILE_HERO_QUERY = "(max-width: 1023px)";
+
 export function Hero() {
   const reduceMotion = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
+  const [isMobileLayout, setIsMobileLayout] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia(MOBILE_HERO_QUERY);
+    const syncLayout = () => setIsMobileLayout(mediaQuery.matches);
+
+    syncLayout();
+    mediaQuery.addEventListener("change", syncLayout);
+    return () => mediaQuery.removeEventListener("change", syncLayout);
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
   });
 
-  const stageScale = useTransform(scrollYProgress, [0, 0.5, 1], reduceMotion ? [1, 1, 1] : [1.14, 1.02, 0.86]);
-  const stageY = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [0, -92]);
-  const frameY = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [0, -36]);
-  const frameScale = useTransform(scrollYProgress, [0, 0.55, 1], reduceMotion ? [1, 1, 1] : [1.18, 1.04, 0.88]);
-  const copyY = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [0, -26]);
-  const valuesOpacity = useTransform(scrollYProgress, [0, 0.18], reduceMotion ? [1, 1] : [0.62, 1]);
+  const disableScrollMotion = reduceMotion || isMobileLayout;
+  const stageScale = useTransform(
+    scrollYProgress,
+    [0, 0.5, 1],
+    disableScrollMotion ? [1, 1, 1] : [1.14, 1.02, 0.86],
+  );
+  const stageY = useTransform(scrollYProgress, [0, 1], disableScrollMotion ? [0, 0] : [0, -92]);
+  const frameY = useTransform(scrollYProgress, [0, 1], disableScrollMotion ? [0, 0] : [0, -36]);
+  const frameScale = useTransform(
+    scrollYProgress,
+    [0, 0.55, 1],
+    disableScrollMotion ? [1, 1, 1] : [1.18, 1.04, 0.88],
+  );
+  const copyY = useTransform(scrollYProgress, [0, 1], disableScrollMotion ? [0, 0] : [0, -26]);
+  const valuesOpacity = useTransform(scrollYProgress, [0, 0.18], disableScrollMotion ? [1, 1] : [0.62, 1]);
 
   return (
     <section ref={sectionRef} className={styles.fitnessHeroSection} style={{ position: "relative" }}>
@@ -56,7 +81,7 @@ export function Hero() {
             </p>
 
             <div className={styles.fitnessHeroActions}>
-              <Button asChild size="lg">
+              <Button asChild size="lg" className="w-full sm:w-auto">
                 <TrackedLink
                   href="/signup"
                   telemetryName="landing.primary_open_app_click"
@@ -65,7 +90,7 @@ export function Hero() {
                   Start your routine free <ArrowRight size={17} />
                 </TrackedLink>
               </Button>
-              <Button asChild size="lg" variant="secondary">
+              <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
                 <TrackedLink
                   href="#core-features"
                   telemetryName="landing.hero_full_product_click"

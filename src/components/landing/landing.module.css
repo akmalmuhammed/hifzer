@@ -896,9 +896,9 @@
 
 @media (max-width: 1023px) {
   .afterHero {
-    margin-top: -2.5rem;
-    border-radius: 28px 28px 0 0;
-    padding-top: 0.75rem;
+    margin-top: -4.5rem;
+    border-radius: 32px 32px 0 0;
+    padding-top: 0.5rem;
   }
 
   .fitnessHeroSection {
@@ -910,45 +910,65 @@
     position: relative;
     top: auto;
     min-height: auto;
-    padding-top: 1rem;
+    padding-top: 0.75rem;
     padding-bottom: 0;
   }
 
   .fitnessHeroShell {
     width: min(100%, calc(100vw - 1.5rem));
-    padding: 1.25rem;
+    padding: 1rem 1rem 1.25rem;
     border-radius: 30px;
   }
 
   .fitnessHeroTitle {
-    max-width: 12ch;
-    font-size: clamp(2.4rem, 10vw, 4rem);
+    max-width: 11ch;
+    font-size: clamp(2.15rem, 9.3vw, 3.55rem);
   }
 
   .fitnessHeroSummary {
     max-width: 34rem;
+    margin-top: 1rem;
+    line-height: 1.72;
+  }
+
+  .fitnessHeroActions {
+    margin-top: 1.25rem;
+    align-items: stretch;
   }
 
   .fitnessHeroVisual {
     width: 100%;
-    margin-top: 1.75rem;
+    margin-top: 1.2rem;
   }
 
   .fitnessHeroValues {
-    grid-template-columns: 1fr;
-    margin-top: 1.5rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 1.2rem;
+    border-top: 0;
   }
 
   .fitnessHeroValue {
-    padding: 1rem 0 0;
+    padding: 0.9rem 0.95rem;
+    border: 1px solid rgba(var(--kw-accent-rgb), 0.12);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.5);
   }
 
   .fitnessHeroValue + .fitnessHeroValue {
     border-inline-start: 0;
-    border-top: 1px solid rgba(var(--kw-accent-rgb), 0.12);
+    border-top: 0;
   }
 
   .fitnessHeroValueBody {
     max-width: none;
+    font-size: 0.92rem;
+    line-height: 1.58;
+  }
+}
+
+@media (max-width: 639px) {
+  .fitnessHeroActions {
+    flex-direction: column;
   }
 }

@@ -1,388 +1,371 @@
 # Hifzer Project Handoff
 
-Last updated: February 16, 2026  
-Audience: New engineers, designers, and product contributors
+Last updated: 2026-04-08
+Audience: New engineers, designers, PMs, and coding agents
 
-## 1. Project Summary
+## 1. What Hifzer Is Now
 
-Hifzer is a Next.js web app for Quran hifz practice, built as a front-heavy product with:
+Hifzer started as a hifz-focused product, but the current app is broader.
 
-- strong UX and responsive app shell,
-- seeded Quran dataset (6,236 ayahs),
-- grade-driven SRS foundation (`Again/Hard/Good/Easy`),
-- Clerk auth,
-- Prisma + Neon persistence,
-- legal/compliance-ready public pages for Paddle verification,
-- R2-ready audio architecture.
+Today it is best described as a Qur'an-centered companion or super app with multiple connected lanes:
 
-The repo started as a new prototype workspace and was pivoted from a generic dashboard concept into a hifz product with real domain structure and data contracts.
+- Qur'an reading and continuity
+- hifz sessions and SRS review
+- official Quran.com enrichment and bookmark sync
+- grounded AI ayah explanation
+- private journaling
+- dua modules and personal dua management
+- practice drills and fluency improvement
+- milestones, reminders, settings, billing, and support
 
-## 2. Repo + Workspace Context
+The product is still serious about memorization quality, but it is no longer only a memorization tool.
 
-- Primary repo path: `D:\hifzer`
-- GitHub: `https://github.com/akmalmuhammed/hifzer`
-- Legacy reference vault (not coupled): `D:\codex`
-- Current branch: `main`
+## 2. The Biggest Product Pivot
 
-Important: `src/_legacy` contains older prototype assets/routes kept for reference. The active product is under `src/app`, `src/hifzer`, and `src/components`.
+The early plan and many older docs assumed a narrower structure:
 
-## 3. Timeline and Major Milestones
+- landing page
+- hifz engine
+- Qur'an browser
+- onboarding
 
-## 3.1 Initial foundation
+That is no longer enough to describe the repo.
 
-- New workspace bootstrapped with Next.js App Router + TypeScript + Tailwind.
-- Brand and IA pivoted to Hifzer.
-- Public landing + app shell + multi-route structure created.
+The current live shape is:
 
-## 3.2 Product pivot to Hifz domain
+- dashboard-first after sign-in
+- Qur'an hub and reader as one of the deepest surfaces
+- hifz queue as one lane inside a broader product
+- additional support lanes for dua, journal, fluency, practice, and milestones
 
-- Quran data imported as local seed:
-  - `src/hifzer/quran/data/ayahs.full.json`
-  - `src/hifzer/quran/data/surah-index.ts`
-  - `src/hifzer/quran/lookup.server.ts`
-- Route IA aligned to hifz flow (`/onboarding/*`, `/today`, `/session`, `/quran/*`, `/progress/*`, `/settings/*`).
+This matters because older documents can still sound like Hifzer is "just a hifz system." That is outdated.
 
-## 3.3 Auth + DB integration
+## 3. Route Model
 
-- Clerk gating added.
-- Prisma schema added with SRS-critical models:
-  - `UserProfile`
-  - `Session`
-  - `AyahAttempt`
-  - `AyahReview`
-  - `WeakTransition`
-- API routes added for profile sync and session sync.
+### Public
 
-## 3.4 Pricing/legal/compliance
-
-- Paddle-oriented pricing page implemented.
-- Legal pages implemented:
-  - `/legal/terms`
-  - `/legal/privacy`
-  - `/legal/refund-policy`
-  - `/legal/sources`
-  - `/legal` hub
-- Footer/nav/sitemap updated for discoverability and verification readiness.
-
-## 3.5 Reliability fixes after deployment testing
-
-Applied in these commits:
-
-1. `e22d64e`  
-   fix: generate Prisma client during build  
-   Why: Vercel + pnpm 10 may skip dependency lifecycle scripts; explicit `prisma generate` in `build` prevents missing Prisma types at compile time.
-
-2. `d59dd2b`  
-   fix: honor Prisma schema for Neon adapter runtime  
-   Why: migrations ran in schema `hifzer`, but runtime adapter was querying default schema. Added runtime schema resolution to prevent "signed in but no profile" failures.
-
-3. `d6b727e`  
-   fix: rely on DB onboarding state in middleware flow  
-   Why: cookie-based onboarding redirect in middleware could conflict with server profile state and cause route-flow confusion. Middleware now protects routes only; onboarding state authority is DB/profile logic.
-
-## 3.6 Post-audit hardening (in progress branch state)
-
-- Session sync endpoint now uses one transaction for session + attempts + review upserts.
-- Duplicate session race hardened with DB uniqueness on `(userId, startedAt)`.
-- Added migration enforcing the uniqueness (`Session_userId_startedAt_key`) and deduping legacy collisions.
-- Server cursor progression now updates from synced NEW attempts.
-- Local date generation is now true local calendar date (not UTC ISO slice).
-- Local attempt storage is capped to avoid unbounded localStorage growth.
-- Onboarding cookie sync dead code removed from client providers.
-- Profile mutations now use single upsert calls (removes extra DB round trips).
-
-## 4. Product and Architecture Decisions (with rationale)
-
-## 4.1 Core product identity
-
-- Name: Hifzer
-- Positioning: calm, consistent hifz system
-- Tone: no game metaphors
-
-Reason: keeps religious-learning context respectful and focused on consistency.
-
-## 4.2 Data identity strategy
-
-- Internal ayah identity: global `ayahId` (1..6236)
-- `(surah, ayah)` used for display and user input only
-
-Reason: simplifies cross-feature joins and avoids composite-key complexity in SRS/session/transitions.
-
-## 4.3 SRS signal strategy
-
-- Removed confidence-slider-as-core idea
-- Per-ayah grading is the durable signal: `AGAIN|HARD|GOOD|EASY`
-- `AyahReview` stores station + interval + EF + next review
-
-Reason: preserves data continuity for future AI scoring and real scheduling logic.
-
-## 4.4 Front-heavy hybrid persistence
-
-- Local-first session UX in `src/hifzer/local/store.ts`
-- Server sync endpoint persists completed session artifacts
-
-Reason: fast interactions now, backend continuity later.
-
-## 4.5 Billing decision
-
-- Current direction: Paddle (not Stripe)
-- Free + Paid tiers + donation UI in pricing
-
-Reason: product requirement changed; legal pages aligned for Paddle verification.
-
-## 4.6 Audio decision
-
-- Cloudflare R2 target
-- URL convention currently: `{base}/{publicReciterId}/{zero-padded-ayahId}.mp3`
-- graceful "not configured" UI if base URL missing
-
-Reason: unblock UI and session flow now while storage details mature.
-
-## 5. Current Code Map
-
-## 5.1 Route groups
-
-- Public routes: `src/app/(public)`
-- Auth routes: `src/app/(auth)`
-- Onboarding routes: `src/app/(onboarding)`
-- App routes: `src/app/(app)`
-- API routes: `src/app/api`
-
-## 5.2 Domain modules
-
-- Quran domain: `src/hifzer/quran/*`
-- SRS domain: `src/hifzer/srs/*`
-- Local session store: `src/hifzer/local/store.ts`
-- Server profile model layer: `src/hifzer/profile/server.ts`
-- Audio URL resolver: `src/hifzer/audio/config.ts`
-
-## 5.3 Key UI layer
-
-- App shell/layout/navigation: `src/components/app/*`
-- Landing/marketing: `src/components/landing/*`
-- Audio player: `src/components/audio/ayah-audio-player.tsx`
-- Theme/provider stack: `src/components/providers/*`
-- UI primitives: `src/components/ui/*`
-
-## 6. Implemented User Flows (today)
-
-## 6.1 Auth and profile bootstrap
-
-1. User signs in with Clerk.
-2. Protected route hit triggers app layout auth check.
-3. `getProfileSnapshot()` calls `getOrCreateUserProfile()` (upsert by `clerkUserId`).
-4. Profile state hydrates into client-side local store.
-
-Key files:
-
-- `src/app/(app)/layout.tsx`
-- `src/hifzer/profile/server.ts`
-- `src/components/providers/profile-hydrator.tsx`
-
-## 6.2 Onboarding start-point flow
-
-1. User selects surah + ayah in `/onboarding/start-point`.
-2. Data stored locally and posted to `/api/profile/start-point`.
-3. On completion, `/api/profile/onboarding-complete` sets server onboarding timestamp.
-4. App routes redirect onboarding-incomplete users to onboarding.
-
-Key files:
-
-- `src/app/(onboarding)/onboarding/start-point/page.tsx`
-- `src/app/api/profile/start-point/route.ts`
-- `src/app/api/profile/onboarding-complete/route.ts`
-
-## 6.3 Session flow
-
-1. Queue built from due reviews + cursor + mode logic.
-2. Step sequence includes WARMUP/REVIEW/NEW and LINK steps.
-3. User grades each step with `Again/Hard/Good/Easy`.
-4. Local SRS state updates instantly.
-5. Completed session sync posts to `/api/session/sync`.
-6. Server persists session + attempts + review updates.
-
-Key files:
-
-- `src/app/(app)/session/session-client.tsx`
-- `src/hifzer/srs/queue.ts`
-- `src/hifzer/srs/update.ts`
-- `src/app/api/session/sync/route.ts`
-
-## 6.4 Quran browsing
-
-- Surah and Juz views are served from local seed data only.
-- Every ayah row has audio player shell; playback works when base URL is configured.
-
-Key files:
-
-- `src/app/(app)/quran/page.tsx`
-- `src/app/(app)/quran/surah/[id]/page.tsx`
-- `src/app/(app)/quran/juz/[id]/page.tsx`
-- `src/hifzer/quran/lookup.server.ts`
-
-## 7. Database and Persistence Model
-
-Schema file: `prisma/schema.prisma`
-
-Core entities:
-
-- `UserProfile`: auth identity, onboarding state, preferences, cursor, mode
-- `Session`: planned ranges and session status
-- `AyahAttempt`: atomic graded attempts by stage
-- `AyahReview`: durable per-ayah SRS state
-- `WeakTransition`: edge-level linking weakness tracker
-
-Current status:
-
-- Migration exists and deploys cleanly.
-- Runtime now correctly targets schema via:
-  - `HIFZER_DB_SCHEMA` or
-  - `schema` query parameter in `DATABASE_URL`.
-
-## 8. Environment Variables
-
-Required for full production behavior:
-
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-- `CLERK_SECRET_KEY`
-- `DATABASE_URL`
-- `NEXT_PUBLIC_SITE_URL`
-
-Recommended:
-
-- `HIFZER_DB_SCHEMA=hifzer` (explicit schema safety)
-
-Feature flags/config:
-
-- `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN`
-- `NEXT_PUBLIC_HIFZER_AUDIO_BASE_URL`
-- `HIFZER_TEST_AUTH_BYPASS=1` (test-only; never set in production)
-
-Clerk reset guidance:
-
-- Keep production auth URLs on `/login` and `/signup`.
-- Internally use catch-all Clerk routes:
-  - `src/app/(auth)/login/[[...login]]/page.tsx`
-  - `src/app/(auth)/signup/[[...signup]]/page.tsx`
-- Keep `/sign-in` reserved for the existing legacy redirect.
-- For baseline key rotation, unset optional Clerk domain/proxy/FAPI env vars.
-
-## 9. Testing and Quality Gates
-
-Unit tests:
-
-- Quran lookup mapping
-- SRS queue/mode logic
-- SRS grade update behavior
-- Derived analytics helpers
-
-E2E tests:
-
-- landing + pricing navigation
-- legal pages and required policy links
-- Quran Surah/Juz rendering
-- session progression and local cursor advance
-
-Commands:
-
-```bash
-pnpm lint
-pnpm test
-pnpm test:e2e
-pnpm build
-```
-
-All above have passed after latest fixes.
-
-## 10. Deployment Notes
-
-## 10.1 Vercel build compatibility
-
-Current build script runs Prisma generation explicitly:
-
-```json
-"build": "prisma generate --config=./prisma.config.ts && next build"
-```
-
-This is required due to pnpm install script restrictions in some CI environments.
-
-## 10.2 Neon schema consistency
-
-Use the same schema for:
-
-- migration deploy,
-- runtime Prisma adapter,
-- direct SQL/manual inspection.
-
-If profile/session tables look missing while migrations succeeded, schema mismatch is the first thing to check.
-
-## 11. Legal/Compliance Readiness (Paddle)
-
-Implemented pages:
-
-- `/legal/terms`
+- `/`
+- `/compare`
+- `/changelog`
+- `/motivation`
+- `/pay`
+- `/quran-preview`
+- `/welcome`
+- `/legal`
 - `/legal/privacy`
+- `/legal/terms`
 - `/legal/refund-policy`
+- `/legal/sources`
+- `/unsubscribe`
 
-Pricing page links all required policies and includes two-tier + donation UX.
+### Auth
 
-## 12. Audio (R2) Operational Notes
+- `/login`
+- `/signup`
+- `/forgot-password`
 
-Docs: `docs/r2-first-time-setup.md`
+### Onboarding
 
-Manifest generator:
+- `/onboarding/welcome`
+- `/onboarding/start-point`
+- `/onboarding/assessment`
+- `/onboarding/fluency-check`
+- `/onboarding/plan-preview`
+- `/onboarding/permissions`
+- `/onboarding/complete`
 
-```bash
-pnpm audio:manifest -- --reciters default --out tmp/audio-manifest.csv
-```
+### Main App
 
-Current assumed key pattern:
+- `/dashboard`
+- `/hifz`
+- `/hifz/progress`
+- `/session` -> redirect alias to `/hifz`
+- `/quran`
+- `/quran/read`
+- `/quran/bookmarks`
+- `/quran/glossary`
+- `/quran/progress`
+- `/quran/surah/[id]`
+- `/quran/juz/[id]`
+- `/dua`
+- `/dua/[moduleId]`
+- `/dua/[moduleId]/deck`
+- `/journal`
+- `/practice`
+- `/fluency`
+- `/fluency/lesson/[id]`
+- `/fluency/retest`
+- `/milestones`
+- `/notifications`
+- `/ramadan`
+- `/roadmap`
+- `/settings`
+- `/settings/account`
+- `/settings/display`
+- `/settings/language`
+- `/settings/plan`
+- `/settings/quran-foundation`
+- `/settings/reciter`
+- `/settings/reminders`
+- `/support`
+- `/billing/upgrade`
+- `/billing/manage`
+- `/billing/success`
+- `/billing/thank-you`
 
-- `alafasy/000001.mp3` ... `alafasy/006236.mp3`
+### Legacy
 
-## 13. Known Gaps and Next Priorities
+- `/legacy/*`
+- `/app` and `/app/*` redirect into `/legacy/*`
+- `/sign-in` redirects to `/legacy/sign-in`
 
-1. WeakTransition writes are not yet persisted from LINK grading path (UI notes this as next step).
-2. Paddle checkout/webhooks and entitlement enforcement are scaffold-level, not full production billing logic.
-3. Some IA routes are placeholders and need real product logic (fluency track, advanced insights, billing manage flows).
-4. Local-first state is still primary in parts of session UX; server reconciliation strategy should be hardened for multi-device continuity.
-5. Session sync currently performs per-ayah review upserts sequentially; batching or a tighter write strategy may be needed for very large sessions.
+Important current truth:
 
-## 14. Operational Runbook for New Engineers
+- there is no current `/today` page
+- auth redirects should land on `/dashboard`
 
-1. Clone repo and install:
-   - `pnpm install`
-2. Set env vars in `.env.local`.
-3. Run migrations:
-   - `pnpm db:deploy`
-4. Start app:
-   - `pnpm dev`
-5. Verify baseline:
-   - sign in with Clerk,
-   - complete onboarding,
-   - run a session and confirm DB writes.
-6. Run gates before any push:
-   - `pnpm lint`
-   - `pnpm test`
-   - `pnpm build`
-   - `pnpm test:e2e`
+## 4. Product Surface Summary
 
-## 15. Decision Log (Short Form)
+### Dashboard
 
-1. Keep legacy prototype code in repo under `_legacy` rather than deleting, to preserve reference assets and reduce rework risk.
-2. Use global ayah IDs internally to unify SRS/session/transition logic.
-3. Store per-ayah grade attempts from day one to avoid migration pain when AI scoring arrives.
-4. Keep local-first UX with server sync to maintain responsiveness during backend evolution.
-5. Move billing direction to Paddle and align legal policy infrastructure early for verification.
-6. Make DB profile state the source of truth for onboarding and route gating.
+The dashboard is the post-auth home. It summarizes:
 
----
+- current practice status
+- KPIs and session trends
+- review health
+- Qur'an progress
+- streaks
+- quick actions into the rest of the app
 
-If you are onboarding today, start by reading:
+### Qur'an
 
-1. `README.md`
-2. `docs/HIFZER_PROJECT_HANDOFF.md` (this file)
-3. `prisma/schema.prisma`
-4. `src/hifzer/profile/server.ts`
-5. `src/app/api/session/sync/route.ts`
-6. `src/app/(app)/session/session-client.tsx`
+The Qur'an lane is much deeper than the original browser:
+
+- hub with continue reading, completion, plan, surah progress, jump tools, and backfill
+- reader in list and compact modes
+- saved reader filter preferences
+- translations and phonetics
+- official tafsir selection
+- Quran.com filter actions
+- AI explanation for a single ayah
+- smart bookmarks with notes and categories
+- glossary search
+
+### Hifz
+
+The hifz lane still contains the core session engine:
+
+- SRS queue construction
+- graded ayah attempts
+- review events
+- quality gates
+- weak-transition repair
+- hifz progress view
+
+### Practice + Fluency
+
+These are support lanes around memorization and recitation quality:
+
+- rescue sessions
+- mushabihat radar
+- seam trainer
+- meaning-linked memorization cues
+- listening-led recitation loops
+- hesitation cleanup
+- transition smoothing
+- fluency retest
+
+### Dua
+
+The dua system is no longer a static page. It includes:
+
+- module-based dua experiences
+- deck ordering
+- custom dua creation and persistence
+
+### Journal
+
+The journal is a meaningful part of the product now:
+
+- private notes
+- ayah-linked entries
+- dua-linked entries
+- account sync when available
+- degraded local fallback if sync fails
+
+### Settings / Support / Billing
+
+Operational product surfaces include:
+
+- language
+- display
+- reminders
+- reciter selection
+- plan and account
+- Quran.com connection
+- roadmap and feedback surfaces
+- support flows
+- Paddle-backed upgrade and manage flows
+
+## 5. Route Groups And Layouts
+
+Active route groups:
+
+- `src/app/(public)`
+- `src/app/(auth)`
+- `src/app/(onboarding)`
+- `src/app/(app)`
+- `src/app/api`
+- `src/app/legacy`
+
+The repo does not use `src/_legacy`. Older docs that say that are stale. The preserved legacy UI is under `src/app/legacy`.
+
+## 6. Domain Map
+
+Main domain services under `src/hifzer`:
+
+- `ai`
+  App-side AI contracts and gateway config.
+- `audio`
+  Reciter mapping and audio URL resolution.
+- `bookmarks`
+  Smart bookmark logic and local sync behavior.
+- `dashboard`
+  Aggregated dashboard overview.
+- `focus`
+  Distraction-free and reading-mode behavior.
+- `i18n`
+  UI language and copy.
+- `journal`
+  Private journal persistence and local fallback.
+- `profile`
+  User profile creation and snapshot access.
+- `progress`
+  Qur'an and hifz progress summaries.
+- `quran`
+  Reader, lookup, translation, data, and progress logic.
+- `quran-foundation`
+  Quran.com OAuth, status, bookmark sync, and official content enrichment.
+- `ramadan`
+  Dua content and module structures.
+- `recitation`
+  Practice and fluency intelligence.
+- `srs`
+  Queue generation and update logic.
+- `streak`
+  Current streak computation and qualification.
+- `theme`
+  App theme presets and visual variants.
+
+## 7. Persistence Model
+
+`prisma/schema.prisma` now covers much more than the original hifz core.
+
+Persisted models include:
+
+- `UserProfile`
+- `Session`
+- `AyahAttempt`
+- `AyahReview`
+- `WeakTransition`
+- `ReviewEvent`
+- `QualityGateRun`
+- `QuranBrowseEvent`
+- `QuranReaderFilterPreference`
+- `BookmarkCategory`
+- `Bookmark`
+- `BookmarkEvent`
+- `QuranFoundationAccount`
+- `PrivateJournalEntry`
+- `CustomDua`
+- `DuaDeckOrder`
+- subscription and billing-related fields on `UserProfile`
+
+There are also teacher-circle models in the schema:
+
+- `TeacherCircle`
+- `TeacherCircleMember`
+- `TeacherCircleWeeklyCheck`
+
+Those exist in persistence, but there is no equivalent top-level app surface yet. Treat them as groundwork rather than a current launched feature.
+
+## 8. Integrations
+
+### Clerk
+
+Clerk protects app and onboarding flows when configured.
+
+Current redirect expectation:
+
+- sign in -> `/dashboard`
+- sign up -> `/dashboard`
+
+Important:
+
+- public auth URLs stay `/login` and `/signup`
+- `/sign-in` is reserved for legacy redirect behavior
+
+### Quran.com / Quran Foundation
+
+Current shipped behavior:
+
+- linked Quran.com account in settings
+- bookmark push/import sync
+- official reader enrichment
+- official tafsir selection in reader filters
+
+Current limitation:
+
+- broader user scopes like goals, activity days, collections, and notes are not yet fully integrated in the live app
+
+### AI
+
+Current AI explanation architecture:
+
+- app route: `POST /api/quran/ai-explain`
+- worker: `workers/ai-gateway`
+- default provider: Groq
+- grounding source: Quran MCP
+
+This is important because older docs may still say Gemini is the live provider. That is now stale.
+
+### Email
+
+Reminder email flows use Resend.
+
+### Billing
+
+Upgrade and customer-management surfaces are wired around Paddle.
+
+### Monitoring
+
+Sentry and Vercel Analytics are used for observability/telemetry.
+
+## 9. Known Historical Drift In Docs
+
+The repo intentionally keeps historical audits and reports, but many are no longer current.
+
+Common stale assumptions in older docs:
+
+- `/today` still exists
+- Hifzer is only a hifz system
+- Gemini is the only AI provider
+- the product is mostly landing + onboarding + session + browser
+- legacy code lives under `src/_legacy`
+
+When you see conflicts, trust current code first, then:
+
+1. `AGENTS.md`
+2. root `README.md`
+3. this handoff
+4. current runbooks
+
+Historical audit files under `docs/audits/**` should be treated as archival snapshots, not as the current spec.
+
+## 10. Recommended Reading For New Contributors
+
+1. `../AGENTS.md`
+2. `../README.md`
+3. `HIFZER_PROJECT_HANDOFF.md`
+4. `README.md` inside `workers/ai-gateway` if touching AI
+5. specific runbooks only when working in those areas

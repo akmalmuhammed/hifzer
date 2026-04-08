@@ -1,42 +1,58 @@
 # AI Gateway Cloudflare Setup
 
-This runbook deploys the Hifzer AI gateway Worker with Gemini as the first provider.
+This runbook deploys the Hifzer AI gateway Worker with the current default setup:
 
-## 1. Install dependencies
+- provider: Groq
+- grounding: Quran MCP
+- app integration: `POST /api/quran/ai-explain`
+
+## 1. Install Dependencies
 
 ```bash
 pnpm install
 ```
 
-Wrangler is now included in this repo as a dev dependency.
+Wrangler is already included in the repo as a dev dependency.
 
-## 2. Authenticate Wrangler with your Cloudflare account
+## 2. Authenticate Wrangler
 
 ```bash
 pnpm exec wrangler login
 pnpm exec wrangler whoami --json
 ```
 
-If `whoami` returns a non-zero status, your login is not complete yet.
+If `whoami` fails, login is not complete.
 
-## 3. Prepare local Worker vars for development
+## 3. Prepare Local Worker Vars
 
 ```bash
 cp workers/ai-gateway/.dev.vars.example workers/ai-gateway/.dev.vars
 ```
 
-Fill in:
+Fill in at minimum:
+
+- `AI_GATEWAY_SHARED_SECRET`
+- `AI_PROVIDER=groq`
+- `GROQ_API_KEY`
+
+Recommended current values:
+
+- `GROQ_MODEL=openai/gpt-oss-20b`
+- `GROQ_FORMAT_MODEL=openai/gpt-oss-20b`
+- `QURAN_MCP_URL=https://mcp.quran.ai`
+
+Optional Gemini fallback values:
 
 - `GEMINI_API_KEY`
-- `AI_GATEWAY_SHARED_SECRET`
+- `GEMINI_MODEL=gemini-2.5-flash`
 
-You can generate a strong shared secret with:
+Generate a shared secret if needed:
 
 ```bash
 openssl rand -base64 32 | tr -d '\n'
 ```
 
-## 4. Run the Worker locally
+## 4. Run The Worker Locally
 
 ```bash
 pnpm ai:worker:dev
@@ -48,18 +64,24 @@ Health check:
 curl http://127.0.0.1:8787/health
 ```
 
-## 5. Upload production secrets to Cloudflare
+## 5. Upload Production Secrets
+
+Current default secrets:
 
 ```bash
-printf '%s' 'YOUR_GEMINI_API_KEY' | pnpm exec wrangler secret put GEMINI_API_KEY --config workers/ai-gateway/wrangler.jsonc
+printf '%s' 'YOUR_GROQ_API_KEY' | pnpm exec wrangler secret put GROQ_API_KEY --config workers/ai-gateway/wrangler.jsonc
 printf '%s' 'YOUR_SHARED_SECRET' | pnpm exec wrangler secret put AI_GATEWAY_SHARED_SECRET --config workers/ai-gateway/wrangler.jsonc
 ```
 
-Optional secret rotation later uses the same commands.
+Optional Gemini fallback secret:
 
-## 6. Deploy the Worker
+```bash
+printf '%s' 'YOUR_GEMINI_API_KEY' | pnpm exec wrangler secret put GEMINI_API_KEY --config workers/ai-gateway/wrangler.jsonc
+```
 
-Dry run first:
+## 6. Deploy The Worker
+
+Dry run:
 
 ```bash
 pnpm ai:worker:deploy:dry
@@ -71,28 +93,29 @@ Real deploy:
 pnpm ai:worker:deploy
 ```
 
-Wrangler will print the deployed `workers.dev` URL. Use that exact URL for the app.
+Use the exact `workers.dev` URL Wrangler prints.
 
-## 7. Set the app env vars
+## 7. Configure App Env Vars
 
-In Vercel for the main Hifzer app, set:
+In the Next.js app deployment, set:
 
 ```env
 HIFZER_AI_GATEWAY_URL=https://your-worker.your-subdomain.workers.dev
 HIFZER_AI_GATEWAY_TOKEN=YOUR_SHARED_SECRET
+HIFZER_AI_GATEWAY_TIMEOUT_MS=60000
 ```
 
-`HIFZER_AI_GATEWAY_TOKEN` must exactly match the Worker secret `AI_GATEWAY_SHARED_SECRET`.
+`HIFZER_AI_GATEWAY_TOKEN` must exactly match `AI_GATEWAY_SHARED_SECRET`.
 
-## 8. Verify the live Worker
+## 8. Verify Live
 
-Health check:
+Worker health:
 
 ```bash
 curl https://your-worker.your-subdomain.workers.dev/health
 ```
 
-App route smoke test after redeploying the app:
+App route smoke test:
 
 ```bash
 curl -X POST https://your-app-domain.com/api/quran/ai-explain \
@@ -100,7 +123,9 @@ curl -X POST https://your-app-domain.com/api/quran/ai-explain \
   --data '{"ayahId":1}'
 ```
 
-## 9. Tail logs if needed
+The result should be a grounded explanation payload, not a timeout or configuration error.
+
+## 9. Tail Logs
 
 ```bash
 pnpm ai:worker:tail
@@ -108,6 +133,6 @@ pnpm ai:worker:tail
 
 ## Notes
 
-- The app is provider-agnostic at the boundary, but only `gemini` is implemented today.
-- The Worker uses Quran MCP for grounding and should stay the only place that knows about the model provider.
-- Keep all provider keys and shared secrets server-side only.
+- The Worker is provider-aware, but Groq is the current default deployment path.
+- The Worker should remain the only layer that knows about model-provider specifics.
+- Keep API keys and the shared secret server-side only.
