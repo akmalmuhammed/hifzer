@@ -3,6 +3,8 @@
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
+import { PublicAuthLink } from "@/components/landing/public-auth-link";
+import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { MacbookFrame } from "@/components/landing/feature-showcase";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { Button } from "@/components/ui/button";
@@ -33,6 +35,7 @@ export function Hero() {
   const reduceMotion = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
   const [isMobileLayout, setIsMobileLayout] = useState(false);
+  const { isSignedIn } = usePublicAuth();
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -82,13 +85,14 @@ export function Hero() {
 
             <div className={styles.fitnessHeroActions}>
               <Button asChild size="lg" className="w-full sm:w-auto">
-                <TrackedLink
-                  href="/signup"
+                <PublicAuthLink
+                  signedInHref="/dashboard"
+                  signedOutHref="/signup"
                   telemetryName="landing.primary_open_app_click"
                   telemetryMeta={{ placement: "hero" }}
                 >
-                  Start your routine free <ArrowRight size={17} />
-                </TrackedLink>
+                  {isSignedIn ? "Open app" : "Start your routine free"} <ArrowRight size={17} />
+                </PublicAuthLink>
               </Button>
               <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
                 <TrackedLink

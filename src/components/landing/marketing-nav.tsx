@@ -5,6 +5,8 @@ import clsx from "clsx";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { UiLanguageSwitcher } from "@/components/app/ui-language-switcher";
 import { HifzerMark } from "@/components/brand/hifzer-mark";
+import { PublicAuthLink } from "@/components/landing/public-auth-link";
+import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { useUiLanguage } from "@/components/providers/ui-language-provider";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { Button } from "@/components/ui/button";
@@ -15,6 +17,7 @@ import styles from "./landing-home.module.css";
 export function MarketingNav() {
   const [open, setOpen] = useState(false);
   const { language } = useUiLanguage();
+  const { isSignedIn } = usePublicAuth();
   const copy = getAppUiCopy(language);
   const signInLabel = copy.marketing.signIn;
   const getStartedLabel = "Start free";
@@ -38,18 +41,33 @@ export function MarketingNav() {
             </TrackedLink>
 
             <div className="hidden items-center gap-2 lg:flex">
-              <TrackedLink
-                href="/login"
-                telemetryName="marketing.sign-in"
-                className="rounded-[16px] px-3 py-2.5 text-sm font-semibold text-[color:var(--kw-muted)] transition hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)]"
-              >
-                {signInLabel}
-              </TrackedLink>
-              <Button asChild size="md">
-                <TrackedLink href="/signup" telemetryName="marketing.get-started">
-                  {getStartedLabel} <ArrowRight size={16} />
-                </TrackedLink>
-              </Button>
+              {isSignedIn ? (
+                <Button asChild size="md">
+                  <PublicAuthLink signedInHref="/dashboard" telemetryName="marketing.open-app">
+                    Open app <ArrowRight size={16} />
+                  </PublicAuthLink>
+                </Button>
+              ) : (
+                <>
+                  <PublicAuthLink
+                    signedInHref="/dashboard"
+                    signedOutHref="/login"
+                    telemetryName="marketing.sign-in"
+                    className="rounded-[16px] px-3 py-2.5 text-sm font-semibold text-[color:var(--kw-muted)] transition hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)]"
+                  >
+                    {signInLabel}
+                  </PublicAuthLink>
+                  <Button asChild size="md">
+                    <PublicAuthLink
+                      signedInHref="/dashboard"
+                      signedOutHref="/signup"
+                      telemetryName="marketing.get-started"
+                    >
+                      {getStartedLabel} <ArrowRight size={16} />
+                    </PublicAuthLink>
+                  </Button>
+                </>
+              )}
 
               <UiLanguageSwitcher
                 compact
@@ -76,23 +94,39 @@ export function MarketingNav() {
             <div className="space-y-2">
               <div className="grid gap-2 pt-2">
                 <div className="grid gap-2 sm:grid-cols-2">
-                  <TrackedLink
-                    href="/login"
-                    telemetryName="marketing.mobile-sign-in"
-                    onClick={() => setOpen(false)}
-                    className="rounded-[18px] border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 py-2.5 text-center text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]"
-                  >
-                    {signInLabel}
-                  </TrackedLink>
-                  <Button asChild className="w-full">
-                    <TrackedLink
-                      href="/signup"
-                      telemetryName="marketing.mobile-get-started"
-                      onClick={() => setOpen(false)}
-                    >
-                      {getStartedLabel} <ArrowRight size={16} />
-                    </TrackedLink>
-                  </Button>
+                  {isSignedIn ? (
+                    <Button asChild className="w-full sm:col-span-2">
+                      <PublicAuthLink
+                        signedInHref="/dashboard"
+                        telemetryName="marketing.mobile-open-app"
+                        onClick={() => setOpen(false)}
+                      >
+                        Open app <ArrowRight size={16} />
+                      </PublicAuthLink>
+                    </Button>
+                  ) : (
+                    <>
+                      <PublicAuthLink
+                        signedInHref="/dashboard"
+                        signedOutHref="/login"
+                        telemetryName="marketing.mobile-sign-in"
+                        onClick={() => setOpen(false)}
+                        className="rounded-[18px] border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 py-2.5 text-center text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]"
+                      >
+                        {signInLabel}
+                      </PublicAuthLink>
+                      <Button asChild className="w-full">
+                        <PublicAuthLink
+                          signedInHref="/dashboard"
+                          signedOutHref="/signup"
+                          telemetryName="marketing.mobile-get-started"
+                          onClick={() => setOpen(false)}
+                        >
+                          {getStartedLabel} <ArrowRight size={16} />
+                        </PublicAuthLink>
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
 

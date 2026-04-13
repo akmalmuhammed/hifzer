@@ -3,11 +3,14 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { WindLines } from "@/components/brand/wind-lines";
+import { PublicAuthLink } from "@/components/landing/public-auth-link";
+import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { Button } from "@/components/ui/button";
 
 export function FinalCta() {
   const reduceMotion = useReducedMotion();
+  const { isSignedIn } = usePublicAuth();
 
   return (
     <section id="promise" className="py-10 md:py-14">
@@ -49,13 +52,14 @@ export function FinalCta() {
 
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Button asChild size="lg" className="sm:w-auto">
-              <TrackedLink
-                href="/signup"
+              <PublicAuthLink
+                signedInHref="/dashboard"
+                signedOutHref="/signup"
                 telemetryName="landing.primary_open_app_click"
                 telemetryMeta={{ placement: "final-cta" }}
               >
-                Start your routine free <ArrowRight size={17} />
-              </TrackedLink>
+                {isSignedIn ? "Open app" : "Start your routine free"} <ArrowRight size={17} />
+              </PublicAuthLink>
             </Button>
             <Button asChild size="lg" variant="secondary">
               <TrackedLink
