@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Fragment } from "react";
 import { Inter, IBM_Plex_Mono, Amiri, Plus_Jakarta_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { InstallAppBanner } from "@/components/pwa/install-app-banner";
 import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
 import { GoogleAnalytics } from "@/components/telemetry/google-analytics";
@@ -137,6 +138,7 @@ export default async function RootLayout({
         <ServiceWorkerRegistration />
         <GoogleAnalytics />
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

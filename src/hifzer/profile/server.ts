@@ -4,6 +4,7 @@ import { cache } from "react";
 import type {
   PlanBias,
   Prisma,
+  PrismaClient,
   SrsMode,
   SubscriptionPlan,
   SubscriptionStatus,
@@ -120,7 +121,18 @@ const LEGACY_INCOMPATIBLE_PROFILE_KEYS = new Set([
   "paddleSubscriptionId",
   "subscriptionStatus",
   "currentPeriodEnd",
+  "quranActiveSurahNumber",
+  "quranCursorAyahId",
+  "quranTranslationId",
+  "quranShowDetails",
+  "onboardingStep",
+  "onboardingStartLane",
 ] satisfies Array<keyof Prisma.UserProfileCreateInput | keyof Prisma.UserProfileUpdateInput>);
+
+const LEGACY_SAFE_PROFILE_CAPABILITIES: ProfileSchemaCapabilities = {
+  hasQuranLaneColumns: false,
+  hasOnboardingStateColumns: false,
+};
 
 function defaultCreateData(
   clerkUserId: string,
@@ -332,6 +344,24 @@ function stripLegacyIncompatibleProfileFields<T extends Prisma.UserProfileCreate
   return next as T;
 }
 
+async function runCompatProfileUpsert(input: {
+  clerkUserId: string;
+  prisma: Prisma.TransactionClient | PrismaClient;
+  capabilities: ProfileSchemaCapabilities;
+  buildCreate: (capabilities: ProfileSchemaCapabilities) => Prisma.UserProfileCreateInput;
+  buildUpdate: (capabilities: ProfileSchemaCapabilities) => Prisma.UserProfileUpdateInput;
+}): Promise<UserProfile> {
+  const compatCreate = stripLegacyIncompatibleProfileFields(input.buildCreate(input.capabilities));
+  const compatUpdate = stripLegacyIncompatibleProfileFields(input.buildUpdate(input.capabilities));
+  const row = await input.prisma.userProfile.upsert({
+    where: { clerkUserId: input.clerkUserId },
+    create: compatCreate,
+    update: compatUpdate,
+    select: buildCompatUserProfileSelect(input.capabilities),
+  });
+  return withCompatDefaults(row as CompatUserProfileRow, input.capabilities);
+}
+
 async function upsertProfileCompat(input: {
   clerkUserId: string;
   buildCreate: (capabilities: ProfileSchemaCapabilities) => Prisma.UserProfileCreateInput;
@@ -359,19 +389,42 @@ async function upsertProfileCompat(input: {
       if (!looksLikeMissingCoreSchema(error)) {
         throw error;
       }
-      // Drift-safe fallback: use legacy-safe profile shape for first-time users.
+      // Drift-safe fallback: the capability read can be stale or point at a
+      // partially migrated schema, so retry with the smallest safe profile shape.
+      return runCompatProfileUpsert({
+        clerkUserId: input.clerkUserId,
+        prisma,
+        capabilities: LEGACY_SAFE_PROFILE_CAPABILITIES,
+        buildCreate: input.buildCreate,
+        buildUpdate: input.buildUpdate,
+      });
     }
   }
 
-  const compatCreate = stripLegacyIncompatibleProfileFields(input.buildCreate(profileCapabilities));
-  const compatUpdate = stripLegacyIncompatibleProfileFields(input.buildUpdate(profileCapabilities));
-  const row = await prisma.userProfile.upsert({
-    where: { clerkUserId: input.clerkUserId },
-    create: compatCreate,
-    update: compatUpdate,
-    select: buildCompatUserProfileSelect(profileCapabilities),
-  });
-  return withCompatDefaults(row as CompatUserProfileRow, profileCapabilities);
+  try {
+    return await runCompatProfileUpsert({
+      clerkUserId: input.clerkUserId,
+      prisma,
+      capabilities: profileCapabilities,
+      buildCreate: input.buildCreate,
+      buildUpdate: input.buildUpdate,
+    });
+  } catch (error) {
+    if (
+      !looksLikeMissingCoreSchema(error) ||
+      (!profileCapabilities.hasQuranLaneColumns && !profileCapabilities.hasOnboardingStateColumns)
+    ) {
+      throw error;
+    }
+
+    return runCompatProfileUpsert({
+      clerkUserId: input.clerkUserId,
+      prisma,
+      capabilities: LEGACY_SAFE_PROFILE_CAPABILITIES,
+      buildCreate: input.buildCreate,
+      buildUpdate: input.buildUpdate,
+    });
+  }
 }
 
 function looksLikeMissingCoreSchema(error: unknown): boolean {

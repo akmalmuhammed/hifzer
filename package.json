@@ -42,6 +42,7 @@
     "@quranjs/api": "^2.2.0",
     "@sentry/nextjs": "^10.39.0",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.34.0",
     "groq-sdk": "^1.1.2",
