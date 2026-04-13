@@ -104,6 +104,25 @@ type ProfileSchemaCapabilities = Pick<
   "hasQuranLaneColumns" | "hasOnboardingStateColumns"
 >;
 
+const LEGACY_INCOMPATIBLE_PROFILE_KEYS = new Set([
+  "emailRemindersEnabled",
+  "emailUnsubscribedAt",
+  "emailSuppressedAt",
+  "hasTeacher",
+  "avgReviewSeconds",
+  "avgNewSeconds",
+  "avgLinkSeconds",
+  "reviewFloorPct",
+  "consolidationThresholdPct",
+  "catchUpThresholdPct",
+  "rebalanceUntil",
+  "plan",
+  "paddleCustomerId",
+  "paddleSubscriptionId",
+  "subscriptionStatus",
+  "currentPeriodEnd",
+] satisfies Array<keyof Prisma.UserProfileCreateInput | keyof Prisma.UserProfileUpdateInput>);
+
 function defaultCreateData(
   clerkUserId: string,
   input?: { includeQuranLane?: boolean; includeOnboardingState?: boolean },
@@ -304,6 +323,16 @@ function withCompatDefaults(row: CompatUserProfileRow, capabilities: ProfileSche
   };
 }
 
+function stripLegacyIncompatibleProfileFields<T extends Prisma.UserProfileCreateInput | Prisma.UserProfileUpdateInput>(
+  input: T,
+): T {
+  const next = { ...input } as Record<string, unknown>;
+  for (const key of LEGACY_INCOMPATIBLE_PROFILE_KEYS) {
+    delete next[key];
+  }
+  return next as T;
+}
+
 async function upsertProfileCompat(input: {
   clerkUserId: string;
   buildCreate: (capabilities: ProfileSchemaCapabilities) => Prisma.UserProfileCreateInput;
@@ -335,10 +364,12 @@ async function upsertProfileCompat(input: {
     }
   }
 
+  const compatCreate = stripLegacyIncompatibleProfileFields(input.buildCreate(profileCapabilities));
+  const compatUpdate = stripLegacyIncompatibleProfileFields(input.buildUpdate(profileCapabilities));
   const row = await prisma.userProfile.upsert({
     where: { clerkUserId: input.clerkUserId },
-    create: input.buildCreate(profileCapabilities),
-    update: input.buildUpdate(profileCapabilities),
+    create: compatCreate,
+    update: compatUpdate,
     select: buildCompatUserProfileSelect(profileCapabilities),
   });
   return withCompatDefaults(row as CompatUserProfileRow, profileCapabilities);
@@ -347,6 +378,23 @@ async function upsertProfileCompat(input: {
 function looksLikeMissingCoreSchema(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
   return (
+    message.includes("emailRemindersEnabled") ||
+    message.includes("emailUnsubscribedAt") ||
+    message.includes("emailSuppressedAt") ||
+    message.includes("hasTeacher") ||
+    message.includes("avgReviewSeconds") ||
+    message.includes("avgNewSeconds") ||
+    message.includes("avgLinkSeconds") ||
+    message.includes("reviewFloorPct") ||
+    message.includes("consolidationThresholdPct") ||
+    message.includes("catchUpThresholdPct") ||
+    message.includes("rebalanceUntil") ||
+    message.includes('"plan"') ||
+    message.includes("`plan`") ||
+    message.includes("paddleCustomerId") ||
+    message.includes("paddleSubscriptionId") ||
+    message.includes("subscriptionStatus") ||
+    message.includes("currentPeriodEnd") ||
     message.includes("quranActiveSurahNumber") ||
     message.includes("quranCursorAyahId") ||
     message.includes("quranTranslationId") ||
