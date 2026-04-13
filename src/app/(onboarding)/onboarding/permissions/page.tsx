@@ -1,9 +1,9 @@
-import { OnboardingPermissionsClient } from "./permissions-client";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Permissions",
 };
 
 export default function OnboardingPermissionsPage() {
-  return <OnboardingPermissionsClient />;
+  redirect("/onboarding/assessment");
 }

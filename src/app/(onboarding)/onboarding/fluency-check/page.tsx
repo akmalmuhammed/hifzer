@@ -1,9 +1,9 @@
-import { OnboardingFluencyCheckClient } from "./fluency-check-client";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Fluency Check",
 };
 
 export default function OnboardingFluencyCheckPage() {
-  return <OnboardingFluencyCheckClient />;
+  redirect("/onboarding/assessment");
 }

@@ -99,7 +99,7 @@ export async function POST(req: Request) {
     try {
       profile = quranSource
         ? await saveQuranStartPoint(userId, surahNumber, expectedAyahId)
-        : await saveStartPoint(userId, surahNumber, expectedAyahId, onboarding ? { onboardingStep: "plan-preview" } : undefined);
+        : await saveStartPoint(userId, surahNumber, expectedAyahId, onboarding ? { onboardingStep: "complete" } : undefined);
     } catch (error) {
       if (!looksLikeMissingCoreSchema(error)) {
         throw error;

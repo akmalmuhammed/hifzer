@@ -1,10 +1,6 @@
 export const ONBOARDING_STEPS = [
-  "welcome",
   "assessment",
   "start-point",
-  "plan-preview",
-  "fluency-check",
-  "permissions",
   "complete",
 ] as const;
 
@@ -20,21 +16,30 @@ export const ONBOARDING_START_LANES = [
 export type OnboardingStartLane = typeof ONBOARDING_START_LANES[number];
 
 const ONBOARDING_STEP_PATHS: Record<OnboardingStep, string> = {
-  welcome: "/onboarding/welcome",
   assessment: "/onboarding/assessment",
   "start-point": "/onboarding/start-point",
-  "plan-preview": "/onboarding/plan-preview",
-  "fluency-check": "/onboarding/fluency-check",
-  permissions: "/onboarding/permissions",
   complete: "/onboarding/complete",
 };
+
+const LEGACY_ONBOARDING_STEP_ALIASES = {
+  welcome: "assessment",
+  "plan-preview": "assessment",
+  "fluency-check": "assessment",
+  permissions: "assessment",
+} as const;
 
 export function isOnboardingStep(value: unknown): value is OnboardingStep {
   return typeof value === "string" && ONBOARDING_STEPS.includes(value as OnboardingStep);
 }
 
 export function normalizeOnboardingStep(value: unknown): OnboardingStep {
-  return isOnboardingStep(value) ? value : "welcome";
+  if (isOnboardingStep(value)) {
+    return value;
+  }
+  if (typeof value === "string" && value in LEGACY_ONBOARDING_STEP_ALIASES) {
+    return LEGACY_ONBOARDING_STEP_ALIASES[value as keyof typeof LEGACY_ONBOARDING_STEP_ALIASES];
+  }
+  return "assessment";
 }
 
 export function onboardingStepRank(step: OnboardingStep): number {
@@ -58,7 +63,7 @@ export function normalizeOnboardingStartLane(value: unknown): OnboardingStartLan
 }
 
 export function canAccessOnboardingStep(currentStep: OnboardingStep, requestedStep: OnboardingStep): boolean {
-  if (requestedStep === "welcome" || requestedStep === "assessment") {
+  if (requestedStep === "assessment") {
     return true;
   }
   return onboardingStepRank(requestedStep) <= onboardingStepRank(currentStep);

@@ -7,13 +7,9 @@ import { Pill } from "@/components/ui/pill";
 import { ProgressBar } from "@/components/ui/progress";
 
 const ONBOARDING_STEPS = [
-  { key: "welcome", label: "Welcome", note: "See the flow" },
-  { key: "assessment", label: "Assessment", note: "Set your pace" },
+  { key: "assessment", label: "Assessment", note: "Set your pace and lane" },
   { key: "start-point", label: "Start point", note: "Choose where to begin" },
-  { key: "plan-preview", label: "Plan preview", note: "Review your first week" },
-  { key: "fluency-check", label: "Fluency", note: "Pick your lane" },
-  { key: "permissions", label: "Permissions", note: "Optional helpers" },
-  { key: "complete", label: "Complete", note: "Launch your dashboard" },
+  { key: "complete", label: "Complete", note: "Open your dashboard" },
 ] as const;
 
 export type OnboardingStepKey = typeof ONBOARDING_STEPS[number]["key"];

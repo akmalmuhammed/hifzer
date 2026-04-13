@@ -1,7 +1,10 @@
 import type { AyahReviewState, SrsGrade, SrsMode, TodayQueue } from "@/hifzer/srs/types";
 import { defaultReviewState, applyGrade } from "@/hifzer/srs/update";
 import { isoDateLocal } from "@/hifzer/derived/dates";
-import type { OnboardingStartLane } from "@/hifzer/profile/onboarding";
+import {
+  normalizeOnboardingStartLane,
+  type OnboardingStartLane,
+} from "@/hifzer/profile/onboarding";
 
 export const STORAGE_KEYS = {
   onboardingCompleted: "hifzer_onboarding_completed_v1",
@@ -55,6 +58,7 @@ export type OnboardingAssessmentDraft = {
   hasTeacher: boolean;
   timezone: string;
   quranTranslationId: string;
+  onboardingStartLane: OnboardingStartLane;
 };
 
 export type StoredSession = {
@@ -156,6 +160,7 @@ export function getOnboardingAssessmentDraft(): OnboardingAssessmentDraft | null
   const quranTranslationId = typeof parsed.quranTranslationId === "string" && parsed.quranTranslationId.trim()
     ? parsed.quranTranslationId
     : "en.sahih";
+  const onboardingStartLane = normalizeOnboardingStartLane(parsed.onboardingStartLane) ?? "hifz";
 
   if (!Number.isFinite(dailyMinutes) || !Number.isFinite(practiceDaysPerWeek)) {
     return null;
@@ -171,6 +176,7 @@ export function getOnboardingAssessmentDraft(): OnboardingAssessmentDraft | null
     hasTeacher,
     timezone,
     quranTranslationId,
+    onboardingStartLane,
   };
 }
 
@@ -188,6 +194,7 @@ export function setOnboardingAssessmentDraft(draft: OnboardingAssessmentDraft) {
       hasTeacher: draft.hasTeacher,
       timezone: draft.timezone || "UTC",
       quranTranslationId: draft.quranTranslationId || "en.sahih",
+      onboardingStartLane: draft.onboardingStartLane,
     } satisfies OnboardingAssessmentDraft),
   );
 }

@@ -6,6 +6,10 @@ import {
   isSupportedQuranTranslationId,
   type QuranTranslationId,
 } from "@/hifzer/quran/translation-prefs";
+import {
+  isOnboardingStartLane,
+  type OnboardingStartLane,
+} from "@/hifzer/profile/onboarding";
 import { saveAssessment } from "@/hifzer/profile/server";
 
 type Payload = {
@@ -15,6 +19,7 @@ type Payload = {
   hasTeacher?: unknown;
   timezone?: unknown;
   quranTranslationId?: unknown;
+  onboardingStartLane?: unknown;
 };
 
 const VALID_PLAN_BIAS = new Set<PlanBias>(["BALANCED", "RETENTION", "SPEED"]);
@@ -38,7 +43,9 @@ export async function POST(req: Request) {
   const hasTeacher = Boolean(payload.hasTeacher);
   const timezone = String(payload.timezone ?? "UTC");
   const quranTranslationIdRaw = payload.quranTranslationId;
+  const onboardingStartLaneRaw = payload.onboardingStartLane;
   let quranTranslationId: QuranTranslationId | undefined;
+  let onboardingStartLane: OnboardingStartLane | undefined;
 
   if (!Number.isFinite(dailyMinutes) || dailyMinutes < 5) {
     return NextResponse.json({ error: "dailyMinutes must be a number >= 5." }, { status: 400 });
@@ -55,6 +62,12 @@ export async function POST(req: Request) {
     }
     quranTranslationId = quranTranslationIdRaw;
   }
+  if (onboardingStartLaneRaw != null) {
+    if (!isOnboardingStartLane(onboardingStartLaneRaw)) {
+      return NextResponse.json({ error: "Invalid onboardingStartLane." }, { status: 400 });
+    }
+    onboardingStartLane = onboardingStartLaneRaw;
+  }
 
   try {
     const profile = await saveAssessment({
@@ -65,6 +78,7 @@ export async function POST(req: Request) {
       hasTeacher,
       timezone,
       quranTranslationId,
+      onboardingStartLane,
     });
     return NextResponse.json({ ok: true, profile });
   } catch (error) {

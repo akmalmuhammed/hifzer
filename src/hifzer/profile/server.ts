@@ -142,7 +142,7 @@ function defaultCreateData(
     ...(input?.includeOnboardingState === false
       ? {}
       : {
-          onboardingStep: "welcome",
+          onboardingStep: "assessment",
           onboardingStartLane: null,
         }),
   };
@@ -512,9 +512,6 @@ export async function saveOnboardingProgress(input: {
   }
 
   const effectiveLane = input.onboardingStartLane ?? normalizeOnboardingStartLane(profile.onboardingStartLane) ?? null;
-  if (input.step === "permissions" && !effectiveLane) {
-    throw new OnboardingStateError("Choose a starting lane before opening permissions.", 409, "onboarding_lane_required");
-  }
   if (input.step === "complete" && !effectiveLane) {
     throw new OnboardingStateError("Choose a starting lane before finishing onboarding.", 409, "onboarding_lane_required");
   }
@@ -624,6 +621,7 @@ export async function saveAssessment(input: {
   hasTeacher: boolean;
   timezone: string;
   quranTranslationId?: QuranTranslationId;
+  onboardingStartLane?: OnboardingStartLane;
 }) {
   if (!dbConfigured()) {
     return null;
@@ -651,7 +649,10 @@ export async function saveAssessment(input: {
         : {}),
       timezone: input.timezone || "UTC",
       ...(capabilities.hasOnboardingStateColumns
-        ? { onboardingStep: nextOnboardingStep }
+        ? {
+            onboardingStep: nextOnboardingStep,
+            ...(input.onboardingStartLane ? { onboardingStartLane: input.onboardingStartLane } : {}),
+          }
         : {}),
     }),
     buildUpdate: (capabilities) => ({
@@ -664,7 +665,10 @@ export async function saveAssessment(input: {
         : {}),
       timezone: input.timezone || "UTC",
       ...(capabilities.hasOnboardingStateColumns
-        ? { onboardingStep: nextOnboardingStep }
+        ? {
+            onboardingStep: nextOnboardingStep,
+            ...(input.onboardingStartLane ? { onboardingStartLane: input.onboardingStartLane } : {}),
+          }
         : {}),
     }),
   });

@@ -118,7 +118,7 @@ export default function OnboardingStartPointPage() {
         message: `Surah ${selected.surahNumber}:${clampedAyah} (ayahId ${cursorAyahId})`,
         tone: "success",
       });
-      router.push("/onboarding/plan-preview");
+      router.push("/onboarding/complete");
     } finally {
       setSaving(false);
     }
@@ -127,16 +127,16 @@ export default function OnboardingStartPointPage() {
   return (
     <OnboardingShell
       step="start-point"
-      title="Choose where your journey starts."
-      subtitle="Pick the surah and ayah you want Hifzer to anchor from. This becomes your initial memorization cursor and can be updated later."
+      title="Choose where to begin."
+      subtitle="Pick the surah and ayah you want Hifzer to anchor from. This is the last setup step before the dashboard opens."
       backHref="/onboarding/assessment"
       headerAction={(
         <Button asChild variant="secondary" size="sm" className="gap-2">
           <Link href="/quran-preview">Browse Qur&apos;an</Link>
         </Button>
       )}
-      supportTitle="A precise start beats a generic default"
-      supportBody="New users often feel more trust when the app starts exactly where they expect, not at an arbitrary point."
+      supportTitle="One last choice, then you are in"
+      supportBody="We only need your starting place so the app opens with the right context instead of a generic default."
       supportPoints={[
         {
           title: "Choose any surah",
@@ -147,8 +147,8 @@ export default function OnboardingStartPointPage() {
           description: "Set the exact ayah you want to begin from and we translate it into the correct global ayah id.",
         },
         {
-          title: "Safe to change later",
-          description: "If your teacher or routine changes, you can move this cursor again from inside the product.",
+          title: "Easy to change later",
+          description: "If your routine changes, you can move this cursor again from inside the product.",
         },
       ]}
     >
@@ -249,7 +249,7 @@ export default function OnboardingStartPointPage() {
             You can change this later from the dashboard once onboarding is complete.
           </p>
           <Button onClick={saveAndNext} className="gap-2" loading={saving}>
-            Continue <ArrowRight size={16} />
+            Finish setup <ArrowRight size={16} />
           </Button>
         </div>
       </Card>

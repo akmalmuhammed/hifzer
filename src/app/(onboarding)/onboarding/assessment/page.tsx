@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Headphones, Link2, Mic, UserRoundCheck } from "lucide-react";
 import { OnboardingShell } from "@/components/onboarding/onboarding-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -28,6 +28,7 @@ type AssessmentDraft = {
   hasTeacher: boolean;
   timezone: string;
   quranTranslationId: QuranTranslationId;
+  onboardingStartLane: "hifz" | "fluency" | "listen" | "transitions";
 };
 
 const TIMEZONE_PLACEHOLDER = "Detecting timezone...";
@@ -38,6 +39,7 @@ const DEFAULT_DRAFT: AssessmentDraft = {
   hasTeacher: false,
   timezone: TIMEZONE_PLACEHOLDER,
   quranTranslationId: "en.sahih",
+  onboardingStartLane: "hifz",
 };
 
 export default function OnboardingAssessmentPage() {
@@ -98,6 +100,7 @@ export default function OnboardingAssessmentPage() {
       }
       persisted = true;
       setOnboardingAssessmentDraft(draft);
+      setOnboardingStartLane(draft.onboardingStartLane);
       pushToast({ title: "Saved", message: "Assessment persisted to your profile.", tone: "success" });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to save assessment.";
@@ -111,6 +114,7 @@ export default function OnboardingAssessmentPage() {
     }
 
     setOnboardingAssessmentDraft(draft);
+    setOnboardingStartLane(draft.onboardingStartLane);
     if (!persisted) {
       window.localStorage.removeItem("hifzer_onboarding_completed_v1");
     }
@@ -129,7 +133,7 @@ export default function OnboardingAssessmentPage() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           ...draft,
-          onboardingStartLane: "hifz",
+          onboardingStartLane: draft.onboardingStartLane,
         }),
       });
       if (!quickStartResponse.ok) {
@@ -146,7 +150,7 @@ export default function OnboardingAssessmentPage() {
       }
 
       setOnboardingAssessmentDraft(draft);
-      setOnboardingStartLane("hifz");
+      setOnboardingStartLane(draft.onboardingStartLane);
       setOnboardingCompleted();
       setDashboardFirstRunGuidePending();
       pushToast({
@@ -166,30 +170,30 @@ export default function OnboardingAssessmentPage() {
   return (
     <OnboardingShell
       step="assessment"
-      title="Shape a plan you can keep."
-      subtitle="These defaults tune your daily load, weekly cadence, and reading support so Hifzer starts at the right intensity."
-      backHref="/onboarding/welcome"
-      supportTitle="Recommended settings are already loaded"
-      supportBody="You can move quickly here. The goal is not to be perfect on day one, only to give the planner enough signal to stay realistic."
+      title="Let’s set up your first week."
+      subtitle="Pick a realistic pace, choose the lane that fits you best, and we’ll keep the rest light."
+      backHref="/"
+      supportTitle="Only the essentials"
+      supportBody="This step is doing the heavy lifting now so you do not have to click through extra setup screens later."
       supportPoints={[
         {
-          title: "Pace before pressure",
-          description: "A smaller plan you return to is better than an ambitious plan you abandon after three days.",
+          title: "Pick a pace you can keep",
+          description: "A realistic plan is better than a perfect-looking one that burns out by day three.",
         },
         {
-          title: "Translation follows you",
-          description: "Your chosen translation becomes the default across Qur'an reading and session support text.",
+          title: "Choose your best starting lane",
+          description: "If hifz is not the right first surface today, you can start with fluency, listening, or transitions instead.",
         },
         {
-          title: "Editable later",
-          description: "Every setting on this step can be changed again from Settings once you are inside the app.",
+          title: "Everything stays editable",
+          description: "You can adjust pace, lane, translation, and reminders later once the app feels familiar.",
         },
       ]}
     >
       <Card>
         <div className="max-w-2xl">
           <p className="text-sm leading-7 text-[color:var(--kw-muted)]">
-            We save these answers to your profile so the dashboard and planning engine can stay aligned from your first session.
+            This one step now covers your pace and your starting lane so onboarding stays short.
           </p>
         </div>
 
@@ -294,6 +298,73 @@ export default function OnboardingAssessmentPage() {
 
           <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3 md:col-span-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+              Start with
+            </p>
+            <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+              Choose the surface that feels most helpful right now. You can move between them later.
+            </p>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              {[
+                {
+                  v: "hifz",
+                  label: "Hifz first",
+                  body: "Go straight into memorization and review.",
+                  icon: <UserRoundCheck size={16} />,
+                },
+                {
+                  v: "fluency",
+                  label: "Fluency first",
+                  body: "Warm up recitation before heavier recall.",
+                  icon: <Mic size={16} />,
+                },
+                {
+                  v: "listen",
+                  label: "Listening first",
+                  body: "Use listen-and-repeat to build confidence.",
+                  icon: <Headphones size={16} />,
+                },
+                {
+                  v: "transitions",
+                  label: "Transitions first",
+                  body: "Repair ayah joins that keep slipping.",
+                  icon: <Link2 size={16} />,
+                },
+              ].map((option) => {
+                const active = draft.onboardingStartLane === option.v;
+                return (
+                  <button
+                    key={option.v}
+                    type="button"
+                    onClick={() =>
+                      setDraft((d) => ({
+                        ...d,
+                        onboardingStartLane: option.v as AssessmentDraft["onboardingStartLane"],
+                      }))
+                    }
+                    className={[
+                      "rounded-[20px] border px-4 py-3 text-left transition",
+                      active
+                        ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)]"
+                        : "border-[color:var(--kw-border-2)] bg-white/70 hover:bg-white",
+                    ].join(" ")}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{option.label}</p>
+                        <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">{option.body}</p>
+                      </div>
+                      <span className="grid h-9 w-9 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/80 text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
+                        {option.icon}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3 md:col-span-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
               Translation language
             </p>
             <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
@@ -324,7 +395,7 @@ export default function OnboardingAssessmentPage() {
               Timezone detected: {draft.timezone}. Adjust it later if you travel often.
             </p>
             <p className="mt-2 text-xs text-[color:var(--kw-faint)]">
-              If sync is being stubborn, start with the recommended defaults and refine everything later.
+              Two quick steps from here: this page, then your starting point.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">

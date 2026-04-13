@@ -403,7 +403,7 @@ export async function ensureCoreSchemaCompatibility(): Promise<void> {
         ADD COLUMN IF NOT EXISTS "quranCursorAyahId" INTEGER,
         ADD COLUMN IF NOT EXISTS "quranTranslationId" TEXT NOT NULL DEFAULT 'en.sahih',
         ADD COLUMN IF NOT EXISTS "quranShowDetails" BOOLEAN NOT NULL DEFAULT true,
-        ADD COLUMN IF NOT EXISTS "onboardingStep" TEXT NOT NULL DEFAULT 'welcome',
+        ADD COLUMN IF NOT EXISTS "onboardingStep" TEXT NOT NULL DEFAULT 'assessment',
         ADD COLUMN IF NOT EXISTS "onboardingStartLane" TEXT;
       `);
       await prisma.$executeRawUnsafe(`
@@ -422,9 +422,14 @@ export async function ensureCoreSchemaCompatibility(): Promise<void> {
       `);
       await prisma.$executeRawUnsafe(`
         UPDATE "UserProfile"
+        SET "onboardingStep" = 'assessment'
+        WHERE COALESCE("onboardingStep", '') = 'welcome';
+      `);
+      await prisma.$executeRawUnsafe(`
+        UPDATE "UserProfile"
         SET "onboardingStep" = 'complete'
         WHERE "onboardingCompletedAt" IS NOT NULL
-          AND COALESCE("onboardingStep", 'welcome') <> 'complete';
+          AND COALESCE("onboardingStep", 'assessment') <> 'complete';
       `);
       await prisma.$executeRawUnsafe(`
         ALTER TABLE "UserProfile"
