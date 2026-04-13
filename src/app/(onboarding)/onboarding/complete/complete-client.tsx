@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import * as Sentry from "@sentry/nextjs";
 import { ArrowRight, CheckCircle2, Compass, PlayCircle, Sparkles } from "lucide-react";
 import { OnboardingShell } from "@/components/onboarding/onboarding-shell";
 import { QuranFoundationConnectCard } from "@/components/quran/quran-foundation-connect-card";
@@ -134,6 +135,16 @@ export function OnboardingCompleteClient(props: {
                     throw new Error(payload.error || "Failed to complete onboarding.");
                   }
                 } catch (error) {
+                  Sentry.captureException(error, {
+                    tags: {
+                      area: "onboarding",
+                      step: "complete",
+                      action: "finish_onboarding",
+                    },
+                    extra: {
+                      onboardingStartLane,
+                    },
+                  });
                   pushToast({
                     title: "Finish onboarding failed",
                     message: error instanceof Error ? error.message : "Failed to complete onboarding.",

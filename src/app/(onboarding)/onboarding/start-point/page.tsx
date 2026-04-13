@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import * as Sentry from "@sentry/nextjs";
 import { ArrowRight, Search } from "lucide-react";
 import { OnboardingShell } from "@/components/onboarding/onboarding-shell";
 import { Button } from "@/components/ui/button";
@@ -105,7 +106,19 @@ export default function OnboardingStartPointPage() {
         if (!res.ok) {
           throw new Error("Failed to sync starting point.");
         }
-      } catch {
+      } catch (error) {
+        Sentry.captureException(error, {
+          tags: {
+            area: "onboarding",
+            step: "start-point",
+            action: "save_start_point",
+          },
+          extra: {
+            surahNumber: selected.surahNumber,
+            ayahNumber: clampedAyah,
+            cursorAyahId,
+          },
+        });
         pushToast({
           title: "Starting point saved locally",
           message: "We’ll keep your place and retry the profile sync as you finish onboarding.",

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import * as Sentry from "@sentry/nextjs";
 import { ArrowRight, Headphones, Link2, Mic, UserRoundCheck } from "lucide-react";
 import { OnboardingShell } from "@/components/onboarding/onboarding-shell";
 import { Button } from "@/components/ui/button";
@@ -104,6 +105,16 @@ export default function OnboardingAssessmentPage() {
       pushToast({ title: "Saved", message: "Assessment persisted to your profile.", tone: "success" });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to save assessment.";
+      Sentry.captureException(error, {
+        tags: {
+          area: "onboarding",
+          step: "assessment",
+          action: "save_assessment",
+        },
+        extra: {
+          draft,
+        },
+      });
       pushToast({
         title: "Saved locally",
         message: `${message} We’ll keep going and sync the profile as the rest of onboarding completes.`,
@@ -161,6 +172,16 @@ export default function OnboardingAssessmentPage() {
       router.push("/dashboard");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to start with defaults.";
+      Sentry.captureException(error, {
+        tags: {
+          area: "onboarding",
+          step: "assessment",
+          action: "quick_start",
+        },
+        extra: {
+          draft,
+        },
+      });
       pushToast({ title: "Quick start failed", message, tone: "warning" });
     } finally {
       setQuickStarting(false);
