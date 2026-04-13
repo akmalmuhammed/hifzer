@@ -49,15 +49,16 @@ function safeRedirectPath(candidate: string | null | undefined, fallback = "/das
 
 export default async function middleware(req: NextRequest, event: NextFetchEvent) {
   if (!clerkEnabled()) {
-    return NextResponse.next();
+    return withRequestId(req, NextResponse.next());
   }
 
   const { clerkMiddleware } = await import("@clerk/nextjs/server");
   const handler = clerkMiddleware(async (auth, innerReq) => {
+    const requestId = ensureRequestId(innerReq);
     const pathname = innerReq.nextUrl.pathname;
     const shouldProtect = isProtectedRoute(pathname) || isProtectedQuranPath(pathname);
     if (!shouldProtect) {
-      return NextResponse.next();
+      return withRequestId(innerReq, NextResponse.next(), requestId);
     }
 
     const { userId } = await auth();
@@ -69,10 +70,10 @@ export default async function middleware(req: NextRequest, event: NextFetchEvent
       const requestedRedirect = innerReq.nextUrl.searchParams.get("redirect_url");
       const redirectPath = safeRedirectPath(requestedRedirect, safeRedirectPath(fallbackPath));
       signInUrl.searchParams.set("redirect_url", redirectPath);
-      return NextResponse.redirect(signInUrl);
+      return withRequestId(innerReq, NextResponse.redirect(signInUrl), requestId);
     }
 
-    return NextResponse.next();
+    return withRequestId(innerReq, NextResponse.next(), requestId);
   });
 
   return handler(req, event);
@@ -81,3 +82,17 @@ export default async function middleware(req: NextRequest, event: NextFetchEvent
 export const config = {
   matcher: ["/((?!_next|.*\\..*).*)"],
 };
+
+function ensureRequestId(req: NextRequest): string {
+  const existing = req.headers.get("x-request-id");
+  if (existing) {
+    return existing;
+  }
+  return crypto.randomUUID();
+}
+
+function withRequestId(req: NextRequest, response: NextResponse, requestId?: string): NextResponse {
+  const id = requestId ?? ensureRequestId(req);
+  response.headers.set("x-request-id", id);
+  return response;
+}

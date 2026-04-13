@@ -1,20 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useId } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { AlertTriangle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 export default function RootSegmentError(props: { error: Error & { digest?: string }; reset: () => void }) {
+  const errorId = useId();
+
   useEffect(() => {
     console.error(props.error);
     Sentry.captureException(props.error, {
       tags: { area: "root-error-boundary" },
-      extra: { digest: props.error?.digest ?? null },
+      extra: { digest: props.error?.digest ?? null, errorId },
     });
-  }, [props.error]);
+
+    void fetch("/api/telemetry/error", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        errorId,
+        digest: props.error?.digest ?? null,
+        message: props.error?.message ?? "Unknown error",
+        stack: props.error?.stack ?? null,
+        source: "root-error-boundary",
+        path: window.location?.pathname ?? null,
+      }),
+    }).catch(() => null);
+  }, [props.error, errorId]);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
@@ -28,7 +43,10 @@ export default function RootSegmentError(props: { error: Error & { digest?: stri
               Something went wrong.
             </h1>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-              Try a reset. If it persists, refresh the page.
+              Try a reset. If it persists, refresh the page and share the error ID below.
+            </p>
+            <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
+              Error ID: <span className="text-[color:var(--kw-ink)]">{errorId}</span>
             </p>
           </div>
           <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[rgba(234,88,12,0.28)] bg-[rgba(234,88,12,0.12)] text-[color:var(--kw-ember-600)]">
