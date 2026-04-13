@@ -7,6 +7,7 @@ import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
 import { ReaderBookmarkControl } from "@/components/bookmarks/reader-bookmark-control";
 import { JournalPrefillLink } from "@/components/journal/journal-prefill-link";
 import { AyahAiExplanationPanel } from "@/components/quran/ayah-ai-explanation-panel";
+import { QuranAiAssistantPanel } from "@/components/quran/quran-ai-assistant-panel";
 import { SupportTextPanel } from "@/components/quran/support-text-panel";
 import { Card } from "@/components/ui/card";
 import type { ReaderUiCopy } from "@/hifzer/quran/reader-ui-copy";
@@ -392,6 +393,7 @@ export function CompactReaderClient({
         ) : null}
 
         {!focusMode ? <AyahAiExplanationPanel key={current.id} ayahId={current.id} compact /> : null}
+        {!focusMode ? <QuranAiAssistantPanel key={`assistant-${current.id}`} ayahId={current.id} compact /> : null}
 
         {!focusMode ? (
           <div className="mt-6 flex items-center gap-2">

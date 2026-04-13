@@ -18,6 +18,23 @@ type ExplainAyahRequest = {
   } | null;
 };
 
+type QuranAssistantRequest = {
+  query: string;
+  responseLanguage: string;
+  currentAyah: {
+    verseKey: string;
+    surahNumber: number;
+    ayahNumber: number;
+    arabicText: string;
+    localTranslation: {
+      text: string;
+      label: string;
+      sourceLabel: string | null;
+      direction: "ltr" | "rtl";
+    } | null;
+  } | null;
+};
+
 type ExplainAyahResponse = {
   ok: true;
   provider: string;
@@ -32,6 +49,29 @@ type ExplainAyahResponse = {
     sources: Array<{ label: string; kind: SourceKind }>;
     groundingTools: string[];
   };
+};
+
+type QuranAssistantResponse = {
+  ok: true;
+  provider: string;
+  model: string;
+  query: string;
+  answer: string;
+  matches: Array<{
+    verseKey: string;
+    surahNumber: number;
+    ayahNumber: number;
+    arabicText: string;
+    translation: {
+      text: string;
+      label: string;
+      sourceLabel: string | null;
+      direction: "ltr" | "rtl";
+    } | null;
+    tafsirSummary: string;
+    sources: Array<{ label: string; kind: SourceKind }>;
+  }>;
+  groundingTools: string[];
 };
 
 type ErrorResponse = {
@@ -131,6 +171,27 @@ const EXPLAIN_AYAH_RESPONSE_SCHEMA = {
   ],
 } as const;
 
+const QURAN_ASSISTANT_RESPONSE_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    answer: { type: "string" },
+    matches: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          verseKey: { type: "string" },
+          tafsirSummary: { type: "string" },
+        },
+        required: ["verseKey", "tafsirSummary"],
+      },
+    },
+  },
+  required: ["answer", "matches"],
+} as const;
+
 function trimValue(value: string | undefined | null): string | null {
   const trimmed = value?.trim();
   return trimmed ? trimmed : null;
@@ -219,6 +280,61 @@ function assertExplainAyahRequest(payload: unknown): ExplainAyahRequest | null {
     arabicText,
     responseLanguage,
     localTranslation,
+  };
+}
+
+function assertQuranAssistantRequest(payload: unknown): QuranAssistantRequest | null {
+  if (!isRecord(payload)) {
+    return null;
+  }
+
+  const query = readString(payload, "query");
+  const responseLanguage = readString(payload, "responseLanguage");
+  if (!query || !responseLanguage) {
+    return null;
+  }
+
+  let currentAyah: QuranAssistantRequest["currentAyah"] = null;
+  if (payload.currentAyah != null) {
+    if (!isRecord(payload.currentAyah)) {
+      return null;
+    }
+    const verseKey = readString(payload.currentAyah, "verseKey");
+    const arabicText = readString(payload.currentAyah, "arabicText");
+    const surahNumber = toPositiveInt(payload.currentAyah.surahNumber);
+    const ayahNumber = toPositiveInt(payload.currentAyah.ayahNumber);
+    if (!verseKey || !arabicText || !surahNumber || !ayahNumber) {
+      return null;
+    }
+
+    let localTranslation: NonNullable<QuranAssistantRequest["currentAyah"]>["localTranslation"] = null;
+    if (payload.currentAyah.localTranslation != null) {
+      if (!isRecord(payload.currentAyah.localTranslation)) {
+        return null;
+      }
+      const text = readString(payload.currentAyah.localTranslation, "text");
+      const label = readString(payload.currentAyah.localTranslation, "label");
+      const sourceLabel = readString(payload.currentAyah.localTranslation, "sourceLabel");
+      const direction = readString(payload.currentAyah.localTranslation, "direction");
+      if (!text || !label || (direction !== "ltr" && direction !== "rtl")) {
+        return null;
+      }
+      localTranslation = { text, label, sourceLabel, direction };
+    }
+
+    currentAyah = {
+      verseKey,
+      surahNumber,
+      ayahNumber,
+      arabicText,
+      localTranslation,
+    };
+  }
+
+  return {
+    query,
+    responseLanguage,
+    currentAyah,
   };
 }
 
@@ -614,6 +730,68 @@ function hasStructuredExplanationContent(payload: JsonRecord): boolean {
   );
 }
 
+function parseVerseKey(value: string): { surahNumber: number; ayahNumber: number } | null {
+  const match = value.trim().match(/^(\d{1,3}):(\d{1,3})$/);
+  if (!match) {
+    return null;
+  }
+  const surahNumber = Number(match[1]);
+  const ayahNumber = Number(match[2]);
+  if (!Number.isFinite(surahNumber) || !Number.isFinite(ayahNumber) || surahNumber < 1 || ayahNumber < 1) {
+    return null;
+  }
+  return { surahNumber, ayahNumber };
+}
+
+type GroundedAssistantMatch = {
+  verseKey: string;
+  surahNumber: number;
+  ayahNumber: number;
+  arabicText: string;
+  translation: {
+    text: string;
+    label: string;
+    sourceLabel: string | null;
+    direction: "ltr" | "rtl";
+  } | null;
+  tafsir: Array<{ label: string; text: string }>;
+  sources: Array<{ label: string; kind: SourceKind }>;
+};
+
+function normalizeAssistantMatchResponse(
+  match: GroundedAssistantMatch,
+  tafsirSummary: string,
+): QuranAssistantResponse["matches"][number] {
+  return {
+    verseKey: match.verseKey,
+    surahNumber: match.surahNumber,
+    ayahNumber: match.ayahNumber,
+    arabicText: match.arabicText,
+    translation: match.translation,
+    tafsirSummary,
+    sources: match.sources,
+  };
+}
+
+function normalizeQuranAssistantResponse(
+  query: string,
+  provider: string,
+  model: string,
+  answer: string,
+  matches: QuranAssistantResponse["matches"],
+  groundingTools: string[],
+): QuranAssistantResponse {
+  return {
+    ok: true,
+    provider,
+    model,
+    query,
+    answer: answer.trim() || `Here are grounded Quran matches for "${query}".`,
+    matches: matches.slice(0, 4),
+    groundingTools: groundingTools.slice(0, 12),
+  };
+}
+
 function scoreStructuredExplanation(payload: JsonRecord): number {
   return (
     (readString(payload, "summary") ? 3 : 0) +
@@ -775,6 +953,295 @@ function pickEditionText(result: JsonRecord | null, editionId: string): string |
   return null;
 }
 
+type McpToolDescriptor = {
+  name: string;
+  description?: string;
+  inputSchema: {
+    type: "object";
+    properties?: Record<string, object>;
+    required?: string[];
+  };
+};
+
+async function listQuranMcpTools(client: Client): Promise<McpToolDescriptor[]> {
+  const result = await client.listTools();
+  return Array.isArray(result.tools)
+    ? result.tools.map((tool) => ({
+        name: tool.name,
+        description: tool.description,
+        inputSchema: tool.inputSchema,
+      }))
+    : [];
+}
+
+function schemaHasStringType(value: unknown): boolean {
+  if (!isRecord(value)) {
+    return false;
+  }
+  const type = value.type;
+  if (typeof type === "string") {
+    return type === "string";
+  }
+  return Array.isArray(type) && type.includes("string");
+}
+
+function schemaHasNumberType(value: unknown): boolean {
+  if (!isRecord(value)) {
+    return false;
+  }
+  const type = value.type;
+  if (typeof type === "string") {
+    return type === "number" || type === "integer";
+  }
+  return Array.isArray(type) && (type.includes("number") || type.includes("integer"));
+}
+
+function readToolProperties(tool: McpToolDescriptor): Array<[string, JsonRecord]> {
+  const properties = tool.inputSchema?.properties;
+  if (!properties || typeof properties !== "object") {
+    return [];
+  }
+  return Object.entries(properties)
+    .filter((entry): entry is [string, JsonRecord] => isRecord(entry[1]));
+}
+
+function findQuranMcpTool(tools: McpToolDescriptor[], patterns: RegExp[]): McpToolDescriptor | null {
+  for (const tool of tools) {
+    const haystack = `${tool.name} ${tool.description ?? ""}`.toLowerCase();
+    if (patterns.every((pattern) => pattern.test(haystack))) {
+      return tool;
+    }
+  }
+  return null;
+}
+
+function buildSearchToolArgs(tool: McpToolDescriptor, query: string, limit: number): Record<string, unknown> {
+  const args: Record<string, unknown> = {};
+  const properties = readToolProperties(tool);
+  const propertyMap = new Map(properties.map(([name, schema]) => [name.toLowerCase(), { name, schema }]));
+
+  const stringCandidates = ["query", "question", "text", "search", "topic", "keywords", "prompt"];
+  const numberCandidates = ["limit", "maxresults", "count", "size", "topk", "k", "top"];
+
+  for (const candidate of stringCandidates) {
+    const hit = propertyMap.get(candidate);
+    if (hit && schemaHasStringType(hit.schema)) {
+      args[hit.name] = query;
+      break;
+    }
+  }
+
+  if (!Object.keys(args).length) {
+    const fallbackString = properties.find(([, schema]) => schemaHasStringType(schema));
+    if (fallbackString) {
+      args[fallbackString[0]] = query;
+    }
+  }
+
+  for (const candidate of numberCandidates) {
+    const hit = propertyMap.get(candidate);
+    if (hit && schemaHasNumberType(hit.schema)) {
+      args[hit.name] = limit;
+      break;
+    }
+  }
+
+  return args;
+}
+
+function collectVerseKeysFromUnknown(value: unknown, found: Set<string>, depth = 0): void {
+  if (depth > 6 || value == null) {
+    return;
+  }
+
+  if (typeof value === "string") {
+    for (const match of value.matchAll(/\b(\d{1,3}:\d{1,3})\b/g)) {
+      if (parseVerseKey(match[1])) {
+        found.add(match[1]);
+      }
+    }
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      collectVerseKeysFromUnknown(item, found, depth + 1);
+    }
+    return;
+  }
+
+  if (!isRecord(value)) {
+    return;
+  }
+
+  for (const [key, nested] of Object.entries(value)) {
+    if ((key === "verseKey" || key === "ayah" || key === "ayahs" || key === "verse") && typeof nested === "string") {
+      const trimmed = nested.trim();
+      if (parseVerseKey(trimmed)) {
+        found.add(trimmed);
+      }
+    }
+    collectVerseKeysFromUnknown(nested, found, depth + 1);
+  }
+}
+
+function extractVerseKeysFromToolResult(result: { structuredContent: JsonRecord | null; texts: string[] }): string[] {
+  const found = new Set<string>();
+  collectVerseKeysFromUnknown(result.structuredContent, found);
+  for (const text of result.texts) {
+    collectVerseKeysFromUnknown(text, found);
+  }
+  return Array.from(found);
+}
+
+function queryRefersToCurrentAyah(query: string): boolean {
+  return /\b(this ayah|this verse|current ayah|current verse)\b/i.test(query);
+}
+
+function buildAssistantFallbackSummary(match: GroundedAssistantMatch): string {
+  const tafsirText = match.tafsir[0]?.text ?? "";
+  if (tafsirText) {
+    return clipText(tafsirText, 260);
+  }
+  if (match.translation?.text) {
+    return clipText(match.translation.text, 220);
+  }
+  return `Grounded reading notes for Quran ${match.verseKey}.`;
+}
+
+async function fetchGroundedAssistantMatches(
+  input: QuranAssistantRequest,
+  quranMcpUrl: string,
+): Promise<{
+  matches: GroundedAssistantMatch[];
+  groundingTools: string[];
+}> {
+  return withQuranMcpClient(quranMcpUrl, async (client) => {
+    const groundingRules = await callQuranMcpTool(client, "fetch_grounding_rules", {});
+    const groundingTools = new Set<string>(["fetch_grounding_rules"]);
+    const groundingNonce = groundingRules.texts.map(extractGroundingNonce).find(Boolean) ?? null;
+    const commonArgs = groundingNonce ? { grounding_nonce: groundingNonce } : {};
+
+    let verseKeys: string[] = [];
+    if (input.currentAyah && queryRefersToCurrentAyah(input.query)) {
+      verseKeys = [input.currentAyah.verseKey];
+    } else {
+      const tools = await listQuranMcpTools(client);
+      const quranSearchTool = findQuranMcpTool(tools, [/search/, /quran|verse|ayah/]);
+      const tafsirSearchTool = findQuranMcpTool(tools, [/search/, /tafsir/]);
+      if (!quranSearchTool && !tafsirSearchTool) {
+        throw new Error("Quran MCP search tools are unavailable for the assistant.");
+      }
+
+      if (quranSearchTool) {
+        const quranSearchResult = await callQuranMcpTool(
+          client,
+          quranSearchTool.name,
+          buildSearchToolArgs(quranSearchTool, input.query, 4),
+        );
+        groundingTools.add(quranSearchTool.name);
+        verseKeys = extractVerseKeysFromToolResult(quranSearchResult);
+      }
+
+      if (verseKeys.length < 3 && tafsirSearchTool) {
+        const tafsirSearchResult = await callQuranMcpTool(
+          client,
+          tafsirSearchTool.name,
+          buildSearchToolArgs(tafsirSearchTool, input.query, 4),
+        );
+        groundingTools.add(tafsirSearchTool.name);
+        verseKeys = Array.from(new Set([...verseKeys, ...extractVerseKeysFromToolResult(tafsirSearchResult)]));
+      }
+    }
+
+    if (!verseKeys.length) {
+      throw new Error("Quran MCP could not find grounded ayah matches for this question.");
+    }
+
+    const matches: GroundedAssistantMatch[] = [];
+    for (const verseKey of verseKeys.slice(0, 3)) {
+      const parsedVerseKey = parseVerseKey(verseKey);
+      if (!parsedVerseKey) {
+        continue;
+      }
+
+      const [quranResult, translationResult, tafsirResult] = await Promise.all([
+        callQuranMcpTool(client, "fetch_quran", {
+          ayahs: verseKey,
+          ...commonArgs,
+        }),
+        callQuranMcpTool(client, "fetch_translation", {
+          ayahs: verseKey,
+          editions: "en-abdel-haleem",
+          ...commonArgs,
+        }),
+        callQuranMcpTool(client, "fetch_tafsir", {
+          ayahs: verseKey,
+          editions: ["ar-muyassar", "ar-jalalayn"],
+          ...commonArgs,
+        }),
+      ]);
+
+      groundingTools.add("fetch_quran");
+      groundingTools.add("fetch_translation");
+      groundingTools.add("fetch_tafsir");
+
+      const arabicText = pickEditionText(quranResult.structuredContent, "ar-simple-clean")
+        ?? (input.currentAyah?.verseKey === verseKey ? input.currentAyah.arabicText : null)
+        ?? "";
+      const canonicalTranslationText = pickEditionText(translationResult.structuredContent, "en-abdel-haleem");
+      const translation = canonicalTranslationText
+        ? {
+            text: canonicalTranslationText,
+            label: "Abdel Haleem translation",
+            sourceLabel: "Quran MCP",
+            direction: "ltr" as const,
+          }
+        : input.currentAyah?.verseKey === verseKey
+          ? input.currentAyah.localTranslation
+          : null;
+
+      const tafsir = [
+        {
+          label: "Tafsir al-Muyassar",
+          text: clipText(stripHtml(pickEditionText(tafsirResult.structuredContent, "ar-muyassar") ?? ""), 900),
+        },
+        {
+          label: "Tafsir al-Jalalayn",
+          text: clipText(stripHtml(pickEditionText(tafsirResult.structuredContent, "ar-jalalayn") ?? ""), 700),
+        },
+      ].filter((item) => item.text);
+
+      const sources: Array<{ label: string; kind: SourceKind }> = [{ label: `Quran ${verseKey}`, kind: "quran" }];
+      if (translation) {
+        sources.push({ label: translation.label, kind: "translation" });
+      }
+      for (const item of tafsir) {
+        sources.push({ label: item.label, kind: "tafsir" });
+      }
+
+      matches.push({
+        verseKey,
+        surahNumber: parsedVerseKey.surahNumber,
+        ayahNumber: parsedVerseKey.ayahNumber,
+        arabicText,
+        translation,
+        tafsir,
+        sources,
+      });
+    }
+
+    if (!matches.length) {
+      throw new Error("Grounded Quran search returned verse references, but no readable matches.");
+    }
+
+    return {
+      matches,
+      groundingTools: Array.from(groundingTools),
+    };
+  });
+}
+
 async function fetchGroundedAyahContext(
   input: ExplainAyahRequest,
   quranMcpUrl: string,
@@ -865,6 +1332,45 @@ function buildGroqGroundedInput(
   ]
     .filter(Boolean)
     .join("\n");
+}
+
+function buildGroundedAssistantInput(
+  input: QuranAssistantRequest,
+  grounded: { matches: GroundedAssistantMatch[]; groundingTools: string[] },
+): string {
+  return [
+    `Answer this Quran question in ${input.responseLanguage}: ${input.query}`,
+    "Use only the grounded Quran.ai MCP material below. Do not add facts beyond it.",
+    "If the grounded matches are limited, be honest and stay within them.",
+    "",
+    "Grounded matches:",
+    ...grounded.matches.flatMap((match) => [
+      `Verse key: ${match.verseKey}`,
+      `Arabic text: ${match.arabicText}`,
+      match.translation ? `Translation (${match.translation.label}): ${match.translation.text}` : "Translation: unavailable",
+      ...match.tafsir.map((item) => `${item.label}: ${item.text}`),
+      `Sources: ${match.sources.map((source) => `${source.label} (${source.kind})`).join(", ")}`,
+      "",
+    ]),
+    "Output rules:",
+    "- answer: 1-3 plain sentences that answer the question directly.",
+    "- matches: include only the grounded verse keys supplied above.",
+    "- tafsirSummary: 1-2 plain sentences per match, drawn only from the grounded tafsir/translation.",
+    "- Do not invent extra matches, source labels, or verse keys.",
+  ].join("\n");
+}
+
+function buildAssistantFormattingPrompt(
+  input: QuranAssistantRequest,
+  grounded: { matches: GroundedAssistantMatch[]; groundingTools: string[] },
+): string {
+  return [
+    `Convert these grounded Quran notes into a JSON object for the query: ${input.query}`,
+    "Use only the grounded material below.",
+    "The matches array must only reference verse keys that appear in the grounded notes.",
+    "",
+    buildGroundedAssistantInput(input, grounded),
+  ].join("\n");
 }
 
 async function createGeminiInteraction(
@@ -1012,6 +1518,122 @@ async function formatGroundedExplanation(
         ok: false,
         status: "error",
         detail: error instanceof Error ? error.message : "Gemini returned an invalid formatted explanation.",
+      },
+    };
+  }
+}
+
+function buildAssistantFallbackResponse(
+  input: QuranAssistantRequest,
+  provider: string,
+  model: string,
+  grounded: { matches: GroundedAssistantMatch[]; groundingTools: string[] },
+): QuranAssistantResponse {
+  return normalizeQuranAssistantResponse(
+    input.query,
+    provider,
+    model,
+    `Here are grounded Quran matches for "${input.query}".`,
+    grounded.matches.map((match) => normalizeAssistantMatchResponse(match, buildAssistantFallbackSummary(match))),
+    grounded.groundingTools,
+  );
+}
+
+function normalizeAssistantModelResult(
+  payload: JsonRecord,
+  grounded: { matches: GroundedAssistantMatch[]; groundingTools: string[] },
+): { answer: string; matches: QuranAssistantResponse["matches"] } {
+  const groundedByVerseKey = new Map(grounded.matches.map((match) => [match.verseKey, match]));
+  const normalizedMatches: QuranAssistantResponse["matches"] = [];
+
+  if (Array.isArray(payload.matches)) {
+    for (const item of payload.matches) {
+      if (!isRecord(item)) {
+        continue;
+      }
+      const verseKey = readString(item, "verseKey");
+      const tafsirSummary = readString(item, "tafsirSummary");
+      if (!verseKey || !tafsirSummary) {
+        continue;
+      }
+      const groundedMatch = groundedByVerseKey.get(verseKey);
+      if (!groundedMatch) {
+        continue;
+      }
+      normalizedMatches.push(normalizeAssistantMatchResponse(groundedMatch, tafsirSummary));
+    }
+  }
+
+  if (!normalizedMatches.length) {
+    return {
+      answer: readString(payload, "answer") ?? "",
+      matches: grounded.matches.map((match) => normalizeAssistantMatchResponse(match, buildAssistantFallbackSummary(match))),
+    };
+  }
+
+  return {
+    answer: readString(payload, "answer") ?? "",
+    matches: normalizedMatches,
+  };
+}
+
+async function formatGroundedAssistantWithGemini(
+  apiKey: string,
+  model: string,
+  input: QuranAssistantRequest,
+  grounded: { matches: GroundedAssistantMatch[]; groundingTools: string[] },
+): Promise<{ ok: true; payload: JsonRecord } | { ok: false; error: ErrorResponse }> {
+  const response = await fetch(`${GEMINI_MODELS_URL}/${model}:generateContent`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-goog-api-key": apiKey,
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          parts: [
+            {
+              text: buildAssistantFormattingPrompt(input, grounded),
+            },
+          ],
+        },
+      ],
+      generationConfig: {
+        temperature: 0,
+        maxOutputTokens: 900,
+        thinkingConfig: {
+          thinkingBudget: 0,
+        },
+        responseMimeType: "application/json",
+        responseJsonSchema: QURAN_ASSISTANT_RESPONSE_SCHEMA,
+      },
+    }),
+  });
+  const payload = (await response.json().catch(() => null)) as JsonRecord | null;
+  if (!response.ok || !payload) {
+    return {
+      ok: false,
+      error: {
+        ok: false,
+        status: response.status === 401 || response.status === 403 ? "not_configured" : "error",
+        detail: readErrorDetail(payload) ?? "Gemini could not format the grounded Quran assistant answer.",
+      },
+    };
+  }
+
+  try {
+    return {
+      ok: true,
+      payload: parseJsonFromText(extractGenerateContentText(payload)),
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      error: {
+        ok: false,
+        status: "error",
+        detail: error instanceof Error ? error.message : "Gemini returned an invalid grounded Quran assistant answer.",
       },
     };
   }
@@ -1220,6 +1842,110 @@ async function explainAyahWithGroq(
   }
 }
 
+async function answerQuranAssistantWithGemini(
+  input: QuranAssistantRequest,
+  env: Env,
+): Promise<QuranAssistantResponse | ErrorResponse> {
+  const apiKey = trimValue(env.GEMINI_API_KEY);
+  if (!apiKey) {
+    return {
+      ok: false,
+      status: "not_configured",
+      detail: "GEMINI_API_KEY is missing from the AI gateway.",
+    };
+  }
+
+  const model = trimValue(env.GEMINI_MODEL) ?? DEFAULT_GEMINI_MODEL;
+  const quranMcpUrl = trimValue(env.QURAN_MCP_URL) ?? DEFAULT_QURAN_MCP_URL;
+  let grounded;
+  try {
+    grounded = await fetchGroundedAssistantMatches(input, quranMcpUrl);
+  } catch (error) {
+    return {
+      ok: false,
+      status: "error",
+      detail: error instanceof Error ? error.message : "Quran MCP grounding failed.",
+    };
+  }
+
+  const formatted = await formatGroundedAssistantWithGemini(apiKey, model, input, grounded);
+  if (!formatted.ok) {
+    return buildAssistantFallbackResponse(input, "gemini", model, grounded);
+  }
+
+  const normalized = normalizeAssistantModelResult(formatted.payload, grounded);
+  return normalizeQuranAssistantResponse(
+    input.query,
+    "gemini",
+    model,
+    normalized.answer,
+    normalized.matches,
+    grounded.groundingTools,
+  );
+}
+
+async function answerQuranAssistantWithGroq(
+  input: QuranAssistantRequest,
+  env: Env,
+): Promise<QuranAssistantResponse | ErrorResponse> {
+  const apiKey = trimValue(env.GROQ_API_KEY);
+  if (!apiKey) {
+    return {
+      ok: false,
+      status: "not_configured",
+      detail: "GROQ_API_KEY is missing from the AI gateway.",
+    };
+  }
+
+  const model = trimValue(env.GROQ_MODEL) ?? DEFAULT_GROQ_MODEL;
+  const quranMcpUrl = trimValue(env.QURAN_MCP_URL) ?? DEFAULT_QURAN_MCP_URL;
+  let grounded;
+  try {
+    grounded = await fetchGroundedAssistantMatches(input, quranMcpUrl);
+  } catch (error) {
+    return {
+      ok: false,
+      status: "error",
+      detail: error instanceof Error ? error.message : "Quran MCP grounding failed.",
+    };
+  }
+
+  const strictStructuredOutput = model === "openai/gpt-oss-20b" || model === "openai/gpt-oss-120b";
+  const formatted = await createGroqResponse(apiKey, {
+    model,
+    instructions: "You are Hifzer's grounded Quran assistant. Use only the provided Quran.ai MCP material.",
+    input: buildGroundedAssistantInput(input, grounded),
+    temperature: 0,
+    ...(strictStructuredOutput ? { reasoning: { effort: "low" } } : {}),
+    text: {
+      format: {
+        type: "json_schema",
+        name: "quran_assistant_answer",
+        ...(strictStructuredOutput ? { strict: true } : {}),
+        schema: QURAN_ASSISTANT_RESPONSE_SCHEMA,
+      },
+    },
+  });
+  if (!formatted.ok) {
+    return buildAssistantFallbackResponse(input, "groq", model, grounded);
+  }
+
+  try {
+    const payload = parseJsonFromText(extractGroqResponseText(formatted.payload));
+    const normalized = normalizeAssistantModelResult(payload, grounded);
+    return normalizeQuranAssistantResponse(
+      input.query,
+      "groq",
+      model,
+      normalized.answer,
+      normalized.matches,
+      grounded.groundingTools,
+    );
+  } catch {
+    return buildAssistantFallbackResponse(input, "groq", model, grounded);
+  }
+}
+
 const worker = {
   async fetch(request: Request, env: Env): Promise<Response> {
     try {
@@ -1257,6 +1983,30 @@ const worker = {
         }
         if (provider === "groq") {
           const result = await explainAyahWithGroq(input, env);
+          if (result.ok) {
+            return json(result, 200);
+          }
+          return json(result, result.status === "not_configured" ? 503 : 502);
+        }
+      }
+
+      if (request.method === "POST" && url.pathname === "/v1/quran/assistant") {
+        const body = await request.json().catch(() => null);
+        const input = assertQuranAssistantRequest(body);
+        if (!input) {
+          return json({ ok: false, status: "error", detail: "Invalid quran-assistant payload." }, 400);
+        }
+
+        const provider = resolveProvider(env);
+        if (provider === "gemini") {
+          const result = await answerQuranAssistantWithGemini(input, env);
+          if (result.ok) {
+            return json(result, 200);
+          }
+          return json(result, result.status === "not_configured" ? 503 : 502);
+        }
+        if (provider === "groq") {
+          const result = await answerQuranAssistantWithGroq(input, env);
           if (result.ok) {
             return json(result, 200);
           }

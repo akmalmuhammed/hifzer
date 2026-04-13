@@ -48,6 +48,50 @@ export type AyahExplanationGatewaySuccess = {
   explanation: AyahExplanation;
 };
 
+export type QuranAssistantMatchTranslation = {
+  text: string;
+  label: string;
+  sourceLabel: string | null;
+  direction: "ltr" | "rtl";
+} | null;
+
+export type QuranAssistantMatch = {
+  verseKey: string;
+  surahNumber: number;
+  ayahNumber: number;
+  arabicText: string;
+  translation: QuranAssistantMatchTranslation;
+  tafsirSummary: string;
+  sources: AyahExplanationSource[];
+};
+
+export type QuranAssistantGatewayRequest = {
+  query: string;
+  responseLanguage: string;
+  currentAyah: {
+    verseKey: string;
+    surahNumber: number;
+    ayahNumber: number;
+    arabicText: string;
+    localTranslation: {
+      text: string;
+      label: string;
+      sourceLabel: string | null;
+      direction: "ltr" | "rtl";
+    } | null;
+  } | null;
+};
+
+export type QuranAssistantGatewaySuccess = {
+  ok: true;
+  provider: string;
+  model: string;
+  query: string;
+  answer: string;
+  matches: QuranAssistantMatch[];
+  groundingTools: string[];
+};
+
 export type AyahExplanationGatewayFailure = {
   ok: false;
   status: "not_configured" | "timeout" | "error";
@@ -55,3 +99,4 @@ export type AyahExplanationGatewayFailure = {
 };
 
 export type AyahExplanationGatewayResponse = AyahExplanationGatewaySuccess | AyahExplanationGatewayFailure;
+export type QuranAssistantGatewayResponse = QuranAssistantGatewaySuccess | AyahExplanationGatewayFailure;
