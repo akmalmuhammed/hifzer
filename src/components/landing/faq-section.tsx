@@ -20,7 +20,7 @@ const FAQS = [
   },
   {
     q: "Why switch from another Qur'an app?",
-    a: "Most apps help you read. Hifzer also keeps hifz review, dua, and private notes in the same flow, which is better when you want the practice to feel connected.",
+    a: "Most apps help you read. Hifzer also helps you stay on top of hifz, keep your duas nearby, and save private notes in the same flow, which makes the whole routine easier to keep.",
   },
   {
     q: "Is Hifzer only for hifz students?",

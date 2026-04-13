@@ -6,7 +6,7 @@ import styles from "@/components/landing/landing.module.css";
 
 const landingTitle = "Hifzer | Qur'an, Hifz, Dua, and Notes";
 const landingDescription =
-  "Hifzer is an all-in-one Qur'an companion for daily reading, hifz review, memorization, dua, and journaling in one app.";
+  "Hifzer is an all-in-one Qur'an companion for daily reading, hifz, dua, and journaling in one app.";
 const landingImage = "/opengraph-image";
 
 export const metadata: Metadata = {

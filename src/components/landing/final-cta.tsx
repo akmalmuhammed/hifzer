@@ -46,7 +46,7 @@ export function FinalCta() {
           </h2>
 
           <p className="mx-auto mt-5 max-w-[46ch] text-base leading-[1.8] text-[rgba(248,250,252,0.58)]">
-            Start your routine free to keep reading, hifz review, dua, and private notes together
+            Start your routine free to keep reading, hifz, dua, and private notes together
             from the first session.
           </p>
 

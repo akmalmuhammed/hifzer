@@ -13,7 +13,7 @@ import styles from "./landing.module.css";
 const HERO_POINTS = [
   {
     label: "Hifz",
-    body: "Keep your lesson, recent revision, and longer-cycle review visible so memorisation stays structured.",
+    body: "Know what to memorize next, what to revise today, and what needs extra care before it starts slipping.",
   },
   {
     label: "Qur'an",
@@ -80,7 +80,8 @@ export function Hero() {
             <h1 className={styles.fitnessHeroTitle}>The all-in-one app for Qur&apos;an, hifz, dua, and notes.</h1>
             <p className={styles.fitnessHeroSummary}>
               For Muslims building a daily Qur&apos;an habit, Hifzer replaces the mix of a Qur&apos;an
-              app, adhkar list, and notes app with one place to read, revise, ask, and reflect.
+              app, hifz notebook, adhkar list, and notes app with one place to read, memorize,
+              revise, ask, and reflect.
             </p>
 
             <div className={styles.fitnessHeroActions}>

@@ -10,7 +10,7 @@ export function MarketingFooter() {
             <div>
               <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Hifzer</p>
               <p className="mt-2 max-w-sm text-sm leading-6 text-[color:var(--kw-muted)]">
-                One companion app for Qur&apos;an reading, hifz review, duas, and private notes.
+                One companion app for Qur&apos;an reading, hifz, duas, and private notes.
               </p>
             </div>
 

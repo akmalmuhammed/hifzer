@@ -5,11 +5,11 @@ import { FeatureShowcase } from "@/components/landing/feature-showcase";
 const CORE_POINTS = [
   {
     label: "One place for the routine.",
-    body: "Hifzer keeps Qur'an reading, hifz review, duas, and private notes in one app so you are not stitching the routine together across separate tools.",
+    body: "Hifzer keeps Qur'an reading, hifz, duas, and private notes in one app so you are not stitching the routine together across separate tools.",
   },
   {
     label: "For readers and hifz students.",
-    body: "If you are building a daily reading habit, Hifzer keeps your place. If you are revising seriously, it also keeps your review visible.",
+    body: "If you are building a daily reading habit, Hifzer keeps your place. If you are doing hifz, it helps you stay clear on what to learn, what to revise, and what needs more attention.",
   },
   {
     label: "What it replaces.",
@@ -26,10 +26,10 @@ const CORE_FEATURES: Array<{
   reverse?: boolean;
 }> = [
   {
-    eyebrow: "Hifz review",
-    title: "Keep your review organized from day to day.",
+    eyebrow: "Hifz",
+    title: "Make hifz feel clear, steady, and easier to keep.",
     body:
-      "Hifzer keeps your current lesson, recent revision, and harder verses in view so you can review on purpose instead of guessing what to revisit next.",
+      "Hifzer helps you see what to memorize next, what to revise today, and which parts need extra care, so you spend less time feeling behind and more time building hifz that stays with you.",
     imageSrc: "/landing/showcase/Hifz%20final.png",
     imageAlt: "Hifzer hifz screen showing review controls and recall grading",
   },
@@ -64,7 +64,7 @@ export function LandingFeatureRail() {
         </h2>
         <p className="mt-5 max-w-none text-sm leading-7 text-[color:var(--kw-muted)] sm:max-w-[58ch] md:text-[15px]">
           Hifzer is the companion app for readers who want continuity and for hifz students who
-          need structure. It keeps the parts of the practice that matter most together.
+          want more clarity and consistency. It keeps the parts of the practice that matter most together.
         </p>
       </div>
 
