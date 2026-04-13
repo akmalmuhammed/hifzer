@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { requestAyahExplanation } from "./server";
+import { requestAyahExplanation, requestQuranAssistantAnswer } from "./server";
 
 const ORIGINAL_ENV = {
   HIFZER_AI_GATEWAY_URL: process.env.HIFZER_AI_GATEWAY_URL,
@@ -109,6 +109,59 @@ describe("ai/server", () => {
       ok: false,
       status: "timeout",
       detail: "AI explanation is taking longer than expected. Please try again.",
+    });
+  });
+
+  it("returns success when the Quran assistant gateway responds with grounded matches", async () => {
+    process.env.HIFZER_AI_GATEWAY_URL = "https://gateway.example";
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        new Response(
+          JSON.stringify({
+            ok: true,
+            provider: "groq",
+            model: "openai/gpt-oss-20b",
+            query: "ayah about sadness",
+            answer: {
+              summary: "The Quran acknowledges sorrow and teaches turning grief to Allah with patience and trust.",
+              keyTakeaways: ["Grief is acknowledged.", "Patience and trust are central."],
+              ayahMatches: [
+                {
+                  verseKey: "12:86",
+                  surahNumber: 12,
+                  ayahNumber: 86,
+                  arabicText: "قال إنما أشكو بثي وحزني إلى الله",
+                  translationText: "He said, I only complain of my sorrow and grief to Allah.",
+                  translationLabel: "Maududi",
+                  sourceUrl: "https://quran.com/12/86",
+                  relevanceScore: 0.57,
+                  relevanceReason: "Yaqub directs his grief to Allah.",
+                },
+              ],
+              tafsirHighlights: [],
+              followUpPrompt: "What verses speak about patience during grief?",
+              sources: [{ label: "Quran 12:86", kind: "quran" }],
+              groundingTools: ["fetch_grounding_rules", "search_quran", "search_tafsir"],
+            },
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        ),
+      ),
+    );
+
+    const result = await requestQuranAssistantAnswer({
+      query: "ayah about sadness",
+      responseLanguage: "English",
+      currentAyah: null,
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      provider: "groq",
+      model: "openai/gpt-oss-20b",
+      query: "ayah about sadness",
     });
   });
 });

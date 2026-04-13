@@ -1,6 +1,8 @@
 "use client";
 
+import { motion, useReducedMotion } from "framer-motion";
 import { FeatureShowcase } from "@/components/landing/feature-showcase";
+import { QURAN_TRANSLATION_OPTIONS } from "@/hifzer/quran/translation-prefs";
 
 const CORE_POINTS = [
   {
@@ -52,7 +54,17 @@ const CORE_FEATURES: Array<{
   },
 ] as const;
 
+const TRANSLATION_LANGUAGE_LABELS = QURAN_TRANSLATION_OPTIONS.map(
+  (option) => option.label.split(" - ")[0] ?? option.label,
+);
+const SCROLLING_TRANSLATION_LANGUAGES = [
+  ...TRANSLATION_LANGUAGE_LABELS,
+  ...TRANSLATION_LANGUAGE_LABELS,
+];
+
 export function LandingFeatureRail() {
+  const reduceMotion = useReducedMotion();
+
   return (
     <section className="mx-auto max-w-[1280px] px-4 py-12 md:px-8 md:py-20">
       <div className="mx-auto max-w-[1040px]">
@@ -66,6 +78,36 @@ export function LandingFeatureRail() {
           Hifzer is the companion app for readers who want continuity and for hifz students who
           want more clarity and consistency. It keeps the parts of the practice that matter most together.
         </p>
+        <div className="mt-6 overflow-hidden rounded-[22px] border border-[rgba(var(--kw-accent-rgb),0.14)] bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(255,255,255,0.48))] px-3 py-3 shadow-[var(--kw-shadow-soft)] backdrop-blur">
+          <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
+            <span className="inline-flex h-2 w-2 rounded-full bg-[rgba(var(--kw-accent-rgb),0.85)]" />
+            Qur&apos;an translation languages in Hifzer
+          </div>
+          <div className="relative overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_12%,black_88%,transparent)]">
+            <motion.div
+              className="flex w-max gap-2"
+              animate={reduceMotion ? undefined : { x: ["0%", "-50%"] }}
+              transition={
+                reduceMotion
+                  ? undefined
+                  : {
+                      duration: 24,
+                      ease: "linear",
+                      repeat: Infinity,
+                    }
+              }
+            >
+              {SCROLLING_TRANSLATION_LANGUAGES.map((language, index) => (
+                <span
+                  key={`${language}-${index}`}
+                  className="inline-flex min-h-9 items-center rounded-full border border-[rgba(var(--kw-accent-rgb),0.16)] bg-[rgba(255,255,255,0.82)] px-4 text-sm font-medium text-[color:var(--kw-ink)] shadow-[0_10px_24px_rgba(11,18,32,0.05)]"
+                >
+                  {language}
+                </span>
+              ))}
+            </motion.div>
+          </div>
+        </div>
       </div>
 
       <div className="mx-auto mt-10 max-w-[1040px] divide-y divide-[rgba(var(--kw-accent-rgb),0.12)] border-y border-[rgba(var(--kw-accent-rgb),0.12)]">

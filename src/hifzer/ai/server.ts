@@ -4,6 +4,7 @@ import type {
   AyahExplanationGatewayRequest,
   AyahExplanationGatewayResponse,
   QuranAssistantGatewayRequest,
+  QuranAssistantAskGatewayResponse,
   QuranAssistantGatewayResponse,
 } from "./contracts";
 import { getHifzerAiGatewayConfig } from "./config";
@@ -19,16 +20,51 @@ function parseGatewayError(payload: unknown, fallback: string): string {
   return fallback;
 }
 
-async function requestGatewayJson<TInput, TResponse extends { ok: boolean; status?: string; detail?: string }>(
+export async function requestAyahExplanation(
+  input: AyahExplanationGatewayRequest,
+): Promise<AyahExplanationGatewayResponse> {
+  return requestGateway("/v1/quran/explain-ayah", input, {
+    notConfigured: "AI explanation is not configured on this deployment yet.",
+    unavailable: "AI explanation is unavailable right now.",
+    timeout: "AI explanation is taking longer than expected. Please try again.",
+  });
+}
+
+export async function requestQuranAssistantAnswer(
+  input: QuranAssistantGatewayRequest,
+): Promise<QuranAssistantAskGatewayResponse> {
+  return requestGateway("/v1/quran/ask", input, {
+    notConfigured: "Quran AI assistant is not configured on this deployment yet.",
+    unavailable: "Quran AI assistant is unavailable right now.",
+    timeout: "Quran AI assistant is taking longer than expected. Please try again.",
+  });
+}
+
+export async function requestQuranAssistant(
+  input: QuranAssistantGatewayRequest,
+): Promise<QuranAssistantGatewayResponse> {
+  return requestGateway("/v1/quran/assistant", input, {
+    notConfigured: "Quran AI assistant is not configured on this deployment yet.",
+    unavailable: "Quran AI assistant is unavailable right now.",
+    timeout: "Quran AI assistant is taking longer than expected. Please try again.",
+  });
+}
+
+async function requestGateway<TRequest, TResponse extends { ok: boolean; status?: "not_configured" | "timeout" | "error"; detail?: string }>(
   pathname: string,
-  input: TInput,
+  input: TRequest,
+  messages: {
+    notConfigured: string;
+    unavailable: string;
+    timeout: string;
+  },
 ): Promise<TResponse> {
   const config = getHifzerAiGatewayConfig();
   if (!config.baseUrl) {
     return {
       ok: false,
       status: "not_configured",
-      detail: "AI explanation is not configured on this deployment yet.",
+      detail: messages.notConfigured,
     } as TResponse;
   }
 
@@ -53,15 +89,15 @@ async function requestGatewayJson<TInput, TResponse extends { ok: boolean; statu
       return {
         ok: false,
         status: failure?.status ?? (response.status === 503 ? "not_configured" : "error"),
-        detail: parseGatewayError(failure, "AI explanation is unavailable right now."),
+        detail: parseGatewayError(failure, messages.unavailable),
       } as TResponse;
     }
 
-    if (!payload || !payload.ok) {
+    if (!payload?.ok) {
       return {
         ok: false,
         status: payload?.status ?? "error",
-        detail: payload?.detail ?? "AI explanation is unavailable right now.",
+        detail: payload?.detail ?? messages.unavailable,
       } as TResponse;
     }
 
@@ -71,29 +107,9 @@ async function requestGatewayJson<TInput, TResponse extends { ok: boolean; statu
     return {
       ok: false,
       status: timedOut ? "timeout" : "error",
-      detail: timedOut
-        ? "AI explanation is taking longer than expected. Please try again."
-        : "AI explanation is unavailable right now.",
+      detail: timedOut ? messages.timeout : messages.unavailable,
     } as TResponse;
   } finally {
     clearTimeout(timeout);
   }
-}
-
-export async function requestAyahExplanation(
-  input: AyahExplanationGatewayRequest,
-): Promise<AyahExplanationGatewayResponse> {
-  return requestGatewayJson<AyahExplanationGatewayRequest, AyahExplanationGatewayResponse>(
-    "/v1/quran/explain-ayah",
-    input,
-  );
-}
-
-export async function requestQuranAssistant(
-  input: QuranAssistantGatewayRequest,
-): Promise<QuranAssistantGatewayResponse> {
-  return requestGatewayJson<QuranAssistantGatewayRequest, QuranAssistantGatewayResponse>(
-    "/v1/quran/assistant",
-    input,
-  );
 }

@@ -48,22 +48,13 @@ export type AyahExplanationGatewaySuccess = {
   explanation: AyahExplanation;
 };
 
-export type QuranAssistantMatchTranslation = {
-  text: string;
-  label: string;
-  sourceLabel: string | null;
-  direction: "ltr" | "rtl";
-} | null;
-
-export type QuranAssistantMatch = {
-  verseKey: string;
-  surahNumber: number;
-  ayahNumber: number;
-  arabicText: string;
-  translation: QuranAssistantMatchTranslation;
-  tafsirSummary: string;
-  sources: AyahExplanationSource[];
+export type AyahExplanationGatewayFailure = {
+  ok: false;
+  status: "not_configured" | "timeout" | "error";
+  detail: string;
 };
+
+export type AyahExplanationGatewayResponse = AyahExplanationGatewaySuccess | AyahExplanationGatewayFailure;
 
 export type QuranAssistantGatewayRequest = {
   query: string;
@@ -82,6 +73,52 @@ export type QuranAssistantGatewayRequest = {
   } | null;
 };
 
+export type QuranAssistantAyahMatch = {
+  verseKey: string;
+  surahNumber: number;
+  ayahNumber: number;
+  arabicText: string;
+  translationText: string | null;
+  translationLabel: string | null;
+  sourceUrl: string | null;
+  relevanceScore: number | null;
+  relevanceReason: string | null;
+};
+
+export type QuranAssistantTafsirHighlight = {
+  verseKey: string;
+  source: string;
+  detail: string;
+  sourceUrl: string | null;
+};
+
+export type QuranAssistantAnswer = {
+  summary: string;
+  keyTakeaways: string[];
+  ayahMatches: QuranAssistantAyahMatch[];
+  tafsirHighlights: QuranAssistantTafsirHighlight[];
+  followUpPrompt: string | null;
+  sources: AyahExplanationSource[];
+  groundingTools: string[];
+};
+
+export type QuranAssistantMatchTranslation = {
+  text: string;
+  label: string;
+  sourceLabel: string | null;
+  direction: "ltr" | "rtl";
+} | null;
+
+export type QuranAssistantMatch = {
+  verseKey: string;
+  surahNumber: number;
+  ayahNumber: number;
+  arabicText: string;
+  translation: QuranAssistantMatchTranslation;
+  tafsirSummary: string;
+  sources: AyahExplanationSource[];
+};
+
 export type QuranAssistantGatewaySuccess = {
   ok: true;
   provider: string;
@@ -92,11 +129,19 @@ export type QuranAssistantGatewaySuccess = {
   groundingTools: string[];
 };
 
-export type AyahExplanationGatewayFailure = {
+export type QuranAssistantAskGatewaySuccess = {
+  ok: true;
+  provider: string;
+  model: string;
+  query: string;
+  answer: QuranAssistantAnswer;
+};
+
+export type QuranAssistantGatewayFailure = {
   ok: false;
   status: "not_configured" | "timeout" | "error";
   detail: string;
 };
 
-export type AyahExplanationGatewayResponse = AyahExplanationGatewaySuccess | AyahExplanationGatewayFailure;
-export type QuranAssistantGatewayResponse = QuranAssistantGatewaySuccess | AyahExplanationGatewayFailure;
+export type QuranAssistantGatewayResponse = QuranAssistantGatewaySuccess | QuranAssistantGatewayFailure;
+export type QuranAssistantAskGatewayResponse = QuranAssistantAskGatewaySuccess | QuranAssistantGatewayFailure;
