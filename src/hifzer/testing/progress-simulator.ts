@@ -211,7 +211,10 @@ export async function prepareProgressSimulationUser(input: {
     hasTeacher: false,
     timezone: input.timezone,
   });
-  await markOnboardingComplete(input.clerkUserId);
+  await markOnboardingComplete({
+    clerkUserId: input.clerkUserId,
+    onboardingStartLane: "hifz",
+  });
   await saveStartPoint(
     input.clerkUserId,
     input.hifzStartSurahNumber,

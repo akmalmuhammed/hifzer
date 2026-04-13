@@ -92,17 +92,25 @@ export default function OnboardingStartPointPage() {
       window.localStorage.removeItem(LEGACY_STORAGE_KEYS.cursorAyahId);
 
       try {
-        await fetch("/api/profile/start-point", {
+        const res = await fetch("/api/profile/start-point", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
             surahNumber: selected.surahNumber,
             ayahNumber: clampedAyah,
             cursorAyahId,
+            source: "onboarding",
           }),
         });
+        if (!res.ok) {
+          throw new Error("Failed to sync starting point.");
+        }
       } catch {
-        // Local state remains the source of truth if backend sync is unavailable.
+        pushToast({
+          title: "Starting point saved locally",
+          message: "We’ll keep your place and retry the profile sync as you finish onboarding.",
+          tone: "warning",
+        });
       }
 
       pushToast({

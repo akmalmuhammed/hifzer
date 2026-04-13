@@ -85,6 +85,7 @@ export default function OnboardingAssessmentPage() {
     }
 
     setSaving(true);
+    let persisted = false;
     try {
       const res = await fetch("/api/profile/assessment", {
         method: "POST",
@@ -95,15 +96,25 @@ export default function OnboardingAssessmentPage() {
       if (!res.ok) {
         throw new Error(payload.error || "Failed to save assessment.");
       }
+      persisted = true;
       setOnboardingAssessmentDraft(draft);
       pushToast({ title: "Saved", message: "Assessment persisted to your profile.", tone: "success" });
-      router.push("/onboarding/start-point");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to save assessment.";
-      pushToast({ title: "Save failed", message, tone: "warning" });
+      pushToast({
+        title: "Saved locally",
+        message: `${message} We’ll keep going and sync the profile as the rest of onboarding completes.`,
+        tone: "warning",
+      });
     } finally {
       setSaving(false);
     }
+
+    setOnboardingAssessmentDraft(draft);
+    if (!persisted) {
+      window.localStorage.removeItem("hifzer_onboarding_completed_v1");
+    }
+    router.push("/onboarding/start-point");
   }
 
   async function startWithDefaults() {
@@ -113,7 +124,7 @@ export default function OnboardingAssessmentPage() {
 
     setQuickStarting(true);
     try {
-      const res = await fetch("/api/profile/onboarding-quick-start", {
+      const quickStartResponse = await fetch("/api/profile/onboarding-quick-start", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -121,9 +132,17 @@ export default function OnboardingAssessmentPage() {
           onboardingStartLane: "hifz",
         }),
       });
-      const payload = (await res.json()) as { error?: string };
-      if (!res.ok) {
-        throw new Error(payload.error || "Failed to start with defaults.");
+      if (!quickStartResponse.ok) {
+        const quickStartPayload = (await quickStartResponse.json()) as { error?: string };
+        const fallbackResponse = await fetch("/api/profile/onboarding-complete", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ onboardingStartLane: "hifz" }),
+        });
+        const fallbackPayload = (await fallbackResponse.json()) as { error?: string };
+        if (!fallbackResponse.ok) {
+          throw new Error(quickStartPayload.error || fallbackPayload.error || "Failed to start with defaults.");
+        }
       }
 
       setOnboardingAssessmentDraft(draft);

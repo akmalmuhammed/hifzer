@@ -8,12 +8,15 @@ import { OnboardingShell } from "@/components/onboarding/onboarding-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
+import { useToast } from "@/components/ui/toast";
 import { getOnboardingStartLane, setOnboardingStartLane } from "@/hifzer/local/store";
 import type { OnboardingStartLane } from "@/hifzer/profile/onboarding";
 
 export function OnboardingFluencyCheckClient() {
   const router = useRouter();
+  const { pushToast } = useToast();
   const [selectedLane, setSelectedLane] = useState<OnboardingStartLane>("hifz");
+  const [continuing, setContinuing] = useState(false);
 
   useEffect(() => {
     const storedLane = getOnboardingStartLane();
@@ -144,8 +147,36 @@ export function OnboardingFluencyCheckClient() {
             </p>
             <Button
               className="gap-2"
-              onClick={() => {
+              loading={continuing}
+              onClick={async () => {
+                if (continuing) {
+                  return;
+                }
+
+                setContinuing(true);
                 setOnboardingStartLane(selectedLane);
+                try {
+                  const res = await fetch("/api/profile/onboarding-progress", {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({
+                      step: "permissions",
+                      onboardingStartLane: selectedLane,
+                    }),
+                  });
+                  if (!res.ok) {
+                    throw new Error("Failed to sync your starting lane.");
+                  }
+                } catch {
+                  pushToast({
+                    title: "Lane saved locally",
+                    message: "We’ll keep this choice and sync it again before you enter the app.",
+                    tone: "warning",
+                  });
+                } finally {
+                  setContinuing(false);
+                }
+
                 router.push("/onboarding/permissions");
               }}
             >

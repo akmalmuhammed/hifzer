@@ -17,7 +17,6 @@ import {
   maxOnboardingStep,
   normalizeOnboardingStartLane,
   normalizeOnboardingStep,
-  onboardingStepRank,
   type OnboardingStartLane,
   type OnboardingStep,
 } from "@/hifzer/profile/onboarding";
@@ -743,30 +742,33 @@ export async function quickStartOnboarding(input: {
   return toSnapshot(row);
 }
 
-export async function markOnboardingComplete(clerkUserId: string) {
+export async function markOnboardingComplete(input: {
+  clerkUserId: string;
+  onboardingStartLane?: OnboardingStartLane;
+}) {
   if (!dbConfigured()) {
     return null;
   }
-  const profile = await getOrCreateUserProfile(clerkUserId);
+  const profile = await getOrCreateUserProfile(input.clerkUserId);
   if (!profile) {
     return null;
   }
   if (profile.onboardingCompletedAt) {
     return toSnapshot(profile);
   }
-  const currentStep = normalizeOnboardingStep(profile.onboardingStep);
-  if (onboardingStepRank(currentStep) < onboardingStepRank("complete")) {
-    throw new OnboardingStateError("Finish the required onboarding steps before opening the dashboard.", 409, "onboarding_step_locked");
-  }
-  const startLane = normalizeOnboardingStartLane(profile.onboardingStartLane);
+
+  // The completion endpoint is the last recovery point in the onboarding flow.
+  // If earlier progress writes failed, we still want a new user who reached the
+  // final screen to be able to finish with a valid starting lane.
+  const startLane = normalizeOnboardingStartLane(input.onboardingStartLane ?? profile.onboardingStartLane);
   if (!startLane) {
     throw new OnboardingStateError("Choose your opening lane before completing onboarding.", 409, "onboarding_lane_required");
   }
   const completedAt = new Date();
   const row = await upsertProfileCompat({
-    clerkUserId,
+    clerkUserId: input.clerkUserId,
     buildCreate: (capabilities) => ({
-      ...defaultCreateData(clerkUserId, {
+      ...defaultCreateData(input.clerkUserId, {
         includeQuranLane: capabilities.hasQuranLaneColumns,
         includeOnboardingState: capabilities.hasOnboardingStateColumns,
       }),

@@ -1,16 +1,42 @@
 import { auth } from "@clerk/nextjs/server";
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
+import {
+  isOnboardingStartLane,
+  type OnboardingStartLane,
+} from "@/hifzer/profile/onboarding";
 import { markOnboardingComplete, OnboardingStateError } from "@/hifzer/profile/server";
 
-export async function POST() {
+type Payload = {
+  onboardingStartLane?: unknown;
+};
+
+export async function POST(req: Request) {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  let payload: Payload = {};
   try {
-    const profile = await markOnboardingComplete(userId);
+    payload = (await req.json()) as Payload;
+  } catch {
+    payload = {};
+  }
+
+  let onboardingStartLane: OnboardingStartLane | undefined;
+  if (payload.onboardingStartLane != null) {
+    if (!isOnboardingStartLane(payload.onboardingStartLane)) {
+      return NextResponse.json({ error: "Invalid onboarding start lane." }, { status: 400 });
+    }
+    onboardingStartLane = payload.onboardingStartLane;
+  }
+
+  try {
+    const profile = await markOnboardingComplete({
+      clerkUserId: userId,
+      onboardingStartLane,
+    });
     return NextResponse.json({ ok: true, profile });
   } catch (error) {
     if (error instanceof OnboardingStateError) {

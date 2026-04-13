@@ -28,6 +28,7 @@ export default function PlanPreviewPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [payload, setPayload] = useState<TodayPayload | null>(null);
+  const [continuing, setContinuing] = useState(false);
 
   async function loadPreview(signal?: AbortSignal) {
     setError(null);
@@ -111,6 +112,30 @@ export default function PlanPreviewPage() {
         key: item.label,
         loading: false as const,
       }));
+
+  async function continueToFluencyCheck() {
+    if (continuing) {
+      return;
+    }
+
+    setContinuing(true);
+    try {
+      const res = await fetch("/api/profile/onboarding-progress", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ step: "fluency-check" }),
+      });
+      if (!res.ok) {
+        throw new Error("Failed to sync onboarding progress.");
+      }
+    } catch {
+      // Keep the user moving even when the profile write is temporarily unavailable.
+    } finally {
+      setContinuing(false);
+    }
+
+    router.push("/onboarding/fluency-check");
+  }
 
   return (
     <OnboardingShell
@@ -232,7 +257,7 @@ export default function PlanPreviewPage() {
                 Retry preview
               </Button>
             ) : null}
-            <Button className="gap-2" onClick={() => router.push("/onboarding/fluency-check")}>
+            <Button className="gap-2" onClick={continueToFluencyCheck} loading={continuing}>
               Continue <ArrowRight size={16} />
             </Button>
           </div>

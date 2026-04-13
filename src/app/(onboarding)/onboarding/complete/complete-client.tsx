@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, CheckCircle2, Compass, PlayCircle, Sparkles } from "lucide-react";
 import { OnboardingShell } from "@/components/onboarding/onboarding-shell";
@@ -8,7 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
-import { setDashboardFirstRunGuidePending, setOnboardingCompleted } from "@/hifzer/local/store";
+import {
+  getOnboardingStartLane,
+  setDashboardFirstRunGuidePending,
+  setOnboardingCompleted,
+} from "@/hifzer/local/store";
 import type { QuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/types";
 
 export function OnboardingCompleteClient(props: {
@@ -16,6 +21,7 @@ export function OnboardingCompleteClient(props: {
 }) {
   const router = useRouter();
   const { pushToast } = useToast();
+  const [finishing, setFinishing] = useState(false);
 
   return (
     <OnboardingShell
@@ -109,18 +115,40 @@ export function OnboardingCompleteClient(props: {
               size="lg"
               className="gap-2"
               onClick={async () => {
-                setOnboardingCompleted();
-                setDashboardFirstRunGuidePending();
-
-                try {
-                  await fetch("/api/profile/onboarding-complete", { method: "POST" });
-                } catch {
-                  // Local completion still allows progress if API is temporarily unavailable.
+                if (finishing) {
+                  return;
                 }
 
+                setFinishing(true);
+                const onboardingStartLane = getOnboardingStartLane();
+                try {
+                  const res = await fetch("/api/profile/onboarding-complete", {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({
+                      ...(onboardingStartLane ? { onboardingStartLane } : {}),
+                    }),
+                  });
+                  const payload = (await res.json()) as { error?: string };
+                  if (!res.ok) {
+                    throw new Error(payload.error || "Failed to complete onboarding.");
+                  }
+                } catch (error) {
+                  pushToast({
+                    title: "Finish onboarding failed",
+                    message: error instanceof Error ? error.message : "Failed to complete onboarding.",
+                    tone: "warning",
+                  });
+                  setFinishing(false);
+                  return;
+                }
+
+                setOnboardingCompleted();
+                setDashboardFirstRunGuidePending();
                 pushToast({ title: "Onboarding complete", message: "Welcome to Hifzer.", tone: "success" });
                 router.push("/dashboard");
               }}
+              loading={finishing}
             >
               Go to dashboard <ArrowRight size={18} />
             </Button>
