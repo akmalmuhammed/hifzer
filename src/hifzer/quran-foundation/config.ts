@@ -30,11 +30,23 @@ export type QuranFoundationRuntimeConfig = {
   contentTafsirResourceId: number | null;
 };
 
-export function getQuranFoundationConfig(): QuranFoundationRuntimeConfig {
-  const siteUrl = getSiteUrl();
-  const redirectUri =
-    trimEnv(process.env.QF_OAUTH_REDIRECT_URI) ??
-    new URL("/api/quran-foundation/callback", siteUrl).toString();
+export function getQuranFoundationRedirectUri(siteUrl?: URL | string | null): string {
+  const configured = trimEnv(process.env.QF_OAUTH_REDIRECT_URI);
+  if (configured) {
+    return configured;
+  }
+
+  const baseUrl =
+    siteUrl instanceof URL
+      ? siteUrl
+      : typeof siteUrl === "string"
+        ? new URL(siteUrl)
+        : getSiteUrl();
+  return new URL("/api/quran-foundation/callback", baseUrl).toString();
+}
+
+export function getQuranFoundationConfig(siteUrl?: URL | string | null): QuranFoundationRuntimeConfig {
+  const redirectUri = getQuranFoundationRedirectUri(siteUrl);
 
   return {
     clientId: trimEnv(process.env.QF_CLIENT_ID),

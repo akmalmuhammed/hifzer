@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Fragment } from "react";
-import { Inter, IBM_Plex_Mono, Amiri, Plus_Jakarta_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { InstallAppBanner } from "@/components/pwa/install-app-banner";
@@ -12,32 +11,9 @@ import { DEFAULT_UI_LANGUAGE, uiLanguageToHtmlLang } from "@/hifzer/i18n/ui-lang
 import { DEFAULT_THEME_DOCUMENT_STATE } from "@/hifzer/theme/preferences";
 import { clerkAuthRoutes } from "@/lib/auth-redirects";
 import { clerkEnabled } from "@/lib/clerk-config";
+import { appMonoFont, appSansFont } from "@/lib/fonts";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
-
-const inter = Inter({
-  variable: "--font-kw-sans",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-});
-
-const mono = IBM_Plex_Mono({
-  variable: "--font-kw-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
-});
-
-const amiri = Amiri({
-  variable: "--font-quran-uthmani",
-  subsets: ["arabic"],
-  weight: ["400", "700"],
-});
-
-const marketingDisplay = Plus_Jakarta_Sans({
-  variable: "--font-kw-marketing",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-});
 
 const siteUrl = getSiteUrl();
 
@@ -110,7 +86,7 @@ export default async function RootLayout({
         data-mode={DEFAULT_THEME_DOCUMENT_STATE.mode}
         data-theme={DEFAULT_THEME_DOCUMENT_STATE.theme}
         data-accent={DEFAULT_THEME_DOCUMENT_STATE.accent}
-        className={`${inter.variable} ${mono.variable} ${amiri.variable} ${marketingDisplay.variable}`}
+        className={`${appSansFont.variable} ${appMonoFont.variable}`}
         style={{ colorScheme: DEFAULT_THEME_DOCUMENT_STATE.mode }}
       >
       <body className="kw-canvas min-h-dvh bg-[color:var(--kw-bg)] text-[color:var(--kw-ink)] antialiased">

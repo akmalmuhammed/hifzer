@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import {
+  getQuranFoundationRedirectUri,
   getQuranFoundationRequestedScopes,
   hasQuranFoundationUserFlowConfig,
 } from "@/hifzer/quran-foundation/config";
@@ -37,10 +38,12 @@ export async function GET(req: Request) {
 
   const { verifier, challenge } = createPkceChallenge();
   const state = createOAuthState();
+  const redirectUri = getQuranFoundationRedirectUri(requestUrl);
   const authorizeUrl = buildQuranFoundationAuthorizeUrl({
     state,
     codeChallenge: challenge,
     scopes: getQuranFoundationRequestedScopes(),
+    redirectUri,
   });
 
   const response = NextResponse.redirect(authorizeUrl);

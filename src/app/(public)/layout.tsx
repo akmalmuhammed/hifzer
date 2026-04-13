@@ -5,6 +5,7 @@ import { PublicAuthProvider } from "@/components/landing/public-auth-context";
 import { DEFAULT_UI_LANGUAGE } from "@/hifzer/i18n/ui-language";
 import { DEFAULT_THEME_DOCUMENT_STATE } from "@/hifzer/theme/preferences";
 import { clerkEnabled } from "@/lib/clerk-config";
+import { marketingDisplayFont, quranFont } from "@/lib/fonts";
 import { auth } from "@clerk/nextjs/server";
 
 export default async function MarketingLayout({ children }: { children: React.ReactNode }) {
@@ -18,7 +19,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
       initialThemeState={DEFAULT_THEME_DOCUMENT_STATE}
     >
       <PublicAuthProvider authEnabled={authEnabled} initialSignedIn={initialSignedIn}>
-        <div className="min-h-dvh">
+        <div className={`min-h-dvh ${marketingDisplayFont.variable} ${quranFont.variable}`}>
           <MarketingNav />
           <main id="main-content" className="w-full overflow-x-hidden">
             {children}

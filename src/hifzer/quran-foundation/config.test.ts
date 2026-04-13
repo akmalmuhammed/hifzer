@@ -1,12 +1,16 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
   getQuranFoundationConfig,
+  getQuranFoundationRedirectUri,
   hasQuranFoundationContentConfig,
   hasQuranFoundationUserFlowConfig,
   normalizeQuranFoundationScopes,
 } from "./config";
 
 const ORIGINAL_ENV = {
+  NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+  NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+  VERCEL_ENV: process.env.VERCEL_ENV,
   QF_CLIENT_ID: process.env.QF_CLIENT_ID,
   QF_CLIENT_SECRET: process.env.QF_CLIENT_SECRET,
   QF_TOKEN_ENCRYPTION_SECRET: process.env.QF_TOKEN_ENCRYPTION_SECRET,
@@ -15,6 +19,9 @@ const ORIGINAL_ENV = {
 };
 
 afterEach(() => {
+  process.env.NEXT_PUBLIC_APP_URL = ORIGINAL_ENV.NEXT_PUBLIC_APP_URL;
+  process.env.NEXT_PUBLIC_SITE_URL = ORIGINAL_ENV.NEXT_PUBLIC_SITE_URL;
+  process.env.VERCEL_ENV = ORIGINAL_ENV.VERCEL_ENV;
   process.env.QF_CLIENT_ID = ORIGINAL_ENV.QF_CLIENT_ID;
   process.env.QF_CLIENT_SECRET = ORIGINAL_ENV.QF_CLIENT_SECRET;
   process.env.QF_TOKEN_ENCRYPTION_SECRET = ORIGINAL_ENV.QF_TOKEN_ENCRYPTION_SECRET;
@@ -47,5 +54,22 @@ describe("quran foundation config", () => {
     const config = getQuranFoundationConfig();
     expect(config.redirectUri).toBe("https://example.com/api/quran-foundation/callback");
     expect(config.bookmarkMushafId).toBe(11);
+  });
+
+  it("derives the redirect URI from the active request origin when no explicit override is set", () => {
+    process.env.QF_OAUTH_REDIRECT_URI = "";
+
+    expect(getQuranFoundationRedirectUri("https://www.hifzer.com/settings/quran-foundation")).toBe(
+      "https://www.hifzer.com/api/quran-foundation/callback",
+    );
+  });
+
+  it("falls back to the canonical production domain when the site env still points at vercel.app", () => {
+    process.env.QF_OAUTH_REDIRECT_URI = "";
+    process.env.NEXT_PUBLIC_SITE_URL = "https://hifzer.vercel.app";
+    process.env.NEXT_PUBLIC_APP_URL = "https://hifzer.vercel.app";
+    process.env.VERCEL_ENV = "production";
+
+    expect(getQuranFoundationRedirectUri()).toBe("https://www.hifzer.com/api/quran-foundation/callback");
   });
 });

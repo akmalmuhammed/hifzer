@@ -97,7 +97,7 @@ function ReaderPreview({ preview }: { preview: Extract<Feature["preview"], { typ
       <div className="flex min-h-[10.5rem] flex-col justify-start rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-4 py-4 sm:grid sm:min-h-[16rem] sm:place-items-center sm:px-5 sm:py-6 md:px-6">
         <div className="w-full max-w-[40rem]">
           <p
-            className="text-right font-[family-name:var(--font-quran-uthmani)] text-[1.15rem] leading-[2.05] text-[color:var(--kw-ink)] sm:text-[1.45rem] sm:leading-[2.4]"
+                className="text-right font-[family-name:var(--font-kw-quran)] text-[1.15rem] leading-[2.05] text-[color:var(--kw-ink)] sm:text-[1.45rem] sm:leading-[2.4]"
             dir="rtl"
           >
             {preview.arabic}
@@ -167,7 +167,7 @@ function DuaPreview({ preview }: { preview: Extract<Feature["preview"], { type: 
       <div className="flex min-h-[10rem] flex-col justify-start rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-4 py-4 sm:grid sm:min-h-[16rem] sm:place-items-center sm:px-5 sm:py-6 md:px-6">
         <div className="w-full max-w-[40rem]">
           <p
-            className="text-right font-[family-name:var(--font-quran-uthmani)] text-[1.15rem] leading-[2.05] text-[color:var(--kw-ink)] sm:text-[1.45rem] sm:leading-[2.4]"
+                className="text-right font-[family-name:var(--font-kw-quran)] text-[1.15rem] leading-[2.05] text-[color:var(--kw-ink)] sm:text-[1.45rem] sm:leading-[2.4]"
             dir="rtl"
           >
             {preview.arabic}
@@ -194,7 +194,7 @@ function JournalPreview({ preview }: { preview: Extract<Feature["preview"], { ty
           {preview.surah}
         </p>
         <p
-          className="mt-2 text-right font-[family-name:var(--font-quran-uthmani)] text-[1.1rem] leading-[2] text-[color:var(--kw-ink)] sm:text-[1.3rem] sm:leading-[2.2]"
+              className="mt-2 text-right font-[family-name:var(--font-kw-quran)] text-[1.1rem] leading-[2] text-[color:var(--kw-ink)] sm:text-[1.3rem] sm:leading-[2.2]"
           dir="rtl"
         >
           {preview.arabic}

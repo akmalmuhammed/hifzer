@@ -308,8 +308,8 @@ html[data-mode="dark"] {
 
   --font-sans: var(--font-kw-sans);
   --font-mono: var(--font-kw-mono);
-  --font-kw-display: var(--font-kw-marketing);
-  --font-kw-quran: var(--font-quran-uthmani), "KFGQPC Uthmanic Script HAFS", "Scheherazade New", "Amiri", "Noto Naskh Arabic", "Traditional Arabic", serif;
+  --font-kw-display: var(--font-kw-marketing, var(--font-kw-sans));
+  --font-kw-quran: var(--font-quran-uthmani, "KFGQPC Uthmanic Script HAFS"), "Scheherazade New", "Amiri", "Noto Naskh Arabic", "Traditional Arabic", serif;
 }
 
 html,
@@ -421,7 +421,7 @@ body {
 
 .kw-marketing-display {
   font-family:
-    var(--font-kw-marketing),
+    var(--font-kw-marketing, var(--font-kw-sans)),
     var(--font-kw-sans),
     ui-sans-serif,
     -apple-system,

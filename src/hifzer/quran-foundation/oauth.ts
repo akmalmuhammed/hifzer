@@ -102,6 +102,7 @@ export function buildQuranFoundationAuthorizeUrl(input: {
   state: string;
   codeChallenge: string;
   scopes: string[];
+  redirectUri?: string;
 }): string {
   const config = getQuranFoundationConfig();
   if (!config.clientId) {
@@ -115,7 +116,7 @@ export function buildQuranFoundationAuthorizeUrl(input: {
   const params = new URLSearchParams({
     response_type: "code",
     client_id: config.clientId,
-    redirect_uri: config.redirectUri,
+    redirect_uri: input.redirectUri ?? config.redirectUri,
     scope: input.scopes.join(" "),
     state: input.state,
     code_challenge: input.codeChallenge,
@@ -124,13 +125,17 @@ export function buildQuranFoundationAuthorizeUrl(input: {
   return `${config.oauthBaseUrl}/oauth2/auth?${params.toString()}`;
 }
 
-export async function exchangeQuranFoundationCode(code: string, codeVerifier: string): Promise<QuranFoundationTokenSet> {
+export async function exchangeQuranFoundationCode(
+  code: string,
+  codeVerifier: string,
+  redirectUri?: string,
+): Promise<QuranFoundationTokenSet> {
   const config = getQuranFoundationConfig();
   const params = new URLSearchParams({
     grant_type: "authorization_code",
     code,
     code_verifier: codeVerifier,
-    redirect_uri: config.redirectUri,
+    redirect_uri: redirectUri ?? config.redirectUri,
   });
   return postTokenExchange(params);
 }

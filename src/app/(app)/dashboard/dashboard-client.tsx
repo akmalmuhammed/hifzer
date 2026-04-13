@@ -1,25 +1,21 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 
 import {
   ArrowRight,
-  BadgeCheck,
   BookOpenText,
   CalendarDays,
   ChevronLeft,
   ChevronRight,
-  CircleAlert,
   Clock3,
   Compass,
-  ExternalLink,
   Flame,
   Gauge,
-  Heart,
-  ListChecks,
   MoonStar,
   PlayCircle,
   RefreshCcw,
@@ -28,20 +24,34 @@ import {
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
-import { AreaTrend } from "@/components/charts/area-trend";
-import { DonutProgress } from "@/components/charts/donut-progress";
-import { Sparkline } from "@/components/charts/sparkline";
-import { DashboardFirstRunGuide } from "@/components/app/dashboard-first-run-guide";
 import { PageHeader } from "@/components/app/page-header";
-import { SupportTextPanel } from "@/components/quran/support-text-panel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
 import type { OnboardingStartLane } from "@/hifzer/profile/onboarding";
-import { laylatAlQadrGuide } from "@/hifzer/ramadan/laylat-al-qadr";
 import { readSessionCache, writeSessionCache } from "@/lib/client-session-cache";
 import styles from "./dashboard.module.css";
+
+const AreaTrend = dynamic(
+  () => import("@/components/charts/area-trend").then((mod) => mod.AreaTrend),
+  { ssr: false, loading: () => <ChartBlockSkeleton height={140} /> },
+);
+
+const DonutProgress = dynamic(
+  () => import("@/components/charts/donut-progress").then((mod) => mod.DonutProgress),
+  { ssr: false, loading: () => <DonutSkeleton /> },
+);
+
+const Sparkline = dynamic(
+  () => import("@/components/charts/sparkline").then((mod) => mod.Sparkline),
+  { ssr: false, loading: () => <SparklineSkeleton /> },
+);
+
+const DashboardFirstRunGuide = dynamic(
+  () => import("@/components/app/dashboard-first-run-guide").then((mod) => mod.DashboardFirstRunGuide),
+  { ssr: false, loading: () => <GuideSkeleton /> },
+);
 
 export type DashboardOverview = {
   generatedAt: string;
@@ -113,7 +123,6 @@ type DashboardPayload = {
   overview: DashboardOverview;
 };
 
-type DashboardTab = "overview" | "dua";
 const DASHBOARD_CACHE_KEY = "hifzer.dashboard.overview.v1";
 const DASHBOARD_CACHE_TTL_MS = 2 * 60 * 1000;
 
@@ -207,6 +216,41 @@ function DashboardSkeleton() {
       </div>
     </div>
   );
+}
+
+function GuideSkeleton() {
+  return (
+    <Card className="min-h-[180px]">
+      <div className="h-5 w-28 animate-pulse rounded-full bg-[color:var(--kw-skeleton)]" />
+      <div className="mt-4 h-8 w-[52%] animate-pulse rounded-2xl bg-[color:var(--kw-skeleton)]" />
+      <div className="mt-3 h-4 w-[78%] animate-pulse rounded-full bg-[color:var(--kw-skeleton)]" />
+      <div className="mt-6 grid gap-3 md:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div
+            key={index}
+            className="h-20 animate-pulse rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-skeleton)]"
+          />
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+function ChartBlockSkeleton(props: { height: number }) {
+  return (
+    <div
+      className="animate-pulse rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-skeleton)]"
+      style={{ height: `${props.height}px` }}
+    />
+  );
+}
+
+function SparklineSkeleton() {
+  return <div className="mt-[18px] h-7 w-full animate-pulse rounded-full bg-[color:var(--kw-skeleton)]" />;
+}
+
+function DonutSkeleton() {
+  return <div className="h-24 w-24 animate-pulse rounded-full bg-[color:var(--kw-skeleton)]" />;
 }
 
 function iconToneClass(tone: "accent" | "neutral" | "warn"): string {
@@ -318,308 +362,11 @@ function SectionHeader(props: {
   );
 }
 
-// Retained for a future multi-surface dashboard return without re-deriving the interaction model.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function DashboardTabButton(props: {
-  active: boolean;
-  label: string;
-  note: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      className={styles.dashboardTab}
-      data-active={props.active ? "1" : "0"}
-      onClick={props.onClick}
-      aria-pressed={props.active}
-    >
-      <span className={styles.dashboardTabLabel}>{props.label}</span>
-      <span className={styles.dashboardTabNote}>{props.note}</span>
-    </button>
-  );
-}
-
-// Retained as a reusable Ramadan dashboard surface if we bring guided seasonal tabs back.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function DashboardDuaTab() {
-  const guide = laylatAlQadrGuide;
-
-  return (
-    <div className={styles.duaDeck}>
-      <section className={`kw-fade-in ${styles.duaHero} px-5 py-5 sm:px-6`}>
-        <div className={styles.pulseOrb} />
-        <div className={styles.driftOrb} />
-        <div className="relative grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="space-y-5">
-            <div className="flex flex-wrap items-center gap-2">
-              <Pill tone="accent">Laylat al-Qadr</Pill>
-              <Pill tone="success">Forgiveness</Pill>
-              <Pill tone="neutral">Authentic guidance</Pill>
-            </div>
-
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">
-                {guide.hero.eyebrow}
-              </p>
-              <h2 className="kw-marketing-display mt-3 max-w-[14ch] text-balance text-4xl text-[color:var(--kw-ink)] sm:text-5xl">
-                {guide.hero.title}
-              </h2>
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
-                {guide.hero.description}
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Button asChild className="gap-2">
-                <a href={guide.featuredDua.source.href} target="_blank" rel="noreferrer">
-                  Read the hadith <ExternalLink size={15} />
-                </a>
-              </Button>
-              <Button asChild variant="secondary" className="gap-2">
-                <Link href="/ramadan">
-                  Open Ramadan plan <ArrowRight size={15} />
-                </Link>
-              </Button>
-            </div>
-          </div>
-
-          <div className={styles.duaSummaryPanel}>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">
-                  Verified anchors
-                </p>
-                <p className="mt-2 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                  What to build the night around
-                </p>
-              </div>
-              <span className={clsx(styles.iconBadge, styles.iconAccent)}>
-                <BadgeCheck size={17} />
-              </span>
-            </div>
-
-            <div className="mt-4 space-y-3">
-              <div className={styles.duaSummaryRow}>
-                <span className={clsx(styles.iconBadge, styles.iconNeutral)}>
-                  <CalendarDays size={15} />
-                </span>
-                <div>
-                  <p className={styles.duaSummaryTitle}>Last ten nights</p>
-                  <p className={styles.duaSummaryText}>Seek it across the last ten, especially the odd nights.</p>
-                </div>
-              </div>
-              <div className={styles.duaSummaryRow}>
-                <span className={clsx(styles.iconBadge, styles.iconAccent)}>
-                  <MoonStar size={15} />
-                </span>
-                <div>
-                  <p className={styles.duaSummaryTitle}>Qiyam and presence</p>
-                  <p className={styles.duaSummaryText}>Stand the night in prayer with faith and hope for reward.</p>
-                </div>
-              </div>
-              <div className={styles.duaSummaryRow}>
-                <span className={clsx(styles.iconBadge, styles.iconWarn)}>
-                  <Heart size={15} />
-                </span>
-                <div>
-                  <p className={styles.duaSummaryTitle}>Forgiveness dua</p>
-                  <p className={styles.duaSummaryText}>Keep the taught dua for pardon and mercy central all night.</p>
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.duaBoundaryBox}>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
-                Boundary
-              </p>
-              <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">
-                Hifzer&apos;s night plan is structured from authentic reports. It is not presented as a fixed prophetic ritual
-                sequence.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div className={styles.duaFeatureGrid}>
-        <Card className="h-full">
-          <SectionHeader
-            eyebrow="Featured dua"
-            title={guide.featuredDua.title}
-            description="If you remember one supplication for Laylat al-Qadr, make it this one."
-            icon={Heart}
-            tone="accent"
-            meta={<Pill tone="success">Forgiveness</Pill>}
-          />
-
-          <div className={styles.duaQuoteBlock}>
-            <p dir="rtl" className={styles.duaArabic}>
-              {guide.featuredDua.arabic}
-            </p>
-            <div className="mt-4 space-y-3">
-              <SupportTextPanel kind="transliteration">
-                {guide.featuredDua.transliteration}
-              </SupportTextPanel>
-              <SupportTextPanel kind="translation">
-                {guide.featuredDua.translation}
-              </SupportTextPanel>
-            </div>
-            <div className={styles.duaSourceRow}>
-              <Pill tone="neutral">{guide.featuredDua.source.label}</Pill>
-              <a
-                href={guide.featuredDua.source.href}
-                target="_blank"
-                rel="noreferrer"
-                className={styles.duaSourceLink}
-              >
-                Open source <ExternalLink size={14} />
-              </a>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="h-full">
-          <SectionHeader
-            eyebrow="Qur'an anchor"
-            title={guide.quranAnchor.title}
-            description={guide.quranAnchor.detail}
-            icon={BookOpenText}
-            tone="neutral"
-            meta={<Pill tone="accent">Surah al-Qadr</Pill>}
-          />
-
-          <div className="mt-5 space-y-3">
-            <div className={styles.duaMiniNote}>
-              <p className={styles.duaMiniNoteTitle}>Better than a thousand months</p>
-              <p className={styles.duaMiniNoteText}>
-                Let the scale of the night change your effort level. The product should help you focus, not flatten the
-                night into another generic reminder card.
-              </p>
-            </div>
-            <a
-              href={guide.quranAnchor.source.href}
-              target="_blank"
-              rel="noreferrer"
-              className={styles.duaSourceLink}
-            >
-              Read {guide.quranAnchor.source.label} <ExternalLink size={14} />
-            </a>
-          </div>
-        </Card>
-      </div>
-
-      <div className={styles.duaGrid}>
-        {guide.verifiedAnchors.map((anchor) => (
-          <Card key={anchor.title} className="h-full">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">
-                  Verified guidance
-                </p>
-                <p className="mt-2 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
-                  {anchor.title}
-                </p>
-              </div>
-              <span className={clsx(styles.iconBadge, styles.iconNeutral)}>
-                <ShieldCheck size={16} />
-              </span>
-            </div>
-            <p className="mt-3 text-sm leading-6 text-[color:var(--kw-muted)]">
-              {anchor.detail}
-            </p>
-            <div className="mt-4">
-              <a href={anchor.source.href} target="_blank" rel="noreferrer" className={styles.duaSourceLink}>
-                {anchor.source.label} <ExternalLink size={14} />
-              </a>
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid gap-5 xl:grid-cols-[1.08fr_0.92fr]">
-        <Card className="h-full">
-          <SectionHeader
-            eyebrow="Step by step"
-            title="A structured night plan without inventing a formula"
-            description="This sequence is Hifzer's product guidance, built from authenticated anchors. Use it as a calm plan, not as a claim that the Sunnah fixed these exact steps."
-            icon={ListChecks}
-            tone="accent"
-            meta={<Pill tone="warn">No fixed ritual script established</Pill>}
-          />
-
-          <ol className={styles.duaStepList}>
-            {guide.stepByStepPlan.map((step, index) => (
-              <li key={step.title} className={styles.duaStep}>
-                <span className={styles.duaStepNumber}>{index + 1}</span>
-                <div>
-                  <p className="text-base font-semibold tracking-tight text-[color:var(--kw-ink)]">{step.title}</p>
-                  <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">{step.detail}</p>
-                  <p className="mt-2 text-xs leading-5 text-[color:var(--kw-faint)]">{step.anchor}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </Card>
-
-        <div className="grid gap-5">
-          <Card className="h-full">
-            <SectionHeader
-              eyebrow="Authenticity boundary"
-              title={guide.authenticityBoundary.title}
-              description="Keep the distinction sharp: authentic worship anchors on one side, product structuring on the other."
-              icon={CircleAlert}
-              tone="warn"
-            />
-
-            <div className={styles.duaBoundaryList}>
-              {guide.authenticityBoundary.points.map((point) => (
-                <div key={point} className={styles.duaBoundaryItem}>
-                  <span className={clsx(styles.iconBadge, styles.iconWarn)}>
-                    <CircleAlert size={14} />
-                  </span>
-                  <p className="text-sm leading-6 text-[color:var(--kw-muted)]">{point}</p>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          <Card className="h-full">
-            <SectionHeader
-              eyebrow="Sources"
-              title="Primary references behind this tab"
-              description="Direct links for review. The product language in this tab is intentionally narrower than popular Ramadan forwards."
-              icon={Compass}
-              tone="neutral"
-            />
-
-            <div className={styles.duaSourcesList}>
-              {guide.sources.map((source) => (
-                <a
-                  key={source.href}
-                  href={source.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={styles.duaSourceCard}
-                >
-                  <span>{source.label}</span>
-                  <ExternalLink size={14} />
-                </a>
-              ))}
-            </div>
-          </Card>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function readCachedDashboardOverview() {
   return readSessionCache<DashboardOverview>(DASHBOARD_CACHE_KEY, DASHBOARD_CACHE_TTL_MS);
 }
 
 export function DashboardClient(props: { initialOverview?: DashboardOverview | null }) {
-  const activeTab: DashboardTab = "overview";
   const [loading, setLoading] = useState(() => !props.initialOverview && !readCachedDashboardOverview());
   const [error, setError] = useState<string | null>(null);
   const [overview, setOverview] = useState<DashboardOverview | null>(() => props.initialOverview ?? readCachedDashboardOverview());
@@ -801,9 +548,9 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
         }
       />
 
-      {activeTab === "overview" && loading ? <DashboardSkeleton /> : null}
+      {loading ? <DashboardSkeleton /> : null}
 
-      {activeTab === "overview" && !loading && error ? (
+      {!loading && error ? (
         <Card>
           <EmptyState
             title="Dashboard unavailable"
@@ -817,7 +564,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
         </Card>
       ) : null}
 
-      {activeTab === "overview" && !loading && !error && overview ? (
+      {!loading && !error && overview ? (
         <div className="space-y-5">
           <DashboardFirstRunGuide overview={overview} initialLane={overview.profile.onboardingStartLane} />
 
@@ -1230,7 +977,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
         </div>
       ) : null}
 
-      {activeTab === "overview" && !loading && !error && !overview ? (
+      {!loading && !error && !overview ? (
         <Card>
           <EmptyState
             title="Dashboard unavailable"

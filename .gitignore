@@ -28,6 +28,11 @@
 .DS_Store
 *.pem
 /tmp
+/.tmp
+/.tmp-lighthouse/
+/.lighthouse-hifzer-*.json
+.next-dev.log
+.next-dev.err.log
 
 # debug
 npm-debug.log*

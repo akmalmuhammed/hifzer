@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { getQuranFoundationRedirectUri } from "@/hifzer/quran-foundation/config";
 import {
   decodeQuranFoundationIdentity,
   exchangeQuranFoundationCode,
@@ -62,7 +63,8 @@ export async function GET(req: Request) {
   }
 
   try {
-    const tokenSet = await exchangeQuranFoundationCode(code, codeVerifier);
+    const redirectUri = getQuranFoundationRedirectUri(requestUrl);
+    const tokenSet = await exchangeQuranFoundationCode(code, codeVerifier, redirectUri);
     await storeQuranFoundationConnection({
       clerkUserId: userId,
       tokenSet,

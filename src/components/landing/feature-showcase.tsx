@@ -31,7 +31,7 @@ export function MacbookFrame({
   return (
     <div className="relative w-full" style={{ aspectRatio: "621 / 360" }}>
       <div
-        className="absolute overflow-hidden rounded-[8px] bg-[linear-gradient(180deg,#eef7f4,#f8fafc)]"
+        className="absolute overflow-hidden rounded-[8px] bg-[color:var(--kw-surface)]"
         style={{ top: SCREEN.top, left: SCREEN.left, right: SCREEN.right, bottom: SCREEN.bottom, zIndex: 0 }}
       >
         <Image
@@ -72,7 +72,7 @@ export function FeatureShowcase({
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.15 }}
         transition={{ duration: reduceMotion ? 0 : 0.55, ease: [0.22, 1, 0.36, 1] }}
-        className={`overflow-hidden rounded-[28px] border border-[rgba(var(--kw-accent-rgb),0.12)] bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(255,255,255,0.78))] shadow-[0_24px_72px_rgba(15,23,42,0.08)] ${
+        className={`overflow-hidden rounded-[28px] border border-[color:var(--kw-border)] bg-[color:var(--kw-card-strong)] shadow-[var(--kw-shadow)] backdrop-blur-xl ${
           reverse ? "md:flex md:flex-row-reverse" : "md:flex md:flex-row"
         }`}
       >

@@ -16,6 +16,7 @@ import {
   THEME_PRESET_COOKIE,
 } from "@/hifzer/theme/preferences";
 import { clerkEnabled } from "@/lib/clerk-config";
+import { marketingDisplayFont } from "@/lib/fonts";
 
 export default async function OnboardingLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
@@ -53,10 +54,12 @@ export default async function OnboardingLayout({ children }: { children: React.R
       initialDistractionFree={initialDistractionFree}
       initialThemeState={initialThemeState}
     >
-      <main id="main-content" className="mx-auto w-full max-w-[1120px] px-4 py-6 sm:py-10">
-        <ProfileHydrator profile={profile} />
-        {children}
-      </main>
+      <div className={marketingDisplayFont.variable}>
+        <main id="main-content" className="mx-auto w-full max-w-[1120px] px-4 py-6 sm:py-10">
+          <ProfileHydrator profile={profile} />
+          {children}
+        </main>
+      </div>
     </AppProviders>
   );
 }

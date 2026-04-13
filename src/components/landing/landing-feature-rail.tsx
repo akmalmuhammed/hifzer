@@ -2,7 +2,6 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { FeatureShowcase } from "@/components/landing/feature-showcase";
-import { QURAN_TRANSLATION_OPTIONS } from "@/hifzer/quran/translation-prefs";
 
 const CORE_POINTS = [
   {
@@ -11,11 +10,11 @@ const CORE_POINTS = [
   },
   {
     label: "For readers and hifz students.",
-    body: "If you are building a daily reading habit, Hifzer keeps your place. If you are doing hifz, it helps you stay clear on what to learn, what to revise, and what needs more attention.",
+    body: "Whether you are building a daily reading habit or trying to keep memorisation steady, Hifzer keeps the next step clear and the whole practice connected.",
   },
   {
-    label: "What it replaces.",
-    body: "It replaces the mix of a Qur'an app, notes app, adhkar list, and memory alone with one focused companion.",
+    label: "AI help and reader control.",
+    body: "Ask for AI explanations, open trusted tafsir, pick the reciter you were looking for, and shape the reader around the way you actually learn.",
   },
 ] as const;
 
@@ -31,36 +30,49 @@ const CORE_FEATURES: Array<{
     eyebrow: "Hifz",
     title: "Make hifz feel clear, steady, and easier to keep.",
     body:
-      "Hifzer helps you see what to memorize next, what to revise today, and which parts need extra care, so you spend less time feeling behind and more time building hifz that stays with you.",
+      "Know what to memorize next, what to revise today, and which part needs extra care before it slips, so your hifz feels more steady, more intentional, and easier to keep strong.",
     imageSrc: "/landing/showcase/Hifz%20final.png",
     imageAlt: "Hifzer hifz screen showing review controls and recall grading",
+  },
+  {
+    eyebrow: "Qur'an",
+    title: "Return to the ayah, reciter, and flow you were already in.",
+    body:
+      "Open Hifzer and find the same place you left, switch to the reciter you want, and keep AI explanation and tafsir close when you want to understand more without breaking your reading rhythm.",
+    imageSrc: "/landing/showcase/dashboard.png",
+    imageAlt: "Hifzer Qur'an dashboard and reader surfaces showing reading continuity, reciter access, and AI tools",
+    reverse: true,
   },
   {
     eyebrow: "Dua",
     title: "Keep daily adhkar close and personal.",
     body:
-      "Arabic, transliteration, and meaning stay together so the dua feels like part of the day you are living, not a separate list you open once in a while.",
+      "Arabic, transliteration, and meaning stay together so your adhkar feels close, lived with, and personal, more like a daily way of asking Allah than another checklist to open and close.",
     imageSrc: "/landing/showcase/Dua.png",
     imageAlt: "Hifzer dua screen showing a guided dua with Arabic and translation",
-    reverse: true,
   },
   {
     eyebrow: "Journal",
     title: "Turn reflections into faith-based journaling.",
     body:
-      "Save lessons from an ayah, a reminder from the day, or a private dua note in one journal built around reflection, not social sharing.",
+      "Keep an Islamic journal for ayah reflections, gratitude, private duas, lessons from the day, and moments you want to carry with you in a space made for worship, not posting.",
     imageSrc: "/landing/showcase/Journal%20final.png",
     imageAlt: "Hifzer journal screen showing a private reflection entry",
+    reverse: true,
   },
 ] as const;
 
-const TRANSLATION_LANGUAGE_LABELS = QURAN_TRANSLATION_OPTIONS.map(
-  (option) => option.label.split(" - ")[0] ?? option.label,
-);
-const SCROLLING_TRANSLATION_LANGUAGES = [
-  ...TRANSLATION_LANGUAGE_LABELS,
-  ...TRANSLATION_LANGUAGE_LABELS,
-];
+const CAPABILITY_CHIPS = [
+  "AI ayah explanations",
+  "Pick your reciter",
+  "Trusted tafsir",
+  "Translation controls",
+  "Saved reader filters",
+  "Private journaling",
+  "Hifz planning",
+  "Daily adhkar",
+] as const;
+const SCROLLING_CAPABILITY_CHIPS = [...CAPABILITY_CHIPS, ...CAPABILITY_CHIPS];
 
 export function LandingFeatureRail() {
   const reduceMotion = useReducedMotion();
@@ -75,13 +87,13 @@ export function LandingFeatureRail() {
           Keep the Qur&apos;an and hifz routine in one place.
         </h2>
         <p className="mt-5 max-w-none text-sm leading-7 text-[color:var(--kw-muted)] sm:max-w-[58ch] md:text-[15px]">
-          Hifzer is the companion app for readers who want continuity and for hifz students who
-          want more clarity and consistency. It keeps the parts of the practice that matter most together.
+          Hifzer is the all-in-one companion app for the Muslim who wants one place to read,
+          memorize, make dua, and keep Islamic reflections without losing the thread between them.
         </p>
-        <div className="mt-6 overflow-hidden rounded-[22px] border border-[rgba(var(--kw-accent-rgb),0.14)] bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(255,255,255,0.48))] px-3 py-3 shadow-[var(--kw-shadow-soft)] backdrop-blur">
+        <div className="mt-6 overflow-hidden rounded-[22px] border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[color:var(--kw-card-strong)] px-3 py-3 shadow-[var(--kw-shadow-soft)] backdrop-blur">
           <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
             <span className="inline-flex h-2 w-2 rounded-full bg-[rgba(var(--kw-accent-rgb),0.85)]" />
-            Qur&apos;an translation languages in Hifzer
+            Personal and AI-powered inside Hifzer
           </div>
           <div className="relative overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_12%,black_88%,transparent)]">
             <motion.div
@@ -97,12 +109,12 @@ export function LandingFeatureRail() {
                     }
               }
             >
-              {SCROLLING_TRANSLATION_LANGUAGES.map((language, index) => (
+              {SCROLLING_CAPABILITY_CHIPS.map((capability, index) => (
                 <span
-                  key={`${language}-${index}`}
-                  className="inline-flex min-h-9 items-center rounded-full border border-[rgba(var(--kw-accent-rgb),0.16)] bg-[rgba(255,255,255,0.82)] px-4 text-sm font-medium text-[color:var(--kw-ink)] shadow-[0_10px_24px_rgba(11,18,32,0.05)]"
+                  key={`${capability}-${index}`}
+                  className="inline-flex min-h-9 items-center rounded-full border border-[rgba(var(--kw-accent-rgb),0.16)] bg-[color:var(--kw-surface)] px-4 text-sm font-medium text-[color:var(--kw-ink)] shadow-[0_10px_24px_rgba(11,18,32,0.05)]"
                 >
-                  {language}
+                  {capability}
                 </span>
               ))}
             </motion.div>
@@ -128,7 +140,7 @@ export function LandingFeatureRail() {
           Core features
         </p>
         <h3 className="kw-marketing-display mt-3 text-balance text-3xl leading-tight text-[color:var(--kw-ink)] sm:text-4xl">
-          The parts that keep the routine usable.
+          The parts that make people say they were looking for this.
         </h3>
       </div>
 
