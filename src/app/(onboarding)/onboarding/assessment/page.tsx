@@ -13,7 +13,13 @@ import {
   isSupportedQuranTranslationId,
   type QuranTranslationId,
 } from "@/hifzer/quran/translation-prefs";
-import { getOnboardingAssessmentDraft, setOnboardingAssessmentDraft } from "@/hifzer/local/store";
+import {
+  getOnboardingAssessmentDraft,
+  setDashboardFirstRunGuidePending,
+  setOnboardingAssessmentDraft,
+  setOnboardingCompleted,
+  setOnboardingStartLane,
+} from "@/hifzer/local/store";
 
 type AssessmentDraft = {
   dailyMinutes: number;
@@ -40,6 +46,7 @@ export default function OnboardingAssessmentPage() {
 
   const [draft, setDraft] = useState<AssessmentDraft>(DEFAULT_DRAFT);
   const [saving, setSaving] = useState(false);
+  const [quickStarting, setQuickStarting] = useState(false);
   const [draftHydrated, setDraftHydrated] = useState(false);
 
   useEffect(() => {
@@ -96,6 +103,44 @@ export default function OnboardingAssessmentPage() {
       pushToast({ title: "Save failed", message, tone: "warning" });
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function startWithDefaults() {
+    if (quickStarting) {
+      return;
+    }
+
+    setQuickStarting(true);
+    try {
+      const res = await fetch("/api/profile/onboarding-quick-start", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          ...draft,
+          onboardingStartLane: "hifz",
+        }),
+      });
+      const payload = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        throw new Error(payload.error || "Failed to start with defaults.");
+      }
+
+      setOnboardingAssessmentDraft(draft);
+      setOnboardingStartLane("hifz");
+      setOnboardingCompleted();
+      setDashboardFirstRunGuidePending();
+      pushToast({
+        title: "Started with defaults",
+        message: "You are in. You can adjust your plan and settings later from inside the app.",
+        tone: "success",
+      });
+      router.push("/dashboard");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to start with defaults.";
+      pushToast({ title: "Quick start failed", message, tone: "warning" });
+    } finally {
+      setQuickStarting(false);
     }
   }
 
@@ -255,12 +300,22 @@ export default function OnboardingAssessmentPage() {
         </div>
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs text-[color:var(--kw-faint)]">
-            Timezone detected: {draft.timezone}. Adjust it later if you travel often.
-          </p>
-          <Button onClick={saveAndNext} className="gap-2" loading={saving}>
-            Continue <ArrowRight size={16} />
-          </Button>
+          <div className="max-w-2xl">
+            <p className="text-xs text-[color:var(--kw-faint)]">
+              Timezone detected: {draft.timezone}. Adjust it later if you travel often.
+            </p>
+            <p className="mt-2 text-xs text-[color:var(--kw-faint)]">
+              If sync is being stubborn, start with the recommended defaults and refine everything later.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button onClick={startWithDefaults} variant="secondary" className="gap-2" loading={quickStarting}>
+              Start with defaults <ArrowRight size={16} />
+            </Button>
+            <Button onClick={saveAndNext} className="gap-2" loading={saving}>
+              Continue <ArrowRight size={16} />
+            </Button>
+          </div>
         </div>
       </Card>
     </OnboardingShell>

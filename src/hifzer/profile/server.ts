@@ -624,6 +624,77 @@ export async function saveAssessment(input: {
   return toSnapshot(row);
 }
 
+export async function quickStartOnboarding(input: {
+  clerkUserId: string;
+  dailyMinutes: number;
+  practiceDaysPerWeek: number;
+  planBias: PlanBias;
+  hasTeacher: boolean;
+  timezone: string;
+  quranTranslationId: QuranTranslationId;
+  onboardingStartLane?: OnboardingStartLane;
+}) {
+  if (!dbConfigured()) {
+    return null;
+  }
+
+  const practiceDays = Array.from({ length: 7 }, (_, i) => i).slice(
+    0,
+    Math.max(1, Math.min(7, Math.floor(input.practiceDaysPerWeek))),
+  );
+  const boundedDailyMinutes = Math.max(5, Math.min(240, Math.floor(input.dailyMinutes)));
+  const completedAt = new Date();
+  const startLane = normalizeOnboardingStartLane(input.onboardingStartLane) ?? "hifz";
+
+  const row = await upsertProfileCompat({
+    clerkUserId: input.clerkUserId,
+    buildCreate: (capabilities) => ({
+      ...defaultCreateData(input.clerkUserId, {
+        includeQuranLane: capabilities.hasQuranLaneColumns,
+        includeOnboardingState: capabilities.hasOnboardingStateColumns,
+      }),
+      dailyMinutes: boundedDailyMinutes,
+      practiceDays,
+      planBias: input.planBias,
+      timezone: input.timezone || "UTC",
+      onboardingCompletedAt: completedAt,
+      ...(capabilities.hasQuranLaneColumns
+        ? {
+            hasTeacher: input.hasTeacher,
+            quranTranslationId: input.quranTranslationId,
+          }
+        : {}),
+      ...(capabilities.hasOnboardingStateColumns
+        ? {
+            onboardingStep: "complete",
+            onboardingStartLane: startLane,
+          }
+        : {}),
+    }),
+    buildUpdate: (capabilities) => ({
+      dailyMinutes: boundedDailyMinutes,
+      practiceDays,
+      planBias: input.planBias,
+      timezone: input.timezone || "UTC",
+      onboardingCompletedAt: completedAt,
+      ...(capabilities.hasQuranLaneColumns
+        ? {
+            hasTeacher: input.hasTeacher,
+            quranTranslationId: input.quranTranslationId,
+          }
+        : {}),
+      ...(capabilities.hasOnboardingStateColumns
+        ? {
+            onboardingStep: "complete",
+            onboardingStartLane: startLane,
+          }
+        : {}),
+    }),
+  });
+
+  return toSnapshot(row);
+}
+
 export async function markOnboardingComplete(clerkUserId: string) {
   if (!dbConfigured()) {
     return null;
