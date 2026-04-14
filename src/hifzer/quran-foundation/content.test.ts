@@ -1,11 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const ORIGINAL_ENV = {
+  QF_CONTENT_CLIENT_ID: process.env.QF_CONTENT_CLIENT_ID,
+  QF_CONTENT_CLIENT_SECRET: process.env.QF_CONTENT_CLIENT_SECRET,
   QF_CLIENT_ID: process.env.QF_CLIENT_ID,
   QF_CLIENT_SECRET: process.env.QF_CLIENT_SECRET,
 };
 
 afterEach(() => {
+  process.env.QF_CONTENT_CLIENT_ID = ORIGINAL_ENV.QF_CONTENT_CLIENT_ID;
+  process.env.QF_CONTENT_CLIENT_SECRET = ORIGINAL_ENV.QF_CONTENT_CLIENT_SECRET;
   process.env.QF_CLIENT_ID = ORIGINAL_ENV.QF_CLIENT_ID;
   process.env.QF_CLIENT_SECRET = ORIGINAL_ENV.QF_CLIENT_SECRET;
   vi.restoreAllMocks();
@@ -15,8 +19,8 @@ afterEach(() => {
 
 describe("quran foundation content integration", () => {
   it("requests a content-scoped access token for official enrichment", async () => {
-    process.env.QF_CLIENT_ID = "client_123";
-    process.env.QF_CLIENT_SECRET = "secret_123";
+    process.env.QF_CONTENT_CLIENT_ID = "content_client_123";
+    process.env.QF_CONTENT_CLIENT_SECRET = "content_secret_123";
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === "string" ? input : input.toString();
@@ -79,7 +83,10 @@ describe("quran foundation content integration", () => {
     });
 
     expect(tokenCall).toBeTruthy();
-    const [, tokenInit] = tokenCall ?? [];
+    if (!tokenCall) {
+      throw new Error("Expected a token request call.");
+    }
+    const [, tokenInit] = tokenCall;
     const body = tokenInit?.body;
     expect(body).toBeInstanceOf(URLSearchParams);
     expect((body as URLSearchParams).get("grant_type")).toBe("client_credentials");
@@ -87,8 +94,8 @@ describe("quran foundation content integration", () => {
   });
 
   it("surfaces degraded recitation catalog errors instead of masking them as missing reciters", async () => {
-    process.env.QF_CLIENT_ID = "client_123";
-    process.env.QF_CLIENT_SECRET = "secret_123";
+    process.env.QF_CONTENT_CLIENT_ID = "content_client_123";
+    process.env.QF_CONTENT_CLIENT_SECRET = "content_secret_123";
 
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === "string" ? input : input.toString();

@@ -254,7 +254,7 @@ function buildContentApiUrl(path: string, query?: Record<string, QueryValues>) {
 
 async function requestContentAccessToken(): Promise<string> {
   const config = getQuranFoundationConfig();
-  if (!config.clientId || !config.clientSecret) {
+  if (!config.contentClientId || !config.contentClientSecret) {
     throw new QuranFoundationError("Quran Foundation content credentials are not configured.", {
       status: 503,
       code: "qf_content_not_configured",
@@ -263,7 +263,7 @@ async function requestContentAccessToken(): Promise<string> {
   }
 
   const tokenUrl = new URL("/oauth2/token", `${config.oauthBaseUrl.replace(/\/+$/, "")}/`);
-  const auth = Buffer.from(`${config.clientId}:${config.clientSecret}`).toString("base64");
+  const auth = Buffer.from(`${config.contentClientId}:${config.contentClientSecret}`).toString("base64");
   const response = await fetch(tokenUrl, {
     method: "POST",
     headers: {
@@ -330,7 +330,7 @@ async function quranFoundationContentRequest(
   },
 ): Promise<JsonRecord> {
   const config = getQuranFoundationConfig();
-  if (!config.clientId || !config.clientSecret) {
+  if (!config.contentClientId || !config.contentClientSecret) {
     throw new QuranFoundationError("Quran Foundation content credentials are not configured.", {
       status: 503,
       code: "qf_content_not_configured",
@@ -343,7 +343,7 @@ async function quranFoundationContentRequest(
     headers: {
       accept: "application/json",
       "x-auth-token": token,
-      "x-client-id": config.clientId,
+      "x-client-id": config.contentClientId,
     },
     next: options?.cacheTtlSeconds ? { revalidate: options.cacheTtlSeconds } : undefined,
   });
@@ -582,7 +582,8 @@ export async function getQuranFoundationContentCatalog(): Promise<QuranFoundatio
   if (!hasQuranFoundationContentConfig()) {
     return {
       status: "not_configured",
-      detail: "Set QF_CLIENT_ID and QF_CLIENT_SECRET to enable official Quran Foundation enrichment.",
+      detail:
+        "Set QF_CONTENT_CLIENT_ID and QF_CONTENT_CLIENT_SECRET to enable official Quran Foundation enrichment.",
       translations: [],
       tafsirs: [],
       defaultTranslationId: null,
@@ -627,7 +628,8 @@ export async function getQuranFoundationRecitationCatalog(): Promise<QuranFounda
   if (!hasQuranFoundationContentConfig()) {
     return {
       status: "not_configured",
-      detail: "Set QF_CLIENT_ID and QF_CLIENT_SECRET to enable official Quran Foundation reciters.",
+      detail:
+        "Set QF_CONTENT_CLIENT_ID and QF_CONTENT_CLIENT_SECRET to enable official Quran Foundation reciters.",
       recitations: [],
     };
   }
@@ -698,7 +700,8 @@ export async function getQuranFoundationAyahEnrichment(
   if (!hasQuranFoundationContentConfig()) {
     return {
       status: "not_configured",
-      detail: "Set QF_CLIENT_ID and QF_CLIENT_SECRET to enable official Quran Foundation enrichment.",
+      detail:
+        "Set QF_CONTENT_CLIENT_ID and QF_CONTENT_CLIENT_SECRET to enable official Quran Foundation enrichment.",
       verseKey,
       pageNumber: null,
       juzNumber: null,
@@ -845,7 +848,8 @@ export async function getQuranFoundationAyahAudioSource(input: {
   if (!hasQuranFoundationContentConfig()) {
     return {
       status: "not_configured",
-      detail: "Set QF_CLIENT_ID and QF_CLIENT_SECRET to enable Quran.com audio fallback.",
+      detail:
+        "Set QF_CONTENT_CLIENT_ID and QF_CONTENT_CLIENT_SECRET to enable Quran.com audio fallback.",
       verseKey: input.verseKey,
       recitationId: null,
       recitationLabel: null,

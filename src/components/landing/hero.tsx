@@ -17,15 +17,15 @@ const HERO_POINTS = [
   },
   {
     label: "Qur'an",
-    body: "Return to the exact ayah, with the reciter you were looking for and AI help close when you want to go deeper.",
+    body: "Return to the exact ayah, with the reciter you want and deeper help close when you need it.",
   },
   {
     label: "Dua",
-    body: "Keep daily adhkar close, beautiful, and ready when your heart needs them, not buried in another app.",
+    body: "Keep daily adhkar close and ready when your heart needs them, not buried in another app.",
   },
   {
     label: "Journaling",
-    body: "Keep the Islamic journal you always wanted for reflections, lessons, duas, and private moments with Allah.",
+    body: "Keep private reflections, lessons, and duas in one calm personal space.",
   },
 ] as const;
 
@@ -77,11 +77,11 @@ export function Hero() {
         <motion.div style={{ scale: stageScale, y: stageY }} className={styles.fitnessHeroShell}>
           <motion.div style={{ y: copyY }} className={styles.fitnessHeroCopy}>
             <p className={styles.fitnessHeroEyebrow}>Hifzer</p>
-            <h1 className={styles.fitnessHeroTitle}>The all-in-one app for Qur&apos;an, hifz, dua, and notes.</h1>
+            <h1 className={styles.fitnessHeroTitle}>Return to the Qur&apos;an daily with one guided place to read, memorize, and reflect.</h1>
             <p className={styles.fitnessHeroSummary}>
-              For Muslims building a daily Qur&apos;an habit, Hifzer replaces the mix of a Qur&apos;an
-              app, hifz notebook, adhkar list, and notes app with one place to read, memorize,
-              revise, ask, reflect, and use AI help when you want it.
+              Hifzer helps you keep your place, stay steady with hifz, and come back with less
+              friction each day. The deeper tools are there when you want them, but the main
+              routine stays simple.
             </p>
 
             <div className={styles.fitnessHeroActions}>

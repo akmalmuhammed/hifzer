@@ -1,12 +1,12 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import {
-  getQuranFoundationRedirectUri,
   getQuranFoundationRequestedScopes,
   hasQuranFoundationUserFlowConfig,
 } from "@/hifzer/quran-foundation/config";
 import {
   buildQuranFoundationAuthorizeUrl,
+  createOAuthNonce,
   createOAuthState,
   createPkceChallenge,
 } from "@/hifzer/quran-foundation/oauth";
@@ -15,6 +15,7 @@ export const runtime = "nodejs";
 
 const STATE_COOKIE = "hifzer_qf_oauth_state";
 const VERIFIER_COOKIE = "hifzer_qf_oauth_verifier";
+const NONCE_COOKIE = "hifzer_qf_oauth_nonce";
 const RETURN_TO_COOKIE = "hifzer_qf_oauth_return_to";
 
 function buildReturnUrl(req: URL, returnTo: string, qf: string) {
@@ -38,18 +39,19 @@ export async function GET(req: Request) {
 
   const { verifier, challenge } = createPkceChallenge();
   const state = createOAuthState();
-  const redirectUri = getQuranFoundationRedirectUri(requestUrl);
+  const nonce = createOAuthNonce();
   const authorizeUrl = buildQuranFoundationAuthorizeUrl({
     state,
     codeChallenge: challenge,
     scopes: getQuranFoundationRequestedScopes(),
-    redirectUri,
+    nonce,
   });
 
   const response = NextResponse.redirect(authorizeUrl);
   for (const [name, value] of [
     [STATE_COOKIE, state],
     [VERIFIER_COOKIE, verifier],
+    [NONCE_COOKIE, nonce],
     [RETURN_TO_COOKIE, returnTo],
   ] as const) {
     response.cookies.set(name, value, {

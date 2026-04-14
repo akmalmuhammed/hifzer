@@ -47,6 +47,9 @@ importers:
       groq-sdk:
         specifier: ^1.1.2
         version: 1.1.2
+      jose:
+        specifier: ^6.2.2
+        version: 6.2.2
       lucide-react:
         specifier: ^0.564.0
         version: 0.564.0(react@19.2.3)

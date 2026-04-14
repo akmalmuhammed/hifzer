@@ -1,13 +1,13 @@
 # Hifzer Project Handoff
 
-Last updated: 2026-04-08
+Last updated: 2026-04-14
 Audience: New engineers, designers, PMs, and coding agents
 
 ## 1. What Hifzer Is Now
 
 Hifzer started as a hifz-focused product, but the current app is broader.
 
-Today it is best described as a Qur'an-centered companion or super app with multiple connected lanes:
+Today it is best described as a Qur'an-centered companion with multiple connected lanes:
 
 - Qur'an reading and continuity
 - hifz sessions and SRS review
@@ -20,25 +20,18 @@ Today it is best described as a Qur'an-centered companion or super app with mult
 
 The product is still serious about memorization quality, but it is no longer only a memorization tool.
 
-## 2. The Biggest Product Pivot
+## 2. Current Operational Truths
 
-The early plan and many older docs assumed a narrower structure:
+These points should anchor how you reason about the app:
 
-- landing page
-- hifz engine
-- Qur'an browser
-- onboarding
-
-That is no longer enough to describe the repo.
-
-The current live shape is:
-
-- dashboard-first after sign-in
-- Qur'an hub and reader as one of the deepest surfaces
-- hifz queue as one lane inside a broader product
-- additional support lanes for dua, journal, fluency, practice, and milestones
-
-This matters because older documents can still sound like Hifzer is "just a hifz system." That is outdated.
+- Clerk is the primary auth system.
+- Quran.com is an optional linked account, not a primary auth system.
+- `/dashboard` is the signed-in home.
+- There is no current `/today` route.
+- `/session` is currently a redirect alias to `/hifz`.
+- Local Qur'an data is the baseline; Quran.com enriches on top of it.
+- The AI explanation flow is optional and externalized through the Cloudflare Worker.
+- Historical audits remain in the repo, but they are not the current spec.
 
 ## 3. Route Model
 
@@ -121,7 +114,6 @@ This matters because older documents can still sound like Hifzer is "just a hifz
 
 Important current truth:
 
-- there is no current `/today` page
 - auth redirects should land on `/dashboard`
 
 ## 4. Product Surface Summary
@@ -131,22 +123,23 @@ Important current truth:
 The dashboard is the post-auth home. It summarizes:
 
 - current practice status
-- KPIs and session trends
+- quick actions into hifz, Qur'an, dua, and journal
+- streak and recent practice
 - review health
 - Qur'an progress
-- streaks
-- quick actions into the rest of the app
+- first-run guidance for newly onboarded users
 
 ### Qur'an
 
-The Qur'an lane is much deeper than the original browser:
+The Qur'an lane is one of the deepest surfaces in the product:
 
 - hub with continue reading, completion, plan, surah progress, jump tools, and backfill
 - reader in list and compact modes
 - saved reader filter preferences
 - translations and phonetics
+- official Quran.com content enrichment
 - official tafsir selection
-- Quran.com filter actions
+- official reciter catalog and audio fallback
 - AI explanation for a single ayah
 - smart bookmarks with notes and categories
 - glossary search
@@ -177,7 +170,7 @@ These are support lanes around memorization and recitation quality:
 
 ### Dua
 
-The dua system is no longer a static page. It includes:
+The dua system includes:
 
 - module-based dua experiences
 - deck ordering
@@ -218,7 +211,7 @@ Active route groups:
 - `src/app/api`
 - `src/app/legacy`
 
-The repo does not use `src/_legacy`. Older docs that say that are stale. The preserved legacy UI is under `src/app/legacy`.
+The repo still contains `src/_legacy` implementation code, but the preserved legacy route surface lives under `src/app/legacy`.
 
 ## 6. Domain Map
 
@@ -227,9 +220,9 @@ Main domain services under `src/hifzer`:
 - `ai`
   App-side AI contracts and gateway config.
 - `audio`
-  Reciter mapping and audio URL resolution.
+  Reciter mapping and local audio URL resolution.
 - `bookmarks`
-  Smart bookmark logic and local sync behavior.
+  Bookmark persistence and sync glue.
 - `dashboard`
   Aggregated dashboard overview.
 - `focus`
@@ -237,9 +230,9 @@ Main domain services under `src/hifzer`:
 - `i18n`
   UI language and copy.
 - `journal`
-  Private journal persistence and local fallback.
+  Private journal persistence and degraded fallback.
 - `profile`
-  User profile creation and snapshot access.
+  User profile creation, compat handling, and snapshot access.
 - `progress`
   Qur'an and hifz progress summaries.
 - `quran`
@@ -305,18 +298,46 @@ Important:
 - public auth URLs stay `/login` and `/signup`
 - `/sign-in` is reserved for legacy redirect behavior
 
+Runbook:
+
+- `clerk-reset-runbook.md`
+
 ### Quran.com / Quran Foundation
 
 Current shipped behavior:
 
-- linked Quran.com account in settings
-- bookmark push/import sync
-- official reader enrichment
-- official tafsir selection in reader filters
+- optional Quran.com linking from onboarding completion, `/quran`, and settings
+- bookmark push/import/reconcile sync
+- official content enrichment for the reader
+- official translation and tafsir selection
+- official reciter catalog and audio fallback
 
 Current limitation:
 
-- broader user scopes like goals, activity days, collections, and notes are not yet fully integrated in the live app
+- broader user scopes like reading sessions, preference sync, goals, activity days, collections, and notes are not yet fully integrated in the live app
+
+Current env naming:
+
+- prefer explicit names for new setup:
+  - `QF_OAUTH_CLIENT_ID`
+  - `QF_OAUTH_CLIENT_SECRET`
+  - `QF_USER_TOKEN_ENCRYPTION_SECRET`
+  - `QF_CONTENT_CLIENT_ID`
+  - `QF_CONTENT_CLIENT_SECRET`
+  - `QF_OAUTH_REDIRECT_URI`
+- older generic names still work as fallback:
+  - `QF_CLIENT_ID`
+  - `QF_CLIENT_SECRET`
+  - `QF_TOKEN_ENCRYPTION_SECRET`
+
+Operational entry points:
+
+- `/api/quran-foundation/status`
+- `/settings/quran-foundation`
+- `/api/quran-foundation/connect`
+- `/api/quran-foundation/bookmarks/push`
+- `/api/quran-foundation/bookmarks/hydrate`
+- `/api/quran-foundation/bookmarks/reconcile`
 
 ### AI
 
@@ -324,10 +345,49 @@ Current AI explanation architecture:
 
 - app route: `POST /api/quran/ai-explain`
 - worker: `workers/ai-gateway`
-- default provider: Groq
 - grounding source: Quran MCP
+- provider strategy: provider-aware, Gemini-first by default, Groq optional
 
-This is important because older docs may still say Gemini is the live provider. That is now stale.
+Important operational truth:
+
+- the Worker `/health` endpoint is protected by the shared bearer secret
+
+Current app envs:
+
+- `HIFZER_AI_GATEWAY_URL`
+- `HIFZER_AI_GATEWAY_TOKEN`
+- `HIFZER_AI_GATEWAY_TIMEOUT_MS`
+
+Current worker envs:
+
+- `AI_GATEWAY_SHARED_SECRET`
+- `AI_PROVIDER=gemini` default
+- `GEMINI_API_KEY`
+- `GEMINI_MODEL`
+- `QURAN_MCP_URL`
+
+Optional worker envs for Groq:
+
+- `GROQ_API_KEY`
+- `GROQ_MODEL`
+- `GROQ_FORMAT_MODEL`
+
+Runbooks:
+
+- `ai-gateway-cloudflare-setup.md`
+- `../workers/ai-gateway/README.md`
+
+### Audio
+
+Audio uses a local-first model with Quran.com fallback:
+
+- local audio resolves from `NEXT_PUBLIC_HIFZER_AUDIO_BASE_URL`
+- local default reciter resolves from `NEXT_PUBLIC_HIFZER_DEFAULT_RECITER_ID`
+- official Quran.com reciters stream through the content API instead of the local bucket
+
+Runbook:
+
+- `r2-first-time-setup.md`
 
 ### Email
 
@@ -339,9 +399,64 @@ Upgrade and customer-management surfaces are wired around Paddle.
 
 ### Monitoring
 
-Sentry and Vercel Analytics are used for observability/telemetry.
+Current observability:
 
-## 9. Known Historical Drift In Docs
+- Sentry
+- Vercel Analytics
+- Vercel Speed Insights
+
+## 9. Operational Smoke Tests
+
+Use these first before deep debugging:
+
+### Build
+
+```bash
+pnpm install
+pnpm run build
+```
+
+### Dashboard
+
+```bash
+curl -i https://your-app-domain.com/api/dashboard/overview
+```
+
+### Quran.com status
+
+```bash
+curl https://your-app-domain.com/api/quran-foundation/status
+```
+
+### Qur'an content
+
+```bash
+curl "https://your-app-domain.com/api/quran/content-panel?ayahId=1"
+curl "https://your-app-domain.com/api/quran/audio-source?ayahId=1&reciterId=alafasy"
+```
+
+### AI explanation
+
+```bash
+curl -X POST https://your-app-domain.com/api/quran/ai-explain \
+  -H 'content-type: application/json' \
+  --data '{"ayahId":1}'
+```
+
+### Worker health
+
+```bash
+curl https://your-worker.your-subdomain.workers.dev/health \
+  -H "authorization: Bearer YOUR_SHARED_SECRET"
+```
+
+### Local audio
+
+```bash
+curl -I https://your-audio-domain.com/alafasy/000001.mp3
+```
+
+## 10. Known Historical Drift In Docs
 
 The repo intentionally keeps historical audits and reports, but many are no longer current.
 
@@ -349,23 +464,25 @@ Common stale assumptions in older docs:
 
 - `/today` still exists
 - Hifzer is only a hifz system
-- Gemini is the only AI provider
+- Groq is the only AI provider or the default live path
 - the product is mostly landing + onboarding + session + browser
-- legacy code lives under `src/_legacy`
+- legacy code lives only under `src/_legacy`
 
 When you see conflicts, trust current code first, then:
 
-1. `AGENTS.md`
-2. root `README.md`
+1. `../AGENTS.md`
+2. `../README.md`
 3. this handoff
-4. current runbooks
+4. `operational-troubleshooting.md`
+5. current feature runbooks
 
 Historical audit files under `docs/audits/**` should be treated as archival snapshots, not as the current spec.
 
-## 10. Recommended Reading For New Contributors
+## 11. Recommended Reading For New Contributors
 
 1. `../AGENTS.md`
 2. `../README.md`
 3. `HIFZER_PROJECT_HANDOFF.md`
-4. `README.md` inside `workers/ai-gateway` if touching AI
-5. specific runbooks only when working in those areas
+4. `operational-troubleshooting.md`
+5. `README.md` inside `workers/ai-gateway` if touching AI
+6. specific runbooks only when working in those areas

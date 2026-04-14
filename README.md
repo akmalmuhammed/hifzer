@@ -1,31 +1,31 @@
 # Hifzer
 
-Hifzer is a Qur'an-centered web app that has grown beyond its original hifz-only plan into a broader companion product: Qur'an reading, hifz review, memorization support, dua, private journaling, practice drills, fluency work, milestones, reminders, and support tools all live in one app.
+Hifzer is a Qur'an-centered web app with one signed-in home and multiple connected lanes: Qur'an reading, hifz review, memorization support, dua, private journaling, practice drills, fluency work, milestones, reminders, and support tools.
+
+The product is no longer a narrow hifz tracker. The current app is better described as a Qur'an companion with hifz at the center and reading continuity around it.
 
 ## Current Product Shape
 
-User-facing surfaces that exist today:
+Live user-facing surfaces:
 
 - `Dashboard`
-  Daily overview, KPIs, streaks, review health, Qur'an progress, and quick actions.
+  Post-auth home with quick actions, streaks, review health, recent practice, and Qur'an continuity.
 - `Qur'an`
-  Hub, reader, smart bookmarks, glossary, progress, jump tools, progress backfill, official tafsir, and grounded AI explanation.
+  Hub, reader, progress, bookmarks, glossary, official enrichment, official audio/reciters, and grounded AI explanation.
 - `Hifz`
-  Session engine, SRS review, quality gates, and memorization flow.
+  Session engine, SRS review, quality gates, weak-transition repair, and progress.
 - `Practice`
-  Rescue sessions, mushabihat radar, seam trainer, and meaning-linked memorization cues.
+  Rescue sessions, mushabihat radar, seam trainer, and meaning-linked support.
 - `Fluency`
   Listening-led loops, hesitation cleanup, transition smoothing, and retest flow.
 - `Dua`
-  Guided dua modules plus user-managed custom duas and deck ordering.
+  Guided dua modules, user-managed custom duas, and deck ordering.
 - `Journal`
-  Private notes with ayah and dua attachments, account sync, and local fallback.
+  Private notes with ayah/dua links, account sync, and safe degraded fallback.
 - `Milestones`, `Notifications`, `Settings`, `Billing`, `Support`
-  The rest of the operating surface around the core product.
+  The rest of the operating surface around the core app.
 
-The public-site message has also shifted: Hifzer is now pitched more as an all-in-one Qur'an companion than a narrow memorization tracker.
-
-## Route Map
+## Route Model
 
 Public routes:
 
@@ -64,7 +64,7 @@ Main app routes:
 - `/dashboard`
 - `/hifz`
 - `/hifz/progress`
-- `/session` -> redirects to `/hifz`
+- `/session` -> redirect alias to `/hifz`
 - `/quran`
 - `/quran/read`
 - `/quran/bookmarks`
@@ -109,7 +109,7 @@ Important:
 - There is no current `/today` page.
 - Post-auth redirects should land on `/dashboard`.
 
-## Architecture
+## Architecture Snapshot
 
 Top-level code map:
 
@@ -120,7 +120,7 @@ Top-level code map:
 - `src/components`
   App shell, landing, Qur'an UI, settings, billing, providers, and primitives.
 - `workers/ai-gateway`
-  Cloudflare Worker for grounded AI.
+  Cloudflare Worker for grounded Qur'an AI.
 - `prisma/schema.prisma`
   Persistence model.
 
@@ -136,12 +136,14 @@ Key domain modules:
 - `src/hifzer/streak`
 - `src/hifzer/ai`
 - `src/hifzer/ramadan`
+- `src/hifzer/profile`
+- `src/hifzer/audio`
 
-## Integrations
+## Current Integrations
 
 ### Clerk
 
-Clerk is enabled when `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` are set.
+Clerk is the primary auth layer. Quran.com is an optional linked account, not a replacement auth system.
 
 Recommended redirect contract:
 
@@ -186,24 +188,39 @@ pnpm db:studio
 
 Current live integration:
 
-- linked Quran.com account in `/settings/quran-foundation`
-- bookmark push/import sync
+- optional Quran.com linking from onboarding completion, `/quran`, and `/settings/quran-foundation`
+- bookmark push/import/reconcile sync
 - official content enrichment in the reader
-- official tafsir selection in reader filters
+- official translation and tafsir selection
+- official audio sources and Quran.com reciters
 
-Important current limitation:
+Current limitation:
 
-- the app currently requests bookmark-oriented user scopes, not the full broader Quran.com user-API surface
+- broader user APIs like reading sessions, preferences sync, goals, activity days, and notes are not fully wired yet
 
-Key env vars:
+Preferred env names:
 
-- `QF_CLIENT_ID`
-- `QF_CLIENT_SECRET`
-- `QF_TOKEN_ENCRYPTION_SECRET`
+- `QF_OAUTH_CLIENT_ID`
+- `QF_OAUTH_CLIENT_SECRET`
+- `QF_USER_TOKEN_ENCRYPTION_SECRET`
+- `QF_CONTENT_CLIENT_ID`
+- `QF_CONTENT_CLIENT_SECRET`
 - `QF_OAUTH_REDIRECT_URI`
 - `QF_BOOKMARK_MUSHAF_ID`
 - `QF_CONTENT_TRANSLATION_RESOURCE_ID`
 - `QF_CONTENT_TAFSIR_RESOURCE_ID`
+
+Backward-compatible fallback names still work:
+
+- `QF_CLIENT_ID`
+- `QF_CLIENT_SECRET`
+- `QF_TOKEN_ENCRYPTION_SECRET`
+
+First status check:
+
+```bash
+curl https://your-app-domain.com/api/quran-foundation/status
+```
 
 ### AI Gateway
 
@@ -211,25 +228,28 @@ The current AI explanation path is:
 
 - Next.js app route: `POST /api/quran/ai-explain`
 - Cloudflare Worker: `workers/ai-gateway`
-- default provider: Groq
 - grounding source: Quran MCP (`https://mcp.quran.ai`)
+- provider model: provider-aware, Gemini-first by default, Groq optional
 
 Key app env vars:
 
 - `HIFZER_AI_GATEWAY_URL`
 - `HIFZER_AI_GATEWAY_TOKEN`
-- `HIFZER_AI_GATEWAY_TIMEOUT_MS` (optional)
+- `HIFZER_AI_GATEWAY_TIMEOUT_MS` optional
 
 Key worker env vars:
 
 - `AI_GATEWAY_SHARED_SECRET`
-- `AI_PROVIDER=groq`
+- `AI_PROVIDER=gemini` default
+- `GEMINI_API_KEY`
+- `GEMINI_MODEL`
+- `QURAN_MCP_URL`
+
+Optional worker vars for Groq:
+
 - `GROQ_API_KEY`
 - `GROQ_MODEL`
 - `GROQ_FORMAT_MODEL`
-- `QURAN_MCP_URL`
-
-Provider fallback code for Gemini still exists, but Groq is the current default.
 
 Runbooks:
 
@@ -238,7 +258,7 @@ Runbooks:
 
 ### Email
 
-Resend is used for reminder emails.
+Resend powers reminder emails.
 
 Key env vars:
 
@@ -260,17 +280,27 @@ Key env vars:
 
 ### Audio
 
-Qur'an audio is designed around a Cloudflare R2-compatible public base URL.
+Qur'an audio is local-first with Quran.com fallback:
 
-Key env vars:
-
-- `NEXT_PUBLIC_HIFZER_AUDIO_BASE_URL`
-- `NEXT_PUBLIC_HIFZER_DEFAULT_RECITER_ID`
-- `NEXT_PUBLIC_HIFZER_AUDIO_AYAH_ID_WIDTH`
+- local audio comes from `NEXT_PUBLIC_HIFZER_AUDIO_BASE_URL`
+- the default local reciter resolves from `NEXT_PUBLIC_HIFZER_DEFAULT_RECITER_ID`
+- official Quran.com reciters stream through the content API instead of R2
 
 Runbook:
 
 - `docs/r2-first-time-setup.md`
+
+### Observability
+
+Current observability stack:
+
+- Sentry for app errors and exception capture
+- Vercel Analytics for usage analytics
+- Vercel Speed Insights for performance telemetry
+
+Operational runbook:
+
+- `docs/operational-troubleshooting.md`
 
 ## Local Qur'an Data
 
@@ -310,6 +340,8 @@ pnpm test:e2e
 pnpm test:e2e:routing
 pnpm audit:clicks
 pnpm audit:mobile:overflow
+pnpm ai:worker:dev
+pnpm ai:worker:deploy:dry
 ```
 
 Progress simulation harnesses:
@@ -320,11 +352,118 @@ pnpm test:progress:14d
 pnpm test:progress:failures
 ```
 
+## Troubleshooting Quick Start
+
+### Auth looks broken
+
+Check:
+
+- `/login`
+- `/signup`
+- Clerk env vars in deployment
+- `docs/clerk-reset-runbook.md`
+
+Expected:
+
+- signed-out protected routes redirect to `/login`
+- sign-in and sign-up land on `/dashboard`
+
+### Dashboard says unavailable
+
+Check:
+
+```bash
+curl -i https://your-app-domain.com/api/dashboard/overview
+```
+
+Likely causes:
+
+- unauthenticated request -> `401`
+- database not configured -> `503`
+- server-side failure -> `500`
+
+### Quran.com linking is failing
+
+Check:
+
+```bash
+curl https://your-app-domain.com/api/quran-foundation/status
+```
+
+Look for:
+
+- `userApiReady`
+- `contentApiReady`
+- `state`
+- `detail`
+
+Common causes:
+
+- missing OAuth env vars
+- missing token encryption secret
+- callback URL mismatch
+- latest DB migrations not applied
+
+### Reader enrichment is broken
+
+Smoke tests:
+
+```bash
+curl "https://your-app-domain.com/api/quran/content-panel?ayahId=1"
+curl "https://your-app-domain.com/api/quran/audio-source?ayahId=1&reciterId=alafasy"
+```
+
+Common causes:
+
+- content client env vars missing
+- Quran.Foundation token scope or API-side availability issue
+- requested reciter not available for that provider
+
+### AI explanation is unavailable
+
+Smoke tests:
+
+```bash
+curl -X POST https://your-app-domain.com/api/quran/ai-explain \
+  -H 'content-type: application/json' \
+  --data '{"ayahId":1}'
+```
+
+If the app route is configured, then verify the Worker directly:
+
+```bash
+curl https://your-worker.your-subdomain.workers.dev/health \
+  -H "authorization: Bearer YOUR_SHARED_SECRET"
+```
+
+Common causes:
+
+- `HIFZER_AI_GATEWAY_URL` missing
+- `HIFZER_AI_GATEWAY_TOKEN` mismatch
+- Worker missing `GEMINI_API_KEY`
+- Quran MCP upstream unavailable
+
+### Local audio is missing
+
+Check:
+
+```bash
+curl -I https://your-audio-domain.com/alafasy/000001.mp3
+```
+
+Common causes:
+
+- `NEXT_PUBLIC_HIFZER_AUDIO_BASE_URL` unset
+- bad R2 key naming
+- CORS misconfiguration
+- local file missing for selected reciter
+
 ## Docs To Read First
 
 - `AGENTS.md`
-- `docs/HIFZER_PROJECT_HANDOFF.md`
 - `docs/README.md`
+- `docs/HIFZER_PROJECT_HANDOFF.md`
+- `docs/operational-troubleshooting.md`
 
 Important:
 

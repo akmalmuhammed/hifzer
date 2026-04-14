@@ -27,6 +27,7 @@ import {
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { DisclosureCard } from "@/components/ui/disclosure-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
 import type { OnboardingStartLane } from "@/hifzer/profile/onboarding";
@@ -762,218 +763,231 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             />
           </div>
 
-          <div className="grid gap-5 xl:grid-cols-2">
-            <div className="kw-fade-in h-full" style={{ animationDelay: "200ms" }}>
-              <Card className="h-full">
-                <SectionHeader
-                  eyebrow="Practice"
-                  title="Last 14 days"
-                  icon={TrendingUp}
-                  tone="accent"
-                  meta={<Pill tone="accent">{overview.profile.timezone}</Pill>}
-                />
-                <div className="mt-4">
-                  <AreaTrend points={trendMinutes} tone="accent" valueSuffix="m" />
-                </div>
-                <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                  <div className={`${styles.kpiTile} px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Tracked ayahs</p>
-                    <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{overview.kpis.trackedAyahs}</p>
-                  </div>
-                  <div className={`${styles.kpiTile} px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Joins to fix</p>
-                    <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{overview.reviewHealth.weakTransitions}</p>
-                  </div>
-                  <div className={`${styles.kpiTile} px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Practice days</p>
-                    <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{overview.profile.practiceDaysPerWeek}/7</p>
-                  </div>
-                </div>
-              </Card>
-            </div>
-
-            <div className="kw-fade-in h-full" style={{ animationDelay: "240ms" }}>
-              <Card className="h-full">
-                <SectionHeader
-                  eyebrow="Recall"
-                  title="How recent sessions felt"
-                  icon={ShieldCheck}
-                  tone="accent"
-                  meta={<Pill tone="neutral">14d</Pill>}
-                />
-
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <div className={styles.qualityOrbWrap}>
-                    <div className={styles.qualityOrb} style={{ background: recitationQuality.gradeArc }}>
-                      <span className={styles.qualityOrbInner}>
-                        <span className={styles.qualityOrbValue}>{recitationQuality.qualityPct}%</span>
-                        <span className={styles.qualityOrbLabel}>Recall quality</span>
-                      </span>
+          <DisclosureCard
+            summary={(
+              <div>
+                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">View progress and details</p>
+                <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
+                  Open the charts, recall breakdown, reading progress, and activity calendar when you want a closer look.
+                </p>
+              </div>
+            )}
+          >
+            <div className="space-y-5">
+              <div className="grid gap-5 xl:grid-cols-2">
+                <div className="kw-fade-in h-full" style={{ animationDelay: "200ms" }}>
+                  <Card className="h-full">
+                    <SectionHeader
+                      eyebrow="Practice"
+                      title="Last 14 days"
+                      icon={TrendingUp}
+                      tone="accent"
+                      meta={<Pill tone="accent">{overview.profile.timezone}</Pill>}
+                    />
+                    <div className="mt-4">
+                      <AreaTrend points={trendMinutes} tone="accent" valueSuffix="m" />
                     </div>
-                  </div>
-                  <div className={styles.qualityOrbWrap}>
-                    <div className={styles.qualityOrb} style={{ background: recitationQuality.stageArc }}>
-                      <span className={styles.qualityOrbInner}>
-                        <span className={styles.qualityOrbValue}>{recitationQuality.stabilityPct}%</span>
-                        <span className={styles.qualityOrbLabel}>Easy recall</span>
-                      </span>
+                    <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                      <div className={`${styles.kpiTile} px-3 py-2`}>
+                        <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Tracked ayahs</p>
+                        <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{overview.kpis.trackedAyahs}</p>
+                      </div>
+                      <div className={`${styles.kpiTile} px-3 py-2`}>
+                        <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Joins to fix</p>
+                        <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{overview.reviewHealth.weakTransitions}</p>
+                      </div>
+                      <div className={`${styles.kpiTile} px-3 py-2`}>
+                        <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Practice days</p>
+                        <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{overview.profile.practiceDaysPerWeek}/7</p>
+                      </div>
                     </div>
-                  </div>
+                  </Card>
                 </div>
 
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <Pill tone="danger">Again {overview.gradeMix14d.AGAIN}</Pill>
-                  <Pill tone="warn">Hard {overview.gradeMix14d.HARD}</Pill>
-                  <Pill tone="success">Good {overview.gradeMix14d.GOOD}</Pill>
-                  <Pill tone="accent">Easy {overview.gradeMix14d.EASY}</Pill>
-                </div>
+                <div className="kw-fade-in h-full" style={{ animationDelay: "240ms" }}>
+                  <Card className="h-full">
+                    <SectionHeader
+                      eyebrow="Recall"
+                      title="How recent sessions felt"
+                      icon={ShieldCheck}
+                      tone="accent"
+                      meta={<Pill tone="neutral">14d</Pill>}
+                    />
 
-                <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                  <div className={`${styles.kpiTile} px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Needs work</p>
-                    <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
-                      {overview.gradeMix14d.AGAIN} / {overview.gradeMix14d.HARD}
-                    </p>
-                  </div>
-                  <div className={`${styles.kpiTile} px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Clean answers</p>
-                    <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
-                      {overview.gradeMix14d.GOOD} / {overview.gradeMix14d.EASY}
-                    </p>
-                  </div>
-                  <div className={`${styles.kpiTile} px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Review work</p>
-                    <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
-                      {overview.stageMix14d.WARMUP + overview.stageMix14d.REVIEW}
-                    </p>
-                  </div>
-                  <div className={`${styles.kpiTile} px-3 py-2`}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">New work</p>
-                    <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
-                      {overview.stageMix14d.NEW + overview.stageMix14d.LINK + overview.stageMix14d.LINK_REPAIR}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          </div>
-
-          <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
-            <div className="kw-fade-in h-full" style={{ animationDelay: "280ms" }}>
-              <Card className="h-full">
-                <SectionHeader
-                  eyebrow="Qur&apos;an"
-                  title={`${overview.quran.currentSurahName} | ${overview.quran.cursorRef}`}
-                  icon={BookOpenText}
-                  tone="accent"
-                  meta={<Pill tone="accent">Ayah {overview.quran.cursorAyahId}</Pill>}
-                />
-
-                <div className="mt-4 grid gap-4 sm:grid-cols-[120px_minmax(0,1fr)]">
-                  <div className="flex items-center justify-center rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] p-3">
-                    <DonutProgress value={overview.kpis.quranCompletionPct / 100} size={96} stroke={8} tone="brand" />
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-sm text-[color:var(--kw-muted)]">
-                      Completion {overview.kpis.quranCompletionPct.toFixed(1)}% | Surah progress {overview.quran.currentSurahProgressPct}%
-                    </p>
-                    <div className="h-2 rounded-full bg-black/[0.06]">
-                      <div
-                        className="h-2 rounded-full bg-[rgba(var(--kw-accent-rgb),0.82)]"
-                        style={{ width: `${Math.max(1, overview.kpis.quranCompletionPct)}%` }}
-                      />
+                    <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                      <div className={styles.qualityOrbWrap}>
+                        <div className={styles.qualityOrb} style={{ background: recitationQuality.gradeArc }}>
+                          <span className={styles.qualityOrbInner}>
+                            <span className={styles.qualityOrbValue}>{recitationQuality.qualityPct}%</span>
+                            <span className={styles.qualityOrbLabel}>Recall quality</span>
+                          </span>
+                        </div>
+                      </div>
+                      <div className={styles.qualityOrbWrap}>
+                        <div className={styles.qualityOrb} style={{ background: recitationQuality.stageArc }}>
+                          <span className={styles.qualityOrbInner}>
+                            <span className={styles.qualityOrbValue}>{recitationQuality.stabilityPct}%</span>
+                            <span className={styles.qualityOrbLabel}>Easy recall</span>
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      <Pill tone="neutral">Khatmah {overview.quran.completedKhatmahCount}</Pill>
-                      <Pill tone="neutral">Last 7 days: {overview.quran.browseRecitedAyahs7d} ayahs</Pill>
-                      <Pill tone="neutral">Last 14 days: {overview.quran.uniqueSurahsRecited14d} surahs</Pill>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Pill tone="danger">Again {overview.gradeMix14d.AGAIN}</Pill>
+                      <Pill tone="warn">Hard {overview.gradeMix14d.HARD}</Pill>
+                      <Pill tone="success">Good {overview.gradeMix14d.GOOD}</Pill>
+                      <Pill tone="accent">Easy {overview.gradeMix14d.EASY}</Pill>
                     </div>
-                  </div>
+
+                    <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                      <div className={`${styles.kpiTile} px-3 py-2`}>
+                        <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Needs work</p>
+                        <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
+                          {overview.gradeMix14d.AGAIN} / {overview.gradeMix14d.HARD}
+                        </p>
+                      </div>
+                      <div className={`${styles.kpiTile} px-3 py-2`}>
+                        <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Clean answers</p>
+                        <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
+                          {overview.gradeMix14d.GOOD} / {overview.gradeMix14d.EASY}
+                        </p>
+                      </div>
+                      <div className={`${styles.kpiTile} px-3 py-2`}>
+                        <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Review work</p>
+                        <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
+                          {overview.stageMix14d.WARMUP + overview.stageMix14d.REVIEW}
+                        </p>
+                      </div>
+                      <div className={`${styles.kpiTile} px-3 py-2`}>
+                        <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">New work</p>
+                        <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
+                          {overview.stageMix14d.NEW + overview.stageMix14d.LINK + overview.stageMix14d.LINK_REPAIR}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+              </div>
+
+              <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+                <div className="kw-fade-in h-full" style={{ animationDelay: "280ms" }}>
+                  <Card className="h-full">
+                    <SectionHeader
+                      eyebrow="Qur&apos;an"
+                      title={`${overview.quran.currentSurahName} | ${overview.quran.cursorRef}`}
+                      icon={BookOpenText}
+                      tone="accent"
+                      meta={<Pill tone="accent">Ayah {overview.quran.cursorAyahId}</Pill>}
+                    />
+
+                    <div className="mt-4 grid gap-4 sm:grid-cols-[120px_minmax(0,1fr)]">
+                      <div className="flex items-center justify-center rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] p-3">
+                        <DonutProgress value={overview.kpis.quranCompletionPct / 100} size={96} stroke={8} tone="brand" />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-sm text-[color:var(--kw-muted)]">
+                          Completion {overview.kpis.quranCompletionPct.toFixed(1)}% | Surah progress {overview.quran.currentSurahProgressPct}%
+                        </p>
+                        <div className="h-2 rounded-full bg-black/[0.06]">
+                          <div
+                            className="h-2 rounded-full bg-[rgba(var(--kw-accent-rgb),0.82)]"
+                            style={{ width: `${Math.max(1, overview.kpis.quranCompletionPct)}%` }}
+                          />
+                        </div>
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          <Pill tone="neutral">Khatmah {overview.quran.completedKhatmahCount}</Pill>
+                          <Pill tone="neutral">Last 7 days: {overview.quran.browseRecitedAyahs7d} ayahs</Pill>
+                          <Pill tone="neutral">Last 14 days: {overview.quran.uniqueSurahsRecited14d} surahs</Pill>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                      <Link href="/quran">
+                        <Button variant="secondary" className="gap-2">
+                          Qur&apos;an hub <Compass size={15} />
+                        </Button>
+                      </Link>
+                      <Link href="/quran/read?view=compact">
+                        <Button className="gap-2">
+                          Continue reading <ArrowRight size={15} />
+                        </Button>
+                      </Link>
+                    </div>
+                  </Card>
                 </div>
 
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <Link href="/quran">
-                    <Button variant="secondary" className="gap-2">
-                      Qur&apos;an hub <Compass size={15} />
-                    </Button>
-                  </Link>
-                  <Link href="/quran/read?view=compact">
-                    <Button className="gap-2">
-                      Continue reading <ArrowRight size={15} />
-                    </Button>
-                  </Link>
+                <div className="kw-fade-in h-full" style={{ animationDelay: "320ms" }}>
+                  <Card className="h-full">
+                    <SectionHeader
+                      eyebrow="Consistency"
+                      title="Activity calendar"
+                      icon={CalendarDays}
+                      tone="neutral"
+                    />
+                    <div className="mt-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="gap-1"
+                          onClick={() => setMonthCursor((prev) => prev - 1)}
+                          disabled={!canGoPreviousMonth}
+                        >
+                          <ChevronLeft size={14} />
+                          Prev
+                        </Button>
+                        <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
+                          {selectedMonthStart.toLocaleDateString(undefined, { month: "long", year: "numeric", timeZone: "UTC" })}
+                        </p>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="gap-1"
+                          onClick={() => setMonthCursor((prev) => prev + 1)}
+                          disabled={!canGoNextMonth}
+                        >
+                          Next
+                          <ChevronRight size={14} />
+                        </Button>
+                      </div>
+
+                      <div className={styles.calendarWeekdays}>
+                        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((weekday) => (
+                          <span key={weekday}>{weekday}</span>
+                        ))}
+                      </div>
+
+                      <div className={styles.calendarGrid} aria-label="Monthly activity calendar">
+                        {calendarCells.map((cell) => (
+                          <span
+                            key={cell.key}
+                            title={cell.blank ? "" : `${formatLocalDate(cell.date)}: ${cell.value}`}
+                            className={cell.blank ? styles.calendarBlank : styles.calendarCell}
+                            data-future={cell.isFuture ? "1" : "0"}
+                            data-today={cell.isToday ? "1" : "0"}
+                            style={cell.blank ? undefined : { backgroundColor: activityColor(cell.value, calendarMax) }}
+                          >
+                            {cell.blank ? "" : cell.day}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-[color:var(--kw-faint)]">
+                        <span>Low</span>
+                        <span className={styles.legendCircle} style={{ backgroundColor: activityColor(0, calendarMax) }} />
+                        <span className={styles.legendCircle} style={{ backgroundColor: activityColor(Math.ceil(calendarMax * 0.2), calendarMax) }} />
+                        <span className={styles.legendCircle} style={{ backgroundColor: activityColor(Math.ceil(calendarMax * 0.45), calendarMax) }} />
+                        <span className={styles.legendCircle} style={{ backgroundColor: activityColor(calendarMax, calendarMax) }} />
+                        <span>High</span>
+                      </div>
+                    </div>
+                  </Card>
                 </div>
-              </Card>
+              </div>
             </div>
-
-            <div className="kw-fade-in h-full" style={{ animationDelay: "320ms" }}>
-              <Card className="h-full">
-                <SectionHeader
-                  eyebrow="Consistency"
-                  title="Activity calendar"
-                  icon={CalendarDays}
-                  tone="neutral"
-                />
-                <div className="mt-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      className="gap-1"
-                      onClick={() => setMonthCursor((prev) => prev - 1)}
-                      disabled={!canGoPreviousMonth}
-                    >
-                      <ChevronLeft size={14} />
-                      Prev
-                    </Button>
-                    <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
-                      {selectedMonthStart.toLocaleDateString(undefined, { month: "long", year: "numeric", timeZone: "UTC" })}
-                    </p>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      className="gap-1"
-                      onClick={() => setMonthCursor((prev) => prev + 1)}
-                      disabled={!canGoNextMonth}
-                    >
-                      Next
-                      <ChevronRight size={14} />
-                    </Button>
-                  </div>
-
-                  <div className={styles.calendarWeekdays}>
-                    {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((weekday) => (
-                      <span key={weekday}>{weekday}</span>
-                    ))}
-                  </div>
-
-                  <div className={styles.calendarGrid} aria-label="Monthly activity calendar">
-                    {calendarCells.map((cell) => (
-                      <span
-                        key={cell.key}
-                        title={cell.blank ? "" : `${formatLocalDate(cell.date)}: ${cell.value}`}
-                        className={cell.blank ? styles.calendarBlank : styles.calendarCell}
-                        data-future={cell.isFuture ? "1" : "0"}
-                        data-today={cell.isToday ? "1" : "0"}
-                        style={cell.blank ? undefined : { backgroundColor: activityColor(cell.value, calendarMax) }}
-                      >
-                        {cell.blank ? "" : cell.day}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-[color:var(--kw-faint)]">
-                    <span>Low</span>
-                    <span className={styles.legendCircle} style={{ backgroundColor: activityColor(0, calendarMax) }} />
-                    <span className={styles.legendCircle} style={{ backgroundColor: activityColor(Math.ceil(calendarMax * 0.2), calendarMax) }} />
-                    <span className={styles.legendCircle} style={{ backgroundColor: activityColor(Math.ceil(calendarMax * 0.45), calendarMax) }} />
-                    <span className={styles.legendCircle} style={{ backgroundColor: activityColor(calendarMax, calendarMax) }} />
-                    <span>High</span>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          </div>
+          </DisclosureCard>
         </div>
       ) : null}
 

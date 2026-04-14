@@ -1,17 +1,23 @@
 # Cloudflare R2 First-Time Setup (Hifzer)
 
-This guide sets up Quran audio hosting for Hifzer with the current key format:
+This guide sets up local Qur'an audio hosting for Hifzer with the current key format:
 
 `{publicReciterId}/{zero-padded-ayahId}.mp3`
 
 Example: `alafasy/000001.mp3`
 
-The app resolves audio from:
+The app resolves local audio from:
 
 - `NEXT_PUBLIC_HIFZER_AUDIO_BASE_URL`
 - `src/hifzer/audio/config.ts`
 
-If the env var is empty, the UI shows a safe "Audio not configured" state.
+If the env var is empty, the UI shows a safe "Audio not configured" state for local audio.
+
+Important current behavior:
+
+- local audio is used first when available
+- official Quran.com reciters can stream through the content API instead of this bucket
+- this runbook is for the local audio layer, not the Quran.com streaming layer
 
 ## 1. Create the R2 bucket
 
@@ -62,7 +68,7 @@ Hifzer expects:
 - filename = global ayah id zero-padded to 6 digits + `.mp3`
 - total ayahs = 6,236
 
-Required minimum set for MVP:
+Required minimum set for local audio MVP:
 
 - `alafasy/000001.mp3` ... `alafasy/006236.mp3`
 
@@ -128,6 +134,16 @@ curl -I https://audio.hifzer.com/alafasy/000001.mp3
 
 Expect `200 OK` and audio content type.
 
+Reader/API check:
+
+```bash
+curl "https://your-app-domain.com/api/quran/audio-source?ayahId=1&reciterId=alafasy"
+```
+
+Expected:
+
+- `ok: true` when the local source or official fallback resolves
+
 ## 9. Common issues
 
 1. `403` on audio URL:
@@ -138,6 +154,8 @@ Expect `200 OK` and audio content type.
    - Key naming mismatch. Ensure global ayah ids (1..6236) are zero-padded (for example `000001.mp3`), not `surah-ayah` filenames.
 4. Wrong file extension:
    - App currently expects `.mp3`.
+5. Local bucket is healthy but audio still fails:
+   - check whether the selected reciter is an official Quran.com reciter rather than a local bucket reciter
 
 ## 10. Reciter expansion later
 

@@ -7,7 +7,7 @@ import { QuranFoundationError } from "./types";
 const ALGORITHM = "aes-256-gcm";
 
 function getEncryptionKey(): Buffer {
-  const secret = getQuranFoundationConfig().encryptionSecret;
+  const secret = getQuranFoundationConfig().userTokenEncryptionSecret;
   if (!secret) {
     throw new QuranFoundationError("Quran Foundation token encryption is not configured.", {
       status: 503,

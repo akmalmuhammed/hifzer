@@ -185,7 +185,8 @@ export async function getQuranFoundationConnectionStatus(
     return {
       available: false,
       state: "not_configured",
-      detail: "Set QF_CLIENT_ID and QF_TOKEN_ENCRYPTION_SECRET to enable Quran.com account linking.",
+      detail:
+        "Set the Quran.com OAuth client ID, client secret, and token encryption secret to enable Quran.com account linking.",
       userApiReady,
       contentApiReady,
       displayName: null,
@@ -427,8 +428,8 @@ export async function quranFoundationUserApiRequest<T>(
   },
 ): Promise<{ data: T; payload: Record<string, unknown>; response: Response }> {
   const config = getQuranFoundationConfig();
-  if (!config.clientId) {
-    throw new QuranFoundationError("Quran Foundation client ID is not configured.", {
+  if (!config.oauthClientId) {
+    throw new QuranFoundationError("Quran Foundation OAuth client ID is not configured.", {
       status: 503,
       code: "qf_client_id_missing",
       retryable: false,
@@ -448,7 +449,7 @@ export async function quranFoundationUserApiRequest<T>(
 
   async function performRequest(activeSession: UserApiSession) {
     const headers = new Headers();
-    headers.set("x-client-id", config.clientId ?? "");
+    headers.set("x-client-id", config.oauthClientId ?? "");
     headers.set("x-auth-token", activeSession.accessToken);
     if (input.body !== undefined) {
       headers.set("content-type", "application/json");

@@ -66,18 +66,14 @@ export function QuranFoundationConnectCard(props: QuranFoundationConnectCardProp
   const identityLabel = status.displayName ?? status.email ?? "Quran.com account";
   const title = props.variant === "onboarding"
     ? linked
-      ? "Quran.com is linked."
+      ? "Quran.com linked"
       : "Optional Quran.com link"
     : linked
-      ? "Quran.com connection ready"
-      : "Bring Quran.com into Hifzer";
-  const body = props.variant === "onboarding"
-    ? linked
-      ? "Your Hifzer account is still powered by Clerk. Quran.com is now connected as an optional reading layer you can manage later from Settings."
-      : "Linking is optional. You can finish onboarding right now, or connect Quran.com first so bookmarks and official reader enrichment stay close."
-    : linked
-      ? "Your Quran.com account is connected. Keep using Hifzer normally, then manage imports, bookmark sync, and connection details from Settings."
-      : "Already using Hifzer? Link Quran.com whenever you want. Clerk stays your main sign-in, while Quran.com works as an optional reading connection.";
+      ? "Quran.com linked"
+      : "Link Quran.com";
+  const body = linked
+    ? "Your Quran.com account is linked and ready in Hifzer."
+    : "Link Quran.com to bring bookmarks and official Qur'an content into Hifzer.";
 
   return (
     <Card
@@ -90,8 +86,6 @@ export function QuranFoundationConnectCard(props: QuranFoundationConnectCardProp
         <div className="max-w-3xl">
           <div className="flex flex-wrap gap-2">
             <Pill tone={statusTone(status.state)}>{statusLabel(status.state)}</Pill>
-            <Pill tone="neutral">Clerk stays primary</Pill>
-            {status.contentApiReady ? <Pill tone="brand">Reader enrichment ready</Pill> : null}
           </div>
 
           <p className="mt-4 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">{title}</p>
@@ -102,11 +96,7 @@ export function QuranFoundationConnectCard(props: QuranFoundationConnectCardProp
               Connected as <span className="font-semibold text-[color:var(--kw-ink)]">{identityLabel}</span>
               {status.lastSyncedAt ? ` · last synced ${new Date(status.lastSyncedAt).toLocaleString()}` : ""}
             </p>
-          ) : (
-            <p className="mt-3 text-sm text-[color:var(--kw-muted)]">
-              Skip for now if you want. You can always link later from the Qur&apos;an area or Settings.
-            </p>
-          )}
+          ) : null}
 
           {feedback ? (
             <div className="mt-3 rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/75 px-4 py-3 text-sm text-[color:var(--kw-muted)]">
@@ -118,27 +108,6 @@ export function QuranFoundationConnectCard(props: QuranFoundationConnectCardProp
         <span className="grid h-12 w-12 place-items-center rounded-[22px] border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.10)] text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)]">
           {linked ? <CheckCircle2 size={18} /> : <Link2 size={18} />}
         </span>
-      </div>
-
-      <div className="mt-6 grid gap-3 md:grid-cols-3">
-        <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/76 px-4 py-4">
-          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Keep access simple</p>
-          <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">
-            Clerk remains the only account system Hifzer depends on for sign-in and app access.
-          </p>
-        </div>
-        <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/76 px-4 py-4">
-          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Bring reading data closer</p>
-          <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">
-            Quran.com linking keeps bookmarks nearby today and leaves room for deeper reader sync later.
-          </p>
-        </div>
-        <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/76 px-4 py-4">
-          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Manage it later</p>
-          <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">
-            Connection controls stay in Settings, so nothing about onboarding or daily study becomes a trap.
-          </p>
-        </div>
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-2">

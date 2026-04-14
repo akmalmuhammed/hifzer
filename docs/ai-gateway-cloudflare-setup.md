@@ -2,7 +2,9 @@
 
 This runbook deploys the Hifzer AI gateway Worker with the current default setup:
 
-- provider: Groq
+- provider strategy: provider-aware
+- default provider: Gemini
+- optional provider: Groq
 - grounding: Quran MCP
 - app integration: `POST /api/quran/ai-explain`
 
@@ -17,8 +19,8 @@ Wrangler is already included in the repo as a dev dependency.
 ## 2. Authenticate Wrangler
 
 ```bash
-pnpm exec wrangler login
-pnpm exec wrangler whoami --json
+pnpm ai:worker:login
+pnpm ai:worker:whoami
 ```
 
 If `whoami` fails, login is not complete.
@@ -29,22 +31,22 @@ If `whoami` fails, login is not complete.
 cp workers/ai-gateway/.dev.vars.example workers/ai-gateway/.dev.vars
 ```
 
-Fill in at minimum:
+Fill in at minimum for the default path:
 
 - `AI_GATEWAY_SHARED_SECRET`
-- `AI_PROVIDER=groq`
-- `GROQ_API_KEY`
+- `AI_PROVIDER=gemini`
+- `GEMINI_API_KEY`
 
 Recommended current values:
 
-- `GROQ_MODEL=openai/gpt-oss-20b`
-- `GROQ_FORMAT_MODEL=openai/gpt-oss-20b`
+- `GEMINI_MODEL=gemini-2.5-flash`
 - `QURAN_MCP_URL=https://mcp.quran.ai`
 
-Optional Gemini fallback values:
+Optional Groq vars:
 
-- `GEMINI_API_KEY`
-- `GEMINI_MODEL=gemini-2.5-flash`
+- `GROQ_API_KEY`
+- `GROQ_MODEL=openai/gpt-oss-20b`
+- `GROQ_FORMAT_MODEL=openai/gpt-oss-20b`
 
 Generate a shared secret if needed:
 
@@ -58,25 +60,30 @@ openssl rand -base64 32 | tr -d '\n'
 pnpm ai:worker:dev
 ```
 
-Health check:
+Local health check:
 
 ```bash
-curl http://127.0.0.1:8787/health
+curl http://127.0.0.1:8787/health \
+  -H "authorization: Bearer YOUR_SHARED_SECRET"
 ```
+
+Important:
+
+- `/health` is protected by the same shared bearer token used by the app
 
 ## 5. Upload Production Secrets
 
-Current default secrets:
-
-```bash
-printf '%s' 'YOUR_GROQ_API_KEY' | pnpm exec wrangler secret put GROQ_API_KEY --config workers/ai-gateway/wrangler.jsonc
-printf '%s' 'YOUR_SHARED_SECRET' | pnpm exec wrangler secret put AI_GATEWAY_SHARED_SECRET --config workers/ai-gateway/wrangler.jsonc
-```
-
-Optional Gemini fallback secret:
+Default Gemini path:
 
 ```bash
 printf '%s' 'YOUR_GEMINI_API_KEY' | pnpm exec wrangler secret put GEMINI_API_KEY --config workers/ai-gateway/wrangler.jsonc
+printf '%s' 'YOUR_SHARED_SECRET' | pnpm exec wrangler secret put AI_GATEWAY_SHARED_SECRET --config workers/ai-gateway/wrangler.jsonc
+```
+
+Optional Groq secret:
+
+```bash
+printf '%s' 'YOUR_GROQ_API_KEY' | pnpm exec wrangler secret put GROQ_API_KEY --config workers/ai-gateway/wrangler.jsonc
 ```
 
 ## 6. Deploy The Worker
@@ -112,7 +119,8 @@ HIFZER_AI_GATEWAY_TIMEOUT_MS=60000
 Worker health:
 
 ```bash
-curl https://your-worker.your-subdomain.workers.dev/health
+curl https://your-worker.your-subdomain.workers.dev/health \
+  -H "authorization: Bearer YOUR_SHARED_SECRET"
 ```
 
 App route smoke test:
@@ -131,8 +139,30 @@ The result should be a grounded explanation payload, not a timeout or configurat
 pnpm ai:worker:tail
 ```
 
+## 10. Troubleshooting
+
+### Worker health returns `401`
+
+- the bearer token is missing or wrong
+- `/health` is intentionally protected
+
+### App route returns `503`
+
+- `HIFZER_AI_GATEWAY_URL` is missing
+- the Worker is deployed but missing `GEMINI_API_KEY`
+
+### App route returns `502` or `504`
+
+- Worker is reachable but upstream model or Quran MCP failed
+- use `pnpm ai:worker:tail`
+
+### App route works locally but not in production
+
+- the app env still points to an old Worker URL
+- `HIFZER_AI_GATEWAY_TOKEN` does not match the Worker secret
+
 ## Notes
 
-- The Worker is provider-aware, but Groq is the current default deployment path.
-- The Worker should remain the only layer that knows about model-provider specifics.
+- The Worker is provider-aware, but Gemini is the current default deployment path.
+- Groq remains an optional provider, not the current default.
 - Keep API keys and the shared secret server-side only.

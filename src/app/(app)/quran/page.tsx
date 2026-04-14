@@ -105,32 +105,39 @@ export default async function QuranIndexPage() {
         />
       </div>
 
+      <div className="mt-6 flex flex-wrap items-center gap-2">
+        <Link href="/quran/bookmarks" className={toolLinkClass}>
+          Open bookmarks
+          <BookMarked size={14} />
+        </Link>
+        <Link href="/quran/progress" className={toolLinkClass}>
+          See all surahs
+          <ArrowRight size={14} />
+        </Link>
+      </div>
+
       <div className="mt-8">
         <DisclosureCard
           summary={(
             <div>
-              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">More reading tools</p>
+              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">More tools</p>
               <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
-                Open bookmarks, jump by surah or juz, save reading done elsewhere, or return to the dashboard when needed.
+                Open the glossary, jump to another place, or add reading you finished elsewhere.
               </p>
             </div>
           )}
         >
           <div className="space-y-5">
-            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
               <Link href="/quran/glossary" className={toolLinkClass}>
-                Open Qur&apos;anic glossary search
-              </Link>
-              <Link href="/quran/bookmarks" className={toolLinkClass}>
-                Open smart bookmarks
-                <BookMarked size={14} />
+                Open glossary
               </Link>
               <Link href="/dua" className={toolLinkClass}>
                 Laylat al-Qadr dua
                 <MoonStar size={14} />
               </Link>
-              <Link href="/quran/progress" className={toolLinkClass}>
-                See all surahs
+              <Link href="/dashboard" className={toolLinkClass}>
+                Back to dashboard
                 <ArrowRight size={14} />
               </Link>
             </div>

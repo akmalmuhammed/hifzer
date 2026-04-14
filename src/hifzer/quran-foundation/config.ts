@@ -12,15 +12,27 @@ function trimEnv(value: string | undefined): string | null {
   return trimmed ? trimmed : null;
 }
 
+function readFirstEnv(...names: string[]): string | null {
+  for (const name of names) {
+    const value = trimEnv(process.env[name]);
+    if (value) {
+      return value;
+    }
+  }
+  return null;
+}
+
 function parseOptionalPositiveInt(value: string | undefined): number | null {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : null;
 }
 
 export type QuranFoundationRuntimeConfig = {
-  clientId: string | null;
-  clientSecret: string | null;
-  encryptionSecret: string | null;
+  oauthClientId: string | null;
+  oauthClientSecret: string | null;
+  contentClientId: string | null;
+  contentClientSecret: string | null;
+  userTokenEncryptionSecret: string | null;
   oauthBaseUrl: string;
   userApiBaseUrl: string;
   contentApiBaseUrl: string;
@@ -49,9 +61,11 @@ export function getQuranFoundationConfig(siteUrl?: URL | string | null): QuranFo
   const redirectUri = getQuranFoundationRedirectUri(siteUrl);
 
   return {
-    clientId: trimEnv(process.env.QF_CLIENT_ID),
-    clientSecret: trimEnv(process.env.QF_CLIENT_SECRET),
-    encryptionSecret: trimEnv(process.env.QF_TOKEN_ENCRYPTION_SECRET),
+    oauthClientId: readFirstEnv("QF_OAUTH_CLIENT_ID", "QF_CLIENT_ID"),
+    oauthClientSecret: readFirstEnv("QF_OAUTH_CLIENT_SECRET", "QF_CLIENT_SECRET"),
+    contentClientId: readFirstEnv("QF_CONTENT_CLIENT_ID", "QF_OAUTH_CLIENT_ID", "QF_CLIENT_ID"),
+    contentClientSecret: readFirstEnv("QF_CONTENT_CLIENT_SECRET", "QF_OAUTH_CLIENT_SECRET", "QF_CLIENT_SECRET"),
+    userTokenEncryptionSecret: readFirstEnv("QF_USER_TOKEN_ENCRYPTION_SECRET", "QF_TOKEN_ENCRYPTION_SECRET"),
     oauthBaseUrl: trimEnv(process.env.QF_OAUTH_BASE_URL) ?? DEFAULT_OAUTH_BASE_URL,
     userApiBaseUrl: trimEnv(process.env.QF_USER_API_BASE_URL) ?? DEFAULT_USER_API_BASE_URL,
     contentApiBaseUrl: trimEnv(process.env.QF_CONTENT_API_BASE_URL) ?? DEFAULT_CONTENT_API_BASE_URL,
@@ -69,12 +83,12 @@ export function getQuranFoundationRequestedScopes(): string[] {
 
 export function hasQuranFoundationUserFlowConfig(): boolean {
   const config = getQuranFoundationConfig();
-  return Boolean(config.clientId && config.encryptionSecret);
+  return Boolean(config.oauthClientId && config.oauthClientSecret && config.userTokenEncryptionSecret);
 }
 
 export function hasQuranFoundationContentConfig(): boolean {
   const config = getQuranFoundationConfig();
-  return Boolean(config.clientId && config.clientSecret);
+  return Boolean(config.contentClientId && config.contentClientSecret);
 }
 
 export function normalizeQuranFoundationScopes(scopes: string[] | string | null | undefined): string[] {
