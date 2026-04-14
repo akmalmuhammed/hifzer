@@ -5,6 +5,7 @@ import {
   createOAuthState,
   createPkceChallenge,
   decodeQuranFoundationIdentity,
+  exchangeQuranFoundationCode,
   resetQuranFoundationOidcCacheForTests,
   resolveQuranFoundationIdentity,
 } from "./oauth";
@@ -188,5 +189,30 @@ describe("quran foundation oauth helpers", () => {
     ).rejects.toMatchObject({
       code: "qf_nonce_mismatch",
     });
+  });
+
+  it("uses client_secret_basic for token exchange when the oauth client has a secret", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        access_token: "access-token",
+        refresh_token: "refresh-token",
+        id_token: "id-token",
+        expires_in: 3600,
+        scope: "openid offline_access bookmark user",
+      }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await exchangeQuranFoundationCode("code_123", "verifier_123");
+
+    expect(fetchMock).toHaveBeenCalledOnce();
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(init?.headers).toMatchObject({
+      "content-type": "application/x-www-form-urlencoded",
+      authorization: `Basic ${Buffer.from("oauth_client_123:oauth_secret_123").toString("base64")}`,
+    });
+    expect(String(init?.body)).not.toContain("client_secret=");
+    expect(String(init?.body)).not.toContain("client_id=");
   });
 });

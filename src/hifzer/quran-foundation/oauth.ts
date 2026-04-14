@@ -160,16 +160,19 @@ async function postTokenExchange(params: URLSearchParams): Promise<QuranFoundati
     });
   }
 
-  params.set("client_id", config.oauthClientId);
+  const headers: Record<string, string> = {
+    "content-type": "application/x-www-form-urlencoded",
+  };
   if (config.oauthClientSecret) {
-    params.set("client_secret", config.oauthClientSecret);
+    const basicCredentials = Buffer.from(`${config.oauthClientId}:${config.oauthClientSecret}`).toString("base64");
+    headers.authorization = `Basic ${basicCredentials}`;
+  } else {
+    params.set("client_id", config.oauthClientId);
   }
 
   const response = await fetch(`${config.oauthBaseUrl}/oauth2/token`, {
     method: "POST",
-    headers: {
-      "content-type": "application/x-www-form-urlencoded",
-    },
+    headers,
     body: params.toString(),
     cache: "no-store",
   });
