@@ -3,11 +3,15 @@ import Link from "next/link";
 import { ArrowRight, BookMarked, BookOpen, Compass, MoonStar } from "lucide-react";
 import { DistractionFreeToggle } from "@/components/app/distraction-free-toggle";
 import { SurahProgressSection } from "@/components/progress/surah-progress-section";
+import { QuranFoundationConnectCard } from "@/components/quran/quran-foundation-connect-card";
+import { Card } from "@/components/ui/card";
 import { DisclosureCard } from "@/components/ui/disclosure-card";
 import { Pill } from "@/components/ui/pill";
 import { listQuranSurahProgress } from "@/hifzer/progress/surah-progress.server";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { getAyahById, listJuzs, listSurahs } from "@/hifzer/quran/lookup.server";
+import { getQuranFoundationConnectedOverview } from "@/hifzer/quran-foundation/user-features";
+import { getQuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/server";
 import { getQuranReadProgress } from "@/hifzer/quran/read-progress.server";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { QuranCompletionProgress } from "./quran-completion-progress";
@@ -29,14 +33,18 @@ export default async function QuranIndexPage() {
     lastReadAt: null as string | null,
   };
   let surahProgressItems = [] as Awaited<ReturnType<typeof listQuranSurahProgress>>;
+  let quranFoundationStatus = null as Awaited<ReturnType<typeof getQuranFoundationConnectionStatus>> | null;
+  let quranFoundationOverview = null as Awaited<ReturnType<typeof getQuranFoundationConnectedOverview>>;
   if (clerkEnabled()) {
     const { userId } = await auth();
     if (userId) {
       profile = await getOrCreateUserProfile(userId);
       if (profile) {
-        [readCoverage, surahProgressItems] = await Promise.all([
+        [readCoverage, surahProgressItems, quranFoundationStatus, quranFoundationOverview] = await Promise.all([
           getQuranReadProgress(profile.id),
           listQuranSurahProgress(userId),
+          getQuranFoundationConnectionStatus(userId),
+          getQuranFoundationConnectedOverview(userId),
         ]);
       }
     }
@@ -94,6 +102,63 @@ export default async function QuranIndexPage() {
           anonymousHref={anonymousHref}
         />
       </div>
+
+      {quranFoundationStatus?.state === "connected" || quranFoundationStatus?.state === "degraded" ? (
+        quranFoundationOverview ? (
+          <div className="mt-8">
+            <Card>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Pill tone={quranFoundationStatus.state === "connected" ? "accent" : "warn"}>Connected Quran</Pill>
+                    <Pill tone="neutral">Quran.com</Pill>
+                  </div>
+                  <p className="mt-3 text-sm font-semibold text-[color:var(--kw-ink)]">
+                    Your linked Quran.com account is carrying reading context with you.
+                  </p>
+                </div>
+                <Link href="/settings/quran-foundation" className={toolLinkClass}>
+                  Manage connection
+                  <ArrowRight size={14} />
+                </Link>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Resume point</p>
+                  <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
+                    {quranFoundationOverview.readingSession
+                      ? `Surah ${quranFoundationOverview.readingSession.surahNumber}:${quranFoundationOverview.readingSession.ayahNumber}`
+                      : "Will sync as you read"}
+                  </p>
+                </div>
+                <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Quran.com streak</p>
+                  <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
+                    {quranFoundationOverview.streak ? `${quranFoundationOverview.streak.currentDays} days` : "No streak data yet"}
+                  </p>
+                </div>
+                <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Today&apos;s goal</p>
+                  <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
+                    {quranFoundationOverview.goalPlan?.remaining ?? quranFoundationOverview.goalPlan?.title ?? "No goal found"}
+                  </p>
+                </div>
+                <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Synced extras</p>
+                  <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
+                    {quranFoundationOverview.collections?.count ?? 0} collections · {quranFoundationOverview.notes?.count ?? 0} notes
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </div>
+        ) : null
+      ) : quranFoundationStatus ? (
+        <div className="mt-8">
+          <QuranFoundationConnectCard initialStatus={quranFoundationStatus} returnTo="/quran" variant="hub" />
+        </div>
+      ) : null}
       <div className="mt-8">
         <SurahProgressSection
           title="Surah progress"

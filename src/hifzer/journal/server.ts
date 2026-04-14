@@ -17,6 +17,10 @@ import {
 } from "@/hifzer/journal/local-store";
 import { Prisma } from "@prisma/client";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
+import {
+  deleteJournalEntryNoteFromQuranFoundation,
+  syncJournalEntryNoteToQuranFoundation,
+} from "@/hifzer/quran-foundation/user-features";
 import { db, dbConfigured } from "@/lib/db";
 
 const MAX_CONTENT_LENGTH = 12000;
@@ -47,6 +51,7 @@ type JournalUpsertInput = {
 
 type JournalEntryRow = {
   id: string;
+  clientEntryId: string | null;
   type: JournalEntryType;
   title: string | null;
   content: string;
@@ -559,7 +564,20 @@ export async function savePrivateJournalEntry(
           },
         });
 
-    return toSnapshot(row as JournalEntryRow);
+    const snapshot = toSnapshot(row as JournalEntryRow);
+
+    try {
+      await syncJournalEntryNoteToQuranFoundation({
+        clerkUserId,
+        journalEntryId: row.id,
+        clientEntryId: (row as JournalEntryRow).clientEntryId,
+        entry: snapshot,
+      });
+    } catch {
+      // Keep local journal saves reliable even if Quran.com note sync is unavailable.
+    }
+
+    return snapshot;
   });
 }
 
@@ -577,7 +595,7 @@ export async function deletePrivateJournalEntry(clerkUserId: string, entryId: st
         id: trimmedId,
         userId: profile.id,
       },
-      select: { id: true },
+      select: { id: true, clientEntryId: true },
     });
 
     if (!existing) {
@@ -587,6 +605,15 @@ export async function deletePrivateJournalEntry(clerkUserId: string, entryId: st
     await db().privateJournalEntry.delete({
       where: { id: existing.id },
     });
+
+    try {
+      await deleteJournalEntryNoteFromQuranFoundation({
+        clerkUserId,
+        clientEntryId: existing.clientEntryId,
+      });
+    } catch {
+      // Deleting locally should still succeed even if the remote note cleanup fails.
+    }
   });
 }
 
@@ -685,10 +712,42 @@ export async function importPrivateJournalEntries(
       };
     });
 
-    await db().privateJournalEntry.createMany({
-      data,
-      skipDuplicates: true,
-    });
+    const createManyData = data.filter((entry) => !entry.clientEntryId);
+    if (createManyData.length > 0) {
+      await db().privateJournalEntry.createMany({
+        data: createManyData,
+        skipDuplicates: true,
+      });
+    }
+
+    for (const entry of data.filter((item) => Boolean(item.clientEntryId))) {
+      await db().privateJournalEntry.upsert({
+        where: {
+          userId_clientEntryId: {
+            userId: profile.id,
+            clientEntryId: entry.clientEntryId!,
+          },
+        },
+        create: entry,
+        update: {
+          type: entry.type,
+          title: entry.title,
+          content: entry.content,
+          blocksJson: entry.blocksJson,
+          tags: entry.tags,
+          linkedAyahId: entry.linkedAyahId,
+          linkedSurahNumber: entry.linkedSurahNumber,
+          linkedAyahNumber: entry.linkedAyahNumber,
+          linkedSurahNameArabic: entry.linkedSurahNameArabic,
+          linkedSurahNameTransliteration: entry.linkedSurahNameTransliteration,
+          linkedDuaJson: entry.linkedDuaJson,
+          duaStatus: entry.duaStatus,
+          autoDeleteAt: entry.autoDeleteAt,
+          createdAt: entry.createdAt,
+          updatedAt: entry.updatedAt,
+        },
+      });
+    }
 
     return listEntriesForUserId(profile.id, now);
   });

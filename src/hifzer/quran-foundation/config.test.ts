@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
   getQuranFoundationConfig,
+  getQuranFoundationRequestedScopes,
   hasQuranFoundationContentConfig,
   hasQuranFoundationUserFlowConfig,
   normalizeQuranFoundationScopes,
@@ -47,6 +48,21 @@ describe("quran foundation config", () => {
       "openid",
       "bookmark",
       "user",
+    ]);
+  });
+
+  it("requests the expanded user scopes for connected Quran sync", () => {
+    expect(getQuranFoundationRequestedScopes()).toEqual([
+      "openid",
+      "offline_access",
+      "bookmark",
+      "user",
+      "activity_day",
+      "streak.read",
+      "goal.read",
+      "reading_session",
+      "collection",
+      "note",
     ]);
   });
 

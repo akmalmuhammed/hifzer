@@ -11,6 +11,10 @@ import {
   quranFoundationUserApiRequest,
   updateQuranFoundationAccountSyncState,
 } from "./server";
+import {
+  syncBookmarkCollectionMembershipForBookmark,
+  syncBookmarkCollectionsToQuranFoundation,
+} from "./user-features";
 import { QuranFoundationError } from "./types";
 
 type RemoteBookmark = {
@@ -130,6 +134,9 @@ async function readBookmarkForUser(clerkUserId: string, bookmarkId: string) {
       id: bookmarkId,
       userId: profile.id,
     },
+    include: {
+      category: true,
+    },
   });
 }
 
@@ -194,6 +201,12 @@ export async function syncBookmarkToQuranFoundation(input: {
       syncState: "synced",
       syncError: null,
     });
+    await syncBookmarkCollectionMembershipForBookmark({
+      clerkUserId: input.clerkUserId,
+      surahNumber: bookmark.surahNumber,
+      ayahNumber: bookmark.ayahNumber,
+      categoryName: bookmark.category?.name,
+    }).catch(() => false);
     await updateQuranFoundationAccountSyncState(input.clerkUserId, {
       lastSyncedAt: new Date(),
       lastError: null,
@@ -416,4 +429,8 @@ export async function reconcileQuranFoundationBookmarks(clerkUserId: string) {
     hydrated,
     pushed,
   };
+}
+
+export async function syncBookmarkCollectionsForExistingBookmarks(clerkUserId: string) {
+  return syncBookmarkCollectionsToQuranFoundation(clerkUserId);
 }

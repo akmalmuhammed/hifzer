@@ -7,6 +7,19 @@ const DEFAULT_USER_API_BASE_URL = "https://apis.quran.foundation/auth/v1";
 const DEFAULT_CONTENT_API_BASE_URL = "https://apis.quran.foundation/content/api/v4";
 const DEFAULT_BOOKMARK_MUSHAF_ID = 4;
 
+export const QURAN_FOUNDATION_REQUESTED_USER_SCOPES = [
+  "openid",
+  "offline_access",
+  "bookmark",
+  "user",
+  "activity_day",
+  "streak.read",
+  "goal.read",
+  "reading_session",
+  "collection",
+  "note",
+] as const;
+
 function trimEnv(value: string | undefined): string | null {
   const trimmed = value?.trim();
   return trimmed ? trimmed : null;
@@ -78,7 +91,7 @@ export function getQuranFoundationConfig(siteUrl?: URL | string | null): QuranFo
 }
 
 export function getQuranFoundationRequestedScopes(): string[] {
-  return ["openid", "offline_access", "bookmark", "user"];
+  return [...QURAN_FOUNDATION_REQUESTED_USER_SCOPES];
 }
 
 export function hasQuranFoundationUserFlowConfig(): boolean {

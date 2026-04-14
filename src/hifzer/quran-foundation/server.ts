@@ -360,12 +360,29 @@ export async function getQuranFoundationUserApiSession(
   }
 }
 
-function buildUserApiUrl(path: string, query?: Record<string, string | number | boolean | null | undefined>) {
+type UserApiQueryValue =
+  | string
+  | number
+  | boolean
+  | Array<string | number | boolean>
+  | null
+  | undefined;
+
+function buildUserApiUrl(path: string, query?: Record<string, UserApiQueryValue>) {
   const config = getQuranFoundationConfig();
   const url = new URL(path.replace(/^\//, ""), `${config.userApiBaseUrl.replace(/\/+$/, "")}/`);
   if (query) {
     for (const [key, value] of Object.entries(query)) {
       if (value === undefined || value === null || value === "") {
+        continue;
+      }
+      if (Array.isArray(value)) {
+        for (const item of value) {
+          if (item === undefined || item === null || item === "") {
+            continue;
+          }
+          url.searchParams.append(key, String(item));
+        }
         continue;
       }
       url.searchParams.set(key, String(value));
@@ -421,10 +438,11 @@ export async function quranFoundationUserApiRequest<T>(
   clerkUserId: string,
   input: {
     path: string;
-    method?: "GET" | "POST" | "DELETE";
-    query?: Record<string, string | number | boolean | null | undefined>;
+    method?: "GET" | "POST" | "PATCH" | "DELETE";
+    query?: Record<string, UserApiQueryValue>;
     body?: unknown;
     mutation?: boolean;
+    headers?: Record<string, string | number | boolean | null | undefined>;
   },
 ): Promise<{ data: T; payload: Record<string, unknown>; response: Response }> {
   const config = getQuranFoundationConfig();
@@ -451,6 +469,12 @@ export async function quranFoundationUserApiRequest<T>(
     const headers = new Headers();
     headers.set("x-client-id", config.oauthClientId ?? "");
     headers.set("x-auth-token", activeSession.accessToken);
+    for (const [key, value] of Object.entries(input.headers ?? {})) {
+      if (value === undefined || value === null || value === "") {
+        continue;
+      }
+      headers.set(key, String(value));
+    }
     if (input.body !== undefined) {
       headers.set("content-type", "application/json");
     }

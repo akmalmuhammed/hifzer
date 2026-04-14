@@ -18,6 +18,40 @@ export type QuranFoundationConnectionStatus = {
   lastError: string | null;
 };
 
+export type QuranFoundationReadingSessionSummary = {
+  surahNumber: number;
+  ayahNumber: number;
+  updatedAt: string | null;
+};
+
+export type QuranFoundationStreakSummary = {
+  currentDays: number;
+  bestDays: number | null;
+  activeCount: number;
+};
+
+export type QuranFoundationGoalPlanSummary = {
+  type: string;
+  title: string;
+  remaining: string | null;
+};
+
+export type QuranFoundationCollectionsSummary = {
+  count: number;
+};
+
+export type QuranFoundationNotesSummary = {
+  count: number;
+};
+
+export type QuranFoundationConnectedOverview = {
+  readingSession: QuranFoundationReadingSessionSummary | null;
+  streak: QuranFoundationStreakSummary | null;
+  goalPlan: QuranFoundationGoalPlanSummary | null;
+  collections: QuranFoundationCollectionsSummary | null;
+  notes: QuranFoundationNotesSummary | null;
+};
+
 export type QuranFoundationBookmarkProvider = "local" | "dual";
 
 export type QuranFoundationBookmarkSyncState =

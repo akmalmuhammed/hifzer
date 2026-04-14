@@ -3,6 +3,7 @@ import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getAyahById, getSurahInfo } from "@/hifzer/quran/lookup";
 import { getOrCreateUserProfile, saveQuranStartPoint } from "@/hifzer/profile/server";
+import { syncQuranReadingContinuityToQuranFoundation } from "@/hifzer/quran-foundation/user-features";
 import { recordQuranBrowseAyahRangeRead } from "@/hifzer/quran/read-progress.server";
 import { db } from "@/lib/db";
 
@@ -142,6 +143,17 @@ export async function POST(req: Request) {
         updatedCursorAyahId,
       });
       updatedProfile = await getOrCreateUserProfile(userId);
+    }
+
+    if (updatedAyah) {
+      await syncQuranReadingContinuityToQuranFoundation({
+        clerkUserId: userId,
+        ayahIds,
+        latestSurahNumber: updatedAyah.surahNumber,
+        latestAyahNumber: updatedAyah.ayahNumber,
+        localDate: tracking.localDate,
+        timezone: profile.timezone,
+      }).catch(() => null);
     }
 
     return NextResponse.json({
