@@ -171,6 +171,7 @@ const cspConnectSrc = unique([
   "https://*.clerk-telemetry.com",
   "https://sentry.io",
   "https://*.ingest.sentry.io",
+  "https://*.ingest.us.sentry.io",
   "https://www.googletagmanager.com",
   "https://www.google-analytics.com",
   "https://va.vercel-scripts.com",
