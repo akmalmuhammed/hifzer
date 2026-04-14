@@ -14,8 +14,25 @@ function asSafePath(value: string, fallback: string): string {
   return trimmed;
 }
 
+export function normalizeLegacyDashboardPath(path: string, fallback: string): string {
+  const safePath = asSafePath(path, fallback);
+  if (safePath === "/today") {
+    return "/dashboard";
+  }
+  if (safePath.startsWith("/today?")) {
+    return `/dashboard${safePath.slice("/today".length)}`;
+  }
+  if (safePath === "/today/") {
+    return "/dashboard";
+  }
+  if (safePath.startsWith("/today/")) {
+    return `/dashboard${safePath.slice("/today".length)}`;
+  }
+  return safePath;
+}
+
 function envPathOrDefault(key: string, fallback: string): string {
-  return asSafePath(envOrDefault(key, fallback), fallback);
+  return normalizeLegacyDashboardPath(envOrDefault(key, fallback), fallback);
 }
 
 function normalizeAuthEntryPath(path: string, fallback: "/login" | "/signup"): string {
@@ -37,4 +54,3 @@ export const clerkAuthRoutes = {
   signUpForceRedirectUrl: envPathOrDefault("NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL", "/dashboard"),
   signUpFallbackRedirectUrl: envPathOrDefault("NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL", "/dashboard"),
 } as const;
-

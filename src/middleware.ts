@@ -1,6 +1,7 @@
 import type { NextFetchEvent, NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { clerkEnabled } from "@/lib/clerk-config";
+import { normalizeLegacyDashboardPath } from "@/lib/auth-redirects";
 
 const PROTECTED_ROUTE_PATTERNS = [
   "/onboarding(.*)",
@@ -44,7 +45,7 @@ function safeRedirectPath(candidate: string | null | undefined, fallback = "/das
   if (/^[a-z][a-z0-9+.-]*:/i.test(raw)) {
     return fallback;
   }
-  return raw;
+  return normalizeLegacyDashboardPath(raw, fallback);
 }
 
 export default async function middleware(req: NextRequest, event: NextFetchEvent) {

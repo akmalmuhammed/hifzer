@@ -221,7 +221,12 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/sign-in",
-        destination: "/legacy/sign-in",
+        destination: "/login",
+        permanent: false,
+      },
+      {
+        source: "/sign-up",
+        destination: "/signup",
         permanent: false,
       },
     ];
