@@ -150,14 +150,14 @@ function sumBy<T>(rows: T[], pick: (row: T) => number): number {
   return total;
 }
 
-export async function getDashboardOverview(clerkUserId: string): Promise<DashboardOverview | null> {
+export async function getDashboardOverview(clerkUserId: string, input?: { now?: Date }): Promise<DashboardOverview | null> {
   const profile = await getOrCreateUserProfile(clerkUserId);
   if (!profile) {
     return null;
   }
 
   const prisma = db();
-  const now = new Date();
+  const now = input?.now ?? new Date();
   const soonWindowEnds = new Date(now.getTime() + (DUE_SOON_WINDOW_HOURS * 60 * 60 * 1000));
   const todayLocalDate = isoDateInTimeZone(now, profile.timezone);
   const start14d = addIsoDaysUtc(todayLocalDate, -13);
@@ -296,7 +296,7 @@ export async function getDashboardOverview(clerkUserId: string): Promise<Dashboa
         resolvedAt: null,
       },
     }),
-    getUserStreakSummary(clerkUserId),
+    getUserStreakSummary(clerkUserId, { now }),
     getQuranReadProgress(profile.id),
     listQuranBrowseEvents({
       profileId: profile.id,

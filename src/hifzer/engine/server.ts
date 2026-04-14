@@ -1187,10 +1187,10 @@ export async function completeSession(input: CompleteSessionInput): Promise<Comp
   return result;
 }
 
-export async function runMonthlyAuditForUser(clerkUserId: string) {
-  const { profile, state } = await loadTodayState(clerkUserId);
+export async function runMonthlyAuditForUser(clerkUserId: string, input?: { now?: Date }) {
+  const now = input?.now ?? new Date();
+  const { profile, state } = await loadTodayState(clerkUserId, { now });
   const prisma = db();
-  const now = new Date();
   const forceMonthlyTest = shouldForceMonthlyTest({
     debtRatio: state.debtRatio,
     retention3dAvg: state.retention3dAvg,

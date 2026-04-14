@@ -3,6 +3,7 @@ import * as Sentry from "@sentry/nextjs";
 import { unstable_cache } from "next/cache";
 import { NextResponse } from "next/server";
 import { getDashboardOverview } from "@/hifzer/dashboard/server";
+import { resolveAuditNowFromRequestHeader } from "@/hifzer/testing/request-now";
 
 export const runtime = "nodejs";
 
@@ -18,14 +19,18 @@ function makeCachedDashboardOverview(clerkUserId: string) {
   );
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const auditNow = resolveAuditNowFromRequestHeader(request);
+
   try {
-    const overview = await makeCachedDashboardOverview(userId)();
+    const overview = auditNow
+      ? await getDashboardOverview(userId, { now: auditNow })
+      : await makeCachedDashboardOverview(userId)();
     if (!overview) {
       return NextResponse.json({ error: "Database not configured." }, { status: 503 });
     }

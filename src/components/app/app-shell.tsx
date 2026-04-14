@@ -39,6 +39,8 @@ type NavKey =
 
 type NavItem = { href: string; key: NavKey; icon: LucideIcon; label?: string };
 
+type AppNavCopyKey = Exclude<NavKey, "journal" | "assistant">;
+
 const PRIMARY: NavItem[] = [
   { href: "/dashboard", key: "dashboard", icon: CalendarDays },
   { href: "/hifz", key: "hifz", icon: PlayCircle },
@@ -100,17 +102,26 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href;
 }
 
+function getNavLabel(item: NavItem, copy: ReturnType<typeof getAppUiCopy>): string {
+  if (item.label) {
+    return item.label;
+  }
+
+  switch (item.key) {
+    case "journal":
+      return "Journal";
+    case "assistant":
+      return "AI assistant";
+    default:
+      return copy.nav[item.key as AppNavCopyKey];
+  }
+}
+
 function NavLink(props: { item: NavItem; pathname: string; copy: ReturnType<typeof getAppUiCopy> }) {
   const { item, pathname, copy } = props;
   const active = isActive(pathname, item.href);
   const Icon = item.icon;
-  const label =
-    item.label ??
-    (item.key === "journal"
-      ? "Journal"
-      : item.key === "assistant"
-        ? "AI assistant"
-        : copy.nav[item.key]);
+  const label = getNavLabel(item, copy);
   return (
     <TrackedLink
       key={item.href}
@@ -302,7 +313,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
           {MOBILE_NAV.map((item) => {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;
-            const label = item.label ?? (item.key === "journal" ? "Journal" : copy.nav[item.key]);
+            const label = getNavLabel(item, copy);
             return (
               <TrackedLink
                 key={item.href}

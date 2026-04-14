@@ -2,17 +2,20 @@ import { auth } from "@clerk/nextjs/server";
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { loadTodayState } from "@/hifzer/engine/server";
+import { resolveAuditNowFromRequestHeader } from "@/hifzer/testing/request-now";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(request: Request) {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const auditNow = resolveAuditNowFromRequestHeader(request);
+
   try {
-    const { profile, state, steps } = await loadTodayState(userId);
+    const { profile, state, steps } = await loadTodayState(userId, { now: auditNow });
     return NextResponse.json({
       ok: true,
       localDate: state.localDate,
