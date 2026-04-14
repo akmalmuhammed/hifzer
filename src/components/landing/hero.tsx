@@ -13,19 +13,23 @@ import styles from "./landing.module.css";
 const HERO_POINTS = [
   {
     label: "Hifz",
-    body: "See what deserves your next strong session, what needs revision today, and what is starting to fade before it slips away.",
+    body: "Memorize with confidence through a method rooted in traditional hifz and strengthened by science-backed recall, so you return with clarity, revise with purpose, and retain what you learn.",
   },
   {
     label: "Qur'an",
-    body: "Return to the exact ayah, with the reciter you want and deeper help close when you need it.",
+    body: "Pick up exactly where you left off, listen to the recitation that moves you, and turn to trusted guidance that helps you reflect, understand, and stay present with every ayah.",
   },
   {
     label: "Dua",
-    body: "Keep daily adhkar close and ready when your heart needs them, not buried in another app.",
+    body: "Learn before you pray, then step into dua with understanding and presence through a guided experience that makes each supplication feel more personal, meaningful, and real.",
   },
   {
     label: "Journaling",
-    body: "Keep private reflections, lessons, and duas in one calm personal space.",
+    body: "Keep your spiritual journey close by writing reflections, lessons, and private moments in a personal space that connects your thoughts with ayah and dua.",
+  },
+  {
+    label: "Noor AI",
+    body: "Grounded Qur'anic guidance you can trust. Ask freely and receive answers rooted in verified Qur'anic sources, trusted translations, and tafsir, not generic AI guesswork.",
   },
 ] as const;
 
@@ -77,11 +81,10 @@ export function Hero() {
         <motion.div style={{ scale: stageScale, y: stageY }} className={styles.fitnessHeroShell}>
           <motion.div style={{ y: copyY }} className={styles.fitnessHeroCopy}>
             <p className={styles.fitnessHeroEyebrow}>Hifzer</p>
-            <h1 className={styles.fitnessHeroTitle}>Return to the Qur&apos;an daily with one guided place to read, memorize, and reflect.</h1>
+            <h1 className={styles.fitnessHeroTitle}>Reconnect with the Qur&apos;an and stay connected.</h1>
             <p className={styles.fitnessHeroSummary}>
-              Hifzer helps you keep your place, stay steady with hifz, and come back with less
-              friction each day. The deeper tools are there when you want them, but the main
-              routine stays simple.
+              A modern Qur&apos;an companion for memorization, trusted AI Qur&apos;an guidance,
+              practicing duas, and writing personal reflections.
             </p>
 
             <div className={styles.fitnessHeroActions}>

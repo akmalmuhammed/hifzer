@@ -31,10 +31,11 @@ function sectionHeading(label: string) {
   );
 }
 
-export function QuranAiAssistantPanel(props: { ayahId: number; compact?: boolean }) {
+export function QuranAiAssistantPanel(props: { ayahId?: number | null; compact?: boolean }) {
   const online = useOnlineStatus();
   const [query, setQuery] = useState("");
   const [state, setState] = useState<LoadState>({ phase: "idle" });
+  const contextualAyah = typeof props.ayahId === "number" && Number.isFinite(props.ayahId);
 
   async function submitAssistantQuery(nextQuery?: string) {
     const finalQuery = (nextQuery ?? query).trim();
@@ -53,7 +54,7 @@ export function QuranAiAssistantPanel(props: { ayahId: number; compact?: boolean
       const response = await fetch("/api/quran/ai-assistant", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ query: finalQuery, ayahId: props.ayahId }),
+        body: JSON.stringify({ query: finalQuery, ayahId: contextualAyah ? props.ayahId : undefined }),
         cache: "no-store",
       });
       const payload = (await response.json().catch(() => null)) as QuranAssistantGatewayResponse | null;
@@ -95,7 +96,9 @@ export function QuranAiAssistantPanel(props: { ayahId: number; compact?: boolean
       </div>
 
       <div className="mt-3">
-          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Ask anything about this ayah or the Qur&apos;an</p>
+        <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
+          {contextualAyah ? "Ask anything about this ayah or the Qur'an" : "Ask anything about the Qur'an"}
+        </p>
         <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">
           Search by meaning, topic, or surah and get grounded ayahs with translation, tafsir summary, and sources.
         </p>
@@ -125,7 +128,11 @@ export function QuranAiAssistantPanel(props: { ayahId: number; compact?: boolean
             onChange={(event) => setQuery(event.target.value)}
             onKeyDown={handleKeyDown}
             rows={3}
-            placeholder="Ask anything about mercy, fear, patience, hardship, or a surah..."
+            placeholder={
+              contextualAyah
+                ? "Ask anything about mercy, fear, patience, hardship, or a surah..."
+                : "Ask about mercy, fear, patience, hardship, or any surah..."
+            }
             className="mt-1 w-full rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/75 px-4 py-3 text-sm leading-7 text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] outline-none transition placeholder:text-[color:var(--kw-faint)] focus:border-[rgba(var(--kw-accent-rgb),0.28)] focus:ring-2 focus:ring-[rgba(var(--kw-accent-rgb),0.12)]"
           />
         </label>

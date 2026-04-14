@@ -9,6 +9,7 @@ import {
   ChevronDown,
   LifeBuoy,
   LibraryBig,
+  MessageSquareQuote,
   type LucideIcon,
   Map,
   MoonStar,
@@ -31,6 +32,7 @@ type NavKey =
   | "dua"
   | "journal"
   | "glossary"
+  | "assistant"
   | "roadmap"
   | "support"
   | "settings";
@@ -47,6 +49,7 @@ const PRIMARY: NavItem[] = [
 
 const INSIGHTS: NavItem[] = [
   { href: "/quran/glossary", key: "glossary", icon: LibraryBig },
+  { href: "/assistant", key: "assistant", icon: MessageSquareQuote, label: "AI assistant" },
 ];
 
 const PLATFORM: NavItem[] = [
@@ -82,6 +85,9 @@ function isActive(pathname: string, href: string): boolean {
   if (href === "/quran/glossary") {
     return pathname === "/quran/glossary";
   }
+  if (href === "/assistant") {
+    return pathname === "/assistant" || pathname.startsWith("/assistant/");
+  }
   if (href.startsWith("/quran")) {
     return pathname === "/quran" || pathname.startsWith("/quran/");
   }
@@ -98,7 +104,13 @@ function NavLink(props: { item: NavItem; pathname: string; copy: ReturnType<type
   const { item, pathname, copy } = props;
   const active = isActive(pathname, item.href);
   const Icon = item.icon;
-  const label = item.label ?? (item.key === "journal" ? "Journal" : copy.nav[item.key]);
+  const label =
+    item.label ??
+    (item.key === "journal"
+      ? "Journal"
+      : item.key === "assistant"
+        ? "AI assistant"
+        : copy.nav[item.key]);
   return (
     <TrackedLink
       key={item.href}
