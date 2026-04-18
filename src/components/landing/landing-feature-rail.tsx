@@ -6,15 +6,15 @@ import { FeatureShowcase } from "@/components/landing/feature-showcase";
 const CORE_POINTS = [
   {
     label: "One place for the routine.",
-    body: "Hifzer keeps Qur'an reading, hifz, duas, and private notes in one app so you are not stitching the routine together across separate tools.",
+    body: "Reading, hifz, dua, and notes stay in one flow.",
   },
   {
     label: "For readers and hifz students.",
-    body: "Whether you are building a daily reading habit or trying to keep memorisation steady, Hifzer keeps the next step clear and the whole practice connected.",
+    body: "Open it and know the next step immediately.",
   },
   {
-    label: "AI help and reader control.",
-    body: "Ask for AI explanations, open trusted tafsir, pick the reciter you were looking for, and shape the reader around the way you actually learn.",
+    label: "Reader control when it matters.",
+    body: "Switch reciters, tafsir, translation, and AI help without leaving the ayah.",
   },
 ] as const;
 
@@ -30,7 +30,7 @@ const CORE_FEATURES: Array<{
     eyebrow: "Hifz",
     title: "Make hifz feel clear, steady, and easier to keep.",
     body:
-      "Know what to memorize next, what to revise today, and which part needs extra care before it slips, so your hifz feels more steady, more intentional, and easier to keep strong.",
+      "Know what to memorize next, what to revise today, and what needs repair before it slips.",
     imageSrc: "/landing/showcase/Hifz%20final.png",
     imageAlt: "Hifzer hifz screen showing review controls and recall grading",
   },
@@ -38,7 +38,7 @@ const CORE_FEATURES: Array<{
     eyebrow: "Qur'an",
     title: "Return to the ayah, reciter, and flow you were already in.",
     body:
-      "Open Hifzer and find the same place you left, switch to the reciter you want, and keep AI explanation and tafsir close when you want to understand more without breaking your reading rhythm.",
+      "Return to the same ayah, switch reciters, and keep tafsir and AI help close without breaking your reading rhythm.",
     imageSrc: "/landing/showcase/dashboard.png",
     imageAlt: "Hifzer Qur'an dashboard and reader surfaces showing reading continuity, reciter access, and AI tools",
     reverse: true,
@@ -47,7 +47,7 @@ const CORE_FEATURES: Array<{
     eyebrow: "Dua",
     title: "Keep daily adhkar close and personal.",
     body:
-      "Arabic, transliteration, and meaning stay together so your adhkar feels close, lived with, and personal, more like a daily way of asking Allah than another checklist to open and close.",
+      "Arabic, transliteration, and meaning stay together so your adhkar stays close and usable every day.",
     imageSrc: "/landing/showcase/Dua.png",
     imageAlt: "Hifzer dua screen showing a guided dua with Arabic and translation",
   },
@@ -55,7 +55,7 @@ const CORE_FEATURES: Array<{
     eyebrow: "Journal",
     title: "Turn reflections into faith-based journaling.",
     body:
-      "Keep an Islamic journal for ayah reflections, gratitude, private duas, lessons from the day, and moments you want to carry with you in a space made for worship, not posting.",
+      "Keep ayah reflections, gratitude, and private duas in one personal space.",
     imageSrc: "/landing/showcase/Journal%20final.png",
     imageAlt: "Hifzer journal screen showing a private reflection entry",
     reverse: true,
@@ -87,13 +87,12 @@ export function LandingFeatureRail() {
           Keep the Qur&apos;an and hifz routine in one place.
         </h2>
         <p className="mt-5 max-w-none text-sm leading-7 text-[color:var(--kw-muted)] sm:max-w-[58ch] md:text-[15px]">
-          Hifzer is the all-in-one companion app for the Muslim who wants one place to read,
-          memorize, make dua, and keep Islamic reflections without losing the thread between them.
+          Hifzer keeps reading, hifz, dua, and reflection connected so returning feels easy.
         </p>
         <div className="mt-6 overflow-hidden rounded-[22px] border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[color:var(--kw-card-strong)] px-3 py-3 shadow-[var(--kw-shadow-soft)] backdrop-blur">
           <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
             <span className="inline-flex h-2 w-2 rounded-full bg-[rgba(var(--kw-accent-rgb),0.85)]" />
-            Personal and AI-powered inside Hifzer
+            What stays inside the flow
           </div>
           <div className="relative overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_12%,black_88%,transparent)]">
             <motion.div
@@ -137,10 +136,10 @@ export function LandingFeatureRail() {
 
       <div className="mt-10 text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--kw-faint)]">
-          Core features
+          Core surfaces
         </p>
         <h3 className="kw-marketing-display mt-3 text-balance text-3xl leading-tight text-[color:var(--kw-ink)] sm:text-4xl">
-          The parts that make people say they were looking for this.
+          The parts people come back for.
         </h3>
       </div>
 

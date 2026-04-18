@@ -12,7 +12,8 @@ const ROUTES_ARG = process.env.AUDIT_ROUTES;
 
 const DEFAULT_SEED_ROUTES = [
   "/",
-  "/pricing",
+  "/compare",
+  "/quran-preview",
   "/legal",
   "/legal/terms",
   "/legal/privacy",

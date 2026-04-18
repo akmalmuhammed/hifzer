@@ -13,8 +13,14 @@ import {
 } from "@/hifzer/quran/source-catalog";
 import { QURAN_TRANSLATION_OPTIONS } from "@/hifzer/quran/translation-prefs";
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
   title: "Sources",
+  description: "Source attribution and dataset governance for the Qur'an text, translations, and metadata used by Hifzer.",
+  alternates: {
+    canonical: "/legal/sources",
+  },
 };
 
 export default function LegalSourcesPage() {

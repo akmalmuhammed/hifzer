@@ -8,6 +8,8 @@ function profileFixture(overrides?: Partial<UserProfile>): UserProfile {
     clerkUserId: "clerk_u1",
     timezone: "UTC",
     onboardingCompletedAt: new Date("2026-02-01T00:00:00.000Z"),
+    onboardingStep: "complete",
+    onboardingStartLane: null,
     dailyMinutes: 30,
     practiceDays: [1, 2, 3, 4, 5, 6, 0],
     reminderTimeLocal: "08:00",

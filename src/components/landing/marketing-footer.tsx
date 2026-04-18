@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import styles from "./landing-home.module.css";
 
 export function MarketingFooter() {
@@ -36,9 +37,13 @@ export function MarketingFooter() {
                 Support
               </p>
               <div className="mt-3 grid gap-2 text-sm">
-                <Link href="/support" className="text-[color:var(--kw-muted)] transition hover:text-[color:var(--kw-ink)]">
+                <PublicAuthLink
+                  signedInHref="/support"
+                  signedOutHref="/login?redirect_url=%2Fsupport"
+                  className="text-[color:var(--kw-muted)] transition hover:text-[color:var(--kw-ink)]"
+                >
                   Support
-                </Link>
+                </PublicAuthLink>
                 <Link href="/legal/privacy" className="text-[color:var(--kw-muted)] transition hover:text-[color:var(--kw-ink)]">
                   Privacy
                 </Link>

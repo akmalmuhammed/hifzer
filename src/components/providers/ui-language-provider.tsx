@@ -36,6 +36,14 @@ function readPersistedUiLanguage(fallback: UiLanguage): UiLanguage {
   return normalizeUiLanguage(readCookie(UI_LANGUAGE_COOKIE) ?? fallback);
 }
 
+function applyUiLanguageToDocument(language: UiLanguage) {
+  if (typeof document === "undefined") {
+    return;
+  }
+  document.documentElement.lang = uiLanguageToHtmlLang(language);
+  document.documentElement.dir = isUiLanguageRtl(language) ? "rtl" : "ltr";
+}
+
 function dispatchUiLanguageChange() {
   if (typeof window === "undefined") {
     return;
@@ -66,12 +74,12 @@ export function UiLanguageProvider(props: { initialLanguage: UiLanguage; childre
   function setLanguage(next: UiLanguage) {
     const normalized = normalizeUiLanguage(next);
     document.cookie = buildUiLanguageCookieValue(normalized);
-    document.documentElement.lang = uiLanguageToHtmlLang(normalized);
+    applyUiLanguageToDocument(normalized);
     dispatchUiLanguageChange();
   }
 
   useEffect(() => {
-    document.documentElement.lang = uiLanguageToHtmlLang(language);
+    applyUiLanguageToDocument(language);
   }, [language]);
 
   const value = useMemo<UiLanguageContextValue>(() => ({

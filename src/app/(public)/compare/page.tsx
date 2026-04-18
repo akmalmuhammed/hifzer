@@ -4,6 +4,8 @@ import { Pill } from "@/components/ui/pill";
 
 export const metadata: Metadata = {
   title: "Compare",
+  description:
+    "See how Hifzer compares with teacher-only routines and generic flashcards for long-term Qur'an retention.",
   alternates: {
     canonical: "/compare",
   },

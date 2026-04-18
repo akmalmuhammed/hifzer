@@ -2,8 +2,14 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
   title: "Refund Policy",
+  description: "Refund terms for Hifzer subscription and one-time support purchases processed through Paddle.",
+  alternates: {
+    canonical: "/legal/refund-policy",
+  },
 };
 
 const LAST_UPDATED = "April 7, 2026";

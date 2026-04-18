@@ -22,7 +22,7 @@ describe("quran foundation content integration", () => {
     process.env.QF_CONTENT_CLIENT_ID = "content_client_123";
     process.env.QF_CONTENT_CLIENT_SECRET = "content_secret_123";
 
-    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+    const fetchMock = vi.fn(async (...[input]: Parameters<typeof fetch>) => {
       const url = typeof input === "string" ? input : input.toString();
       if (url.includes("/oauth2/token")) {
         return new Response(JSON.stringify({
@@ -97,7 +97,7 @@ describe("quran foundation content integration", () => {
     process.env.QF_CONTENT_CLIENT_ID = "content_client_123";
     process.env.QF_CONTENT_CLIENT_SECRET = "content_secret_123";
 
-    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+    const fetchMock = vi.fn(async (...[input]: Parameters<typeof fetch>) => {
       const url = typeof input === "string" ? input : input.toString();
       if (url.includes("/oauth2/token")) {
         return new Response(JSON.stringify({

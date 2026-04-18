@@ -3,8 +3,15 @@ import { BellOff, CheckCircle2, CircleAlert } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
   title: "Email Preferences",
+  description: "Manage Hifzer email reminder preferences.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 function messageForStatus(status: string | undefined) {

@@ -25,6 +25,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
+import { DashboardConnectedQuranCard } from "@/components/app/dashboard-connected-quran-card";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DisclosureCard } from "@/components/ui/disclosure-card";
@@ -530,6 +531,12 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
   }, [overview]);
 
   const status = overview ? statusPill(overview.today.status) : null;
+  const shouldShowGuide = Boolean(
+    overview &&
+    overview.kpis.completedSessions7d === 0 &&
+    overview.today.completedSessions === 0 &&
+    overview.today.openSessions === 0,
+  );
 
   return (
     <div className="space-y-6">
@@ -540,9 +547,9 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             <Button variant="secondary" size="sm" className="gap-2" onClick={() => void load()}>
               Refresh <RefreshCcw size={16} />
             </Button>
-            <Link href="/hifz">
+            <Link href="/quran/read?view=compact">
               <Button size="sm" className="gap-2">
-                Open Hifz <ArrowRight size={16} />
+                Continue reading <ArrowRight size={16} />
               </Button>
             </Link>
           </div>
@@ -567,160 +574,67 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
 
       {!loading && !error && overview ? (
         <div className="space-y-5">
-          <DashboardFirstRunGuide overview={overview} initialLane={overview.profile.onboardingStartLane} />
+          {shouldShowGuide ? (
+            <DashboardFirstRunGuide overview={overview} initialLane={overview.profile.onboardingStartLane} />
+          ) : null}
 
           <section className={`kw-fade-in ${styles.commandDeck} px-4 py-4 sm:px-5 sm:py-5`}>
             <div className={styles.pulseOrb} />
             <div className={styles.driftOrb} />
             <div className="relative space-y-4">
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Pill tone="accent">Today</Pill>
                   {status ? <Pill tone={status.tone}>{status.label}</Pill> : null}
-                  <span className="text-xs text-[color:var(--kw-faint)]">
-                    Updated {new Date(overview.generatedAt).toLocaleTimeString()}
-                  </span>
+                  <Pill tone="neutral">{overview.quran.currentSurahName} | {overview.quran.cursorRef}</Pill>
+                  {overview.reviewHealth.dueNow > 0 ? (
+                    <Pill tone="warn">{overview.reviewHealth.dueNow} due</Pill>
+                  ) : null}
                 </div>
 
                 <div className={styles.actionRail}>
                   <QuickActionCard
+                    href="/quran/read?view=compact"
+                    eyebrow="Qur'an"
+                    title="Continue"
+                    note={`${overview.quran.currentSurahName} | ${overview.quran.cursorRef}`}
+                    icon={BookOpenText}
+                    tone="accent"
+                  />
+                  <QuickActionCard
                     href="/hifz"
                     eyebrow="Hifz"
-                    title="Open Hifz"
+                    title="Review"
                     note={
                       overview.reviewHealth.dueNow > 0
                         ? `${overview.reviewHealth.dueNow} due now`
                         : "Ready"
                     }
                     icon={PlayCircle}
-                    tone="accent"
-                  />
-                  <QuickActionCard
-                    href="/quran/read?view=compact"
-                    eyebrow="Qur'an"
-                    title="Continue reading"
-                    note={`${overview.quran.currentSurahName} | ${overview.quran.cursorRef}`}
-                    icon={BookOpenText}
                   />
                   <QuickActionCard
                     href="/dua"
                     eyebrow="Dua"
-                    title="Open dua"
+                    title="Dua"
                     icon={MoonStar}
                   />
                   <QuickActionCard
                     href="/journal"
                     eyebrow="Journal"
-                    title="Open journal"
+                    title="Reflect"
                     icon={SquarePen}
                   />
-                </div>
-              </div>
-
-              <div className="grid gap-3 lg:grid-cols-3">
-                <div className={`${styles.kpiTile} px-3 py-3`}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Now</p>
-                      <p className={`${styles.numericValue} mt-2 text-2xl text-[color:var(--kw-ink)]`}>
-                        {overview.kpis.retentionScore14d}
-                      </p>
-                      <p className="mt-1 text-xs text-[color:var(--kw-muted)]">Recall score (14d)</p>
-                    </div>
-                    <span className={clsx(styles.iconBadge, styles.iconAccent)}>
-                      <Gauge size={17} />
-                    </span>
-                  </div>
-                </div>
-
-                <div className={`${styles.kpiTile} px-3 py-3`}>
-                  <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Reading place</p>
-                  <p className="mt-2 text-base font-semibold text-[color:var(--kw-ink)]">
-                    {overview.quran.currentSurahName} | {overview.quran.cursorRef}
-                  </p>
-                  <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
-                    {overview.quran.currentSurahProgressPct}% through this surah
-                  </p>
-                </div>
-
-                <div className={`${styles.kpiTile} px-3 py-3`}>
-                  <div className="grid gap-2">
-                    <div className="flex items-center justify-between gap-3 text-xs text-[color:var(--kw-muted)]">
-                      <span>Next review</span>
-                      <strong className="text-right font-semibold text-[color:var(--kw-ink)]">
-                        {formatMaybeDateTime(overview.reviewHealth.nextDueAt)}
-                      </strong>
-                    </div>
-                    <div className="flex items-center justify-between gap-3 text-xs text-[color:var(--kw-muted)]">
-                      <span>Reminder</span>
-                      <strong className="font-semibold text-[color:var(--kw-ink)]">{overview.profile.reminderTimeLocal}</strong>
-                    </div>
-                    <div className="flex items-center justify-between gap-3 text-xs text-[color:var(--kw-muted)]">
-                      <span>Timezone</span>
-                      <strong className="font-semibold text-[color:var(--kw-ink)]">{overview.profile.timezone}</strong>
-                    </div>
-                  </div>
-                  <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <Link href="/journal">
-                      <Button variant="secondary" size="sm" className="gap-2">
-                        Journal <SquarePen size={14} />
-                      </Button>
-                    </Link>
-                    <Link href="/dua">
-                      <Button size="sm" className="gap-2">
-                        Dua <MoonStar size={14} />
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <div className={`${styles.kpiTile} px-3 py-2.5`}>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
-                    Due now
-                  </p>
-                  <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
-                    {overview.reviewHealth.dueNow}
-                  </p>
-                  <p className="mt-2 text-xs text-[color:var(--kw-muted)]">{overview.reviewHealth.weakTransitions} joins</p>
-                </div>
-                <div className={`${styles.kpiTile} px-3 py-2.5`}>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
-                    Sessions (7d)
-                  </p>
-                  <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
-                    {overview.kpis.completedSessions7d}
-                  </p>
-                  <p className="mt-2 text-xs text-[color:var(--kw-muted)]">{overview.kpis.totalSessionMinutes7d} min</p>
-                </div>
-                <div className={`${styles.kpiTile} px-3 py-2.5`}>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
-                    Qur&apos;an progress
-                  </p>
-                  <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
-                    {overview.kpis.quranCompletionPct.toFixed(1)}%
-                  </p>
-                  <p className="mt-2 text-xs text-[color:var(--kw-muted)]">{overview.quran.completedKhatmahCount} khatmah</p>
-                </div>
-                <div className={`${styles.kpiTile} px-3 py-2.5`}>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
-                    Streak
-                  </p>
-                  <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>
-                    {overview.streak.currentStreakDays}d
-                  </p>
-                  <p className="mt-2 text-xs text-[color:var(--kw-muted)]">
-                    {overview.streak.todayQualifiedAyahs} ayahs today
-                  </p>
                 </div>
               </div>
             </div>
           </section>
 
+          <div className="kw-fade-in" style={{ animationDelay: "36ms" }}>
+            <DashboardConnectedQuranCard />
+          </div>
+
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             <MetricTile
-              label="Practice time (7d)"
+              label="This week"
               value={overview.kpis.totalSessionMinutes7d}
               detail={`${overview.kpis.avgSessionMinutes7d.toFixed(1)} min avg`}
               icon={Clock3}
@@ -730,7 +644,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             />
 
             <MetricTile
-              label="Recall score"
+              label="Recall"
               value={overview.kpis.retentionScore14d}
               icon={Gauge}
               tone="neutral"
@@ -739,7 +653,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             />
 
             <MetricTile
-              label="Due review"
+              label="Review due"
               value={overview.reviewHealth.dueNow}
               detail={overview.reviewHealth.dueSoon6h > 0 ? `${overview.reviewHealth.dueSoon6h} later today` : undefined}
               icon={RefreshCcw}
@@ -766,9 +680,9 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
           <DisclosureCard
             summary={(
               <div>
-                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">View progress and details</p>
+                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Progress and details</p>
                 <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
-                  Open the charts, recall breakdown, reading progress, and activity calendar when you want a closer look.
+                  Charts, recall, reading progress, and activity.
                 </p>
               </div>
             )}

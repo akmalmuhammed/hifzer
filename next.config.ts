@@ -174,6 +174,8 @@ const cspConnectSrc = unique([
   "https://*.ingest.us.sentry.io",
   "https://www.googletagmanager.com",
   "https://www.google-analytics.com",
+  "https://www.google.com",
+  "https://region1.google-analytics.com",
   "https://va.vercel-scripts.com",
   "https://*.paddle.com",
   "https://*.paddle.io",

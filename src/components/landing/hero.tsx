@@ -13,23 +13,23 @@ import styles from "./landing.module.css";
 const HERO_POINTS = [
   {
     label: "Hifz",
-    body: "Memorize with confidence through a method rooted in traditional hifz and strengthened by science-backed recall, so you return with clarity, revise with purpose, and retain what you learn.",
+    body: "Know what to memorize, what to review, and what needs repair before it slips.",
   },
   {
     label: "Qur'an",
-    body: "Pick up exactly where you left off, listen to the recitation that moves you, and turn to trusted guidance that helps you reflect, understand, and stay present with every ayah.",
+    body: "Return to the exact ayah, reciter, and reading flow you left.",
   },
   {
     label: "Dua",
-    body: "Learn before you pray, then step into dua with understanding and presence through a guided experience that makes each supplication feel more personal, meaningful, and real.",
+    body: "Keep daily adhkar and personal duas close, clear, and easy to revisit.",
   },
   {
-    label: "Journaling",
-    body: "Keep your spiritual journey close by writing reflections, lessons, and private moments in a personal space that connects your thoughts with ayah and dua.",
+    label: "Journal",
+    body: "Capture reflections without breaking the Qur'an flow.",
   },
   {
-    label: "Noor AI",
-    body: "Grounded Qur'anic guidance you can trust. Ask freely and receive answers rooted in verified Qur'anic sources, trusted translations, and tafsir, not generic AI guesswork.",
+    label: "AI help",
+    body: "Ask grounded Qur'anic questions when you need clarity.",
   },
 ] as const;
 
@@ -83,8 +83,7 @@ export function Hero() {
             <p className={styles.fitnessHeroEyebrow}>Hifzer</p>
             <h1 className={styles.fitnessHeroTitle}>Reconnect with the Qur&apos;an and stay connected.</h1>
             <p className={styles.fitnessHeroSummary}>
-              A modern Qur&apos;an companion for memorization, trusted AI Qur&apos;an guidance,
-              practicing duas, and writing personal reflections.
+              One place to read, review, ask, make dua, and reflect.
             </p>
 
             <div className={styles.fitnessHeroActions}>
@@ -95,7 +94,7 @@ export function Hero() {
                   telemetryName="landing.primary_open_app_click"
                   telemetryMeta={{ placement: "hero" }}
                 >
-                  {isSignedIn ? "Open app" : "Start your routine free"} <ArrowRight size={17} />
+                  {isSignedIn ? "Open app" : "Start free"} <ArrowRight size={17} />
                 </PublicAuthLink>
               </Button>
               <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
@@ -104,13 +103,13 @@ export function Hero() {
                   telemetryName="landing.hero_full_product_click"
                   telemetryMeta={{ placement: "hero" }}
                 >
-                  See the full flow <ArrowRight size={17} />
+                  See how it works <ArrowRight size={17} />
                 </TrackedLink>
               </Button>
             </div>
 
             <p className={styles.fitnessHeroMicro}>
-              No card required. Start in the browser and keep everything in one place.
+              No card required. Start in the browser.
             </p>
           </motion.div>
 

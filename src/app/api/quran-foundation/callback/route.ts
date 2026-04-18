@@ -7,6 +7,7 @@ import {
   resolveQuranFoundationIdentity,
 } from "@/hifzer/quran-foundation/oauth";
 import { storeQuranFoundationConnection } from "@/hifzer/quran-foundation/server";
+import { QuranFoundationError } from "@/hifzer/quran-foundation/types";
 
 export const runtime = "nodejs";
 
@@ -87,10 +88,15 @@ export async function GET(req: Request) {
     });
     return finalize("connected");
   } catch (error) {
-    Sentry.captureException(error, {
-      tags: { route: "/api/quran-foundation/callback", provider: "quran-foundation", phase: "token-exchange" },
-      user: { id: userId },
-    });
+    const expectedOAuthFailure =
+      error instanceof QuranFoundationError &&
+      (error.code === "invalid_grant" || error.code === "access_denied" || error.status === 400);
+    if (!expectedOAuthFailure) {
+      Sentry.captureException(error, {
+        tags: { route: "/api/quran-foundation/callback", provider: "quran-foundation", phase: "token-exchange" },
+        user: { id: userId },
+      });
+    }
     return finalize("oauth-failed");
   }
 }

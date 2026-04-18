@@ -63,10 +63,10 @@ type GuideStep = {
 
 function todayStatusLabel(status: DashboardGuideOverview["today"]["status"]): string {
   if (status === "completed") {
-    return "Today completed";
+    return "Done today";
   }
   if (status === "in_progress") {
-    return "Hifz in progress";
+    return "In progress";
   }
   return "Not started today";
 }
@@ -93,12 +93,12 @@ function debtTone(ratio: number): GuidePillTone {
 
 function debtLabel(ratio: number): string {
   if (ratio >= 45) {
-    return "Catch-up pressure";
+    return "Heavy load";
   }
   if (ratio >= 25) {
-    return "Consolidation pressure";
+    return "Watch load";
   }
-  return "Healthy load";
+  return "Healthy";
 }
 
 function nextActionStep(lane: OnboardingStartLane | null, overview: DashboardGuideOverview): GuideStep {
@@ -116,8 +116,8 @@ function nextActionStep(lane: OnboardingStartLane | null, overview: DashboardGui
       key: "fluency",
       label: "Next action",
       note: `Guided fluency | ${queueNote}`,
-      title: "Start with fluency first.",
-      body: "Open the fluency hub before heavier memorization, then come back to Hifz once things feel steadier.",
+      title: "Start with fluency.",
+      body: "Steady the sound first, then come back to Hifz.",
       href: "/fluency",
       cta: "Open fluency",
       icon: Mic,
@@ -131,7 +131,7 @@ function nextActionStep(lane: OnboardingStartLane | null, overview: DashboardGui
       label: "Next action",
       note: `Listen and repeat | ${queueNote}`,
       title: "Begin with listen and repeat.",
-      body: "Use the listening lesson first so pronunciation and rhythm settle before you push recall harder.",
+      body: "Settle pronunciation and rhythm first.",
       href: "/fluency/lesson/listen-repeat",
       cta: "Open listen-repeat",
       icon: Headphones,
@@ -144,8 +144,8 @@ function nextActionStep(lane: OnboardingStartLane | null, overview: DashboardGui
       key: "transitions",
       label: "Next action",
       note: `Transition repair | ${queueNote}`,
-      title: "Fix joins before adding more.",
-      body: "Your self-check pointed to ayah joins as the weak spot, so transition work is the best place to start.",
+      title: "Fix joins first.",
+      body: "Your weak spot is transitions, so start there.",
       href: "/fluency/lesson/transitions",
       cta: "Open transitions",
       icon: Link2,
@@ -159,10 +159,10 @@ function nextActionStep(lane: OnboardingStartLane | null, overview: DashboardGui
     note: `Main Hifz flow | ${queueNote}`,
     title: overview.reviewHealth.dueNow > 0
       ? "Open Hifz and clear due review first."
-      : "Open Hifz and begin your next recall block.",
+      : "Open Hifz and begin the next block.",
     body: overview.reviewHealth.dueNow > 0
-      ? "Start in Hifz and let review lead before adding more new ayahs."
-      : "Start in Hifz and run a clean recall block while the queue is still light.",
+      ? "Review first, then add more."
+      : "The queue is light, so this is a good time to move.",
     href: "/hifz",
     cta: "Open Hifz",
     icon: PlayCircle,
@@ -173,10 +173,10 @@ function nextActionStep(lane: OnboardingStartLane | null, overview: DashboardGui
 function queueHealthStep(overview: DashboardGuideOverview): GuideStep {
   return {
     key: "queue-health",
-    label: "Queue health",
+    label: "Queue",
     note: `${overview.reviewHealth.dueNow} due now | ${overview.reviewHealth.dueSoon6h} due soon`,
-    title: "Check the queue before you start.",
-    body: "Due now needs attention first. Due soon may join later. Weak links are ayah joins worth revisiting.",
+    title: "Check the queue first.",
+    body: "Due now comes first. Weak links are joins worth revisiting.",
     href: "/hifz",
     cta: "Open Hifz queue",
     icon: RefreshCcw,
@@ -192,18 +192,18 @@ function debtRatioStep(overview: DashboardGuideOverview): GuideStep {
   const roundedRatio = `${Math.round(overview.reviewHealth.debtRatioPct)}%`;
   const roundedMinutes = `${Math.round(overview.reviewHealth.reviewDebtMinutes)} min`;
 
-  let body = "This shows how much of today may be spent on review. Lower is lighter.";
+  let body = "This shows how much of today is likely to go to review.";
   if (overview.reviewHealth.debtRatioPct >= 45) {
-    body = `About ${roundedMinutes} of review is waiting inside a ${overview.profile.dailyMinutes} minute day. Clear the backlog before adding more new material.`;
+    body = `About ${roundedMinutes} is waiting inside a ${overview.profile.dailyMinutes} minute day. Clear backlog first.`;
   } else if (overview.reviewHealth.debtRatioPct >= 25) {
-    body = `About ${roundedMinutes} of review is waiting inside a ${overview.profile.dailyMinutes} minute day, so it helps to slow down and protect what you already learned.`;
+    body = `About ${roundedMinutes} is waiting inside a ${overview.profile.dailyMinutes} minute day. Slow down and protect what you have.`;
   }
 
   return {
     key: "debt-ratio",
-    label: "Workload",
+    label: "Load",
     note: `${roundedRatio} of today budget`,
-    title: "Workload shows when review is crowding out new work.",
+    title: "Load shows when review is crowding out new work.",
     body,
     href: "/hifz",
     cta: "See live queue",
@@ -221,16 +221,16 @@ function modeStep(overview: DashboardGuideOverview): GuideStep {
   let body = "Normal keeps review and new work balanced.";
 
   if (mode === "CONSOLIDATION") {
-    body = "Consolidation slows new work a little so what you already learned can settle.";
+    body = "Consolidation slows new work so retention can settle.";
   } else if (mode === "CATCH_UP") {
     body = "Catch-up means the queue needs repair before you add more.";
   }
 
   return {
     key: "srs-mode",
-    label: "Today's mode",
+    label: "Mode",
     note: `${modeLabel(mode)} | ${debtLabel(overview.reviewHealth.debtRatioPct)}`,
-    title: `${modeLabel(mode)} mode explains how today will feel.`,
+    title: `${modeLabel(mode)} mode shapes today.`,
     body,
     href: "/hifz",
     cta: "Practice in Hifz",
@@ -278,14 +278,14 @@ export function DashboardFirstRunGuide(props: {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <Pill tone="accent">First-run guide</Pill>
+            <Pill tone="accent">Quick start</Pill>
             <Pill tone="neutral">New dashboard</Pill>
           </div>
           <p className="mt-3 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
-            Start here without overthinking it.
+            Start here.
           </p>
           <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
-            Your setup is done. These short tips show what to open first and how busy your Hifz queue is.
+            These tips show what to open first and how busy the queue is.
           </p>
         </div>
 
@@ -374,7 +374,7 @@ export function DashboardFirstRunGuide(props: {
               onClick={() => setSelectedIndex((current) => Math.min(steps.length - 1, current + 1))}
               disabled={selectedIndex === steps.length - 1}
             >
-              Next tip
+              Next
             </Button>
           </div>
         </div>

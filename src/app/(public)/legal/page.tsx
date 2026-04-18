@@ -2,8 +2,14 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
   title: "Legal",
+  description: "Read Hifzer's legal hub for terms, privacy, refund policy, and source attribution.",
+  alternates: {
+    canonical: "/legal",
+  },
 };
 
 const LINKS = [

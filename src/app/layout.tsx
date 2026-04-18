@@ -1,22 +1,24 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
-import { Fragment } from "react";
-import { cookies } from "next/headers";
+import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { InstallAppBanner } from "@/components/pwa/install-app-banner";
 import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
+import {
+  DocumentPreferencesBootstrap,
+  getDefaultHtmlAttributes,
+} from "@/components/providers/document-preferences-bootstrap";
 import { GoogleAnalytics } from "@/components/telemetry/google-analytics";
-import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
-import { uiLanguageToHtmlLang } from "@/hifzer/i18n/ui-language";
 import { clerkAuthRoutes } from "@/lib/auth-redirects";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { appMonoFont, appSansFont } from "@/lib/fonts";
-import { resolveInitialThemeState, resolveInitialUiLanguage } from "@/lib/layout-preferences";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 const siteUrl = getSiteUrl();
+const defaultHtml = getDefaultHtmlAttributes();
+const skipToMainLabel = "Skip to main content";
 
 export const metadata: Metadata = {
   metadataBase: siteUrl,
@@ -73,48 +75,47 @@ export const viewport: Viewport = {
   ],
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
-  const cookieStore = await cookies();
-  const initialUiLanguage = resolveInitialUiLanguage(cookieStore);
-  const initialThemeState = resolveInitialThemeState(cookieStore);
   const authEnabled = clerkEnabled();
-  const ClerkWrapper = authEnabled ? (await import("@clerk/nextjs")).ClerkProvider : Fragment;
-  const ui = getAppUiCopy(initialUiLanguage);
+  const content = authEnabled ? (
+    <ClerkProvider
+      signInUrl={clerkAuthRoutes.signInUrl}
+      signUpUrl={clerkAuthRoutes.signUpUrl}
+      signInForceRedirectUrl={clerkAuthRoutes.signInForceRedirectUrl}
+      signInFallbackRedirectUrl={clerkAuthRoutes.signInFallbackRedirectUrl}
+      signUpForceRedirectUrl={clerkAuthRoutes.signUpForceRedirectUrl}
+      signUpFallbackRedirectUrl={clerkAuthRoutes.signUpFallbackRedirectUrl}
+    >
+      {children}
+    </ClerkProvider>
+  ) : (
+    children
+  );
+
   return (
     <html
-      lang={uiLanguageToHtmlLang(initialUiLanguage)}
-      data-mode={initialThemeState.mode}
-      data-theme={initialThemeState.theme}
-      data-accent={initialThemeState.accent}
+      lang={defaultHtml.lang}
+      dir={defaultHtml.dir}
+      data-mode={defaultHtml.mode}
+      data-theme={defaultHtml.theme}
+      data-accent={defaultHtml.accent}
       className={`${appSansFont.variable} ${appMonoFont.variable}`}
-      style={{ colorScheme: initialThemeState.mode }}
+      style={{ colorScheme: defaultHtml.mode }}
       suppressHydrationWarning
     >
       <body className="kw-canvas min-h-dvh bg-[color:var(--kw-bg)] text-[color:var(--kw-ink)] antialiased">
+        <DocumentPreferencesBootstrap />
         <a
           href="#main-content"
           className="sr-only rounded-md bg-[color:var(--kw-ink)] px-3 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[1000]"
         >
-          {ui.skipToMain}
+          {skipToMainLabel}
         </a>
-        {authEnabled ? (
-          <ClerkWrapper
-            signInUrl={clerkAuthRoutes.signInUrl}
-            signUpUrl={clerkAuthRoutes.signUpUrl}
-            signInForceRedirectUrl={clerkAuthRoutes.signInForceRedirectUrl}
-            signInFallbackRedirectUrl={clerkAuthRoutes.signInFallbackRedirectUrl}
-            signUpForceRedirectUrl={clerkAuthRoutes.signUpForceRedirectUrl}
-            signUpFallbackRedirectUrl={clerkAuthRoutes.signUpFallbackRedirectUrl}
-          >
-            {children}
-          </ClerkWrapper>
-        ) : (
-          children
-        )}
+        {content}
         <InstallAppBanner />
         <ServiceWorkerRegistration />
         <GoogleAnalytics />

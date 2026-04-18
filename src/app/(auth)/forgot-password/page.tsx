@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { ArrowRight, Mail } from "lucide-react";
+import { redirect } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pill } from "@/components/ui/pill";
+import { clerkEnabled } from "@/lib/clerk-config";
 
 export const metadata = {
   title: "Forgot Password",
@@ -13,20 +15,27 @@ export const metadata = {
 };
 
 export default function ForgotPasswordPage() {
+  // Clerk handles password reset through its built-in SignIn component.
+  // When a user clicks "Forgot password?" on the /login page, Clerk
+  // manages the entire reset flow inline. Redirect there directly.
+  if (clerkEnabled()) {
+    redirect("/login");
+  }
+
   return (
     <div className="space-y-6">
       <Pill tone="neutral">Auth</Pill>
       <h1 className="text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)]">
         Reset your password.
-        <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Coming soon.</span>
       </h1>
 
       <Card>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Placeholder</p>
+            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Auth not configured</p>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-              Once Clerk is wired, this route will use Clerk&apos;s password reset flow.
+              Password reset is available when Clerk auth is configured.
+              Set the required Clerk environment variables to enable it.
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
               <Link href="/login">

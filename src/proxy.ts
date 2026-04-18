@@ -7,6 +7,7 @@ import { normalizeLegacyDashboardPath } from "@/lib/auth-redirects";
 const PROTECTED_ROUTE_PATTERNS = [
   "/onboarding(.*)",
   "/dashboard(.*)",
+  "/assistant(.*)",
   "/dua(.*)",
   "/hifz(.*)",
   "/session(.*)",
@@ -49,7 +50,7 @@ function safeRedirectPath(candidate: string | null | undefined, fallback = "/das
   return normalizeLegacyDashboardPath(raw, fallback);
 }
 
-export default async function middleware(req: NextRequest, event: NextFetchEvent) {
+export default async function proxy(req: NextRequest, event: NextFetchEvent) {
   if (!clerkEnabled()) {
     const pathname = req.nextUrl.pathname;
     const shouldProtect = isProtectedRoute(pathname) || isProtectedQuranPath(pathname);
@@ -105,7 +106,7 @@ export default async function middleware(req: NextRequest, event: NextFetchEvent
 }
 
 export const config = {
-  matcher: ["/((?!_next|.*\\..*).*)"],
+  matcher: ["/((?!_next|.*\\..*).*)", "/(api|trpc)(.*)"],
 };
 
 function ensureRequestId(req: NextRequest): string {

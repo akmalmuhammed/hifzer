@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { hasClerkAuthE2EConfig, seedLocalStartPoint, signInAsClerkTestUser } from "./helpers/clerk-auth";
 
+test.describe.configure({ mode: "serial" });
+
 test.describe("authenticated routing", () => {
   test.skip(!hasClerkAuthE2EConfig(), "Requires Clerk auth E2E env vars");
 
@@ -17,7 +19,7 @@ test.describe("authenticated routing", () => {
   test("public auth CTAs route signed-in users to /dashboard", async ({ page }) => {
     await signInAsClerkTestUser(page);
 
-    for (const route of ["/", "/pricing"] as const) {
+    for (const route of ["/", "/compare", "/quran-preview"] as const) {
       await page.goto(route);
       await page.locator('a[href="/dashboard"]').first().click();
 

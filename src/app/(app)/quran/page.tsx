@@ -153,7 +153,11 @@ export default async function QuranIndexPage() {
               </div>
             </Card>
           </div>
-        ) : null
+        ) : (
+          <div className="mt-8">
+            <QuranFoundationConnectCard initialStatus={quranFoundationStatus} returnTo="/quran" variant="hub" />
+          </div>
+        )
       ) : quranFoundationStatus ? (
         <div className="mt-8">
           <QuranFoundationConnectCard initialStatus={quranFoundationStatus} returnTo="/quran" variant="hub" />

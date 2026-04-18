@@ -2,8 +2,14 @@ import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import Link from "next/link";
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
   title: "Privacy Policy",
+  description: "How Hifzer collects, uses, stores, and protects your account and progress data.",
+  alternates: {
+    canonical: "/legal/privacy",
+  },
 };
 
 const LAST_UPDATED = "February 16, 2026";

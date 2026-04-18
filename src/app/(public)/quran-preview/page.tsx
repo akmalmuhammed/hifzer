@@ -5,8 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Pill } from "@/components/ui/pill";
 import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
   title: "Qur'an Preview",
+  description:
+    "Preview surah names and structure before signing in, then open the full Hifzer Qur'an reader when you are ready.",
+  alternates: {
+    canonical: "/quran-preview",
+  },
 };
 
 export default function QuranPreviewPage() {

@@ -32,14 +32,11 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
-    "**/*.mts",
-    ".next/dev/types/**/*.ts",
-    ".next/dev/dev/types/**/*.ts"
+    "**/*.mts"
   ],
   "exclude": [
     "node_modules",
-    "src/_legacy/**/*.test.ts",
-    ".next/dev/types/validator.ts"
+    ".next",
+    "src/_legacy/**/*.test.ts"
   ]
 }

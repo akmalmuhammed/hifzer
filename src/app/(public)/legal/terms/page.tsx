@@ -2,8 +2,14 @@ import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import Link from "next/link";
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
   title: "Terms of Service",
+  description: "Usage rules, account responsibilities, and billing terms for using Hifzer.",
+  alternates: {
+    canonical: "/legal/terms",
+  },
 };
 
 const LAST_UPDATED = "April 7, 2026";

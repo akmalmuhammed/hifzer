@@ -1,26 +1,24 @@
 import { expect, test } from "@playwright/test";
 import { hasClerkAuthE2EConfig, seedLocalStartPoint, signInAsClerkTestUser } from "./helpers/clerk-auth";
 
-test("landing renders and links to pricing", async ({ page }) => {
-  await page.goto("/");
-  await expect(page.getByRole("heading", { name: /Keep what you memorize/i })).toBeVisible();
+test.describe.configure({ mode: "serial" });
 
-  await page.getByRole("link", { name: /Pricing/i }).first().click();
-  await page.waitForURL("**/pricing");
-  await expect(page.getByRole("heading", { name: /Two tiers/i })).toBeVisible();
+test("landing renders hero", async ({ page }) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("heading", { name: /Reconnect with the Qur'an and stay connected/i })).toBeVisible();
 });
 
 test("legal hub and policy pages render", async ({ page }) => {
-  await page.goto("/legal");
+  await page.goto("/legal", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { name: /Policies and sources/i })).toBeVisible();
 
-  await page.goto("/legal/terms");
+  await page.goto("/legal/terms", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { name: /Terms of service/i })).toBeVisible();
 
-  await page.goto("/legal/privacy");
+  await page.goto("/legal/privacy", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { name: /Privacy policy/i })).toBeVisible();
 
-  await page.goto("/legal/refund-policy");
+  await page.goto("/legal/refund-policy", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { name: /Refund policy/i })).toBeVisible();
 });
 
@@ -31,13 +29,10 @@ test("legal sources renders attribution blocks", async ({ page }) => {
   await expect(page.getByText(/Creative Commons Attribution 3.0/i)).toBeVisible();
 });
 
-test("pricing includes required policy links", async ({ page }) => {
-  await page.goto("/pricing");
-  const main = page.locator("#main-content");
-  await expect(page.getByRole("heading", { name: /Two tiers/i })).toBeVisible();
-  await expect(main.getByRole("link", { name: /Terms of service/i })).toBeVisible();
-  await expect(main.getByRole("link", { name: /Privacy policy/i })).toBeVisible();
-  await expect(main.getByRole("link", { name: /Refund policy/i })).toBeVisible();
+test("compare page renders comparison matrix", async ({ page }) => {
+  await page.goto("/compare", { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("heading", { name: /Built for retention, not streaks/i })).toBeVisible();
+  await expect(page.getByText(/Review debt protection/i).first()).toBeVisible();
 });
 
 test("quran hub renders resume + anonymous actions", async ({ page }) => {

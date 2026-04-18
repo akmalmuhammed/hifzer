@@ -923,8 +923,20 @@ export async function listJournalEntriesFromQuranFoundationNotes(clerkUserId: st
 export async function getQuranFoundationConnectedOverview(
   clerkUserId: string | null,
 ): Promise<QuranFoundationConnectedOverview | null> {
-  if (!clerkUserId || !(await getQuranFoundationUserApiSession(clerkUserId))) {
+  if (!clerkUserId) {
     return null;
+  }
+
+  try {
+    const session = await getQuranFoundationUserApiSession(clerkUserId);
+    if (!session) {
+      return null;
+    }
+  } catch (error) {
+    if (error instanceof QuranFoundationError) {
+      return null;
+    }
+    throw error;
   }
 
   const profile = await getOrCreateUserProfile(clerkUserId);

@@ -1,8 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
 import { capturePageErrors } from "./helpers/page-errors";
 
-const CTA_ROUTES = ["/", "/pricing"] as const;
-const CORS_CHECK_ROUTES = ["/", "/pricing", "/quran-preview"] as const;
+test.describe.configure({ mode: "serial" });
+
+const BROWSER_PUBLIC_ROUTES = ["/", "/quran-preview"] as const;
+const SIGN_IN_CTA_ROUTES = BROWSER_PUBLIC_ROUTES;
+const PRIMARY_CTA_ROUTES = [
+  { route: "/", label: /^start free$/i, expected: /\/signup(?:\?|$)/ },
+  { route: "/quran-preview", label: /sign in for full qur'?an view/i, expected: /\/login(?:\?|$)/ },
+] as const;
 
 const PROTECTED_PREFIXES = [
   "/dashboard",
@@ -21,7 +27,7 @@ const PROTECTED_PREFIXES = [
 ] as const;
 
 async function clickSignInCta(route: string, page: Page) {
-  await page.goto(route);
+  await page.goto(route, { waitUntil: "domcontentloaded" });
 
   const link = page.getByRole("link", { name: /^sign in$/i }).first();
   if (await link.isVisible()) {
@@ -33,29 +39,28 @@ async function clickSignInCta(route: string, page: Page) {
   await button.click();
 }
 
-async function clickPricingPrimaryCta(page: Page) {
-  await page.goto("/pricing");
+async function clickRouteCta(route: string, label: RegExp, page: Page) {
+  await page.goto(route, { waitUntil: "domcontentloaded" });
 
-  const labels = [/^start free$/i, /^get started$/i, /^claim free pro access$/i];
-  for (const label of labels) {
-    const link = page.getByRole("link", { name: label }).first();
-    if (await link.isVisible()) {
-      await link.click();
-      return;
-    }
-    const button = page.getByRole("button", { name: label }).first();
-    if (await button.isVisible()) {
-      await button.click();
-      return;
-    }
+  const link = page.getByRole("link", { name: label }).first();
+  if (await link.isVisible()) {
+    await link.click();
+    return;
   }
 
-  throw new Error("Could not find a primary pricing CTA.");
+  const button = page.getByRole("button", { name: label }).first();
+  if (await button.isVisible()) {
+    await button.click();
+    return;
+  }
+
+  throw new Error(`Could not find a CTA matching ${label} on ${route}.`);
 }
 
 test("signed-out Sign in CTA routes to /login from public pages", async ({ page }) => {
-  for (const route of CTA_ROUTES) {
+  for (const route of SIGN_IN_CTA_ROUTES) {
     await clickSignInCta(route, page);
+    await page.waitForURL(/\/login(?:\?|$)/, { timeout: 10_000 });
     await expect(page, `Expected Sign in from ${route} to land on /login`).toHaveURL(/\/login(?:\?|$)/);
   }
 });
@@ -89,16 +94,19 @@ test("signed-out GET /dua redirects to /login or Clerk sign-in flow", async ({ r
   ).toBe(true);
 });
 
-test("pricing primary CTA navigates (no dead click)", async ({ page }) => {
-  await clickPricingPrimaryCta(page);
-  await expect(page).toHaveURL(/\/(login|signup|dashboard)(?:\?|$)/);
+test("primary public CTAs navigate to live destinations", async ({ page }) => {
+  for (const item of PRIMARY_CTA_ROUTES) {
+    await clickRouteCta(item.route, item.label, page);
+    await page.waitForURL(item.expected, { timeout: 10_000 });
+    await expect(page, `Expected CTA from ${item.route} to land on ${item.expected}`).toHaveURL(item.expected);
+  }
 });
 
 test("signed-out public pages avoid protected-route links", async ({ page, baseURL }) => {
   const origin = new URL(baseURL ?? "http://localhost:3002").origin;
 
-  for (const route of CTA_ROUTES) {
-    await page.goto(route);
+  for (const route of BROWSER_PUBLIC_ROUTES) {
+    await page.goto(route, { waitUntil: "domcontentloaded", timeout: 30_000 });
     const hrefs = await page.locator("a[href]").evaluateAll((anchors) =>
       anchors.map((anchor) => (anchor as HTMLAnchorElement).href),
     );
@@ -115,7 +123,7 @@ test("signed-out public pages avoid protected-route links", async ({ page, baseU
 
 test("signed-out public pages emit no CORS console errors", async ({ page }) => {
   test.setTimeout(60_000);
-  for (const route of CORS_CHECK_ROUTES) {
+  for (const route of BROWSER_PUBLIC_ROUTES) {
     const capture = capturePageErrors(page);
     await page.goto(route, { waitUntil: "domcontentloaded", timeout: 30_000 });
     await page.waitForTimeout(300);
@@ -126,13 +134,13 @@ test("signed-out public pages emit no CORS console errors", async ({ page }) => 
   }
 });
 
-test("canonical on /pricing is self (not root)", async ({ request }) => {
-  const response = await request.get("/pricing");
+test("canonical on /compare is self (not root)", async ({ request }) => {
+  const response = await request.get("/compare");
   expect(response.status()).toBe(200);
   const html = await response.text();
   const canonicalMatch = html.match(/<link[^>]*rel="canonical"[^>]*href="([^"]+)"/i);
-  expect(canonicalMatch?.[1], "Missing canonical link on /pricing").toBeTruthy();
-  expect(canonicalMatch?.[1]).toMatch(/\/pricing\/?$/);
+  expect(canonicalMatch?.[1], "Missing canonical link on /compare").toBeTruthy();
+  expect(canonicalMatch?.[1]).toMatch(/\/compare\/?$/);
 });
 
 test("sitemap has no double-slash URLs and no gated routes", async ({ request }) => {

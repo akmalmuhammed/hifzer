@@ -188,15 +188,21 @@ pnpm db:studio
 
 Current live integration:
 
-- optional Quran.com linking from onboarding completion, `/quran`, and `/settings/quran-foundation`
+- optional Quran.com linking from onboarding completion, `/dashboard`, `/quran`, and `/settings/quran-foundation`
+- dashboard-level connected state for Quran.com resume point, streak, goals, collections, and notes
 - bookmark push/import/reconcile sync
+- bookmark collection export to Quran.com collections
+- journal note import and note sync through Quran.com notes
+- reading-session and activity-day sync when reading progress is saved
 - official content enrichment in the reader
 - official translation and tafsir selection
 - official audio sources and Quran.com reciters
+- grounded AI explanation and broad Quran assistant queries through Quran MCP
 
 Current limitation:
 
-- broader user APIs like reading sessions, preferences sync, goals, activity days, and notes are not fully wired yet
+- a linked account with older scopes must reconnect once to grant `activity_day`, `streak.read`, `goal.read`, `reading_session`, `collection`, and `note`
+- Quran.com remains an optional linked account; Clerk stays the primary Hifzer identity
 
 Preferred env names:
 
@@ -220,6 +226,7 @@ First status check:
 
 ```bash
 curl https://your-app-domain.com/api/quran-foundation/status
+curl https://your-app-domain.com/api/quran-foundation/overview
 ```
 
 ### AI Gateway
