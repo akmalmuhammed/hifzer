@@ -858,16 +858,16 @@ html[data-mode="dark"] .kw-feature-card {
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/60"],
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/65"],
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class*="bg-[color:var(--kw-surface-soft)]"] {
-  background: var(--kw-panel-gradient-soft) !important;
-  background-color: transparent !important;
+  background: var(--kw-panel-gradient-soft);
+  background-color: transparent;
 }
 
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/70"],
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/75"],
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/78"],
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class*="bg-[color:var(--kw-surface)]"] {
-  background: var(--kw-panel-gradient) !important;
-  background-color: transparent !important;
+  background: var(--kw-panel-gradient);
+  background-color: transparent;
 }
 
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/80"],
@@ -875,21 +875,8 @@ html[data-mode="dark"] .kw-feature-card {
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/90"],
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white"],
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class*="bg-[color:var(--kw-surface-strong)]"] {
-  background: var(--kw-panel-gradient-strong) !important;
-  background-color: transparent !important;
-}
-
-.kw-app-shell [class~="hover:bg-white"]:hover,
-.kw-app-shell [class~="hover:bg-white/60"]:hover,
-.kw-app-shell [class~="hover:bg-white/75"]:hover,
-.kw-app-shell [class~="hover:bg-white/80"]:hover {
-  background: var(--kw-panel-gradient-strong) !important;
-  background-color: transparent !important;
-}
-
-.kw-app-shell [class~="focus:bg-white"]:focus {
-  background: var(--kw-panel-gradient-strong) !important;
-  background-color: transparent !important;
+  background: var(--kw-panel-gradient-strong);
+  background-color: transparent;
 }
 
 .kw-quran-shell .kw-glass {
@@ -905,15 +892,15 @@ html[data-mode="dark"] .kw-feature-card {
 .kw-quran-shell [class~="bg-white/60"],
 .kw-quran-shell [class~="bg-white/65"],
 .kw-quran-shell [class*="bg-[color:var(--kw-surface-soft)]"] {
-  background: var(--kw-panel-gradient-soft) !important;
-  background-color: transparent !important;
+  background: var(--kw-panel-gradient-soft);
+  background-color: transparent;
 }
 
 .kw-quran-shell [class~="bg-white/70"],
 .kw-quran-shell [class~="bg-white/75"],
 .kw-quran-shell [class*="bg-[color:var(--kw-surface)]"] {
-  background: var(--kw-panel-gradient) !important;
-  background-color: transparent !important;
+  background: var(--kw-panel-gradient);
+  background-color: transparent;
 }
 
 .kw-quran-shell [class~="bg-white/80"],
@@ -921,21 +908,8 @@ html[data-mode="dark"] .kw-feature-card {
 .kw-quran-shell [class~="bg-white/90"],
 .kw-quran-shell [class~="bg-white"],
 .kw-quran-shell [class*="bg-[color:var(--kw-surface-strong)]"] {
-  background: var(--kw-panel-gradient-strong) !important;
-  background-color: transparent !important;
-}
-
-.kw-quran-shell [class~="hover:bg-white"]:hover,
-.kw-quran-shell [class~="hover:bg-white/60"]:hover,
-.kw-quran-shell [class~="hover:bg-white/75"]:hover,
-.kw-quran-shell [class~="hover:bg-white/80"]:hover {
-  background: var(--kw-panel-gradient-strong) !important;
-  background-color: transparent !important;
-}
-
-.kw-quran-shell [class~="focus:bg-white"]:focus {
-  background: var(--kw-panel-gradient-strong) !important;
-  background-color: transparent !important;
+  background: var(--kw-panel-gradient-strong);
+  background-color: transparent;
 }
 
 .kw-hairline {

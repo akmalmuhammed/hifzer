@@ -1,13 +1,13 @@
-import { auth } from "@clerk/nextjs/server";
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { loadTodayState } from "@/hifzer/engine/server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import { resolveAuditNowFromRequestHeader } from "@/hifzer/testing/request-now";
 
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
-  const { userId } = await auth();
+  const userId = await resolveClerkUserIdForServer(request);
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

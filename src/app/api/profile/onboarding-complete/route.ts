@@ -37,6 +37,11 @@ export async function POST(req: Request) {
       clerkUserId: userId,
       onboardingStartLane,
     });
+    if (!profile) {
+      return NextResponse.json({
+        error: "Persistence unavailable: onboarding completion could not be saved.",
+      }, { status: 503 });
+    }
     return NextResponse.json({ ok: true, profile });
   } catch (error) {
     if (error instanceof OnboardingStateError) {

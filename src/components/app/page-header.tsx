@@ -16,7 +16,7 @@ export function PageHeader(props: {
             {props.eyebrow}
           </div>
         ) : null}
-        <h1 className="kw-page-title mt-2 truncate text-[color:var(--kw-ink)]">
+        <h1 className="kw-page-title mt-2 text-balance break-words text-[color:var(--kw-ink)]">
           {props.title}
         </h1>
         {props.subtitle ? (

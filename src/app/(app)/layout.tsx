@@ -1,5 +1,4 @@
 import { cookies } from "next/headers";
-import { auth } from "@clerk/nextjs/server";
 import * as Sentry from "@sentry/nextjs";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app/app-shell";
@@ -7,33 +6,23 @@ import { BookmarkSyncAgent } from "@/components/bookmarks/bookmark-sync-agent";
 import { AppProviders } from "@/components/providers/app-providers";
 import { ProfileHydrator } from "@/components/providers/profile-hydrator";
 import { DISTRACTION_FREE_COOKIE, normalizeDistractionFree } from "@/hifzer/focus/distraction-free";
-import { normalizeUiLanguage, UI_LANGUAGE_COOKIE } from "@/hifzer/i18n/ui-language";
 import { onboardingPathForStep } from "@/hifzer/profile/onboarding";
 import { getProfileSnapshot } from "@/hifzer/profile/server";
-import {
-  normalizeAccentPreset,
-  normalizeThemeMode,
-  normalizeThemePreset,
-  THEME_ACCENT_COOKIE,
-  THEME_MODE_COOKIE,
-  THEME_PRESET_COOKIE,
-} from "@/hifzer/theme/preferences";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { dbConfigured } from "@/lib/db";
+import { resolveInitialThemeState, resolveInitialUiLanguage } from "@/lib/layout-preferences";
 
 export default async function AppGroupLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
-  const initialUiLanguage = normalizeUiLanguage(cookieStore.get(UI_LANGUAGE_COOKIE)?.value);
+  const initialUiLanguage = resolveInitialUiLanguage(cookieStore);
   const initialDistractionFree = normalizeDistractionFree(cookieStore.get(DISTRACTION_FREE_COOKIE)?.value);
-  const initialThemeState = {
-    mode: normalizeThemeMode(cookieStore.get(THEME_MODE_COOKIE)?.value),
-    theme: normalizeThemePreset(cookieStore.get(THEME_PRESET_COOKIE)?.value),
-    accent: normalizeAccentPreset(cookieStore.get(THEME_ACCENT_COOKIE)?.value),
-  };
+  const initialThemeState = resolveInitialThemeState(cookieStore);
   let profile = null;
+  let profileFetchFailed = false;
 
   if (clerkEnabled()) {
-    const { userId } = await auth();
+    const userId = await resolveClerkUserIdForServer();
     if (!userId) {
       redirect("/login");
     }
@@ -45,12 +34,18 @@ export default async function AppGroupLayout({ children }: { children: React.Rea
         user: { id: userId },
       });
       profile = null;
+      profileFetchFailed = true;
     }
 
-    // Redirect to onboarding when:
-    // 1. Profile is null (creation failed or new user with DB error) - safer than rendering broken app
-    // 2. Profile exists but onboarding was never completed
-    if (dbConfigured() && (!profile || !profile.onboardingCompleted)) {
+    if (dbConfigured() && profileFetchFailed) {
+      throw new Error("Profile snapshot could not be loaded for the app shell.");
+    }
+
+    if (dbConfigured() && !profile) {
+      redirect("/onboarding/welcome");
+    }
+
+    if (dbConfigured() && profile && !profile.onboardingCompleted) {
       redirect(profile ? onboardingPathForStep(profile.onboardingStep) : "/onboarding/welcome");
     }
   }

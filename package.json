@@ -15,6 +15,7 @@
     "test:progress:week": "vitest run src/hifzer/testing/progress-simulator.test.ts",
     "test:progress:14d": "vitest run src/hifzer/testing/progress-simulator.test.ts -t \"emulates fourteen days and verifies recurring weekly Hifz validation\"",
     "test:progress:failures": "vitest run src/hifzer/testing/progress-simulator.test.ts -t \"blocks new Hifz progression|enters catch-up mode\"",
+    "audit:hifz:90d:akmal": "vitest run src/hifzer/testing/live-hifz-audit.manual.test.ts",
     "test:e2e": "playwright test",
     "test:e2e:routing": "playwright test e2e/routing.public.spec.ts e2e/routing.auth.spec.ts e2e/routing.onboarding.spec.ts e2e/routing.legacy.spec.ts",
     "audit:clicks": "node scripts/click-routing-audit.mjs",

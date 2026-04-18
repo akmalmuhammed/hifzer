@@ -1,5 +1,6 @@
 import type { NextFetchEvent, NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { resolveTestAuthUserIdFromHeaders } from "@/hifzer/testing/request-auth";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { normalizeLegacyDashboardPath } from "@/lib/auth-redirects";
 
@@ -50,6 +51,27 @@ function safeRedirectPath(candidate: string | null | undefined, fallback = "/das
 
 export default async function middleware(req: NextRequest, event: NextFetchEvent) {
   if (!clerkEnabled()) {
+    const pathname = req.nextUrl.pathname;
+    const shouldProtect = isProtectedRoute(pathname) || isProtectedQuranPath(pathname);
+    const failClosed = process.env.NODE_ENV === "production";
+
+    if (shouldProtect && failClosed) {
+      return withRequestId(
+        req,
+        new NextResponse("Authentication is not configured for protected routes.", {
+          status: 503,
+          headers: {
+            "content-type": "text/plain; charset=utf-8",
+            "cache-control": "no-store",
+          },
+        }),
+      );
+    }
+
+    return withRequestId(req, NextResponse.next());
+  }
+
+  if (resolveTestAuthUserIdFromHeaders(req.headers)) {
     return withRequestId(req, NextResponse.next());
   }
 
@@ -62,8 +84,10 @@ export default async function middleware(req: NextRequest, event: NextFetchEvent
       return withRequestId(innerReq, NextResponse.next(), requestId);
     }
 
-    const { userId } = await auth();
-    if (!userId) {
+    const auditUserId = resolveTestAuthUserIdFromHeaders(innerReq.headers);
+    const { userId } = auditUserId ? { userId: null } : await auth();
+    const effectiveUserId = auditUserId ?? userId;
+    if (!effectiveUserId) {
       const signInUrl = new URL("/login", innerReq.url);
       const search = new URLSearchParams(innerReq.nextUrl.searchParams);
       search.delete("redirect_url");

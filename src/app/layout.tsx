@@ -1,17 +1,18 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Fragment } from "react";
+import { cookies } from "next/headers";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { InstallAppBanner } from "@/components/pwa/install-app-banner";
 import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
 import { GoogleAnalytics } from "@/components/telemetry/google-analytics";
 import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
-import { DEFAULT_UI_LANGUAGE, uiLanguageToHtmlLang } from "@/hifzer/i18n/ui-language";
-import { DEFAULT_THEME_DOCUMENT_STATE } from "@/hifzer/theme/preferences";
+import { uiLanguageToHtmlLang } from "@/hifzer/i18n/ui-language";
 import { clerkAuthRoutes } from "@/lib/auth-redirects";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { appMonoFont, appSansFont } from "@/lib/fonts";
+import { resolveInitialThemeState, resolveInitialUiLanguage } from "@/lib/layout-preferences";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
@@ -77,18 +78,22 @@ export default async function RootLayout({
 }: Readonly<{
   children: ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const initialUiLanguage = resolveInitialUiLanguage(cookieStore);
+  const initialThemeState = resolveInitialThemeState(cookieStore);
   const authEnabled = clerkEnabled();
   const ClerkWrapper = authEnabled ? (await import("@clerk/nextjs")).ClerkProvider : Fragment;
-  const ui = getAppUiCopy(DEFAULT_UI_LANGUAGE);
+  const ui = getAppUiCopy(initialUiLanguage);
   return (
-      <html
-        lang={uiLanguageToHtmlLang(DEFAULT_UI_LANGUAGE)}
-        data-mode={DEFAULT_THEME_DOCUMENT_STATE.mode}
-        data-theme={DEFAULT_THEME_DOCUMENT_STATE.theme}
-        data-accent={DEFAULT_THEME_DOCUMENT_STATE.accent}
-        className={`${appSansFont.variable} ${appMonoFont.variable}`}
-        style={{ colorScheme: DEFAULT_THEME_DOCUMENT_STATE.mode }}
-      >
+    <html
+      lang={uiLanguageToHtmlLang(initialUiLanguage)}
+      data-mode={initialThemeState.mode}
+      data-theme={initialThemeState.theme}
+      data-accent={initialThemeState.accent}
+      className={`${appSansFont.variable} ${appMonoFont.variable}`}
+      style={{ colorScheme: initialThemeState.mode }}
+      suppressHydrationWarning
+    >
       <body className="kw-canvas min-h-dvh bg-[color:var(--kw-bg)] text-[color:var(--kw-ink)] antialiased">
         <a
           href="#main-content"

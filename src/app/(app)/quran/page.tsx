@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { ArrowRight, BookMarked, BookOpen, Compass, MoonStar } from "lucide-react";
 import { DistractionFreeToggle } from "@/components/app/distraction-free-toggle";
@@ -13,6 +12,7 @@ import { getAyahById, listJuzs, listSurahs } from "@/hifzer/quran/lookup.server"
 import { getQuranFoundationConnectedOverview } from "@/hifzer/quran-foundation/user-features";
 import { getQuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/server";
 import { getQuranReadProgress } from "@/hifzer/quran/read-progress.server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { QuranCompletionProgress } from "./quran-completion-progress";
 import { QuranProgressBackfill } from "./quran-progress-backfill";
@@ -36,7 +36,7 @@ export default async function QuranIndexPage() {
   let quranFoundationStatus = null as Awaited<ReturnType<typeof getQuranFoundationConnectionStatus>> | null;
   let quranFoundationOverview = null as Awaited<ReturnType<typeof getQuranFoundationConnectedOverview>>;
   if (clerkEnabled()) {
-    const { userId } = await auth();
+    const userId = await resolveClerkUserIdForServer();
     if (userId) {
       profile = await getOrCreateUserProfile(userId);
       if (profile) {

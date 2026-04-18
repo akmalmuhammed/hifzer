@@ -33,9 +33,9 @@ export async function POST(req: Request) {
   }
 
   if (!dbConfigured()) {
-    return withTranslationCookie(NextResponse.json({
+    return NextResponse.json({
       error: "Persistence unavailable: database is not configured. Language changes cannot be saved.",
-    }, { status: 503 }));
+    }, { status: 503 });
   }
 
   let capabilities = await getCoreSchemaCapabilities({ refresh: true });
@@ -50,11 +50,11 @@ export async function POST(req: Request) {
   }
 
   if (!capabilities.hasQuranLaneColumns) {
-    return withTranslationCookie(NextResponse.json({
+    return NextResponse.json({
       error:
         "Persistence unavailable: profile translation columns are missing in the configured database schema. " +
         "Run DB migrations (or enable runtime schema patching) and retry.",
-    }, { status: 503 }));
+    }, { status: 503 });
   }
 
   const profile = await saveLanguagePrefs({
@@ -63,15 +63,15 @@ export async function POST(req: Request) {
   });
 
   if (!profile) {
-    return withTranslationCookie(NextResponse.json({
+    return NextResponse.json({
       error: "Persistence unavailable: language preference was not saved.",
-    }, { status: 503 }));
+    }, { status: 503 });
   }
 
   if (profile.quranTranslationId !== quranTranslationId) {
-    return withTranslationCookie(NextResponse.json({
+    return NextResponse.json({
       error: "Persistence unavailable: saved translation does not match the requested value.",
-    }, { status: 503 }));
+    }, { status: 503 });
   }
 
   return withTranslationCookie(NextResponse.json({ ok: true, profile }));

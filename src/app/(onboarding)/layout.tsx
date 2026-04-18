@@ -5,28 +5,16 @@ import { redirect } from "next/navigation";
 import { AppProviders } from "@/components/providers/app-providers";
 import { ProfileHydrator } from "@/components/providers/profile-hydrator";
 import { DISTRACTION_FREE_COOKIE, normalizeDistractionFree } from "@/hifzer/focus/distraction-free";
-import { normalizeUiLanguage, UI_LANGUAGE_COOKIE } from "@/hifzer/i18n/ui-language";
 import { getProfileSnapshot } from "@/hifzer/profile/server";
-import {
-  normalizeAccentPreset,
-  normalizeThemeMode,
-  normalizeThemePreset,
-  THEME_ACCENT_COOKIE,
-  THEME_MODE_COOKIE,
-  THEME_PRESET_COOKIE,
-} from "@/hifzer/theme/preferences";
 import { clerkEnabled } from "@/lib/clerk-config";
+import { resolveInitialThemeState, resolveInitialUiLanguage } from "@/lib/layout-preferences";
 import { marketingDisplayFont } from "@/lib/fonts";
 
 export default async function OnboardingLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
-  const initialUiLanguage = normalizeUiLanguage(cookieStore.get(UI_LANGUAGE_COOKIE)?.value);
+  const initialUiLanguage = resolveInitialUiLanguage(cookieStore);
   const initialDistractionFree = normalizeDistractionFree(cookieStore.get(DISTRACTION_FREE_COOKIE)?.value);
-  const initialThemeState = {
-    mode: normalizeThemeMode(cookieStore.get(THEME_MODE_COOKIE)?.value),
-    theme: normalizeThemePreset(cookieStore.get(THEME_PRESET_COOKIE)?.value),
-    accent: normalizeAccentPreset(cookieStore.get(THEME_ACCENT_COOKIE)?.value),
-  };
+  const initialThemeState = resolveInitialThemeState(cookieStore);
   let profile = null;
 
   if (clerkEnabled()) {
