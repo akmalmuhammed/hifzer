@@ -58,11 +58,8 @@ describe("quran foundation config", () => {
       "bookmark",
       "user",
       "activity_day",
-      "streak.read",
-      "goal.read",
       "reading_session",
       "collection",
-      "note",
     ]);
   });
 

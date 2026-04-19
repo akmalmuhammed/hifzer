@@ -6,7 +6,11 @@ import {
   exchangeQuranFoundationCode,
   resolveQuranFoundationIdentity,
 } from "@/hifzer/quran-foundation/oauth";
-import { storeQuranFoundationConnection } from "@/hifzer/quran-foundation/server";
+import {
+  storeQuranFoundationConnection,
+  updateQuranFoundationAccountSyncState,
+} from "@/hifzer/quran-foundation/server";
+import { getQuranFoundationProviderErrorMessage } from "@/hifzer/quran-foundation/feedback";
 import { QuranFoundationError } from "@/hifzer/quran-foundation/types";
 
 export const runtime = "nodejs";
@@ -54,6 +58,10 @@ export async function GET(req: Request) {
   const providerError = requestUrl.searchParams.get("error");
   const providerErrorDescription = requestUrl.searchParams.get("error_description");
   if (providerError) {
+    await updateQuranFoundationAccountSyncState(userId, {
+      status: "degraded",
+      lastError: getQuranFoundationProviderErrorMessage(providerError, providerErrorDescription),
+    });
     Sentry.captureException(
       new Error(`Quran Foundation OAuth provider returned ${providerError}${providerErrorDescription ? `: ${providerErrorDescription}` : ""}`),
       {

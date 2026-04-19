@@ -2,16 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { getQuranFoundationFeedbackLabel } from "@/hifzer/quran-foundation/feedback";
 import type { QuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/types";
-
-function feedbackLabel(param: string | null): string | null {
-  if (param === "connected") return "Quran.com account linked.";
-  if (param === "oauth-failed") return "The Quran.com OAuth exchange failed.";
-  if (param === "state-mismatch") return "The Quran.com OAuth state check failed.";
-  if (param === "not-configured") return "Quran.com linking is not configured yet.";
-  if (param === "sign-in-required") return "Sign in before linking a Quran.com account.";
-  return null;
-}
 
 function statusLabel(status: QuranFoundationConnectionStatus): string {
   if (status.state === "connected") {
@@ -25,7 +17,7 @@ function statusLabel(status: QuranFoundationConnectionStatus): string {
 
 export function QuranFoundationFilterAction(props: { status: QuranFoundationConnectionStatus }) {
   const searchParams = useSearchParams();
-  const feedback = useMemo(() => feedbackLabel(searchParams.get("qf")), [searchParams]);
+  const feedback = useMemo(() => getQuranFoundationFeedbackLabel(searchParams.get("qf")), [searchParams]);
   const [value, setValue] = useState("");
 
   if (!props.status.available || props.status.state === "not_configured") {

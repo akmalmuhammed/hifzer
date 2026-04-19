@@ -9,8 +9,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Coins,
+  Compass,
+  CloudRain,
   HandHeart,
   Heart,
+  HeartPulse,
   Minus,
   MoonStar,
   PencilLine,
@@ -20,6 +23,7 @@ import {
   Shield,
   Sparkles,
   Trash2,
+  UsersRound,
   type LucideIcon,
 } from "lucide-react";
 import { SupportTextPanel } from "@/components/quran/support-text-panel";
@@ -104,6 +108,21 @@ function moduleIcon(moduleId: DuaModuleId): LucideIcon {
   if (moduleId === "ruqyah") {
     return Shield;
   }
+  if (moduleId === "anxiety-distress") {
+    return CloudRain;
+  }
+  if (moduleId === "istikhara-decisions") {
+    return Compass;
+  }
+  if (moduleId === "healing-shifa") {
+    return HeartPulse;
+  }
+  if (moduleId === "grief-loss") {
+    return HandHeart;
+  }
+  if (moduleId === "family-home") {
+    return UsersRound;
+  }
   return Heart;
 }
 
@@ -118,6 +137,12 @@ function moduleTone(moduleId: DuaModuleId): "accent" | "warn" | "success" {
     return "success";
   }
   if (moduleId === "ruqyah") {
+    return "accent";
+  }
+  if (moduleId === "healing-shifa" || moduleId === "family-home") {
+    return "success";
+  }
+  if (moduleId === "istikhara-decisions") {
     return "accent";
   }
   return "warn";

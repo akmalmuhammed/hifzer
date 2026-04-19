@@ -13,11 +13,8 @@ export const QURAN_FOUNDATION_REQUESTED_USER_SCOPES = [
   "bookmark",
   "user",
   "activity_day",
-  "streak.read",
-  "goal.read",
   "reading_session",
   "collection",
-  "note",
 ] as const;
 
 function trimEnv(value: string | undefined): string | null {

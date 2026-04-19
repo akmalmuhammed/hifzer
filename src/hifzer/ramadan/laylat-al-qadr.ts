@@ -1,4 +1,11 @@
 import { beautifulNamesModuleDefinition } from "@/hifzer/ramadan/beautiful-names";
+import {
+  distressModuleDefinition,
+  familyModuleDefinition,
+  griefModuleDefinition,
+  healingModuleDefinition,
+  istikharaModuleDefinition,
+} from "@/hifzer/ramadan/life-need-modules";
 import { ruqyahModuleDefinition } from "@/hifzer/ramadan/ruqyah";
 import { wealthModuleDefinition } from "@/hifzer/ramadan/wealth";
 
@@ -9,7 +16,17 @@ export type SourceLink = {
 
 export type JourneyKind = "authentic" | "guided" | "personal";
 
-export type DuaModuleId = "laylat-al-qadr" | "repentance" | "wealth" | "ruqyah" | "beautiful-names";
+export type DuaModuleId =
+  | "laylat-al-qadr"
+  | "repentance"
+  | "wealth"
+  | "ruqyah"
+  | "beautiful-names"
+  | "anxiety-distress"
+  | "istikhara-decisions"
+  | "healing-shifa"
+  | "grief-loss"
+  | "family-home";
 
 export const DEFAULT_DUA_MODULE_ID: DuaModuleId = "laylat-al-qadr";
 
@@ -792,6 +809,11 @@ const MODULE_DEFINITIONS: DuaJourneyModuleDefinition[] = [
     deckSteps: repentanceDeckSteps,
     completionSteps: repentanceCompletionSteps,
   },
+  distressModuleDefinition,
+  istikharaModuleDefinition,
+  healingModuleDefinition,
+  griefModuleDefinition,
+  familyModuleDefinition,
   wealthModuleDefinition,
   ruqyahModuleDefinition,
   beautifulNamesModuleDefinition,
@@ -987,6 +1009,51 @@ export function buildBeautifulNamesJourney(input?: {
 }
 
 export const beautifulNamesJourney = buildBeautifulNamesJourney();
+
+export function buildDistressJourney(input?: {
+  customDuas?: readonly CustomDuaSnapshot[];
+  deckOrders?: readonly DuaDeckOrderSnapshot[];
+}): DuaJourneyModule {
+  return getDuaModule("anxiety-distress", input);
+}
+
+export const distressJourney = buildDistressJourney();
+
+export function buildIstikharaJourney(input?: {
+  customDuas?: readonly CustomDuaSnapshot[];
+  deckOrders?: readonly DuaDeckOrderSnapshot[];
+}): DuaJourneyModule {
+  return getDuaModule("istikhara-decisions", input);
+}
+
+export const istikharaJourney = buildIstikharaJourney();
+
+export function buildHealingJourney(input?: {
+  customDuas?: readonly CustomDuaSnapshot[];
+  deckOrders?: readonly DuaDeckOrderSnapshot[];
+}): DuaJourneyModule {
+  return getDuaModule("healing-shifa", input);
+}
+
+export const healingJourney = buildHealingJourney();
+
+export function buildGriefJourney(input?: {
+  customDuas?: readonly CustomDuaSnapshot[];
+  deckOrders?: readonly DuaDeckOrderSnapshot[];
+}): DuaJourneyModule {
+  return getDuaModule("grief-loss", input);
+}
+
+export const griefJourney = buildGriefJourney();
+
+export function buildFamilyJourney(input?: {
+  customDuas?: readonly CustomDuaSnapshot[];
+  deckOrders?: readonly DuaDeckOrderSnapshot[];
+}): DuaJourneyModule {
+  return getDuaModule("family-home", input);
+}
+
+export const familyJourney = buildFamilyJourney();
 
 const featuredLaylatDua = laylatDeckSteps[0];
 

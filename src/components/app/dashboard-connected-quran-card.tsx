@@ -2,20 +2,22 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ArrowRight, AudioLines, BookMarked, FileText, LibraryBig, RefreshCcw, Sparkles, Waves } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
+import {
+  getQuranFoundationFeedbackLabel,
+  isQuranFoundationScopeApprovalBlocked,
+} from "@/hifzer/quran-foundation/feedback";
 import type { QuranFoundationConnectedOverview, QuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/types";
 import styles from "./dashboard-connected-quran-card.module.css";
 
 const ADVANCED_SYNC_SCOPES = [
   "activity_day",
-  "streak.read",
-  "goal.read",
   "reading_session",
   "collection",
-  "note",
 ] as const;
 
 type OverviewPayload = {
@@ -92,6 +94,7 @@ function LoadingState() {
 }
 
 export function DashboardConnectedQuranCard() {
+  const searchParams = useSearchParams();
   const [payload, setPayload] = useState<OverviewPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -120,11 +123,19 @@ export function DashboardConnectedQuranCard() {
   const status = payload?.status ?? null;
   const overview = payload?.overview ?? null;
   const connected = status?.state === "connected" || status?.state === "degraded";
+  const feedbackParam = searchParams.get("qf");
+  const feedback = useMemo(() => getQuranFoundationFeedbackLabel(feedbackParam), [feedbackParam]);
   const missingAdvancedScopes = useMemo(
     () => (status ? ADVANCED_SYNC_SCOPES.filter((scope) => !status.scopes.includes(scope)) : []),
     [status],
   );
   const needsRelink = Boolean(connected && missingAdvancedScopes.length > 0);
+  const scopeApprovalBlocked = isQuranFoundationScopeApprovalBlocked(status, feedbackParam);
+  const hasReadingSessionScope = Boolean(status?.scopes.includes("reading_session"));
+  const hasStreakReadScope = Boolean(status?.scopes.includes("streak.read"));
+  const hasGoalReadScope = Boolean(status?.scopes.includes("goal.read"));
+  const hasCollectionScope = Boolean(status?.scopes.includes("collection"));
+  const hasNoteScope = Boolean(status?.scopes.includes("note"));
 
   if (loading && !payload) {
     return <LoadingState />;
@@ -173,7 +184,9 @@ export function DashboardConnectedQuranCard() {
               <Pill tone={stateTone}>Connected Quran</Pill>
               <Pill tone={status.userApiReady ? "neutral" : "warn"}>User API</Pill>
               <Pill tone={status.contentApiReady ? "neutral" : "warn"}>Content API</Pill>
-              {needsRelink ? <Pill tone="warn">Refresh permissions</Pill> : null}
+              {needsRelink ? (
+                <Pill tone="warn">{scopeApprovalBlocked ? "Scope approval pending" : "Refresh permissions"}</Pill>
+              ) : null}
             </div>
             <p className="mt-3 text-base font-semibold tracking-tight text-[color:var(--kw-ink)]">
               {connected
@@ -182,8 +195,8 @@ export function DashboardConnectedQuranCard() {
             </p>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
               {connected
-                ? "Resume points, goals, streaks, collections, notes, and official reader layers stay visible from one calmer dashboard."
-                : "Link Quran.com so Hifzer can surface synced reading state, bookmarks, goals, notes, and official content directly in the reader."}
+                ? "Resume points, collection sync, activity-day writeback, and official reader layers stay visible from one calmer dashboard."
+                : "Link Quran.com so Hifzer can surface synced reading state, bookmark collections, activity-day writeback, and official content directly in the reader."}
             </p>
           </div>
 
@@ -197,7 +210,7 @@ export function DashboardConnectedQuranCard() {
                     window.location.href = "/api/quran-foundation/connect?returnTo=%2Fdashboard";
                   }}
                 >
-                  Refresh permissions <ArrowRight size={15} />
+                  {scopeApprovalBlocked ? "Retry authorization" : "Refresh permissions"} <ArrowRight size={15} />
                 </Button>
               ) : (
                 <Link href="/quran/read?view=compact">
@@ -225,34 +238,88 @@ export function DashboardConnectedQuranCard() {
           </div>
         </div>
 
+        {feedback ? <div className={styles.warning}>{feedback}</div> : null}
+
         {connected && (status.state === "degraded" || needsRelink) ? (
           <div className={styles.warning}>
-            {needsRelink
-              ? "This account is linked, but it still has the older Quran.com scopes. Reconnect once to unlock goal, streak, reading-session, collection, and notes permissions for the demo flow."
-              : status.detail}
+            {needsRelink ? (
+              scopeApprovalBlocked
+                ? "This account is linked, but the live Quran.com OAuth client is not approved for the newer streak, goal, and notes scopes yet."
+                : "This account is linked, but it still has the older Quran.com scopes. Reconnect once to unlock activity-day, reading-session, and collection sync for the demo flow."
+            ) : status.detail}
           </div>
         ) : null}
 
         <div className={styles.grid}>
           <div className={styles.stat}>
             <p className={styles.statLabel}>Resume point</p>
-            <p className={styles.statValue}>{connected ? formatResumePoint(overview) : "Link account"}</p>
-            <p className={styles.statDetail}>{connected ? formatResumeDetail(overview) : "Carry your Quran.com reading place into Hifzer."}</p>
+            <p className={styles.statValue}>
+              {connected
+                ? hasReadingSessionScope
+                  ? formatResumePoint(overview)
+                  : "Sync pending"
+                : "Link account"}
+            </p>
+            <p className={styles.statDetail}>
+              {connected
+                ? hasReadingSessionScope
+                  ? formatResumeDetail(overview)
+                  : "Reconnect once to unlock reading-session sync."
+                : "Carry your Quran.com reading place into Hifzer."}
+            </p>
           </div>
           <div className={styles.stat}>
             <p className={styles.statLabel}>Quran.com streak</p>
-            <p className={styles.statValue}>{connected ? formatStreakValue(overview) : "Ready to sync"}</p>
-            <p className={styles.statDetail}>{connected ? formatStreakDetail(overview) : "Activity-day sync can keep the external streak visible."}</p>
+            <p className={styles.statValue}>
+              {connected
+                ? hasStreakReadScope
+                  ? formatStreakValue(overview)
+                  : "Read access pending"
+                : "Ready to sync"}
+            </p>
+            <p className={styles.statDetail}>
+              {connected
+                ? hasStreakReadScope
+                  ? formatStreakDetail(overview)
+                  : "Hifzer can write activity days now. Quran.com has not approved streak readback for this client yet."
+                : "Activity-day sync can keep the external streak visible."}
+            </p>
           </div>
           <div className={styles.stat}>
             <p className={styles.statLabel}>Today&apos;s goal</p>
-            <p className={styles.statValue}>{connected ? formatGoalValue(overview) : "Goals stay visible"}</p>
-            <p className={styles.statDetail}>{connected ? formatGoalDetail(overview) : "If a Quran.com goal exists, Hifzer can surface it here."}</p>
+            <p className={styles.statValue}>
+              {connected
+                ? hasGoalReadScope
+                  ? formatGoalValue(overview)
+                  : "Read access pending"
+                : "Goals stay visible"}
+            </p>
+            <p className={styles.statDetail}>
+              {connected
+                ? hasGoalReadScope
+                  ? formatGoalDetail(overview)
+                  : "Quran.com has not approved goal readback for this client yet."
+                : "If a Quran.com goal exists, Hifzer can surface it here."}
+            </p>
           </div>
           <div className={styles.stat}>
             <p className={styles.statLabel}>Synced memory</p>
-            <p className={styles.statValue}>{connected ? formatMemoryValue(overview) : "Bookmarks / notes"}</p>
-            <p className={styles.statDetail}>{connected ? formatMemoryDetail(overview) : "Bookmarks, collections, and notes can stay connected to your reading."}</p>
+            <p className={styles.statValue}>
+              {connected
+                ? hasCollectionScope || hasNoteScope
+                  ? formatMemoryValue(overview)
+                  : "Bookmark sync only"
+                : "Bookmarks / notes"}
+            </p>
+            <p className={styles.statDetail}>
+              {connected
+                ? hasCollectionScope || hasNoteScope
+                  ? hasCollectionScope && !hasNoteScope
+                    ? "Collection sync is live. Quran.com notes still await client approval."
+                    : formatMemoryDetail(overview)
+                  : "Reconnect once to unlock collection sync."
+                : "Bookmarks, collections, and notes can stay connected to your reading."}
+            </p>
           </div>
         </div>
 

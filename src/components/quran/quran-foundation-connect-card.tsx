@@ -8,6 +8,7 @@ import clsx from "clsx";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
+import { getQuranFoundationFeedbackLabel } from "@/hifzer/quran-foundation/feedback";
 import type { QuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/types";
 
 type QuranFoundationConnectCardProps = {
@@ -16,15 +17,6 @@ type QuranFoundationConnectCardProps = {
   variant: "onboarding" | "hub";
   className?: string;
 };
-
-function feedbackLabel(param: string | null): string | null {
-  if (param === "connected") return "Quran.com account linked.";
-  if (param === "oauth-failed") return "The Quran.com OAuth exchange failed.";
-  if (param === "state-mismatch") return "The Quran.com OAuth state check failed.";
-  if (param === "not-configured") return "Quran Foundation env vars are not configured yet.";
-  if (param === "sign-in-required") return "Sign in before linking a Quran.com account.";
-  return null;
-}
 
 function statusTone(state: QuranFoundationConnectionStatus["state"]): "neutral" | "accent" | "warn" {
   if (state === "connected") {
@@ -49,7 +41,7 @@ function statusLabel(state: QuranFoundationConnectionStatus["state"]): string {
 export function QuranFoundationConnectCard(props: QuranFoundationConnectCardProps) {
   const searchParams = useSearchParams();
   const [connecting, setConnecting] = useState(false);
-  const feedback = useMemo(() => feedbackLabel(searchParams.get("qf")), [searchParams]);
+  const feedback = useMemo(() => getQuranFoundationFeedbackLabel(searchParams.get("qf")), [searchParams]);
   const status = props.initialStatus;
 
   if (!status || status.state === "not_configured") {
