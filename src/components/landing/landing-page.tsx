@@ -18,6 +18,7 @@ import { PublicAuthLink } from "@/components/landing/public-auth-link";
 import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { Button } from "@/components/ui/button";
+import { GroundedGuidanceDemo } from "./grounded-guidance-demo";
 import styles from "./landing.module.css";
 
 type ShowcaseImage = {
@@ -70,9 +71,9 @@ const hifzMetrics = [
 ] as const;
 
 const assistantSources = [
-  "Ayah reference",
-  "Translation",
-  "Tafsir summary",
+  "Explain this ayah",
+  "Predefined prompts",
+  "Matched ayahs",
   "Source labels",
 ] as const;
 
@@ -355,9 +356,9 @@ function GuidanceChapter() {
       <div className={styles.chapterGrid}>
         <Reveal>
           <SectionHeading
-            eyebrow="Grounded guidance"
-            title="Not generic answers. Qur'anic help with sources."
-            body="Ask in natural language, then see ayah references, translation, tafsir summaries, and source labels. The assistant is designed to stay connected to Qur'anic material instead of guessing freely."
+            eyebrow="Grounded AI"
+            title="Ask AI, then inspect the Qur'anic trail."
+            body="Explain a single ayah or start from predefined questions, then see the ayah references, translation, tafsir summary, and source labels behind the answer."
           />
           <div className={styles.sourceList}>
             {assistantSources.map((source) => (
@@ -369,20 +370,7 @@ function GuidanceChapter() {
           </div>
         </Reveal>
         <Reveal className={styles.assistantMock}>
-          <div className={styles.chatBubbleUser}>Give me verses about patience.</div>
-          <div className={styles.chatBubbleAssistant}>
-            <p>Here are grounded starting points:</p>
-            <div className={styles.ayahResult}>
-              <strong>2:153</strong>
-              <span>Seek help through patience and prayer.</span>
-              <small>Tafsir summary available</small>
-            </div>
-            <div className={styles.ayahResult}>
-              <strong>94:5-6</strong>
-              <span>With hardship comes ease.</span>
-              <small>Translation and source reference</small>
-            </div>
-          </div>
+          <GroundedGuidanceDemo />
         </Reveal>
       </div>
     </section>
