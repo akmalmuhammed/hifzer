@@ -23,6 +23,7 @@ type RemoteBookmark = {
   type: string;
   key: number;
   verseNumber?: number;
+  isInDefaultCollection?: boolean;
 };
 
 type RemoteBookmarkPagination = {
@@ -30,9 +31,19 @@ type RemoteBookmarkPagination = {
   hasNextPage?: boolean;
 };
 
+type RemoteCollection = {
+  id: string;
+  name: string;
+  isDefault?: boolean;
+};
+
 function defaultBookmarkName(surahNumber: number, ayahNumber: number): string {
   const surah = getSurahInfo(surahNumber);
   return surah ? `${surah.nameTransliteration} ${surahNumber}:${ayahNumber}` : `Surah ${surahNumber}:${ayahNumber}`;
+}
+
+function normalizeCategoryName(name: string): string {
+  return name.trim().toLocaleLowerCase();
 }
 
 async function listRemoteAyahBookmarks(clerkUserId: string): Promise<RemoteBookmark[]> {
@@ -64,8 +75,134 @@ async function listRemoteAyahBookmarks(clerkUserId: string): Promise<RemoteBookm
   }
 
   return bookmarks.filter(
-    (bookmark) => bookmark.type === "ayah" && Number.isFinite(bookmark.key) && Number.isFinite(bookmark.verseNumber),
+    (bookmark) =>
+      (!bookmark.type || bookmark.type === "ayah") &&
+      Number.isFinite(bookmark.key) &&
+      Number.isFinite(bookmark.verseNumber),
   );
+}
+
+async function listRemoteCollections(clerkUserId: string): Promise<RemoteCollection[]> {
+  const collections: RemoteCollection[] = [];
+  let after: string | undefined;
+
+  while (true) {
+    const { payload } = await quranFoundationUserApiRequest<RemoteCollection[]>(clerkUserId, {
+      path: "/collections",
+      query: {
+        type: "ayah",
+        first: 20,
+        after,
+      },
+    });
+    const rows = Array.isArray(payload.data) ? (payload.data as RemoteCollection[]) : [];
+    collections.push(...rows);
+
+    const pagination =
+      payload.pagination && typeof payload.pagination === "object"
+        ? (payload.pagination as RemoteBookmarkPagination)
+        : undefined;
+    if (!pagination?.hasNextPage || !pagination.endCursor) {
+      break;
+    }
+    after = pagination.endCursor;
+  }
+
+  return collections.filter((collection) => collection.id && collection.name);
+}
+
+async function listRemoteBookmarkCollectionIds(
+  clerkUserId: string,
+  bookmark: Pick<RemoteBookmark, "key" | "verseNumber">,
+): Promise<string[]> {
+  const config = getQuranFoundationConfig();
+  const { payload } = await quranFoundationUserApiRequest<string[] | RemoteCollection[]>(clerkUserId, {
+    path: "/bookmarks/collections",
+    query: {
+      key: bookmark.key,
+      type: "ayah",
+      verseNumber: bookmark.verseNumber,
+      mushafId: config.bookmarkMushafId,
+      first: 20,
+    },
+  });
+  const rows = Array.isArray(payload.data) ? payload.data : [];
+  return rows
+    .map((item) => {
+      if (typeof item === "string") {
+        return item.trim();
+      }
+      return typeof item.id === "string" ? item.id.trim() : "";
+    })
+    .filter(Boolean);
+}
+
+async function buildRemoteBookmarkCategoryMap(
+  clerkUserId: string,
+  remoteBookmarks: RemoteBookmark[],
+): Promise<Map<string, RemoteCollection>> {
+  const remoteCollections = await listRemoteCollections(clerkUserId);
+  const collectionById = new Map(remoteCollections.map((collection) => [collection.id, collection] as const));
+  const defaultCollection = remoteCollections.find(
+    (collection) => collection.isDefault === true || collection.id === "__default__",
+  ) ?? null;
+  const categoryByBookmarkId = new Map<string, RemoteCollection>();
+
+  await Promise.all(
+    remoteBookmarks.map(async (bookmark) => {
+      if (!bookmark.verseNumber) {
+        return;
+      }
+      const collectionIds = await listRemoteBookmarkCollectionIds(clerkUserId, bookmark).catch(() => []);
+      const collections = collectionIds
+        .map((id) => collectionById.get(id) ?? null)
+        .filter((collection): collection is RemoteCollection => Boolean(collection));
+      const chosenCollection =
+        collections.find((collection) => collection.id !== "__default__" && collection.isDefault !== true) ??
+        collections[0] ??
+        (bookmark.isInDefaultCollection ? defaultCollection : null);
+      if (chosenCollection) {
+        categoryByBookmarkId.set(bookmark.id, chosenCollection);
+      }
+    }),
+  );
+
+  return categoryByBookmarkId;
+}
+
+async function buildLocalCategoryCache(userId: string): Promise<Map<string, string>> {
+  const categories = await db().bookmarkCategory.findMany({
+    where: {
+      userId,
+      archivedAt: null,
+    },
+  });
+  return new Map(categories.map((category) => [normalizeCategoryName(category.name), category.id] as const));
+}
+
+async function ensureLocalCategoryId(input: {
+  userId: string;
+  name: string | null | undefined;
+  cache: Map<string, string>;
+}): Promise<string | null> {
+  const name = input.name?.trim();
+  if (!name) {
+    return null;
+  }
+  const normalized = normalizeCategoryName(name);
+  const existingId = input.cache.get(normalized);
+  if (existingId) {
+    return existingId;
+  }
+  const category = await db().bookmarkCategory.create({
+    data: {
+      userId: input.userId,
+      name,
+      sortOrder: input.cache.size + 1,
+    },
+  });
+  input.cache.set(normalized, category.id);
+  return category.id;
 }
 
 function findRemoteBookmarkByVerse(
@@ -81,6 +218,7 @@ async function markLocalBookmarkSyncResult(input: {
   remoteBookmarkId: string | null;
   syncState: string;
   syncError: string | null;
+  categoryId?: string | null;
 }) {
   await db().bookmark.update({
     where: { id: input.bookmarkId },
@@ -89,6 +227,7 @@ async function markLocalBookmarkSyncResult(input: {
       quranFoundationSyncState: input.syncState,
       quranFoundationLastSyncedAt: new Date(),
       quranFoundationSyncError: input.syncError,
+      ...(input.categoryId !== undefined ? { categoryId: input.categoryId } : {}),
     },
   });
 }
@@ -305,8 +444,11 @@ export async function hydrateBookmarksFromQuranFoundation(clerkUserId: string) {
   }
 
   const remoteBookmarks = await listRemoteAyahBookmarks(clerkUserId);
+  const remoteCategoryByBookmarkId = await buildRemoteBookmarkCategoryMap(clerkUserId, remoteBookmarks);
+  const localCategoryCache = await buildLocalCategoryCache(profile.id);
   let matched = 0;
   let imported = 0;
+  let categorized = 0;
 
   for (const remote of remoteBookmarks) {
     if (!remote.verseNumber) {
@@ -316,6 +458,14 @@ export async function hydrateBookmarksFromQuranFoundation(clerkUserId: string) {
     if (!ayahId) {
       continue;
     }
+    const remoteCategory = remoteCategoryByBookmarkId.get(remote.id);
+    const categoryId = remoteCategory
+      ? await ensureLocalCategoryId({
+          userId: profile.id,
+          name: remoteCategory.name,
+          cache: localCategoryCache,
+        })
+      : undefined;
     const existing = await db().bookmark.findFirst({
       where: {
         userId: profile.id,
@@ -331,7 +481,11 @@ export async function hydrateBookmarksFromQuranFoundation(clerkUserId: string) {
         remoteBookmarkId: remote.id,
         syncState: "synced",
         syncError: null,
+        categoryId,
       });
+      if (categoryId) {
+        categorized += 1;
+      }
       matched += 1;
       continue;
     }
@@ -344,12 +498,16 @@ export async function hydrateBookmarksFromQuranFoundation(clerkUserId: string) {
         ayahNumber: remote.verseNumber,
         name: defaultBookmarkName(remote.key, remote.verseNumber),
         note: null,
+        categoryId: categoryId ?? null,
         isPinned: false,
         quranFoundationBookmarkId: remote.id,
         quranFoundationSyncState: "synced",
         quranFoundationLastSyncedAt: new Date(),
       },
     });
+    if (categoryId) {
+      categorized += 1;
+    }
     imported += 1;
   }
 
@@ -363,6 +521,7 @@ export async function hydrateBookmarksFromQuranFoundation(clerkUserId: string) {
     totalRemote: remoteBookmarks.length,
     matched,
     imported,
+    categorized,
   };
 }
 
