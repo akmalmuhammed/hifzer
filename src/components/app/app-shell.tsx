@@ -68,6 +68,28 @@ const MOBILE_NAV: NavItem[] = [
   { href: "/settings", key: "settings", icon: Settings },
 ];
 
+function getLikelyNextRoutes(pathname: string): string[] {
+  if (pathname === "/dashboard") {
+    return ["/quran", "/hifz"];
+  }
+  if (pathname === "/hifz" || pathname.startsWith("/hifz/") || pathname === "/session" || pathname.startsWith("/session/")) {
+    return ["/dashboard", "/quran"];
+  }
+  if (pathname === "/quran" || pathname.startsWith("/quran/")) {
+    return ["/dashboard", "/journal"];
+  }
+  if (pathname === "/journal" || pathname.startsWith("/journal/")) {
+    return ["/dashboard", "/dua"];
+  }
+  if (pathname === "/dua" || pathname.startsWith("/dua/")) {
+    return ["/dashboard", "/journal"];
+  }
+  if (pathname === "/settings" || pathname.startsWith("/settings/")) {
+    return ["/dashboard"];
+  }
+  return ["/dashboard", "/quran"];
+}
+
 function isActive(pathname: string, href: string): boolean {
   if (href === "/dashboard") {
     return pathname === "/dashboard";
@@ -163,15 +185,15 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
       return;
     }
 
-    const routes = Array.from(
-      new Set([
-        ...PRIMARY.map((item) => item.href),
-        ...INSIGHTS.map((item) => item.href),
-        ...PLATFORM.map((item) => item.href),
-        "/settings",
-        "/",
-      ]),
-    ).filter((href) => href !== pathname);
+    const connection = navigator.connection;
+    if (connection?.saveData || connection?.effectiveType === "slow-2g" || connection?.effectiveType === "2g") {
+      return;
+    }
+
+    const routes = Array.from(new Set(getLikelyNextRoutes(pathname))).filter((href) => href !== pathname).slice(0, 2);
+    if (routes.length < 1) {
+      return;
+    }
 
     const prefetchRoutes = () => {
       routes.forEach((href) => router.prefetch(href));

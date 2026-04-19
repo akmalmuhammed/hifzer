@@ -973,6 +973,176 @@
   line-height: 1.8;
 }
 
+html[data-mode="dark"] .page {
+  background:
+    radial-gradient(58rem 34rem at 10% 0%, rgba(var(--kw-accent-rgb), 0.2), transparent 66%),
+    radial-gradient(42rem 26rem at 88% 8%, rgba(20, 184, 166, 0.16), transparent 72%),
+    radial-gradient(32rem 24rem at 50% 100%, rgba(216, 182, 107, 0.08), transparent 76%),
+    linear-gradient(180deg, #061019 0%, #091320 42%, #08101b 100%);
+}
+
+html[data-mode="dark"] .page::before {
+  background:
+    radial-gradient(70rem 22rem at 50% -6%, rgba(255, 255, 255, 0.08), transparent 68%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 24%, rgba(255, 255, 255, 0.02) 58%, transparent 100%),
+    linear-gradient(90deg, transparent, rgba(var(--kw-accent-rgb), 0.05), transparent),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 104px,
+      rgba(255, 255, 255, 0.04) 104px,
+      rgba(255, 255, 255, 0.04) 105px
+    );
+}
+
+html[data-mode="dark"] .navFrame,
+html[data-mode="dark"] .footerFrame,
+html[data-mode="dark"] .planStep,
+html[data-mode="dark"] .metricsPanel,
+html[data-mode="dark"] .metricCards,
+html[data-mode="dark"] .assistantMock,
+html[data-mode="dark"] .warmCard,
+html[data-mode="dark"] .journalCard,
+html[data-mode="dark"] .summaryPanel,
+html[data-mode="dark"] .faqItem {
+  border-color: rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(140% 140% at 0% 0%, rgba(var(--kw-accent-rgb), 0.1), transparent 56%),
+    radial-gradient(120% 120% at 100% 100%, rgba(20, 184, 166, 0.08), transparent 60%),
+    linear-gradient(155deg, rgba(18, 26, 44, 0.88), rgba(12, 18, 32, 0.76));
+  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.34);
+}
+
+html[data-mode="dark"] .signalItem {
+  border-color: rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(155deg, rgba(21, 31, 47, 0.94), rgba(11, 20, 35, 0.84)),
+    radial-gradient(circle at 110% -10%, rgba(20, 184, 166, 0.18), transparent 42%);
+  box-shadow:
+    0 28px 88px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+html[data-mode="dark"] .signalItem::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(20, 184, 166, 0.6), transparent 72%);
+}
+
+html[data-mode="dark"] .signalItem::after {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 38%),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 60px,
+      rgba(255, 255, 255, 0.045) 60px,
+      rgba(255, 255, 255, 0.045) 61px
+    );
+  opacity: 0.44;
+}
+
+html[data-mode="dark"] .signalItem:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 34px 100px rgba(0, 0, 0, 0.44),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+html[data-mode="dark"] .signalIndex {
+  color: rgba(248, 250, 252, 0.48);
+}
+
+html[data-mode="dark"] .signalEyebrow {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(153, 246, 228, 0.95);
+}
+
+html[data-mode="dark"] .signalTitle,
+html[data-mode="dark"] .sectionTitle,
+html[data-mode="dark"] .cardTitle,
+html[data-mode="dark"] .metricCard strong,
+html[data-mode="dark"] .summaryStats strong,
+html[data-mode="dark"] .faqItem summary {
+  color: rgba(248, 250, 252, 0.94);
+}
+
+html[data-mode="dark"] .signalBody,
+html[data-mode="dark"] .sectionBody,
+html[data-mode="dark"] .cardBody,
+html[data-mode="dark"] .faqItem p,
+html[data-mode="dark"] .journalNote span,
+html[data-mode="dark"] .summaryStats span,
+html[data-mode="dark"] .planStep small,
+html[data-mode="dark"] .metricCard span {
+  color: rgba(226, 232, 240, 0.72);
+}
+
+html[data-mode="dark"] .signalRule span {
+  background: linear-gradient(90deg, rgba(20, 184, 166, 0.6), rgba(255, 255, 255, 0.08));
+}
+
+html[data-mode="dark"] .planStep p,
+html[data-mode="dark"] .chatBubbleAssistant,
+html[data-mode="dark"] .ayahResult span,
+html[data-mode="dark"] .summaryPanel,
+html[data-mode="dark"] .metricCard,
+html[data-mode="dark"] .summaryStats div {
+  color: rgba(248, 250, 252, 0.9);
+}
+
+html[data-mode="dark"] .planStep > span,
+html[data-mode="dark"] .cardIcon {
+  color: #99f6e4;
+  background: rgba(20, 184, 166, 0.14);
+}
+
+html[data-mode="dark"] .metricCard,
+html[data-mode="dark"] .summaryStats div,
+html[data-mode="dark"] .journalNote,
+html[data-mode="dark"] .ayahResult,
+html[data-mode="dark"] .chatBubbleAssistant,
+html[data-mode="dark"] .readerControls span,
+html[data-mode="dark"] .duaChips span {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+html[data-mode="dark"] .readerControls span,
+html[data-mode="dark"] .duaChips span,
+html[data-mode="dark"] .ayahResult strong,
+html[data-mode="dark"] .metricCard p,
+html[data-mode="dark"] .journalNote small {
+  color: rgba(153, 246, 228, 0.92);
+}
+
+html[data-mode="dark"] .retentionRing {
+  background:
+    radial-gradient(circle at center, rgba(8, 15, 28, 0.96) 0 58%, transparent 59%),
+    conic-gradient(from -90deg, #14b8a6 0 82%, rgba(20, 184, 166, 0.16) 82% 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+html[data-mode="dark"] .retentionRing div,
+html[data-mode="dark"] .syncOrbit span {
+  background: rgba(12, 18, 32, 0.92);
+  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.38);
+}
+
+html[data-mode="dark"] .retentionRing strong {
+  color: rgba(248, 250, 252, 0.94);
+}
+
+html[data-mode="dark"] .syncOrbit {
+  background:
+    radial-gradient(circle at center, rgba(20, 184, 166, 0.18), transparent 42%),
+    linear-gradient(180deg, rgba(20, 30, 46, 0.9), rgba(11, 19, 34, 0.76));
+}
+
+html[data-mode="dark"] .syncOrbit::before {
+  border-color: rgba(153, 246, 228, 0.24);
+}
+
 @keyframes floatSoft {
   0%,
   100% {

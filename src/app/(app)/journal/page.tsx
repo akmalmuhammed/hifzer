@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
 import { JournalClient } from "./journal-client";
 import { loadDuaPageData } from "../dua/dua-page-data";
@@ -6,6 +5,7 @@ import { listPrivateJournalEntries } from "@/hifzer/journal/server";
 import type { JournalEntry } from "@/hifzer/journal/local-store";
 import { getProfileSnapshot } from "@/hifzer/profile/server";
 import { listSurahs } from "@/hifzer/quran/lookup.server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import {
   DEFAULT_QURAN_TRANSLATION_ID,
   QURAN_TRANSLATION_COOKIE,
@@ -30,9 +30,11 @@ export default async function JournalPage() {
     nameEnglish: surah.nameEnglish,
   }));
 
-  const { userId } = await auth();
-  const profile = userId ? await getProfileSnapshot(userId) : null;
-  const duaState = await loadDuaPageData();
+  const userId = await resolveClerkUserIdForServer();
+  const [profile, duaState] = await Promise.all([
+    userId ? getProfileSnapshot(userId) : Promise.resolve(null),
+    loadDuaPageData(userId).catch(() => ({ userId, customDuas: [], deckOrders: [] })),
+  ]);
   let initialEntries: JournalEntry[] = [];
   const syncEnabled = Boolean(userId && dbConfigured());
   let initialSyncError = false;

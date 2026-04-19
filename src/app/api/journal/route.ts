@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import {
   JournalStorageError,
@@ -7,6 +6,7 @@ import {
   savePrivateJournalEntry,
 } from "@/hifzer/journal/server";
 import type { JournalBlock, JournalLinkedAyah, JournalLinkedDua } from "@/hifzer/journal/local-store";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 
 type SavePayload = {
   id?: unknown;
@@ -80,8 +80,8 @@ function handleError(error: unknown) {
   return NextResponse.json({ error: "Internal server error." }, { status: 500 });
 }
 
-export async function GET() {
-  const { userId } = await auth();
+export async function GET(request: Request) {
+  const userId = await resolveClerkUserIdForServer(request);
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -95,7 +95,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const { userId } = await auth();
+  const userId = await resolveClerkUserIdForServer(req);
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

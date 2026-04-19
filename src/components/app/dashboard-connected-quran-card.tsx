@@ -106,9 +106,12 @@ export function DashboardConnectedQuranCard() {
     setError(null);
     try {
       const response = await fetch("/api/quran-foundation/overview", { cache: "no-store" });
-      const data = (await response.json()) as OverviewPayload & { error?: string };
+      const data = (await response.json().catch(() => null)) as (OverviewPayload & { error?: string }) | null;
       if (!response.ok) {
-        throw new Error(data.error ?? "Failed to load Quran.com overview.");
+        throw new Error(data?.error ?? "Failed to load Quran.com overview.");
+      }
+      if (!data?.status) {
+        throw new Error("Quran.com overview was empty.");
       }
       setPayload(data);
     } catch (loadError) {

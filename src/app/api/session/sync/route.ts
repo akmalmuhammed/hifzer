@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import type { SessionEventInput } from "@/hifzer/engine/types";
@@ -7,6 +6,7 @@ import {
   isSessionGuardError,
   parseSessionEventList,
 } from "@/hifzer/engine/session-guard";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 
 type LegacyPayload = {
   localDate?: unknown;
@@ -101,7 +101,7 @@ function toPermanentResult(sessionId: string, error: unknown): SyncResult {
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
-  const { userId } = await auth();
+  const userId = await resolveClerkUserIdForServer(req);
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

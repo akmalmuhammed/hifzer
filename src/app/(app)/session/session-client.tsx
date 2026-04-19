@@ -461,9 +461,9 @@ export function SessionClient() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ sessions: pending }),
       });
-      const payload = (await res.json()) as {
+      const payload = (await res.json().catch(() => null)) as {
         results?: Array<{ ok: boolean; permanent?: boolean }>;
-      };
+      } | null;
       if (!res.ok || !payload.results) {
         throw new Error("Sync failed.");
       }
@@ -497,13 +497,16 @@ export function SessionClient() {
       void flushPendingSync();
       const res = await fetch("/api/session/start", { method: "POST" });
       void loadLearningLanes();
-      const payload = (await res.json()) as SessionStartPayload & { error?: string };
-      if (res.status === 403 && payload.error === "onboarding_required") {
+      const payload = (await res.json().catch(() => null)) as (SessionStartPayload & { error?: string }) | null;
+      if (res.status === 403 && payload?.error === "onboarding_required") {
         router.replace("/onboarding/welcome");
         return;
       }
       if (!res.ok) {
-        throw new Error(payload.error || "Failed to start Hifz.");
+        throw new Error(payload?.error || "Failed to start Hifz.");
+      }
+      if (!payload?.sessionId || !Array.isArray(payload.steps)) {
+        throw new Error("Hifz session data was incomplete.");
       }
 
       const restored = readStoredSessionProgress(progressStorageKey);
@@ -637,17 +640,17 @@ export function SessionClient() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const body = (await res.json()) as { error?: string; permanent?: boolean };
+      const body = (await res.json().catch(() => null)) as { error?: string; permanent?: boolean } | null;
       if (!res.ok) {
-        if (body.permanent) {
+        if (body?.permanent) {
           pushToast({
             tone: "warning",
             title: "Hifz save rejected",
-            message: body.error || "The run could not be accepted by the server.",
+            message: body?.error || "The run could not be accepted by the server.",
           });
           return;
         }
-        throw new Error(body.error || "Complete failed.");
+        throw new Error(body?.error || "Complete failed.");
       }
       pushToast({ tone: "success", title: "Hifz saved", message: "Progress synced." });
     } catch {

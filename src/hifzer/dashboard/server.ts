@@ -96,7 +96,7 @@ export type DashboardOverview = {
   }>;
 };
 
-export const DASHBOARD_OVERVIEW_CACHE_TTL_SECONDS = 120;
+export const DASHBOARD_OVERVIEW_CACHE_TTL_SECONDS = 600;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));

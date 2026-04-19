@@ -1,10 +1,10 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import {
   deletePrivateJournalEntry,
   isJournalStorageError,
   JournalStorageError,
 } from "@/hifzer/journal/server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 
 function handleError(error: unknown) {
   if (isJournalStorageError(error)) {
@@ -16,8 +16,8 @@ function handleError(error: unknown) {
   return NextResponse.json({ error: "Internal server error." }, { status: 500 });
 }
 
-export async function DELETE(_req: Request, context: { params: Promise<{ id: string }> }) {
-  const { userId } = await auth();
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
+  const userId = await resolveClerkUserIdForServer(req);
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

@@ -1,15 +1,15 @@
-import { auth } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { startTodaySession } from "@/hifzer/engine/server";
 import { resolveAuditNowFromRequestHeader } from "@/hifzer/testing/request-now";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import { QURAN_TRANSLATION_COOKIE } from "@/hifzer/quran/translation-prefs";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const { userId } = await auth();
+  const userId = await resolveClerkUserIdForServer(request);
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

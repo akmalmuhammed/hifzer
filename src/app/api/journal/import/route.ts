@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import {
   JournalStorageError,
@@ -6,6 +5,7 @@ import {
   isJournalStorageError,
 } from "@/hifzer/journal/server";
 import type { JournalEntry } from "@/hifzer/journal/local-store";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 
 type ImportPayload = {
   entries?: unknown;
@@ -22,7 +22,7 @@ function handleError(error: unknown) {
 }
 
 export async function POST(req: Request) {
-  const { userId } = await auth();
+  const userId = await resolveClerkUserIdForServer(req);
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

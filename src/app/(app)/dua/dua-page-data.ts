@@ -3,9 +3,11 @@ import { listDuaDeckState } from "@/hifzer/ramadan/custom-dua.server";
 import { buildDuaModules, type DuaModuleId } from "@/hifzer/ramadan/laylat-al-qadr";
 import { clerkEnabled } from "@/lib/clerk-config";
 
-export async function loadDuaPageData() {
+export async function loadDuaPageData(userIdOverride?: string | null) {
   const authEnabled = clerkEnabled();
-  const userId = authEnabled ? (await auth()).userId : null;
+  const userId = userIdOverride === undefined
+    ? (authEnabled ? (await auth()).userId : null)
+    : userIdOverride;
   const state = userId
     ? await listDuaDeckState(userId)
     : { customDuas: [], deckOrders: [] };

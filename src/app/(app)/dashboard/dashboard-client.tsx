@@ -25,7 +25,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
-import { DashboardConnectedQuranCard } from "@/components/app/dashboard-connected-quran-card";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DisclosureCard } from "@/components/ui/disclosure-card";
@@ -53,6 +52,11 @@ const Sparkline = dynamic(
 const DashboardFirstRunGuide = dynamic(
   () => import("@/components/app/dashboard-first-run-guide").then((mod) => mod.DashboardFirstRunGuide),
   { ssr: false, loading: () => <GuideSkeleton /> },
+);
+
+const DashboardConnectedQuranCard = dynamic(
+  () => import("@/components/app/dashboard-connected-quran-card").then((mod) => mod.DashboardConnectedQuranCard),
+  { ssr: false, loading: () => <ChartBlockSkeleton height={220} /> },
 );
 
 export type DashboardOverview = {
@@ -126,7 +130,7 @@ type DashboardPayload = {
 };
 
 const DASHBOARD_CACHE_KEY = "hifzer.dashboard.overview.v1";
-const DASHBOARD_CACHE_TTL_MS = 2 * 60 * 1000;
+const DASHBOARD_CACHE_TTL_MS = 10 * 60 * 1000;
 
 function statusPill(status: DashboardOverview["today"]["status"]): { tone: "neutral" | "accent" | "success"; label: string } {
   if (status === "completed") {
@@ -381,9 +385,12 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
     setError(null);
     try {
       const res = await fetch("/api/dashboard/overview", { cache: "no-store" });
-      const payload = (await res.json()) as DashboardPayload & { error?: string };
+      const payload = (await res.json().catch(() => null)) as (DashboardPayload & { error?: string }) | null;
       if (!res.ok) {
-        throw new Error(payload.error || "Failed to load dashboard.");
+        throw new Error(payload?.error || "Failed to load dashboard.");
+      }
+      if (!payload?.overview) {
+        throw new Error("Dashboard data was empty.");
       }
       setOverview(payload.overview);
       writeSessionCache(DASHBOARD_CACHE_KEY, payload.overview);

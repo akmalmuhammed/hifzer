@@ -5,14 +5,21 @@ import { flushPendingBookmarkMutations, loadBookmarksFromApi } from "@/hifzer/bo
 
 const SYNC_INTERVAL_MS = 45_000;
 const QF_RECONCILE_INTERVAL_MS = 5 * 60_000;
+const INITIAL_SYNC_DELAY_MS = 8_000;
 
 export function BookmarkSyncAgent() {
   const lastQuranFoundationSyncAtRef = useRef(0);
 
   useEffect(() => {
     let cancelled = false;
+    let intervalId: number | null = null;
+    let timeoutId: number | null = null;
+    let idleHandle: number | null = null;
 
     async function reconcileQuranFoundationBookmarks() {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
       const now = Date.now();
       if (now - lastQuranFoundationSyncAtRef.current < QF_RECONCILE_INTERVAL_MS) {
         return;
@@ -40,28 +47,69 @@ export function BookmarkSyncAgent() {
     }
 
     async function syncNow() {
-      if (cancelled) {
+      if (cancelled || document.visibilityState !== "visible") {
         return;
       }
       await flushPendingBookmarkMutations();
       await reconcileQuranFoundationBookmarks();
     }
 
-    void syncNow();
+    const startSyncLoop = () => {
+      if (cancelled || intervalId != null) {
+        return;
+      }
+      void syncNow();
+      intervalId = window.setInterval(() => {
+        void syncNow();
+      }, SYNC_INTERVAL_MS);
+    };
+
+    const scheduleStart = () => {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+      if (typeof window.requestIdleCallback === "function") {
+        idleHandle = window.requestIdleCallback(() => {
+          startSyncLoop();
+        }, { timeout: INITIAL_SYNC_DELAY_MS });
+        return;
+      }
+      timeoutId = window.setTimeout(() => {
+        startSyncLoop();
+      }, INITIAL_SYNC_DELAY_MS);
+    };
 
     const onOnline = () => {
       void syncNow();
     };
 
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        if (intervalId == null) {
+          scheduleStart();
+          return;
+        }
+        void syncNow();
+      }
+    };
+
+    scheduleStart();
     window.addEventListener("online", onOnline);
-    const timer = window.setInterval(() => {
-      void syncNow();
-    }, SYNC_INTERVAL_MS);
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
       cancelled = true;
       window.removeEventListener("online", onOnline);
-      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      if (intervalId != null) {
+        window.clearInterval(intervalId);
+      }
+      if (timeoutId != null) {
+        window.clearTimeout(timeoutId);
+      }
+      if (idleHandle != null) {
+        window.cancelIdleCallback?.(idleHandle);
+      }
     };
   }, []);
 
