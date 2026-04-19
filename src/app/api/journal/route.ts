@@ -87,7 +87,8 @@ export async function GET(request: Request) {
   }
 
   try {
-    const entries = await listPrivateJournalEntries(userId);
+    const view = new URL(request.url).searchParams.get("view");
+    const entries = await listPrivateJournalEntries(userId, new Date(), { summary: view === "summary" });
     return NextResponse.json({ ok: true, entries });
   } catch (error) {
     return handleError(error);

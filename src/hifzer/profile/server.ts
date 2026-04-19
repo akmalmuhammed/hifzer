@@ -87,6 +87,12 @@ export type LearningLaneSnapshot = {
   isActive: boolean;
 };
 
+export type AppShellGateProfile = {
+  clerkUserId: string;
+  onboardingCompleted: boolean;
+  onboardingStep: OnboardingStep;
+};
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
@@ -103,6 +109,13 @@ type ProfileSchemaCapabilities = Pick<
   CoreSchemaCapabilities,
   "hasQuranLaneColumns" | "hasOnboardingStateColumns"
 >;
+
+function toProfileSchemaCapabilities(capabilities: CoreSchemaCapabilities): ProfileSchemaCapabilities {
+  return {
+    hasQuranLaneColumns: capabilities.hasQuranLaneColumns,
+    hasOnboardingStateColumns: capabilities.hasOnboardingStateColumns,
+  };
+}
 
 const LEGACY_INCOMPATIBLE_PROFILE_KEYS = new Set([
   "emailRemindersEnabled",
@@ -427,6 +440,36 @@ async function upsertProfileCompat(input: {
   }
 }
 
+async function findExistingUserProfile(
+  clerkUserId: string,
+  capabilities: ProfileSchemaCapabilities,
+): Promise<UserProfile | null> {
+  const prisma = db();
+
+  if (capabilities.hasQuranLaneColumns && capabilities.hasOnboardingStateColumns) {
+    return prisma.userProfile.findUnique({
+      where: { clerkUserId },
+    });
+  }
+
+  const row = await prisma.userProfile.findUnique({
+    where: { clerkUserId },
+    select: buildCompatUserProfileSelect(capabilities),
+  });
+
+  if (!row) {
+    return null;
+  }
+
+  return withCompatDefaults(row as CompatUserProfileRow, capabilities);
+}
+
+async function findModernUserProfile(clerkUserId: string): Promise<UserProfile | null> {
+  return db().userProfile.findUnique({
+    where: { clerkUserId },
+  });
+}
+
 function looksLikeMissingCoreSchema(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
   return (
@@ -471,6 +514,23 @@ async function getOrCreateUserProfileUncached(clerkUserId: string): Promise<User
   }
 
   const patchEnabled = runtimeSchemaPatchEnabled();
+  try {
+    const existing = await findModernUserProfile(clerkUserId);
+    if (existing) {
+      return existing;
+    }
+    return await db().userProfile.upsert({
+      where: { clerkUserId },
+      create: defaultCreateData(clerkUserId),
+      update: {},
+    });
+  } catch (error) {
+    if (!looksLikeMissingCoreSchema(error)) {
+      throw error;
+    }
+  }
+
+  let profileCapabilities = toProfileSchemaCapabilities(await getCoreSchemaCapabilities());
 
   try {
     if (patchEnabled) {
@@ -479,6 +539,10 @@ async function getOrCreateUserProfileUncached(clerkUserId: string): Promise<User
       } catch {
         // Continue in compatibility mode even when patching is blocked.
       }
+    }
+    const existing = await findExistingUserProfile(clerkUserId, profileCapabilities);
+    if (existing) {
+      return existing;
     }
     return await upsertProfileCompat({
       clerkUserId,
@@ -499,6 +563,11 @@ async function getOrCreateUserProfileUncached(clerkUserId: string): Promise<User
       } catch {
         // Ignore schema patch failures and retry in legacy-compatible mode.
       }
+    }
+    profileCapabilities = toProfileSchemaCapabilities(await getCoreSchemaCapabilities({ refresh: true }));
+    const existing = await findExistingUserProfile(clerkUserId, profileCapabilities);
+    if (existing) {
+      return existing;
     }
     return upsertProfileCompat({
       clerkUserId,
@@ -528,6 +597,52 @@ const getProfileSnapshotCached = cache(async (clerkUserId: string): Promise<Prof
 
 export async function getProfileSnapshot(clerkUserId: string): Promise<ProfileSnapshot | null> {
   return getProfileSnapshotCached(clerkUserId);
+}
+
+const getAppShellGateProfileCached = cache(async (clerkUserId: string): Promise<AppShellGateProfile | null> => {
+  if (!dbConfigured()) {
+    return null;
+  }
+
+  try {
+    const row = await db().userProfile.findUnique({
+      where: { clerkUserId },
+      select: {
+        clerkUserId: true,
+        onboardingCompletedAt: true,
+        onboardingStep: true,
+      },
+    });
+
+    if (!row) {
+      return null;
+    }
+
+    return {
+      clerkUserId: row.clerkUserId,
+      onboardingCompleted: Boolean(row.onboardingCompletedAt),
+      onboardingStep: normalizeOnboardingStep(row.onboardingStep),
+    };
+  } catch (error) {
+    if (!looksLikeMissingCoreSchema(error)) {
+      throw error;
+    }
+  }
+
+  const profile = await getOrCreateUserProfile(clerkUserId);
+  if (!profile) {
+    return null;
+  }
+
+  return {
+    clerkUserId: profile.clerkUserId,
+    onboardingCompleted: Boolean(profile.onboardingCompletedAt),
+    onboardingStep: normalizeOnboardingStep(profile.onboardingStep),
+  };
+});
+
+export async function getAppShellGateProfile(clerkUserId: string): Promise<AppShellGateProfile | null> {
+  return getAppShellGateProfileCached(clerkUserId);
 }
 
 export class OnboardingStateError extends Error {

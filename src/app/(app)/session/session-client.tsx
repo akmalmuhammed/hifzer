@@ -464,7 +464,7 @@ export function SessionClient() {
       const payload = (await res.json().catch(() => null)) as {
         results?: Array<{ ok: boolean; permanent?: boolean }>;
       } | null;
-      if (!res.ok || !payload.results) {
+      if (!res.ok || !payload?.results) {
         throw new Error("Sync failed.");
       }
       const kept = pending.filter((_, idx) => {

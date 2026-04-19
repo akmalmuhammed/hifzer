@@ -185,7 +185,9 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
       return;
     }
 
-    const connection = navigator.connection;
+    const connection = (navigator as Navigator & {
+      connection?: { saveData?: boolean; effectiveType?: string };
+    }).connection;
     if (connection?.saveData || connection?.effectiveType === "slow-2g" || connection?.effectiveType === "2g") {
       return;
     }

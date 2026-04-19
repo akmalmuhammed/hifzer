@@ -81,6 +81,27 @@ type JournalEntryRow = {
   autoDeleteAt: Date | null;
 };
 
+type JournalEntrySummaryRow = Pick<
+  JournalEntryRow,
+  | "id"
+  | "clientEntryId"
+  | "type"
+  | "title"
+  | "content"
+  | "tags"
+  | "pinned"
+  | "createdAt"
+  | "updatedAt"
+  | "linkedAyahId"
+  | "linkedSurahNumber"
+  | "linkedAyahNumber"
+  | "linkedSurahNameArabic"
+  | "linkedSurahNameTransliteration"
+  | "linkedDuaJson"
+  | "duaStatus"
+  | "autoDeleteAt"
+>;
+
 export class JournalStorageError extends Error {
   readonly status: number;
   readonly code: string;
@@ -419,6 +440,35 @@ function toSnapshot(row: JournalEntryRow): JournalEntry {
   };
 }
 
+function toSummarySnapshot(row: JournalEntrySummaryRow): JournalEntry {
+  const linkedAyah =
+    row.linkedAyahId && row.linkedSurahNumber && row.linkedAyahNumber
+      ? {
+          ayahId: row.linkedAyahId,
+          surahNumber: row.linkedSurahNumber,
+          ayahNumber: row.linkedAyahNumber,
+          surahNameArabic: row.linkedSurahNameArabic ?? "",
+          surahNameTransliteration: row.linkedSurahNameTransliteration ?? "",
+        }
+      : null;
+  const linkedDua = parseLinkedDuaJson(row.linkedDuaJson);
+
+  return {
+    id: row.id,
+    type: row.type,
+    title: row.title ?? "",
+    content: row.content,
+    tags: row.tags,
+    pinned: row.pinned,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+    linkedAyah,
+    linkedDua,
+    duaStatus: row.duaStatus ?? null,
+    autoDeleteAt: row.autoDeleteAt ? row.autoDeleteAt.toISOString() : null,
+  };
+}
+
 async function withJournalSchemaGuard<T>(operation: () => Promise<T>): Promise<T> {
   try {
     return await operation();
@@ -464,9 +514,65 @@ async function listEntriesForUserId(userId: string, now: Date): Promise<JournalE
   return rows.map((row) => toSnapshot(row as JournalEntryRow));
 }
 
-export async function listPrivateJournalEntries(clerkUserId: string, now: Date = new Date()): Promise<JournalEntry[]> {
+async function listEntrySummariesForUserId(userId: string, now: Date): Promise<JournalEntry[]> {
+  await pruneExpiredEntries(userId, now);
+
+  const rows = await db().privateJournalEntry.findMany({
+    where: { userId },
+    orderBy: [{ pinned: "desc" }, { updatedAt: "desc" }],
+    select: {
+      id: true,
+      clientEntryId: true,
+      type: true,
+      title: true,
+      content: true,
+      tags: true,
+      pinned: true,
+      createdAt: true,
+      updatedAt: true,
+      linkedAyahId: true,
+      linkedSurahNumber: true,
+      linkedAyahNumber: true,
+      linkedSurahNameArabic: true,
+      linkedSurahNameTransliteration: true,
+      linkedDuaJson: true,
+      duaStatus: true,
+      autoDeleteAt: true,
+    },
+  });
+
+  return rows.map((row) => toSummarySnapshot(row as JournalEntrySummaryRow));
+}
+
+export async function listPrivateJournalEntries(
+  clerkUserId: string,
+  now: Date = new Date(),
+  input?: { summary?: boolean },
+): Promise<JournalEntry[]> {
   const profile = await requireProfile(clerkUserId);
-  return withJournalSchemaGuard(() => listEntriesForUserId(profile.id, now));
+  return withJournalSchemaGuard(() =>
+    input?.summary ? listEntrySummariesForUserId(profile.id, now) : listEntriesForUserId(profile.id, now),
+  );
+}
+
+export async function getPrivateJournalEntry(clerkUserId: string, entryId: string, now: Date = new Date()): Promise<JournalEntry> {
+  const profile = await requireProfile(clerkUserId);
+
+  return withJournalSchemaGuard(async () => {
+    await pruneExpiredEntries(profile.id, now);
+    const row = await db().privateJournalEntry.findFirst({
+      where: {
+        id: entryId.trim(),
+        userId: profile.id,
+      },
+    });
+
+    if (!row) {
+      throw new JournalStorageError("Journal entry not found.", 404, "NOT_FOUND");
+    }
+
+    return toSnapshot(row as JournalEntryRow);
+  });
 }
 
 export async function savePrivateJournalEntry(

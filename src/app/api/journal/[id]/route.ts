@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   deletePrivateJournalEntry,
+  getPrivateJournalEntry,
   isJournalStorageError,
   JournalStorageError,
 } from "@/hifzer/journal/server";
@@ -14,6 +15,25 @@ function handleError(error: unknown) {
     return NextResponse.json({ error: error.message, code: error.code }, { status: error.status });
   }
   return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+}
+
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
+  const userId = await resolveClerkUserIdForServer(req);
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await context.params;
+  if (!id) {
+    return NextResponse.json({ error: "Journal entry id is required." }, { status: 400 });
+  }
+
+  try {
+    const entry = await getPrivateJournalEntry(userId, id);
+    return NextResponse.json({ ok: true, entry });
+  } catch (error) {
+    return handleError(error);
+  }
 }
 
 export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {

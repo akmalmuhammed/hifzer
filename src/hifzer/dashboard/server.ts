@@ -96,6 +96,82 @@ export type DashboardOverview = {
   }>;
 };
 
+export type DashboardSummary = {
+  generatedAt: string;
+  profile: {
+    timezone: string;
+  };
+  today: {
+    localDate: string;
+    status: TodayStatus;
+    completedSessions: number;
+    openSessions: number;
+  };
+  kpis: {
+    completedSessions7d: number;
+    totalSessionMinutes7d: number;
+    avgSessionMinutes7d: number;
+    retentionScore14d: number;
+  };
+  sessionTrend14d: Array<{
+    date: string;
+    minutes: number;
+    recallEvents: number;
+  }>;
+  reviewHealth: {
+    dueNow: number;
+    dueSoon6h: number;
+    nextDueAt: string | null;
+  };
+  quran: {
+    cursorAyahId: number;
+    cursorRef: string;
+    currentSurahName: string;
+  };
+};
+
+export type DashboardDetails = {
+  generatedAt: string;
+  profile: {
+    mode: SrsMode;
+    timezone: string;
+    dailyMinutes: number;
+    practiceDaysPerWeek: number;
+    reminderTimeLocal: string;
+    onboardingStartLane: OnboardingStartLane | null;
+  };
+  today: {
+    localDate: string;
+    status: TodayStatus;
+    completedSessions: number;
+    openSessions: number;
+  };
+  kpis: {
+    trackedAyahs: number;
+  };
+  gradeMix14d: GradeMix;
+  stageMix14d: StageMix;
+  reviewHealth: {
+    dueNow: number;
+    dueSoon6h: number;
+    nextDueAt: string | null;
+    weakTransitions: number;
+    reviewDebtMinutes: number;
+    debtRatioPct: number;
+    byBand: BandMix;
+  };
+};
+
+export type DashboardQuranDetails = {
+  completionPct: number;
+  currentSurahProgressPct: number;
+  completedKhatmahCount: number;
+  browseRecitedAyahs7d: number;
+  uniqueSurahsRecited14d: number;
+};
+
+export type DashboardStreakDetails = DashboardOverview["streak"];
+
 export const DASHBOARD_OVERVIEW_CACHE_TTL_SECONDS = 600;
 
 function clamp(value: number, min: number, max: number): number {
@@ -151,6 +227,497 @@ function sumBy<T>(rows: T[], pick: (row: T) => number): number {
     total += pick(row);
   }
   return total;
+}
+
+export async function getDashboardSummary(
+  clerkUserId: string,
+  input?: { now?: Date },
+): Promise<DashboardSummary | null> {
+  const profile = await getOrCreateUserProfile(clerkUserId);
+  if (!profile) {
+    return null;
+  }
+
+  const prisma = db();
+  const now = input?.now ?? new Date();
+  const soonWindowEnds = new Date(now.getTime() + (DUE_SOON_WINDOW_HOURS * 60 * 60 * 1000));
+  const todayLocalDate = isoDateInTimeZone(now, profile.timezone);
+  const start14d = addIsoDaysUtc(todayLocalDate, -13);
+  const start7d = addIsoDaysUtc(todayLocalDate, -6);
+
+  const [sessions14d, gradedEvents14d, dueNow, dueSoon6h, nextDue] = await Promise.all([
+    prisma.session.findMany({
+      where: {
+        userId: profile.id,
+        localDate: { gte: start14d, lte: todayLocalDate },
+      },
+      orderBy: { startedAt: "asc" },
+      select: {
+        localDate: true,
+        status: true,
+        startedAt: true,
+        endedAt: true,
+        _count: {
+          select: {
+            attempts: true,
+          },
+        },
+      },
+    }),
+    prisma.reviewEvent.findMany({
+      where: {
+        userId: profile.id,
+        grade: { not: null },
+        stage: { in: WARMUP_STAGES },
+        session: {
+          localDate: {
+            gte: start14d,
+            lte: todayLocalDate,
+          },
+        },
+      },
+      select: {
+        grade: true,
+        session: {
+          select: {
+            localDate: true,
+          },
+        },
+      },
+    }),
+    prisma.ayahReview.count({
+      where: {
+        userId: profile.id,
+        nextReviewAt: { lte: now },
+      },
+    }),
+    prisma.ayahReview.count({
+      where: {
+        userId: profile.id,
+        nextReviewAt: {
+          gt: now,
+          lte: soonWindowEnds,
+        },
+      },
+    }),
+    prisma.ayahReview.findFirst({
+      where: { userId: profile.id },
+      orderBy: { nextReviewAt: "asc" },
+      select: { nextReviewAt: true },
+    }),
+  ]);
+
+  const trendDates = Array.from({ length: 14 }, (_, idx) => addIsoDaysUtc(start14d, idx));
+  const trendIndex = new Map<string, { date: string; minutes: number; recallEvents: number }>();
+  for (const date of trendDates) {
+    trendIndex.set(date, {
+      date,
+      minutes: 0,
+      recallEvents: 0,
+    });
+  }
+
+  let completedToday = 0;
+  let openToday = 0;
+  for (const session of sessions14d) {
+    if (session.localDate === todayLocalDate) {
+      if (session.status === "OPEN") {
+        openToday += 1;
+      }
+      if (session.status === "COMPLETED" && session._count.attempts > 0) {
+        completedToday += 1;
+      }
+    }
+
+    if (session.status !== "COMPLETED" || session._count.attempts <= 0) {
+      continue;
+    }
+    const bucket = trendIndex.get(session.localDate);
+    if (!bucket) {
+      continue;
+    }
+    bucket.minutes += sessionDurationMinutes(session.startedAt, session.endedAt);
+  }
+
+  let weightedGradeScore = 0;
+  let gradedEventCount = 0;
+  for (const event of gradedEvents14d) {
+    if (!event.grade) {
+      continue;
+    }
+    weightedGradeScore += gradeValue(event.grade);
+    gradedEventCount += 1;
+    const bucket = trendIndex.get(event.session.localDate);
+    if (!bucket) {
+      continue;
+    }
+    bucket.recallEvents += 1;
+  }
+
+  const sessionTrend14d = trendDates.map((date) => {
+    const bucket = trendIndex.get(date);
+    return {
+      date,
+      minutes: Math.round(bucket?.minutes ?? 0),
+      recallEvents: bucket?.recallEvents ?? 0,
+    };
+  });
+
+  const latestWindow7d = sessionTrend14d.filter((day) => day.date >= start7d);
+  const completedSessions7d = sessions14d.filter(
+    (session) =>
+      session.status === "COMPLETED" &&
+      session._count.attempts > 0 &&
+      session.localDate >= start7d,
+  ).length;
+  const totalSessionMinutes7d = sumBy(latestWindow7d, (day) => day.minutes);
+  const avgSessionMinutes7d = completedSessions7d > 0
+    ? Number((totalSessionMinutes7d / completedSessions7d).toFixed(1))
+    : 0;
+  const retentionScore14d = gradedEventCount > 0
+    ? Math.round((weightedGradeScore / (gradedEventCount * 3)) * 100)
+    : 0;
+
+  const quranCursorAyahId = clamp(profile.quranCursorAyahId, 1, TOTAL_AYAHS);
+  const cursorAyah = getAyahById(quranCursorAyahId) ?? getAyahById(1);
+  const cursorRef = cursorAyah ? `${cursorAyah.surahNumber}:${cursorAyah.ayahNumber}` : "1:1";
+  const currentSurah = getSurahInfo(cursorAyah?.surahNumber ?? profile.quranActiveSurahNumber);
+
+  const todayStatus: TodayStatus = completedToday > 0 ? "completed" : (openToday > 0 ? "in_progress" : "idle");
+
+  return {
+    generatedAt: now.toISOString(),
+    profile: {
+      timezone: profile.timezone,
+    },
+    today: {
+      localDate: todayLocalDate,
+      status: todayStatus,
+      completedSessions: completedToday,
+      openSessions: openToday,
+    },
+    kpis: {
+      completedSessions7d,
+      totalSessionMinutes7d,
+      avgSessionMinutes7d,
+      retentionScore14d,
+    },
+    sessionTrend14d,
+    reviewHealth: {
+      dueNow,
+      dueSoon6h,
+      nextDueAt: nextDue?.nextReviewAt ? nextDue.nextReviewAt.toISOString() : null,
+    },
+    quran: {
+      cursorAyahId: quranCursorAyahId,
+      cursorRef,
+      currentSurahName: currentSurah?.nameTransliteration ?? `Surah ${cursorAyah?.surahNumber ?? 1}`,
+    },
+  };
+}
+
+export async function getDashboardDetails(
+  clerkUserId: string,
+  input?: { now?: Date },
+): Promise<DashboardDetails | null> {
+  const profile = await getOrCreateUserProfile(clerkUserId);
+  if (!profile) {
+    return null;
+  }
+
+  const prisma = db();
+  const now = input?.now ?? new Date();
+  const soonWindowEnds = new Date(now.getTime() + (DUE_SOON_WINDOW_HOURS * 60 * 60 * 1000));
+  const todayLocalDate = isoDateInTimeZone(now, profile.timezone);
+  const start14d = addIsoDaysUtc(todayLocalDate, -13);
+
+  const [
+    sessions14d,
+    gradedEvents14d,
+    stageAgg14d,
+    dueNow,
+    dueSoon6h,
+    nextDue,
+    trackedAyahs,
+    bandsAgg,
+    weakTransitions,
+  ] = await Promise.all([
+    prisma.session.findMany({
+      where: {
+        userId: profile.id,
+        localDate: { gte: start14d, lte: todayLocalDate },
+      },
+      orderBy: { startedAt: "asc" },
+      select: {
+        localDate: true,
+        status: true,
+        _count: {
+          select: {
+            attempts: true,
+          },
+        },
+      },
+    }),
+    prisma.reviewEvent.findMany({
+      where: {
+        userId: profile.id,
+        grade: { not: null },
+        stage: { in: WARMUP_STAGES },
+        session: {
+          localDate: {
+            gte: start14d,
+            lte: todayLocalDate,
+          },
+        },
+      },
+      select: {
+        grade: true,
+      },
+    }),
+    prisma.reviewEvent.groupBy({
+      by: ["stage"],
+      where: {
+        userId: profile.id,
+        NOT: {
+          stage: "REVIEW",
+          phase: "STANDARD",
+          grade: null,
+          durationSec: 1,
+          fromAyahId: { not: null },
+          toAyahId: { not: null },
+        },
+        session: {
+          localDate: {
+            gte: start14d,
+            lte: todayLocalDate,
+          },
+        },
+      },
+      _count: { _all: true },
+    }),
+    prisma.ayahReview.count({
+      where: {
+        userId: profile.id,
+        nextReviewAt: { lte: now },
+      },
+    }),
+    prisma.ayahReview.count({
+      where: {
+        userId: profile.id,
+        nextReviewAt: {
+          gt: now,
+          lte: soonWindowEnds,
+        },
+      },
+    }),
+    prisma.ayahReview.findFirst({
+      where: { userId: profile.id },
+      orderBy: { nextReviewAt: "asc" },
+      select: { nextReviewAt: true },
+    }),
+    prisma.ayahReview.count({
+      where: { userId: profile.id },
+    }),
+    prisma.ayahReview.groupBy({
+      by: ["band"],
+      where: { userId: profile.id },
+      _count: { _all: true },
+    }),
+    prisma.weakTransition.count({
+      where: {
+        userId: profile.id,
+        resolvedAt: null,
+      },
+    }),
+  ]);
+
+  let completedToday = 0;
+  let openToday = 0;
+  for (const session of sessions14d) {
+    if (session.localDate !== todayLocalDate) {
+      continue;
+    }
+    if (session.status === "OPEN") {
+      openToday += 1;
+    }
+    if (session.status === "COMPLETED" && session._count.attempts > 0) {
+      completedToday += 1;
+    }
+  }
+
+  const gradeMix14d = emptyGradeMix();
+  for (const event of gradedEvents14d) {
+    if (event.grade) {
+      gradeMix14d[event.grade] += 1;
+    }
+  }
+
+  const stageMix14d = emptyStageMix();
+  for (const row of stageAgg14d) {
+    stageMix14d[row.stage] = row._count._all;
+  }
+
+  const byBand = emptyBandMix();
+  for (const row of bandsAgg) {
+    byBand[row.band] = row._count._all;
+  }
+
+  const reviewDebtMinutes = computeReviewDebtMinutes({
+    dueReviewCount: dueNow,
+    dueRepairCount: weakTransitions,
+    avgReviewSeconds: profile.avgReviewSeconds,
+    avgLinkSeconds: profile.avgLinkSeconds,
+  });
+  const debtRatioPct = Number(computeDebtRatioPct(reviewDebtMinutes, profile.dailyMinutes).toFixed(1));
+  const todayStatus: TodayStatus = completedToday > 0 ? "completed" : (openToday > 0 ? "in_progress" : "idle");
+
+  return {
+    generatedAt: now.toISOString(),
+    profile: {
+      mode: profile.mode,
+      timezone: profile.timezone,
+      dailyMinutes: profile.dailyMinutes,
+      practiceDaysPerWeek: profile.practiceDays.length,
+      reminderTimeLocal: profile.reminderTimeLocal,
+      onboardingStartLane: normalizeOnboardingStartLane(profile.onboardingStartLane),
+    },
+    today: {
+      localDate: todayLocalDate,
+      status: todayStatus,
+      completedSessions: completedToday,
+      openSessions: openToday,
+    },
+    kpis: {
+      trackedAyahs,
+    },
+    gradeMix14d,
+    stageMix14d,
+    reviewHealth: {
+      dueNow,
+      dueSoon6h,
+      nextDueAt: nextDue?.nextReviewAt ? nextDue.nextReviewAt.toISOString() : null,
+      weakTransitions,
+      reviewDebtMinutes: Number(reviewDebtMinutes.toFixed(1)),
+      debtRatioPct,
+      byBand,
+    },
+  };
+}
+
+export async function getDashboardStreakDetails(
+  clerkUserId: string,
+  input?: { now?: Date },
+): Promise<DashboardStreakDetails | null> {
+  const streak = await getUserStreakSummary(clerkUserId, input);
+  return {
+    currentStreakDays: streak.streak.currentStreakDays,
+    bestStreakDays: streak.streak.bestStreakDays,
+    graceInUseToday: streak.streak.graceInUseToday,
+    todayQualifiedAyahs: streak.streak.todayQualifiedAyahs,
+    lastQualifiedDate: streak.streak.lastQualifiedDate,
+  };
+}
+
+export async function getDashboardQuranDetails(
+  clerkUserId: string,
+  input?: { now?: Date },
+): Promise<DashboardQuranDetails | null> {
+  const profile = await getOrCreateUserProfile(clerkUserId);
+  if (!profile) {
+    return null;
+  }
+
+  const now = input?.now ?? new Date();
+  const todayLocalDate = isoDateInTimeZone(now, profile.timezone);
+  const start14d = addIsoDaysUtc(todayLocalDate, -13);
+  const start7d = addIsoDaysUtc(todayLocalDate, -6);
+
+  const [quranReadProgress, browseEvents14d] = await Promise.all([
+    getQuranReadProgress(profile.id),
+    listQuranBrowseEvents({
+      profileId: profile.id,
+      sources: ["AUDIO_PLAY", "READER_VIEW"],
+      startLocalDate: start14d,
+      endLocalDate: todayLocalDate,
+    }),
+  ]);
+
+  const browseByDate = ayahIdsByDate(browseEvents14d, { sources: ["AUDIO_PLAY", "READER_VIEW"] });
+  const uniqueBrowseSurahsRecited14d = new Set<number>(browseEvents14d.map((event) => event.surahNumber));
+  const quranCursorAyahId = clamp(quranReadProgress.lastReadAyahId ?? profile.quranCursorAyahId, 1, TOTAL_AYAHS);
+  const cursorAyah = getAyahById(quranCursorAyahId) ?? getAyahById(1);
+  const currentSurah = getSurahInfo(cursorAyah?.surahNumber ?? profile.quranActiveSurahNumber);
+  const currentSurahProgressPct = currentSurah && cursorAyah
+    ? Math.round((cursorAyah.ayahNumber / Math.max(1, currentSurah.ayahCount)) * 100)
+    : 0;
+
+  const browseRecitedAyahs7dSet = new Set<number>();
+  for (let idx = 0; idx < 7; idx += 1) {
+    const date = addIsoDaysUtc(start7d, idx);
+    for (const ayahId of browseByDate.get(date) ?? []) {
+      browseRecitedAyahs7dSet.add(ayahId);
+    }
+  }
+
+  return {
+    completionPct: quranReadProgress.completionPct,
+    currentSurahProgressPct,
+    completedKhatmahCount: quranReadProgress.completionKhatmahCount,
+    browseRecitedAyahs7d: browseRecitedAyahs7dSet.size,
+    uniqueSurahsRecited14d: uniqueBrowseSurahsRecited14d.size,
+  };
+}
+
+export async function getDashboardActivity(
+  clerkUserId: string,
+  input?: { now?: Date },
+): Promise<DashboardOverview["activityByDate"] | null> {
+  const profile = await getOrCreateUserProfile(clerkUserId);
+  if (!profile) {
+    return null;
+  }
+
+  const now = input?.now ?? new Date();
+  const todayLocalDate = isoDateInTimeZone(now, profile.timezone);
+  const start365d = addIsoDaysUtc(todayLocalDate, -364);
+
+  const sessions365d = await db().session.findMany({
+    where: {
+      userId: profile.id,
+      localDate: { gte: start365d, lte: todayLocalDate },
+    },
+    select: {
+      localDate: true,
+      status: true,
+      _count: {
+        select: {
+          attempts: true,
+          reviewEvents: true,
+        },
+      },
+    },
+  });
+
+  const activityByDateMap = new Map<string, number>();
+  for (const session of sessions365d) {
+    const attemptsScore = session._count.attempts > 0
+      ? Math.max(1, Math.round(session._count.attempts * 0.55))
+      : 0;
+    const eventsScore = session._count.attempts > 0 && session._count.reviewEvents > 0
+      ? Math.max(1, Math.min(8, Math.round(session._count.reviewEvents / 4)))
+      : 0;
+    const openSessionScore = session.status === "OPEN" ? 1 : 0;
+    const value = attemptsScore + eventsScore + openSessionScore;
+    if (value < 1) {
+      continue;
+    }
+    const current = activityByDateMap.get(session.localDate) ?? 0;
+    activityByDateMap.set(session.localDate, current + value);
+  }
+
+  return Array.from(activityByDateMap.entries())
+    .map(([date, value]) => ({ date, value }))
+    .sort((a, b) => a.date.localeCompare(b.date));
 }
 
 export async function getDashboardOverview(clerkUserId: string, input?: { now?: Date }): Promise<DashboardOverview | null> {
@@ -522,6 +1089,61 @@ export function getCachedDashboardOverview(clerkUserId: string) {
     {
       revalidate: DASHBOARD_OVERVIEW_CACHE_TTL_SECONDS,
       tags: [`dashboard-overview:${clerkUserId}`],
+    },
+  )();
+}
+
+export function getCachedDashboardSummary(clerkUserId: string) {
+  return unstable_cache(
+    async () => getDashboardSummary(clerkUserId),
+    [`dashboard-summary:${clerkUserId}`],
+    {
+      revalidate: DASHBOARD_OVERVIEW_CACHE_TTL_SECONDS,
+      tags: [`dashboard-summary:${clerkUserId}`],
+    },
+  )();
+}
+
+export function getCachedDashboardDetails(clerkUserId: string) {
+  return unstable_cache(
+    async () => getDashboardDetails(clerkUserId),
+    [`dashboard-details:${clerkUserId}`],
+    {
+      revalidate: DASHBOARD_OVERVIEW_CACHE_TTL_SECONDS,
+      tags: [`dashboard-details:${clerkUserId}`],
+    },
+  )();
+}
+
+export function getCachedDashboardStreakDetails(clerkUserId: string) {
+  return unstable_cache(
+    async () => getDashboardStreakDetails(clerkUserId),
+    [`dashboard-streak:${clerkUserId}`],
+    {
+      revalidate: DASHBOARD_OVERVIEW_CACHE_TTL_SECONDS,
+      tags: [`dashboard-streak:${clerkUserId}`],
+    },
+  )();
+}
+
+export function getCachedDashboardQuranDetails(clerkUserId: string) {
+  return unstable_cache(
+    async () => getDashboardQuranDetails(clerkUserId),
+    [`dashboard-quran:${clerkUserId}`],
+    {
+      revalidate: DASHBOARD_OVERVIEW_CACHE_TTL_SECONDS,
+      tags: [`dashboard-quran:${clerkUserId}`],
+    },
+  )();
+}
+
+export function getCachedDashboardActivity(clerkUserId: string) {
+  return unstable_cache(
+    async () => getDashboardActivity(clerkUserId),
+    [`dashboard-activity:${clerkUserId}`],
+    {
+      revalidate: DASHBOARD_OVERVIEW_CACHE_TTL_SECONDS,
+      tags: [`dashboard-activity:${clerkUserId}`],
     },
   )();
 }

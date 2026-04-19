@@ -124,15 +124,118 @@ export type DashboardOverview = {
   }>;
 };
 
-type DashboardPayload = {
-  ok: true;
-  overview: DashboardOverview;
+type DashboardSummary = {
+  generatedAt: string;
+  profile: {
+    timezone: string;
+  };
+  today: {
+    localDate: string;
+    status: "idle" | "in_progress" | "completed";
+    completedSessions: number;
+    openSessions: number;
+  };
+  kpis: {
+    completedSessions7d: number;
+    totalSessionMinutes7d: number;
+    avgSessionMinutes7d: number;
+    retentionScore14d: number;
+  };
+  sessionTrend14d: Array<{
+    date: string;
+    minutes: number;
+    recallEvents: number;
+  }>;
+  reviewHealth: {
+    dueNow: number;
+    dueSoon6h: number;
+    nextDueAt: string | null;
+  };
+  quran: {
+    cursorAyahId: number;
+    cursorRef: string;
+    currentSurahName: string;
+  };
 };
 
-const DASHBOARD_CACHE_KEY = "hifzer.dashboard.overview.v1";
+type DashboardDetails = {
+  generatedAt: string;
+  profile: {
+    mode: "NORMAL" | "CONSOLIDATION" | "CATCH_UP";
+    timezone: string;
+    dailyMinutes: number;
+    practiceDaysPerWeek: number;
+    reminderTimeLocal: string;
+    onboardingStartLane: OnboardingStartLane | null;
+  };
+  today: {
+    localDate: string;
+    status: "idle" | "in_progress" | "completed";
+    completedSessions: number;
+    openSessions: number;
+  };
+  kpis: {
+    trackedAyahs: number;
+  };
+  gradeMix14d: Record<"AGAIN" | "HARD" | "GOOD" | "EASY", number>;
+  stageMix14d: Record<"WARMUP" | "REVIEW" | "NEW" | "LINK" | "WEEKLY_TEST" | "LINK_REPAIR", number>;
+  reviewHealth: {
+    dueNow: number;
+    dueSoon6h: number;
+    nextDueAt: string | null;
+    weakTransitions: number;
+    reviewDebtMinutes: number;
+    debtRatioPct: number;
+    byBand: Record<"ENCODING" | "SABQI" | "MANZIL" | "MASTERED", number>;
+  };
+};
+
+type DashboardDetailsPayload = {
+  ok: true;
+  details: DashboardDetails;
+};
+
+type DashboardSummaryPayload = {
+  ok: true;
+  summary: DashboardSummary;
+};
+
+type DashboardStreak = DashboardOverview["streak"];
+
+type DashboardStreakPayload = {
+  ok: true;
+  streak: DashboardStreak;
+};
+
+type DashboardQuranDetails = {
+  completionPct: number;
+  currentSurahProgressPct: number;
+  completedKhatmahCount: number;
+  browseRecitedAyahs7d: number;
+  uniqueSurahsRecited14d: number;
+};
+
+type DashboardQuranPayload = {
+  ok: true;
+  quran: DashboardQuranDetails;
+};
+
+type DashboardActivityPayload = {
+  ok: true;
+  activity: Array<{
+    date: string;
+    value: number;
+  }>;
+};
+
+const DASHBOARD_SUMMARY_CACHE_KEY = "hifzer.dashboard.summary.v1";
+const DASHBOARD_DETAILS_CACHE_KEY = "hifzer.dashboard.details.v1";
+const DASHBOARD_STREAK_CACHE_KEY = "hifzer.dashboard.streak.v1";
+const DASHBOARD_QURAN_CACHE_KEY = "hifzer.dashboard.quran.v1";
+const DASHBOARD_ACTIVITY_CACHE_KEY = "hifzer.dashboard.activity.v1";
 const DASHBOARD_CACHE_TTL_MS = 10 * 60 * 1000;
 
-function statusPill(status: DashboardOverview["today"]["status"]): { tone: "neutral" | "accent" | "success"; label: string } {
+function statusPill(status: DashboardSummary["today"]["status"]): { tone: "neutral" | "accent" | "success"; label: string } {
   if (status === "completed") {
     return { tone: "success", label: "Today completed" };
   }
@@ -368,72 +471,353 @@ function SectionHeader(props: {
   );
 }
 
-function readCachedDashboardOverview() {
-  return readSessionCache<DashboardOverview>(DASHBOARD_CACHE_KEY, DASHBOARD_CACHE_TTL_MS);
+function deriveSummaryFromOverview(overview: DashboardOverview): DashboardSummary {
+  return {
+    generatedAt: overview.generatedAt,
+    profile: {
+      timezone: overview.profile.timezone,
+    },
+    today: overview.today,
+    kpis: {
+      completedSessions7d: overview.kpis.completedSessions7d,
+      totalSessionMinutes7d: overview.kpis.totalSessionMinutes7d,
+      avgSessionMinutes7d: overview.kpis.avgSessionMinutes7d,
+      retentionScore14d: overview.kpis.retentionScore14d,
+    },
+    sessionTrend14d: overview.sessionTrend14d.map((point) => ({
+      date: point.date,
+      minutes: point.minutes,
+      recallEvents: point.recallEvents,
+    })),
+    reviewHealth: {
+      dueNow: overview.reviewHealth.dueNow,
+      dueSoon6h: overview.reviewHealth.dueSoon6h,
+      nextDueAt: overview.reviewHealth.nextDueAt,
+    },
+    quran: {
+      cursorAyahId: overview.quran.cursorAyahId,
+      cursorRef: overview.quran.cursorRef,
+      currentSurahName: overview.quran.currentSurahName,
+    },
+  };
+}
+
+function readCachedDashboardSummary() {
+  return readSessionCache<DashboardSummary>(DASHBOARD_SUMMARY_CACHE_KEY, DASHBOARD_CACHE_TTL_MS);
+}
+
+function readCachedDashboardDetails() {
+  return readSessionCache<DashboardDetails>(DASHBOARD_DETAILS_CACHE_KEY, DASHBOARD_CACHE_TTL_MS);
+}
+
+function readCachedDashboardStreak() {
+  return readSessionCache<DashboardStreak>(DASHBOARD_STREAK_CACHE_KEY, DASHBOARD_CACHE_TTL_MS);
+}
+
+function readCachedDashboardQuran() {
+  return readSessionCache<DashboardQuranDetails>(DASHBOARD_QURAN_CACHE_KEY, DASHBOARD_CACHE_TTL_MS);
+}
+
+function readCachedDashboardActivity() {
+  return readSessionCache<Array<{ date: string; value: number }>>(DASHBOARD_ACTIVITY_CACHE_KEY, DASHBOARD_CACHE_TTL_MS);
 }
 
 export function DashboardClient(props: { initialOverview?: DashboardOverview | null }) {
-  const [loading, setLoading] = useState(() => !props.initialOverview && !readCachedDashboardOverview());
+  const initialDetails = props.initialOverview
+    ? {
+        generatedAt: props.initialOverview.generatedAt,
+        profile: props.initialOverview.profile,
+        today: props.initialOverview.today,
+        kpis: {
+          trackedAyahs: props.initialOverview.kpis.trackedAyahs,
+        },
+        gradeMix14d: props.initialOverview.gradeMix14d,
+        stageMix14d: props.initialOverview.stageMix14d,
+        reviewHealth: props.initialOverview.reviewHealth,
+      }
+    : readCachedDashboardDetails();
+  const initialStreak = props.initialOverview?.streak ?? readCachedDashboardStreak();
+  const initialQuran = props.initialOverview
+    ? {
+        completionPct: props.initialOverview.kpis.quranCompletionPct,
+        currentSurahProgressPct: props.initialOverview.quran.currentSurahProgressPct,
+        completedKhatmahCount: props.initialOverview.quran.completedKhatmahCount,
+        browseRecitedAyahs7d: props.initialOverview.quran.browseRecitedAyahs7d,
+        uniqueSurahsRecited14d: props.initialOverview.quran.uniqueSurahsRecited14d,
+      }
+    : readCachedDashboardQuran();
+  const initialActivity = props.initialOverview?.activityByDate ?? readCachedDashboardActivity();
+  const initialSummary = props.initialOverview
+    ? deriveSummaryFromOverview(props.initialOverview)
+    : readCachedDashboardSummary();
+
+  const [loading, setLoading] = useState(() => !initialSummary);
+  const [loadingDetails, setLoadingDetails] = useState(() => !initialDetails);
+  const [loadingStreak, setLoadingStreak] = useState(() => !initialStreak);
+  const [loadingQuran, setLoadingQuran] = useState(() => !initialQuran);
+  const [loadingActivity, setLoadingActivity] = useState(() => !initialActivity);
   const [error, setError] = useState<string | null>(null);
-  const [overview, setOverview] = useState<DashboardOverview | null>(() => props.initialOverview ?? readCachedDashboardOverview());
+  const [detailsError, setDetailsError] = useState<string | null>(null);
+  const [streakError, setStreakError] = useState<string | null>(null);
+  const [quranError, setQuranError] = useState<string | null>(null);
+  const [activityError, setActivityError] = useState<string | null>(null);
+  const [summary, setSummary] = useState<DashboardSummary | null>(initialSummary);
+  const [details, setDetails] = useState<DashboardDetails | null>(initialDetails);
+  const [streak, setStreak] = useState<DashboardStreak | null>(initialStreak);
+  const [quran, setQuran] = useState<DashboardQuranDetails | null>(initialQuran);
+  const [activity, setActivity] = useState<Array<{ date: string; value: number }> | null>(initialActivity);
   const [monthCursor, setMonthCursor] = useState(0);
 
-  async function load() {
-    if (!overview) {
+  async function loadSummary(force = false) {
+    if (!summary || force) {
       setLoading(true);
     }
     setError(null);
     try {
-      const res = await fetch("/api/dashboard/overview", { cache: "no-store" });
-      const payload = (await res.json().catch(() => null)) as (DashboardPayload & { error?: string }) | null;
+      const res = await fetch("/api/dashboard/overview?view=summary", { cache: "no-store" });
+      const payload = (await res.json().catch(() => null)) as (DashboardSummaryPayload & { error?: string }) | null;
       if (!res.ok) {
         throw new Error(payload?.error || "Failed to load dashboard.");
       }
-      if (!payload?.overview) {
-        throw new Error("Dashboard data was empty.");
+      if (!payload?.summary) {
+        throw new Error("Dashboard summary was empty.");
       }
-      setOverview(payload.overview);
-      writeSessionCache(DASHBOARD_CACHE_KEY, payload.overview);
+      setSummary(payload.summary);
+      writeSessionCache(DASHBOARD_SUMMARY_CACHE_KEY, payload.summary);
+      return payload.summary;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load dashboard.");
+      return null;
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => {
-    if (!props.initialOverview) {
-      void load();
+  async function loadDetails(force = false) {
+    if (!summary) {
+      return null;
     }
-    // `load` intentionally stays local so this effect only keys off server-provided hydration.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.initialOverview]);
+    if (!details || force) {
+      setLoadingDetails(true);
+    }
+    setDetailsError(null);
+    try {
+      const res = await fetch("/api/dashboard/overview?view=details", { cache: "no-store" });
+      const payload = (await res.json().catch(() => null)) as (DashboardDetailsPayload & { error?: string }) | null;
+      if (!res.ok) {
+        throw new Error(payload?.error || "Failed to load dashboard details.");
+      }
+      if (!payload?.details) {
+        throw new Error("Dashboard details were empty.");
+      }
+      setDetails(payload.details);
+      writeSessionCache(DASHBOARD_DETAILS_CACHE_KEY, payload.details);
+      return payload.details;
+    } catch (err) {
+      setDetailsError(err instanceof Error ? err.message : "Failed to load dashboard details.");
+      return null;
+    } finally {
+      setLoadingDetails(false);
+    }
+  }
+
+  async function loadStreak(force = false) {
+    if (!summary) {
+      return null;
+    }
+    if (!streak || force) {
+      setLoadingStreak(true);
+    }
+    setStreakError(null);
+    try {
+      const res = await fetch("/api/dashboard/overview?view=streak", { cache: "no-store" });
+      const payload = (await res.json().catch(() => null)) as (DashboardStreakPayload & { error?: string }) | null;
+      if (!res.ok) {
+        throw new Error(payload?.error || "Failed to load dashboard streak.");
+      }
+      if (!payload?.streak) {
+        throw new Error("Dashboard streak was empty.");
+      }
+      setStreak(payload.streak);
+      writeSessionCache(DASHBOARD_STREAK_CACHE_KEY, payload.streak);
+      return payload.streak;
+    } catch (err) {
+      setStreakError(err instanceof Error ? err.message : "Failed to load dashboard streak.");
+      return null;
+    } finally {
+      setLoadingStreak(false);
+    }
+  }
+
+  async function loadQuran(force = false) {
+    if (!summary) {
+      return null;
+    }
+    if (!quran || force) {
+      setLoadingQuran(true);
+    }
+    setQuranError(null);
+    try {
+      const res = await fetch("/api/dashboard/overview?view=quran", { cache: "no-store" });
+      const payload = (await res.json().catch(() => null)) as (DashboardQuranPayload & { error?: string }) | null;
+      if (!res.ok) {
+        throw new Error(payload?.error || "Failed to load Quran progress.");
+      }
+      if (!payload?.quran) {
+        throw new Error("Quran progress was empty.");
+      }
+      setQuran(payload.quran);
+      writeSessionCache(DASHBOARD_QURAN_CACHE_KEY, payload.quran);
+      return payload.quran;
+    } catch (err) {
+      setQuranError(err instanceof Error ? err.message : "Failed to load Quran progress.");
+      return null;
+    } finally {
+      setLoadingQuran(false);
+    }
+  }
+
+  async function loadActivity(force = false) {
+    if (!summary) {
+      return null;
+    }
+    if (!activity || force) {
+      setLoadingActivity(true);
+    }
+    setActivityError(null);
+    try {
+      const res = await fetch("/api/dashboard/overview?view=activity", { cache: "no-store" });
+      const payload = (await res.json().catch(() => null)) as (DashboardActivityPayload & { error?: string }) | null;
+      if (!res.ok) {
+        throw new Error(payload?.error || "Failed to load dashboard activity.");
+      }
+      if (!payload?.activity) {
+        throw new Error("Dashboard activity was empty.");
+      }
+      setActivity(payload.activity);
+      writeSessionCache(DASHBOARD_ACTIVITY_CACHE_KEY, payload.activity);
+      return payload.activity;
+    } catch (err) {
+      setActivityError(err instanceof Error ? err.message : "Failed to load dashboard activity.");
+      return null;
+    } finally {
+      setLoadingActivity(false);
+    }
+  }
+
+  async function refreshDashboard() {
+    const nextSummary = await loadSummary(true);
+    if (nextSummary) {
+      void loadDetails(true);
+      void loadStreak(true);
+      void loadQuran(true);
+      void loadActivity(true);
+    }
+  }
 
   useEffect(() => {
-    if (!props.initialOverview) {
+    if (props.initialOverview) {
+      const nextSummary = deriveSummaryFromOverview(props.initialOverview);
+      writeSessionCache(DASHBOARD_SUMMARY_CACHE_KEY, nextSummary);
+      writeSessionCache(DASHBOARD_DETAILS_CACHE_KEY, {
+        generatedAt: props.initialOverview.generatedAt,
+        profile: props.initialOverview.profile,
+        today: props.initialOverview.today,
+        kpis: { trackedAyahs: props.initialOverview.kpis.trackedAyahs },
+        gradeMix14d: props.initialOverview.gradeMix14d,
+        stageMix14d: props.initialOverview.stageMix14d,
+        reviewHealth: props.initialOverview.reviewHealth,
+      });
+      writeSessionCache(DASHBOARD_STREAK_CACHE_KEY, props.initialOverview.streak);
+      writeSessionCache(DASHBOARD_QURAN_CACHE_KEY, {
+        completionPct: props.initialOverview.kpis.quranCompletionPct,
+        currentSurahProgressPct: props.initialOverview.quran.currentSurahProgressPct,
+        completedKhatmahCount: props.initialOverview.quran.completedKhatmahCount,
+        browseRecitedAyahs7d: props.initialOverview.quran.browseRecitedAyahs7d,
+        uniqueSurahsRecited14d: props.initialOverview.quran.uniqueSurahsRecited14d,
+      });
+      writeSessionCache(DASHBOARD_ACTIVITY_CACHE_KEY, props.initialOverview.activityByDate);
       return;
     }
-    writeSessionCache(DASHBOARD_CACHE_KEY, props.initialOverview);
-  }, [props.initialOverview]);
+    if (!summary) {
+      void loadSummary();
+    }
+    // Intentionally scoped to hydration inputs; the loader manages its own state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.initialOverview, summary]);
+
+  useEffect(() => {
+    if (!summary || details) {
+      return;
+    }
+    void loadDetails();
+    // Intentionally waits until the lightweight summary is present.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [summary, details]);
+
+  useEffect(() => {
+    if (!summary || streak) {
+      return;
+    }
+    void loadStreak();
+    // Intentionally waits until the lightweight summary is present.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [summary, streak]);
+
+  useEffect(() => {
+    if (!summary || quran) {
+      return;
+    }
+    void loadQuran();
+    // Intentionally deferred until the summary is visible.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [summary, quran]);
+
+  useEffect(() => {
+    if (!details || activity) {
+      return;
+    }
+    const idleHandle =
+      typeof window !== "undefined" && typeof window.requestIdleCallback === "function"
+        ? window.requestIdleCallback(() => {
+            void loadActivity();
+          }, { timeout: 1000 })
+        : null;
+
+    if (idleHandle != null) {
+      return () => {
+        window.cancelIdleCallback?.(idleHandle);
+      };
+    }
+
+    const timeoutId = globalThis.setTimeout(() => {
+      void loadActivity();
+    }, 180);
+    return () => {
+      globalThis.clearTimeout(timeoutId);
+    };
+    // Intentionally staged behind the core detail payload.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [details, activity]);
 
   const trendMinutes = useMemo(
-    () => overview?.sessionTrend14d.map((point) => ({ t: `${point.date}T00:00:00.000Z`, v: point.minutes })) ?? [],
-    [overview],
+    () => summary?.sessionTrend14d.map((point) => ({ t: `${point.date}T00:00:00.000Z`, v: point.minutes })) ?? [],
+    [summary],
   );
   const trendRecall = useMemo(
-    () => overview?.sessionTrend14d.map((point) => point.recallEvents) ?? [],
-    [overview],
+    () => summary?.sessionTrend14d.map((point) => point.recallEvents) ?? [],
+    [summary],
   );
   const activityByDate = useMemo(() => {
-    if (!overview) {
+    if (!activity) {
       return new Map<string, number>();
     }
-    return new Map(overview.activityByDate.map((entry) => [entry.date, entry.value]));
-  }, [overview]);
+    return new Map(activity.map((entry) => [entry.date, entry.value]));
+  }, [activity]);
 
   const baseMonthStart = useMemo(
-    () => monthStartFromIso(overview?.today.localDate ?? new Date().toISOString().slice(0, 10)),
-    [overview],
+    () => monthStartFromIso((details ?? summary)?.today.localDate ?? new Date().toISOString().slice(0, 10)),
+    [details, summary],
   );
 
   const selectedMonthStart = useMemo(
@@ -447,7 +831,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
   const canGoNextMonth = selectedMonthSerial < (currentMonthSerial + 3);
 
   const calendarCells = useMemo(() => {
-    if (!overview) {
+    if (!details) {
       return [] as Array<{ key: string; blank: boolean; day: number; date: string; value: number; isFuture: boolean; isToday: boolean }>;
     }
     const year = selectedMonthStart.getUTCFullYear();
@@ -476,13 +860,13 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
         day,
         date,
         value: activityByDate.get(date) ?? 0,
-        isFuture: date > overview.today.localDate,
-        isToday: date === overview.today.localDate,
+        isFuture: date > details.today.localDate,
+        isToday: date === details.today.localDate,
       });
     }
 
     return cells;
-  }, [activityByDate, overview, selectedMonthStart]);
+  }, [activityByDate, details, selectedMonthStart]);
 
   const calendarMax = useMemo(
     () => Math.max(1, ...calendarCells.filter((cell) => !cell.blank).map((cell) => cell.value)),
@@ -490,28 +874,28 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
   );
 
   const recitationQuality = useMemo(() => {
-    if (!overview) {
+    if (!details) {
       return { qualityPct: 0, stabilityPct: 0, gradeArc: "conic-gradient(#e2e8f0 0 100%)", stageArc: "conic-gradient(#e2e8f0 0 100%)" };
     }
-    const totalGrades = overview.gradeMix14d.AGAIN + overview.gradeMix14d.HARD + overview.gradeMix14d.GOOD + overview.gradeMix14d.EASY;
+    const totalGrades = details.gradeMix14d.AGAIN + details.gradeMix14d.HARD + details.gradeMix14d.GOOD + details.gradeMix14d.EASY;
     const qualityPct = totalGrades > 0
-      ? Math.round(((overview.gradeMix14d.GOOD + overview.gradeMix14d.EASY) / totalGrades) * 100)
+      ? Math.round(((details.gradeMix14d.GOOD + details.gradeMix14d.EASY) / totalGrades) * 100)
       : 0;
     const stabilityPct = totalGrades > 0
-      ? Math.round((overview.gradeMix14d.EASY / totalGrades) * 100)
+      ? Math.round((details.gradeMix14d.EASY / totalGrades) * 100)
       : 0;
 
-    const againPct = totalGrades > 0 ? (overview.gradeMix14d.AGAIN / totalGrades) : 0;
-    const hardPct = totalGrades > 0 ? (overview.gradeMix14d.HARD / totalGrades) : 0;
-    const goodPct = totalGrades > 0 ? (overview.gradeMix14d.GOOD / totalGrades) : 0;
-    const easyPct = totalGrades > 0 ? (overview.gradeMix14d.EASY / totalGrades) : 0;
+    const againPct = totalGrades > 0 ? (details.gradeMix14d.AGAIN / totalGrades) : 0;
+    const hardPct = totalGrades > 0 ? (details.gradeMix14d.HARD / totalGrades) : 0;
+    const goodPct = totalGrades > 0 ? (details.gradeMix14d.GOOD / totalGrades) : 0;
+    const easyPct = totalGrades > 0 ? (details.gradeMix14d.EASY / totalGrades) : 0;
 
-    const stageTotal = overview.stageMix14d.WARMUP + overview.stageMix14d.REVIEW + overview.stageMix14d.NEW +
-      overview.stageMix14d.LINK + overview.stageMix14d.WEEKLY_TEST + overview.stageMix14d.LINK_REPAIR;
-    const warmReviewPct = stageTotal > 0 ? ((overview.stageMix14d.WARMUP + overview.stageMix14d.REVIEW) / stageTotal) : 0;
-    const newPct = stageTotal > 0 ? (overview.stageMix14d.NEW / stageTotal) : 0;
-    const linkPct = stageTotal > 0 ? ((overview.stageMix14d.LINK + overview.stageMix14d.LINK_REPAIR) / stageTotal) : 0;
-    const weeklyPct = stageTotal > 0 ? (overview.stageMix14d.WEEKLY_TEST / stageTotal) : 0;
+    const stageTotal = details.stageMix14d.WARMUP + details.stageMix14d.REVIEW + details.stageMix14d.NEW +
+      details.stageMix14d.LINK + details.stageMix14d.WEEKLY_TEST + details.stageMix14d.LINK_REPAIR;
+    const warmReviewPct = stageTotal > 0 ? ((details.stageMix14d.WARMUP + details.stageMix14d.REVIEW) / stageTotal) : 0;
+    const newPct = stageTotal > 0 ? (details.stageMix14d.NEW / stageTotal) : 0;
+    const linkPct = stageTotal > 0 ? ((details.stageMix14d.LINK + details.stageMix14d.LINK_REPAIR) / stageTotal) : 0;
+    const weeklyPct = stageTotal > 0 ? (details.stageMix14d.WEEKLY_TEST / stageTotal) : 0;
 
     const gradeArc = `conic-gradient(
       rgba(225,29,72,0.95) 0 ${(againPct * 100).toFixed(2)}%,
@@ -535,14 +919,15 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
       gradeArc,
       stageArc,
     };
-  }, [overview]);
+  }, [details]);
 
-  const status = overview ? statusPill(overview.today.status) : null;
+  const status = summary ? statusPill(summary.today.status) : null;
   const shouldShowGuide = Boolean(
-    overview &&
-    overview.kpis.completedSessions7d === 0 &&
-    overview.today.completedSessions === 0 &&
-    overview.today.openSessions === 0,
+    details &&
+    summary &&
+    summary.kpis.completedSessions7d === 0 &&
+    summary.today.completedSessions === 0 &&
+    summary.today.openSessions === 0,
   );
 
   return (
@@ -551,7 +936,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
         title="Dashboard"
         right={
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="secondary" size="sm" className="gap-2" onClick={() => void load()}>
+            <Button variant="secondary" size="sm" className="gap-2" onClick={() => void refreshDashboard()}>
               Refresh <RefreshCcw size={16} />
             </Button>
             <Link href="/quran/read?view=compact">
@@ -571,7 +956,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             title="Dashboard unavailable"
             message={error}
             action={(
-              <Button variant="secondary" className="gap-2" onClick={() => void load()}>
+              <Button variant="secondary" className="gap-2" onClick={() => void refreshDashboard()}>
                 Retry <RefreshCcw size={16} />
               </Button>
             )}
@@ -579,10 +964,10 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
         </Card>
       ) : null}
 
-      {!loading && !error && overview ? (
+      {!loading && !error && summary ? (
         <div className="space-y-5">
-          {shouldShowGuide ? (
-            <DashboardFirstRunGuide overview={overview} initialLane={overview.profile.onboardingStartLane} />
+          {shouldShowGuide && details ? (
+            <DashboardFirstRunGuide overview={details} initialLane={details.profile.onboardingStartLane} />
           ) : null}
 
           <section className={`kw-fade-in ${styles.commandDeck} px-4 py-4 sm:px-5 sm:py-5`}>
@@ -592,9 +977,9 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
                   {status ? <Pill tone={status.tone}>{status.label}</Pill> : null}
-                  <Pill tone="neutral">{overview.quran.currentSurahName} | {overview.quran.cursorRef}</Pill>
-                  {overview.reviewHealth.dueNow > 0 ? (
-                    <Pill tone="warn">{overview.reviewHealth.dueNow} due</Pill>
+                  <Pill tone="neutral">{summary.quran.currentSurahName} | {summary.quran.cursorRef}</Pill>
+                  {summary.reviewHealth.dueNow > 0 ? (
+                    <Pill tone="warn">{summary.reviewHealth.dueNow} due</Pill>
                   ) : null}
                 </div>
 
@@ -603,7 +988,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                     href="/quran/read?view=compact"
                     eyebrow="Qur'an"
                     title="Continue"
-                    note={`${overview.quran.currentSurahName} | ${overview.quran.cursorRef}`}
+                    note={`${summary.quran.currentSurahName} | ${summary.quran.cursorRef}`}
                     icon={BookOpenText}
                     tone="accent"
                   />
@@ -612,8 +997,8 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                     eyebrow="Hifz"
                     title="Review"
                     note={
-                      overview.reviewHealth.dueNow > 0
-                        ? `${overview.reviewHealth.dueNow} due now`
+                      summary.reviewHealth.dueNow > 0
+                        ? `${summary.reviewHealth.dueNow} due now`
                         : "Ready"
                     }
                     icon={PlayCircle}
@@ -642,17 +1027,17 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             <MetricTile
               label="This week"
-              value={overview.kpis.totalSessionMinutes7d}
-              detail={`${overview.kpis.avgSessionMinutes7d.toFixed(1)} min avg`}
+              value={summary.kpis.totalSessionMinutes7d}
+              detail={`${summary.kpis.avgSessionMinutes7d.toFixed(1)} min avg`}
               icon={Clock3}
               tone="accent"
               delayMs={40}
-              foot={<Sparkline values={overview.sessionTrend14d.map((d) => d.minutes)} tone="accent" className={styles.metricSparkline} />}
+              foot={<Sparkline values={summary.sessionTrend14d.map((d) => d.minutes)} tone="accent" className={styles.metricSparkline} />}
             />
 
             <MetricTile
               label="Recall"
-              value={overview.kpis.retentionScore14d}
+              value={summary.kpis.retentionScore14d}
               icon={Gauge}
               tone="neutral"
               delayMs={80}
@@ -661,27 +1046,38 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
 
             <MetricTile
               label="Review due"
-              value={overview.reviewHealth.dueNow}
-              detail={overview.reviewHealth.dueSoon6h > 0 ? `${overview.reviewHealth.dueSoon6h} later today` : undefined}
+              value={summary.reviewHealth.dueNow}
+              detail={summary.reviewHealth.dueSoon6h > 0 ? `${summary.reviewHealth.dueSoon6h} later today` : undefined}
               icon={RefreshCcw}
               tone="warn"
               delayMs={120}
               foot={(
-                <p className={`${styles.metricDate} text-xs text-[color:var(--kw-faint)]`} title={formatMaybeDateTime(overview.reviewHealth.nextDueAt)}>
-                  {formatMaybeDateTime(overview.reviewHealth.nextDueAt)}
+                <p className={`${styles.metricDate} text-xs text-[color:var(--kw-faint)]`} title={formatMaybeDateTime(summary.reviewHealth.nextDueAt)}>
+                  {formatMaybeDateTime(summary.reviewHealth.nextDueAt)}
                 </p>
               )}
             />
 
-            <MetricTile
-              label="Streak"
-              value={`${overview.streak.currentStreakDays}d`}
-              detail={`Best ${overview.streak.bestStreakDays}d${overview.streak.graceInUseToday ? " | grace" : ""}`}
-              icon={Flame}
-              tone="accent"
-              delayMs={160}
-              foot={<Pill tone="neutral">Today ayahs: {overview.streak.todayQualifiedAyahs}</Pill>}
-            />
+            {streak ? (
+              <MetricTile
+                label="Streak"
+                value={`${streak.currentStreakDays}d`}
+                detail={`Best ${streak.bestStreakDays}d${streak.graceInUseToday ? " | grace" : ""}`}
+                icon={Flame}
+                tone="accent"
+                delayMs={160}
+                foot={<Pill tone="neutral">Today ayahs: {streak.todayQualifiedAyahs}</Pill>}
+              />
+            ) : (
+              <MetricTile
+                label="Streak"
+                value={loadingStreak ? "..." : "Unavailable"}
+                detail={loadingStreak ? "Loading long-term consistency..." : (streakError ?? "Streak details are not ready yet.")}
+                icon={Flame}
+                tone="neutral"
+                delayMs={160}
+              />
+            )}
           </div>
 
           <DisclosureCard
@@ -694,6 +1090,33 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
               </div>
             )}
           >
+            {!details ? (
+              <div className="space-y-4">
+                {loadingDetails ? (
+                  <>
+                    <ChartBlockSkeleton height={220} />
+                    <div className="grid gap-4 xl:grid-cols-2">
+                      <ChartBlockSkeleton height={320} />
+                      <ChartBlockSkeleton height={320} />
+                    </div>
+                    <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+                      <ChartBlockSkeleton height={280} />
+                      <ChartBlockSkeleton height={280} />
+                    </div>
+                  </>
+                ) : (
+                  <EmptyState
+                    title="Detailed insights unavailable"
+                    message={detailsError ?? "The full dashboard details could not be loaded yet."}
+                    action={(
+                      <Button variant="secondary" className="gap-2" onClick={() => void loadDetails(true)}>
+                        Retry details <RefreshCcw size={16} />
+                      </Button>
+                    )}
+                  />
+                )}
+              </div>
+            ) : (
             <div className="space-y-5">
               <div className="grid gap-5 xl:grid-cols-2">
                 <div className="kw-fade-in h-full" style={{ animationDelay: "200ms" }}>
@@ -703,7 +1126,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                       title="Last 14 days"
                       icon={TrendingUp}
                       tone="accent"
-                      meta={<Pill tone="accent">{overview.profile.timezone}</Pill>}
+                      meta={<Pill tone="accent">{details.profile.timezone}</Pill>}
                     />
                     <div className="mt-4">
                       <AreaTrend points={trendMinutes} tone="accent" valueSuffix="m" />
@@ -711,15 +1134,15 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                     <div className="mt-4 grid gap-2 sm:grid-cols-3">
                       <div className={`${styles.kpiTile} px-3 py-2`}>
                         <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Tracked ayahs</p>
-                        <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{overview.kpis.trackedAyahs}</p>
+                        <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{details.kpis.trackedAyahs}</p>
                       </div>
                       <div className={`${styles.kpiTile} px-3 py-2`}>
                         <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Joins to fix</p>
-                        <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{overview.reviewHealth.weakTransitions}</p>
+                        <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{details.reviewHealth.weakTransitions}</p>
                       </div>
                       <div className={`${styles.kpiTile} px-3 py-2`}>
                         <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Practice days</p>
-                        <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{overview.profile.practiceDaysPerWeek}/7</p>
+                        <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{details.profile.practiceDaysPerWeek}/7</p>
                       </div>
                     </div>
                   </Card>
@@ -755,35 +1178,35 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-2">
-                      <Pill tone="danger">Again {overview.gradeMix14d.AGAIN}</Pill>
-                      <Pill tone="warn">Hard {overview.gradeMix14d.HARD}</Pill>
-                      <Pill tone="success">Good {overview.gradeMix14d.GOOD}</Pill>
-                      <Pill tone="accent">Easy {overview.gradeMix14d.EASY}</Pill>
+                      <Pill tone="danger">Again {details.gradeMix14d.AGAIN}</Pill>
+                      <Pill tone="warn">Hard {details.gradeMix14d.HARD}</Pill>
+                      <Pill tone="success">Good {details.gradeMix14d.GOOD}</Pill>
+                      <Pill tone="accent">Easy {details.gradeMix14d.EASY}</Pill>
                     </div>
 
                     <div className="mt-4 grid gap-2 sm:grid-cols-2">
                       <div className={`${styles.kpiTile} px-3 py-2`}>
                         <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Needs work</p>
                         <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
-                          {overview.gradeMix14d.AGAIN} / {overview.gradeMix14d.HARD}
+                          {details.gradeMix14d.AGAIN} / {details.gradeMix14d.HARD}
                         </p>
                       </div>
                       <div className={`${styles.kpiTile} px-3 py-2`}>
                         <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Clean answers</p>
                         <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
-                          {overview.gradeMix14d.GOOD} / {overview.gradeMix14d.EASY}
+                          {details.gradeMix14d.GOOD} / {details.gradeMix14d.EASY}
                         </p>
                       </div>
                       <div className={`${styles.kpiTile} px-3 py-2`}>
                         <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Review work</p>
                         <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
-                          {overview.stageMix14d.WARMUP + overview.stageMix14d.REVIEW}
+                          {details.stageMix14d.WARMUP + details.stageMix14d.REVIEW}
                         </p>
                       </div>
                       <div className={`${styles.kpiTile} px-3 py-2`}>
                         <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">New work</p>
                         <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
-                          {overview.stageMix14d.NEW + overview.stageMix14d.LINK + overview.stageMix14d.LINK_REPAIR}
+                          {details.stageMix14d.NEW + details.stageMix14d.LINK + details.stageMix14d.LINK_REPAIR}
                         </p>
                       </div>
                     </div>
@@ -796,33 +1219,49 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                   <Card className="h-full">
                     <SectionHeader
                       eyebrow="Qur&apos;an"
-                      title={`${overview.quran.currentSurahName} | ${overview.quran.cursorRef}`}
+                      title={`${summary.quran.currentSurahName} | ${summary.quran.cursorRef}`}
                       icon={BookOpenText}
                       tone="accent"
-                      meta={<Pill tone="accent">Ayah {overview.quran.cursorAyahId}</Pill>}
+                      meta={<Pill tone="accent">Ayah {summary.quran.cursorAyahId}</Pill>}
                     />
 
-                    <div className="mt-4 grid gap-4 sm:grid-cols-[120px_minmax(0,1fr)]">
-                      <div className="flex items-center justify-center rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] p-3">
-                        <DonutProgress value={overview.kpis.quranCompletionPct / 100} size={96} stroke={8} tone="brand" />
-                      </div>
-                      <div className="space-y-2">
-                        <p className="text-sm text-[color:var(--kw-muted)]">
-                          Completion {overview.kpis.quranCompletionPct.toFixed(1)}% | Surah progress {overview.quran.currentSurahProgressPct}%
-                        </p>
-                        <div className="h-2 rounded-full bg-black/[0.06]">
-                          <div
-                            className="h-2 rounded-full bg-[rgba(var(--kw-accent-rgb),0.82)]"
-                            style={{ width: `${Math.max(1, overview.kpis.quranCompletionPct)}%` }}
-                          />
+                    {quran ? (
+                      <div className="mt-4 grid gap-4 sm:grid-cols-[120px_minmax(0,1fr)]">
+                        <div className="flex items-center justify-center rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] p-3">
+                          <DonutProgress value={quran.completionPct / 100} size={96} stroke={8} tone="brand" />
                         </div>
-                        <div className="flex flex-wrap gap-2 pt-1">
-                          <Pill tone="neutral">Khatmah {overview.quran.completedKhatmahCount}</Pill>
-                          <Pill tone="neutral">Last 7 days: {overview.quran.browseRecitedAyahs7d} ayahs</Pill>
-                          <Pill tone="neutral">Last 14 days: {overview.quran.uniqueSurahsRecited14d} surahs</Pill>
+                        <div className="space-y-2">
+                          <p className="text-sm text-[color:var(--kw-muted)]">
+                            Completion {quran.completionPct.toFixed(1)}% | Surah progress {quran.currentSurahProgressPct}%
+                          </p>
+                          <div className="h-2 rounded-full bg-black/[0.06]">
+                            <div
+                              className="h-2 rounded-full bg-[rgba(var(--kw-accent-rgb),0.82)]"
+                              style={{ width: `${Math.max(1, quran.completionPct)}%` }}
+                            />
+                          </div>
+                          <div className="flex flex-wrap gap-2 pt-1">
+                            <Pill tone="neutral">Khatmah {quran.completedKhatmahCount}</Pill>
+                            <Pill tone="neutral">Last 7 days: {quran.browseRecitedAyahs7d} ayahs</Pill>
+                            <Pill tone="neutral">Last 14 days: {quran.uniqueSurahsRecited14d} surahs</Pill>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ) : loadingQuran ? (
+                      <div className="mt-4">
+                        <ChartBlockSkeleton height={180} />
+                      </div>
+                    ) : (
+                      <EmptyState
+                        title="Qur'an progress unavailable"
+                        message={quranError ?? "The Qur'an progress summary could not be loaded yet."}
+                        action={(
+                          <Button variant="secondary" className="gap-2" onClick={() => void loadQuran(true)}>
+                            Retry Qur&apos;an progress <RefreshCcw size={16} />
+                          </Button>
+                        )}
+                      />
+                    )}
 
                     <div className="mt-4 flex flex-wrap items-center gap-2">
                       <Link href="/quran">
@@ -847,6 +1286,25 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                       icon={CalendarDays}
                       tone="neutral"
                     />
+                    {!activity ? (
+                      loadingActivity ? (
+                        <div className="mt-4">
+                          <ChartBlockSkeleton height={260} />
+                        </div>
+                      ) : (
+                        <div className="mt-4">
+                          <EmptyState
+                            title="Activity unavailable"
+                            message={activityError ?? "The calendar could not be loaded yet."}
+                            action={(
+                              <Button variant="secondary" className="gap-2" onClick={() => void loadActivity(true)}>
+                                Retry calendar <RefreshCcw size={16} />
+                              </Button>
+                            )}
+                          />
+                        </div>
+                      )
+                    ) : (
                     <div className="mt-4 space-y-3">
                       <div className="flex items-center justify-between">
                         <Button
@@ -904,15 +1362,17 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                         <span>High</span>
                       </div>
                     </div>
+                    )}
                   </Card>
                 </div>
               </div>
             </div>
+            )}
           </DisclosureCard>
         </div>
       ) : null}
 
-      {!loading && !error && !overview ? (
+      {!loading && !error && !summary ? (
         <Card>
           <EmptyState
             title="Dashboard unavailable"

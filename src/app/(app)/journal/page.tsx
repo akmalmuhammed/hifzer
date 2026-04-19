@@ -1,9 +1,7 @@
 import { cookies } from "next/headers";
 import { JournalClient } from "./journal-client";
-import { loadDuaPageData } from "../dua/dua-page-data";
 import { listPrivateJournalEntries } from "@/hifzer/journal/server";
 import type { JournalEntry } from "@/hifzer/journal/local-store";
-import { getProfileSnapshot } from "@/hifzer/profile/server";
 import { listSurahs } from "@/hifzer/quran/lookup.server";
 import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import {
@@ -12,7 +10,6 @@ import {
   QURAN_TRANSLATION_OPTIONS,
   normalizeQuranTranslationId,
 } from "@/hifzer/quran/translation-prefs";
-import { buildDuaModules } from "@/hifzer/ramadan/laylat-al-qadr";
 import { dbConfigured } from "@/lib/db";
 
 export const metadata = {
@@ -31,49 +28,20 @@ export default async function JournalPage() {
   }));
 
   const userId = await resolveClerkUserIdForServer();
-  const [profile, duaState] = await Promise.all([
-    userId ? getProfileSnapshot(userId) : Promise.resolve(null),
-    loadDuaPageData(userId).catch(() => ({ userId, customDuas: [], deckOrders: [] })),
-  ]);
   let initialEntries: JournalEntry[] = [];
   const syncEnabled = Boolean(userId && dbConfigured());
   let initialSyncError = false;
   const quranTranslationId = normalizeQuranTranslationId(
     cookieStore.get(QURAN_TRANSLATION_COOKIE)?.value ??
-      profile?.quranTranslationId ??
       DEFAULT_QURAN_TRANSLATION_ID,
   );
   const selectedTranslation = QURAN_TRANSLATION_OPTIONS.find((option) => option.id === quranTranslationId);
   const translationDir = selectedTranslation?.rtl ? "rtl" : "ltr";
   const translationAlignClass = selectedTranslation?.rtl ? "text-right" : "text-left";
-  const duaOptions = buildDuaModules({
-    customDuas: duaState.customDuas,
-    deckOrders: duaState.deckOrders,
-  }).flatMap((module) =>
-    module.steps.flatMap((step) => {
-      if (!step.dua) {
-        return [];
-      }
-      return [
-        {
-          moduleId: module.id,
-          moduleLabel: module.label,
-          stepId: step.id,
-          title: step.title,
-          label: step.dua.label ?? step.eyebrow,
-          arabic: step.dua.arabic ?? null,
-          transliteration: step.dua.transliteration ?? null,
-          translation: step.dua.translation,
-          sourceLabel: step.sourceLinks[0]?.label ?? null,
-          sourceHref: step.sourceLinks[0]?.href ?? null,
-        },
-      ];
-    }),
-  );
 
   if (syncEnabled && userId) {
     try {
-      initialEntries = await listPrivateJournalEntries(userId);
+      initialEntries = await listPrivateJournalEntries(userId, new Date(), { summary: true });
     } catch {
       initialSyncError = true;
       initialEntries = [];
@@ -83,11 +51,10 @@ export default async function JournalPage() {
   return (
     <JournalClient
       surahs={surahs}
-      duaOptions={duaOptions}
+      duaOptions={[]}
       initialEntries={initialEntries}
       syncEnabled={syncEnabled}
       initialSyncError={initialSyncError}
-      reciterId={profile?.reciterId ?? "default"}
       translationDir={translationDir}
       translationAlignClass={translationAlignClass}
     />

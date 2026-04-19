@@ -2,12 +2,11 @@ import { cookies } from "next/headers";
 import * as Sentry from "@sentry/nextjs";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app/app-shell";
-import { BookmarkSyncAgent } from "@/components/bookmarks/bookmark-sync-agent";
+import { AppShellSideEffects } from "@/components/app/app-shell-side-effects";
 import { AppProviders } from "@/components/providers/app-providers";
-import { ProfileHydrator } from "@/components/providers/profile-hydrator";
 import { DISTRACTION_FREE_COOKIE, normalizeDistractionFree } from "@/hifzer/focus/distraction-free";
 import { onboardingPathForStep } from "@/hifzer/profile/onboarding";
-import { getProfileSnapshot } from "@/hifzer/profile/server";
+import { getAppShellGateProfile } from "@/hifzer/profile/server";
 import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { dbConfigured } from "@/lib/db";
@@ -29,10 +28,10 @@ export default async function AppGroupLayout({ children }: { children: React.Rea
       redirect("/login");
     }
     try {
-      profile = await getProfileSnapshot(userId);
+      profile = await getAppShellGateProfile(userId);
     } catch (error) {
       Sentry.captureException(error, {
-        tags: { area: "app-layout", operation: "getProfileSnapshot" },
+        tags: { area: "app-layout", operation: "getAppShellGateProfile" },
         user: { id: userId },
       });
       profile = null;
@@ -59,8 +58,7 @@ export default async function AppGroupLayout({ children }: { children: React.Rea
       initialThemeState={initialThemeState}
     >
       <AppShell streakEnabled={Boolean(profile?.onboardingCompleted)}>
-        <ProfileHydrator profile={profile} />
-        <BookmarkSyncAgent />
+        <AppShellSideEffects />
         {children}
       </AppShell>
     </AppProviders>

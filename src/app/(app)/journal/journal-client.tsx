@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import {
   ArrowRight,
@@ -30,7 +31,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Textarea } from "@/components/ui/input";
 import { Pill } from "@/components/ui/pill";
-import { SupportTextPanel } from "@/components/quran/support-text-panel";
 import { useToast } from "@/components/ui/toast";
 import {
   JOURNAL_ENTRY_TYPES,
@@ -59,6 +59,11 @@ import {
   upsertJournalEntry,
 } from "@/hifzer/journal/local-store";
 import styles from "./journal.module.css";
+
+const SupportTextPanel = dynamic(
+  () => import("@/components/quran/support-text-panel").then((mod) => mod.SupportTextPanel),
+  { ssr: false },
+);
 
 type SurahOption = {
   surahNumber: number;
@@ -99,6 +104,11 @@ type AyahCardResponse = {
   translation: string | null;
   surahNameArabic: string;
   surahNameTransliteration: string;
+};
+
+type JournalComposerPayload = {
+  ok: true;
+  duaOptions: JournalLinkedDua[];
 };
 
 const AUTO_DELETE_PRESETS: Array<{ value: JournalDraft["autoDeletePreset"]; label: string }> = [
@@ -259,7 +269,6 @@ export function JournalClient(props: {
   initialEntries: JournalEntry[];
   syncEnabled: boolean;
   initialSyncError: boolean;
-  reciterId: string;
   translationDir: "ltr" | "rtl";
   translationAlignClass: string;
 }) {
@@ -273,6 +282,7 @@ export function JournalClient(props: {
   const [accountSyncEnabled, setAccountSyncEnabled] = useState(
     () => props.syncEnabled && !props.initialSyncError,
   );
+  const [duaOptions, setDuaOptions] = useState<JournalLinkedDua[]>(() => props.duaOptions);
   const [entries, setEntries] = useState<JournalEntry[]>(() => sortEntries(props.initialEntries));
   const [draft, setDraft] = useState<JournalDraft | null>(null);
   const [expandedEntryId, setExpandedEntryId] = useState<string | "new" | null>(null);
@@ -288,6 +298,7 @@ export function JournalClient(props: {
   const [ayahCardById, setAyahCardById] = useState<Record<number, AyahCardResponse>>({});
   const [ayahCardErrorById, setAyahCardErrorById] = useState<Record<number, string>>({});
   const [hydratingAyahIds, setHydratingAyahIds] = useState<number[]>([]);
+  const [openingEntryId, setOpeningEntryId] = useState<string | null>(null);
   const [syncIssue, setSyncIssue] = useState<string | null>(() =>
     props.initialSyncError
       ? "We could not reach your account journal yet. New notes will stay on this device while we reconnect."
@@ -296,7 +307,7 @@ export function JournalClient(props: {
   const deferredSearch = useDeferredValue(search.trim().toLowerCase());
   const effectiveSyncEnabled = props.syncEnabled && accountSyncEnabled;
 
-  const defaultDuaValue = props.duaOptions[0] ? buildDuaOptionValue(props.duaOptions[0]) : "";
+  const defaultDuaValue = duaOptions[0] ? buildDuaOptionValue(duaOptions[0]) : "";
   const currentEntry = draft?.id ? entries.find((entry) => entry.id === draft.id) ?? null : null;
   const canSave = Boolean(draft && hasMeaningfulDraftContent(draft) && (!draft.id || isDirty));
   const isBusy = isSaving || isDeleting;
@@ -325,7 +336,7 @@ export function JournalClient(props: {
   };
 
   const fetchSyncedEntries = async () => {
-    const response = await fetch("/api/journal", {
+    const response = await fetch("/api/journal?view=summary", {
       method: "GET",
       cache: "no-store",
       headers: {
@@ -354,6 +365,28 @@ export function JournalClient(props: {
     });
     await readApiJson<{ ok: true }>(response);
   };
+
+  const fetchJournalEntry = async (entryId: string) => {
+    const response = await fetch(`/api/journal/${encodeURIComponent(entryId)}`, {
+      method: "GET",
+      cache: "no-store",
+    });
+    const payload = await readApiJson<{ ok: true; entry: JournalEntry }>(response);
+    return payload.entry;
+  };
+
+  const loadComposerOptions = useCallback(async () => {
+    if (duaOptions.length > 0) {
+      return duaOptions;
+    }
+    const response = await fetch("/api/journal/composer", {
+      method: "GET",
+      cache: "force-cache",
+    });
+    const payload = await readApiJson<JournalComposerPayload>(response);
+    setDuaOptions(payload.duaOptions);
+    return payload.duaOptions;
+  }, [duaOptions]);
 
   const refreshSyncedEntries = useCallback(async (options?: { quiet?: boolean }) => {
     if (!props.syncEnabled) {
@@ -827,8 +860,30 @@ export function JournalClient(props: {
     if (!shouldContinue) {
       return;
     }
-    setDraft(draftFromEntry(entry));
-    setExpandedEntryId(entry.id);
+
+    let hydratedEntry = entry;
+    if (effectiveSyncEnabled && (!entry.blocks || entry.blocks.length < 1)) {
+      setOpeningEntryId(entry.id);
+      try {
+        hydratedEntry = await fetchJournalEntry(entry.id);
+        setEntries((current) =>
+          sortEntries(current.map((currentEntry) => (currentEntry.id === hydratedEntry.id ? hydratedEntry : currentEntry))),
+        );
+      } catch (error) {
+        pushToast({
+          tone: "warning",
+          title: "Could not open note",
+          message: error instanceof Error ? error.message : "Please try again.",
+        });
+        setOpeningEntryId(null);
+        return;
+      } finally {
+        setOpeningEntryId(null);
+      }
+    }
+
+    setDraft(draftFromEntry(hydratedEntry));
+    setExpandedEntryId(hydratedEntry.id);
     setTagInput("");
     setInsertDraft(null);
     setIsDirty(false);
@@ -897,7 +952,39 @@ export function JournalClient(props: {
     }
   };
 
-  const openInsertComposer = (afterBlockId: string | null, kind: InsertDraft["kind"]) => {
+  const openInsertComposer = async (afterBlockId: string | null, kind: InsertDraft["kind"]) => {
+    if (kind === "dua") {
+      setInsertDraft({
+        afterBlockId,
+        kind,
+        title: "",
+        surahNumber: props.surahs[0]?.surahNumber ?? 1,
+        ayahNumber: 1,
+        duaValue: defaultDuaValue,
+        loading: true,
+      });
+      try {
+        const nextDuaOptions = await loadComposerOptions();
+        setInsertDraft((current) =>
+          current
+            ? {
+                ...current,
+                duaValue: nextDuaOptions[0] ? buildDuaOptionValue(nextDuaOptions[0]) : "",
+                loading: false,
+              }
+            : current,
+        );
+      } catch (error) {
+        pushToast({
+          tone: "warning",
+          title: "Could not load duas",
+          message: error instanceof Error ? error.message : "Please try again.",
+        });
+        setInsertDraft(null);
+      }
+      return;
+    }
+
     setInsertDraft({
       afterBlockId,
       kind,
@@ -963,7 +1050,7 @@ export function JournalClient(props: {
     }
 
     const selectedDua =
-      props.duaOptions.find((option) => buildDuaOptionValue(option) === insertDraft.duaValue) ?? null;
+      duaOptions.find((option) => buildDuaOptionValue(option) === insertDraft.duaValue) ?? null;
     if (!selectedDua) {
       pushToast({
         tone: "warning",
@@ -994,11 +1081,11 @@ export function JournalClient(props: {
             <Type size={14} />
             Text
           </button>
-          <button type="button" className={styles.insertChip} onClick={() => openInsertComposer(afterBlockId, "ayah")}>
+          <button type="button" className={styles.insertChip} onClick={() => void openInsertComposer(afterBlockId, "ayah")}>
             <BookOpenText size={14} />
             Ayah card
           </button>
-          <button type="button" className={styles.insertChip} onClick={() => openInsertComposer(afterBlockId, "dua")}>
+          <button type="button" className={styles.insertChip} onClick={() => void openInsertComposer(afterBlockId, "dua")}>
             <Heart size={14} />
             Dua card
           </button>
@@ -1078,15 +1165,15 @@ export function JournalClient(props: {
                   }
                   className={styles.inlineSelect}
                 >
-                  {props.duaOptions.map((option) => (
+                  {duaOptions.map((option) => (
                     <option key={buildDuaOptionValue(option)} value={buildDuaOptionValue(option)}>
                       {option.moduleLabel}: {option.title}
                     </option>
                   ))}
                 </select>
-                <Button onClick={handleInsertDuaBlock} disabled={!props.duaOptions.length}>
+                <Button onClick={handleInsertDuaBlock} disabled={insertDraft.loading || !duaOptions.length}>
                   <Sparkles size={16} />
-                  Insert dua
+                  {insertDraft.loading ? "Loading..." : "Insert dua"}
                 </Button>
               </div>
             )}
@@ -1385,7 +1472,7 @@ export function JournalClient(props: {
       <button
         key={entry.id}
         type="button"
-        disabled={isBusy}
+        disabled={isBusy || openingEntryId === entry.id}
         className={styles.noteCardButton}
         onClick={() => void handleOpenEntry(entry)}
       >
@@ -1397,7 +1484,7 @@ export function JournalClient(props: {
                 {entry.pinned ? <Pill tone="neutral">Pinned</Pill> : null}
               </div>
               <span className={styles.expandHint}>
-                Open <ChevronDown size={14} />
+                {openingEntryId === entry.id ? "Opening..." : "Open"} <ChevronDown size={14} />
               </span>
             </div>
 
