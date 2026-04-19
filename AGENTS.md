@@ -80,6 +80,7 @@ Many of them predate the super-app pivot, the landing-page rewrite, and the remo
 ## Working Guidance
 
 - Treat Hifzer as a live, growing product, not an MVP scaffold.
+- Prefer `code-review-graph` for broad codebase orientation, review impact, and dependency questions before opening many files manually. In a fresh environment, run `pnpm graph:setup` once, then restart Codex so the MCP server is available.
 - Prefer current code over older docs when they conflict.
 - When editing marketing or product copy, preserve the broader Qur'an companion positioning unless the user asks to shift it again.
 - When editing documentation, point future agents toward the current truth docs and clearly mark historical snapshots as archival.

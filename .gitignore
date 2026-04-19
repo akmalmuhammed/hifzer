@@ -59,9 +59,7 @@ next-env.d.ts
 /ha-bot/services/engine/data/*.db-shm
 /ha-bot/services/engine/data/*.db-wal
 
-# local Codex desktop worktrees
+# local AI assistant data
 /.claude/worktrees/
-# local AI assistant helper files
 /.claude/skills/
-# Added by code-review-graph
 .code-review-graph/
