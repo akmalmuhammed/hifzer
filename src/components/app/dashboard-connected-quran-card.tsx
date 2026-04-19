@@ -20,9 +20,6 @@ const ADVANCED_SYNC_SCOPES = [
   "activity_day",
   "reading_session",
   "collection",
-  "note",
-  "goal.read",
-  "streak.read",
 ] as const;
 
 type OverviewPayload = {
@@ -273,7 +270,7 @@ export function DashboardConnectedQuranCard() {
               : needsRelink ? (
               scopeApprovalBlocked
                 ? "This account is linked, but the live Quran.com OAuth client is not approved for the newer streak, goal, and notes scopes yet."
-                : "This account is linked, but it still has the older Quran.com scopes. Reconnect once to unlock activity-day, reading-session, collections, notes, streaks, and goals for the demo flow."
+                : "This account is linked, but it still has the older Quran.com scopes. Reconnect once to unlock activity-day, reading-session, and collection sync for the demo flow."
             ) : status.detail}
           </div>
         ) : null}

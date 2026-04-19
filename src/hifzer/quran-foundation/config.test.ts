@@ -51,7 +51,7 @@ describe("quran foundation config", () => {
     ]);
   });
 
-  it("requests the expanded user scopes for connected Quran sync", () => {
+  it("requests the approved user scopes for connected Quran sync", () => {
     expect(getQuranFoundationRequestedScopes()).toEqual([
       "openid",
       "offline_access",
@@ -60,9 +60,6 @@ describe("quran foundation config", () => {
       "activity_day",
       "reading_session",
       "collection",
-      "note",
-      "goal.read",
-      "streak.read",
     ]);
   });
 
