@@ -29,7 +29,11 @@ export async function signInAsClerkTestUser(
 
   if (markOnboardingComplete) {
     await page.evaluate(async () => {
-      await fetch("/api/profile/onboarding-complete", { method: "POST" }).catch(() => null);
+      await fetch("/api/profile/onboarding-quick-start", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ onboardingStartLane: "hifz" }),
+      }).catch(() => null);
     });
   }
 

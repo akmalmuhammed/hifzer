@@ -1,6 +1,5 @@
-import { auth } from "@clerk/nextjs/server";
+import { requireOnboardingPageAccess } from "@/hifzer/profile/onboarding-gate.server";
 import { getQuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/server";
-import { clerkEnabled } from "@/lib/clerk-config";
 import { OnboardingCompleteClient } from "./complete-client";
 
 export const metadata = {
@@ -8,10 +7,15 @@ export const metadata = {
 };
 
 export default async function OnboardingCompletePage() {
-  const userId = clerkEnabled() ? (await auth()).userId : null;
+  const { userId, profile } = await requireOnboardingPageAccess("complete");
   const initialQuranFoundationStatus = userId
     ? await getQuranFoundationConnectionStatus(userId)
     : null;
 
-  return <OnboardingCompleteClient initialQuranFoundationStatus={initialQuranFoundationStatus} />;
+  return (
+    <OnboardingCompleteClient
+      initialQuranFoundationStatus={initialQuranFoundationStatus}
+      initialOnboardingStartLane={profile?.onboardingStartLane ?? null}
+    />
+  );
 }

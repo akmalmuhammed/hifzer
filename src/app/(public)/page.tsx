@@ -1,16 +1,11 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
-import { Hero } from "@/components/landing/hero";
-import { LandingFeatureRail } from "@/components/landing/landing-feature-rail";
-import styles from "@/components/landing/landing.module.css";
-
-const LandingDeferredSections = dynamic(() => import("@/components/landing/landing-deferred-sections").then(m => m.LandingDeferredSections));
+import { LandingPageContent } from "@/components/landing/landing-page";
 
 export const revalidate = 60;
 
-const landingTitle = "Hifzer | Qur'an, Hifz, Dua, and Notes";
+const landingTitle = "Hifzer | Reconnect with the Qur'an";
 const landingDescription =
-  "Hifzer is an all-in-one Qur'an companion for daily reading, hifz, dua, and journaling in one app.";
+  "A modern Qur'an companion for memorization, trusted guidance, duas, and private reflection.";
 const landingImage = "/opengraph-image";
 
 export const metadata: Metadata = {
@@ -45,18 +40,5 @@ export const metadata: Metadata = {
 };
 
 export default function LandingPage() {
-  return (
-    <div className={styles.page}>
-      <Hero />
-      <div className="py-6 text-center text-sm font-medium tracking-wide text-[color:var(--kw-muted)]/80 sm:text-base border-b border-[color:var(--kw-border)] mb-8">
-        Trusted by early adopters revolutionizing their Hifz journey
-      </div>
-      <div className={styles.afterHero}>
-        <div id="core-features">
-          <LandingFeatureRail />
-        </div>
-        <LandingDeferredSections />
-      </div>
-    </div>
-  );
+  return <LandingPageContent />;
 }

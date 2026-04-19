@@ -814,9 +814,11 @@ export async function markOnboardingComplete(input: {
     return toSnapshot(profile);
   }
 
-  // The completion endpoint is the last recovery point in the onboarding flow.
-  // If earlier progress writes failed, we still want a new user who reached the
-  // final screen to be able to finish with a valid starting lane.
+  const currentStep = normalizeOnboardingStep(profile.onboardingStep);
+  if (currentStep !== "complete") {
+    throw new OnboardingStateError("Finish the required onboarding steps before opening the dashboard.", 409, "onboarding_step_locked");
+  }
+
   const startLane = normalizeOnboardingStartLane(input.onboardingStartLane ?? profile.onboardingStartLane);
   if (!startLane) {
     throw new OnboardingStateError("Choose your opening lane before completing onboarding.", 409, "onboarding_lane_required");

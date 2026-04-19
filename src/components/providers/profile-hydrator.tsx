@@ -10,6 +10,7 @@ import {
   setOnboardingCompleted,
   setOnboardingStartLane,
   setQuranActiveSurahCursor,
+  syncLocalStateOwner,
 } from "@/hifzer/local/store";
 import type { ProfileSnapshot } from "@/hifzer/profile/server";
 import { normalizeAccentPreset, normalizeThemePreset } from "@/hifzer/theme/preferences";
@@ -25,6 +26,7 @@ export function ProfileHydrator(props: { profile: ProfileSnapshot | null }) {
       return;
     }
 
+    syncLocalStateOwner(profile.clerkUserId);
     setHifzActiveSurahCursor(profile.activeSurahNumber, profile.cursorAyahId);
     setQuranActiveSurahCursor(profile.quranActiveSurahNumber, profile.quranCursorAyahId);
     if (profile.onboardingCompleted) {

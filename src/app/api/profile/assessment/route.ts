@@ -80,6 +80,11 @@ export async function POST(req: Request) {
       quranTranslationId,
       onboardingStartLane,
     });
+    if (!profile) {
+      return NextResponse.json({
+        error: "Persistence unavailable: onboarding setup could not be saved.",
+      }, { status: 503 });
+    }
     return NextResponse.json({ ok: true, profile });
   } catch (error) {
     Sentry.captureException(error, {

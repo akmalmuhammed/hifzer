@@ -6,8 +6,14 @@ import { redirect } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pill } from "@/components/ui/pill";
-import { clerkAuthRoutes } from "@/lib/auth-redirects";
+import { clerkAuthRoutes, safeAuthRedirectPath } from "@/lib/auth-redirects";
 import { clerkEnabled } from "@/lib/clerk-config";
+
+type AuthSearchParams = Record<string, string | string[] | undefined>;
+
+async function resolveSearchParams(searchParams: AuthSearchParams | Promise<AuthSearchParams> | undefined) {
+  return searchParams ? await searchParams : {};
+}
 
 export const metadata = {
   title: "Login",
@@ -17,12 +23,19 @@ export const metadata = {
   },
 };
 
-export default async function LoginPage() {
+export default async function LoginPage(props: {
+  searchParams?: AuthSearchParams | Promise<AuthSearchParams>;
+}) {
+  const searchParams = await resolveSearchParams(props.searchParams);
+  const redirectPath = safeAuthRedirectPath(
+    searchParams.redirect_url,
+    clerkAuthRoutes.signInForceRedirectUrl,
+  );
   const configured = clerkEnabled();
   if (configured) {
     const { userId } = await auth();
     if (userId) {
-      redirect("/dashboard");
+      redirect(redirectPath);
     }
   }
 
@@ -58,8 +71,8 @@ CLERK_SECRET_KEY=...`}
             <SignIn
               path="/login"
               routing="path"
-              forceRedirectUrl={clerkAuthRoutes.signInForceRedirectUrl}
-              fallbackRedirectUrl={clerkAuthRoutes.signInFallbackRedirectUrl}
+              forceRedirectUrl={redirectPath}
+              fallbackRedirectUrl={redirectPath}
             />
           </div>
         )}

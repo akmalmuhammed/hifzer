@@ -26,6 +26,8 @@ If you are an engineer or coding agent trying to understand the current product,
   Local audio bucket setup and verification.
 - `quran-foundation-hackathon-demo.md`
   Judge/demo-oriented Quran.com and AI flow.
+- `quran-foundation-hackathon-top3-audit.md`
+  Top-3 hackathon audit, feature map, scope request, and submission strategy.
 - `progress-simulation.md`
   Regression harness for Qur'an and hifz progress simulations.
 

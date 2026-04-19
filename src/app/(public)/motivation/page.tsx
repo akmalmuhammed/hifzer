@@ -6,6 +6,10 @@ export const metadata = {
   alternates: {
     canonical: "/motivation",
   },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function MotivationPage() {

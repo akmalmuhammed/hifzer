@@ -15,10 +15,12 @@ import {
   setDashboardFirstRunGuidePending,
   setOnboardingCompleted,
 } from "@/hifzer/local/store";
+import type { OnboardingStartLane } from "@/hifzer/profile/onboarding";
 import type { QuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/types";
 
 export function OnboardingCompleteClient(props: {
   initialQuranFoundationStatus: QuranFoundationConnectionStatus | null;
+  initialOnboardingStartLane: OnboardingStartLane | null;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -75,7 +77,7 @@ export function OnboardingCompleteClient(props: {
                     }
 
                     setFinishing(true);
-                    const onboardingStartLane = getOnboardingStartLane();
+                    const onboardingStartLane = getOnboardingStartLane() ?? props.initialOnboardingStartLane;
                     try {
                       const res = await fetch("/api/profile/onboarding-complete", {
                         method: "POST",

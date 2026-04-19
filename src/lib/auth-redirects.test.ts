@@ -38,4 +38,14 @@ describe("clerkAuthRoutes", () => {
     expect(clerkAuthRoutes.signUpForceRedirectUrl).toBe("/dashboard");
     expect(clerkAuthRoutes.signUpFallbackRedirectUrl).toBe("/dashboard/welcome");
   });
+
+  it("normalizes explicit auth return paths safely", async () => {
+    const { safeAuthRedirectPath } = await import("./auth-redirects");
+
+    expect(safeAuthRedirectPath("/support")).toBe("/support");
+    expect(safeAuthRedirectPath("/today?from=legacy")).toBe("/dashboard?from=legacy");
+    expect(safeAuthRedirectPath("https://evil.example/support")).toBe("/dashboard");
+    expect(safeAuthRedirectPath("//evil.example/support")).toBe("/dashboard");
+    expect(safeAuthRedirectPath(["/settings/account"])).toBe("/settings/account");
+  });
 });

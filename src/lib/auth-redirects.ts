@@ -35,6 +35,14 @@ function envPathOrDefault(key: string, fallback: string): string {
   return normalizeLegacyDashboardPath(envOrDefault(key, fallback), fallback);
 }
 
+export function safeAuthRedirectPath(value: unknown, fallback = "/dashboard"): string {
+  const raw = Array.isArray(value) ? value[0] : value;
+  if (typeof raw !== "string") {
+    return fallback;
+  }
+  return normalizeLegacyDashboardPath(raw, fallback);
+}
+
 function normalizeAuthEntryPath(path: string, fallback: "/login" | "/signup"): string {
   // `/sign-in` is reserved for legacy demo auth in this app.
   if (path === "/sign-in") {

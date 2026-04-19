@@ -3,6 +3,10 @@ import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getSurahInfo } from "@/hifzer/quran/lookup";
 import { getOrCreateUserProfile, saveQuranStartPoint, saveStartPoint } from "@/hifzer/profile/server";
+import {
+  normalizeOnboardingStartLane,
+  normalizeOnboardingStep,
+} from "@/hifzer/profile/onboarding";
 import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -88,6 +92,22 @@ export async function POST(req: Request) {
     const fullProfile = await getOrCreateUserProfile(userId);
     if (!fullProfile) {
       return NextResponse.json({ error: "Database not configured." }, { status: 503 });
+    }
+
+    if (onboarding) {
+      const currentOnboardingStep = normalizeOnboardingStep(fullProfile.onboardingStep);
+      if (currentOnboardingStep === "assessment") {
+        return NextResponse.json({
+          error: "Complete the onboarding setup step before choosing a starting point.",
+          code: "onboarding_step_locked",
+        }, { status: 409 });
+      }
+      if (!normalizeOnboardingStartLane(fullProfile.onboardingStartLane)) {
+        return NextResponse.json({
+          error: "Choose a starting lane before choosing a starting point.",
+          code: "onboarding_lane_required",
+        }, { status: 409 });
+      }
     }
 
     const previousSurahNumber = fullProfile.activeSurahNumber;

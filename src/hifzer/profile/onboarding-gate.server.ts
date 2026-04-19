@@ -1,9 +1,9 @@
 import "server-only";
 
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { getProfileSnapshot, type ProfileSnapshot } from "@/hifzer/profile/server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import {
   canAccessOnboardingStep,
   onboardingPathForStep,
@@ -17,7 +17,7 @@ export async function requireOnboardingPageAccess(
     return { userId: null, profile: null };
   }
 
-  const { userId } = await auth();
+  const userId = await resolveClerkUserIdForServer();
   if (!userId) {
     redirect("/login");
   }

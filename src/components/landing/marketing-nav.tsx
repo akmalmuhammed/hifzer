@@ -12,7 +12,14 @@ import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
-import styles from "./landing-home.module.css";
+import styles from "./landing.module.css";
+
+const STORY_LINKS = [
+  { href: "#routine", label: "Routine" },
+  { href: "#hifz", label: "Hifz" },
+  { href: "#guidance", label: "Guidance" },
+  { href: "#reflection", label: "Reflection" },
+] as const;
 
 export function MarketingNav() {
   const [open, setOpen] = useState(false);
@@ -21,7 +28,7 @@ export function MarketingNav() {
   const copy = getAppUiCopy(language);
   const signInLabel = copy.marketing.signIn;
   const getStartedLabel = "Start free";
-  const brandTagline = "One guided place to return to the Qur'an daily.";
+  const brandTagline = "Return to the Qur'an with clarity.";
 
   return (
     <header className="sticky top-0 z-40">
@@ -39,6 +46,20 @@ export function MarketingNav() {
                 <span className="block text-xs text-[color:var(--kw-muted)]">{brandTagline}</span>
               </span>
             </TrackedLink>
+
+            <nav className="hidden items-center gap-1 lg:flex" aria-label="Landing sections">
+              {STORY_LINKS.map((link) => (
+                <TrackedLink
+                  key={link.href}
+                  href={link.href}
+                  telemetryName="marketing.section-link"
+                  telemetryMeta={{ section: link.label }}
+                  className="rounded-[14px] px-3 py-2 text-sm font-semibold text-[color:var(--kw-muted)] transition hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)]"
+                >
+                  {link.label}
+                </TrackedLink>
+              ))}
+            </nav>
 
             <div className="hidden items-center gap-2 lg:flex">
               {isSignedIn ? (
@@ -92,6 +113,21 @@ export function MarketingNav() {
         <div className={clsx("lg:hidden", open ? "block" : "hidden")}>
           <div className="mt-2 rounded-[26px] border border-[color:var(--kw-border)] bg-[color:var(--kw-card-strong)] px-4 py-4 shadow-[var(--kw-shadow)] backdrop-blur">
             <div className="space-y-2">
+              <div className="grid gap-1">
+                {STORY_LINKS.map((link) => (
+                  <TrackedLink
+                    key={link.href}
+                    href={link.href}
+                    telemetryName="marketing.mobile-section-link"
+                    telemetryMeta={{ section: link.label }}
+                    onClick={() => setOpen(false)}
+                    className="rounded-[16px] px-3 py-2.5 text-sm font-semibold text-[color:var(--kw-muted)] transition hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)]"
+                  >
+                    {link.label}
+                  </TrackedLink>
+                ))}
+              </div>
+
               <div className="grid gap-2 pt-2">
                 <div className="grid gap-2 sm:grid-cols-2">
                   {isSignedIn ? (

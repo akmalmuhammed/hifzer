@@ -76,11 +76,16 @@ export async function POST(req: Request) {
       quranTranslationId,
       onboardingStartLane,
     });
+    if (!profile) {
+      return NextResponse.json({
+        error: "Persistence unavailable: onboarding could not be saved.",
+      }, { status: 503 });
+    }
 
     return NextResponse.json({
       ok: true,
       profile,
-      localOnly: profile == null,
+      localOnly: false,
     });
   } catch (error) {
     Sentry.captureException(error, {

@@ -7,6 +7,7 @@ import {
 } from "@/hifzer/profile/onboarding";
 
 export const STORAGE_KEYS = {
+  localStateOwner: "hifzer_local_state_owner_v1",
   onboardingCompleted: "hifzer_onboarding_completed_v1",
   onboardingStartLane: "hifzer_onboarding_start_lane_v1",
   onboardingAssessment: "hifzer_onboarding_assessment_v1",
@@ -75,9 +76,45 @@ export type StoredSession = {
 
 const MAX_STORED_ATTEMPTS = 2000;
 const MAX_PENDING_BOOKMARK_MUTATIONS = 200;
+const USER_SCOPED_STORAGE_KEYS = [
+  STORAGE_KEYS.onboardingCompleted,
+  STORAGE_KEYS.onboardingStartLane,
+  STORAGE_KEYS.onboardingAssessment,
+  STORAGE_KEYS.dashboardFirstRunGuide,
+  STORAGE_KEYS.hifzActiveSurahNumber,
+  STORAGE_KEYS.hifzCursorAyahId,
+  STORAGE_KEYS.quranActiveSurahNumber,
+  STORAGE_KEYS.quranCursorAyahId,
+  STORAGE_KEYS.srsReviews,
+  STORAGE_KEYS.attempts,
+  STORAGE_KEYS.openSession,
+  STORAGE_KEYS.sessions,
+  STORAGE_KEYS.lastCompletedLocalDate,
+  STORAGE_KEYS.pendingSessionSync,
+  STORAGE_KEYS.bookmarks,
+  STORAGE_KEYS.pendingBookmarkSync,
+  LEGACY_STORAGE_KEYS.activeSurahNumber,
+  LEGACY_STORAGE_KEYS.cursorAyahId,
+] as const;
 
 function isBrowser(): boolean {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+}
+
+export function syncLocalStateOwner(clerkUserId: string | null | undefined) {
+  if (!isBrowser() || !clerkUserId) {
+    return;
+  }
+
+  const previousOwner = window.localStorage.getItem(STORAGE_KEYS.localStateOwner);
+  if (previousOwner && previousOwner !== clerkUserId) {
+    for (const key of USER_SCOPED_STORAGE_KEYS) {
+      window.localStorage.removeItem(key);
+    }
+  }
+  if (previousOwner !== clerkUserId) {
+    window.localStorage.setItem(STORAGE_KEYS.localStateOwner, clerkUserId);
+  }
 }
 
 function safeJsonParse<T>(raw: string | null): T | null {

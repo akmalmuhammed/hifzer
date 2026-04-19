@@ -33,7 +33,7 @@ export default function QuranPreviewPage() {
 
       <div className="mt-7 flex flex-wrap items-center gap-3">
         <Button asChild className="gap-2">
-          <Link href="/login">
+          <Link href="/login?redirect_url=%2Fquran">
             Sign in for full Qur&apos;an view <ArrowRight size={16} />
           </Link>
         </Button>

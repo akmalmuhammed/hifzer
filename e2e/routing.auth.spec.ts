@@ -16,6 +16,16 @@ test.describe("authenticated routing", () => {
     await expect(page).toHaveURL(/\/dashboard(?:\?|$)/);
   });
 
+  test("signed-in auth pages honor safe redirect_url destinations", async ({ page }) => {
+    await signInAsClerkTestUser(page);
+
+    await page.goto("/login?redirect_url=%2Fsupport");
+    await expect(page).toHaveURL(/\/support(?:\?|$)/);
+
+    await page.goto("/signup?redirect_url=%2Fsettings%2Faccount");
+    await expect(page).toHaveURL(/\/settings\/account(?:\?|$)/);
+  });
+
   test("public auth CTAs route signed-in users to /dashboard", async ({ page }) => {
     await signInAsClerkTestUser(page);
 
