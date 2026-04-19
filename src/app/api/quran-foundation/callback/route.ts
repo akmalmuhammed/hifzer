@@ -96,6 +96,9 @@ export async function GET(req: Request) {
     });
     return finalize("connected");
   } catch (error) {
+    if (error instanceof QuranFoundationError && error.code === "qf_identity_already_linked") {
+      return finalize("already-linked");
+    }
     const expectedOAuthFailure =
       error instanceof QuranFoundationError &&
       (error.code === "invalid_grant" || error.code === "access_denied" || error.status === 400);

@@ -19,6 +19,9 @@ const ADVANCED_SYNC_SCOPES = [
   "activity_day",
   "reading_session",
   "collection",
+  "note",
+  "goal.read",
+  "streak.read",
 ] as const;
 
 export function QuranFoundationSettingsClient(props: {
@@ -98,7 +101,7 @@ export function QuranFoundationSettingsClient(props: {
                   ? "The stored Quran.com authorization is no longer valid. Reconnect once so Hifzer can refresh tokens and resume sync."
                   : scopeApprovalBlocked
                   ? "The live Quran.com OAuth client is not approved for the newer streak, goals, and notes scopes yet. Retrying authorization will keep failing until Quran Foundation enables those scopes for this client."
-                  : "Reconnect Quran.com once to grant the new activity-day, collections, and reading-session permissions."}
+                  : "Reconnect Quran.com once to grant the new activity-day, reading-session, collections, notes, streak, and goal permissions."}
               </div>
             ) : null}
             {status.scopes.length > 0 ? (

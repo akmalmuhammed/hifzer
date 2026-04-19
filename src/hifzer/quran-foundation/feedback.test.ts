@@ -9,6 +9,10 @@ import {
 } from "./feedback";
 
 describe("quran foundation feedback helpers", () => {
+  it("returns a clear message for already-linked redirects", () => {
+    expect(getQuranFoundationFeedbackLabel("already-linked")).toContain("already linked");
+  });
+
   it("returns a clear message for invalid_scope redirects", () => {
     expect(getQuranFoundationFeedbackLabel("invalid_scope")).toContain("not approved");
   });

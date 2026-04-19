@@ -32,6 +32,9 @@ export function hasQuranFoundationGrantedScope(
 export function getQuranFoundationFeedbackLabel(param: string | null): string | null {
   if (param === "connected") return "Quran.com account linked.";
   if (param === "oauth-failed") return "The Quran.com OAuth exchange failed.";
+  if (param === "already-linked") {
+    return "This Quran.com account is already linked to another Hifzer account. Disconnect it there before linking here.";
+  }
   if (param === "state-mismatch") return "The Quran.com OAuth state check failed.";
   if (param === "not-configured") return "Quran.com linking is not configured yet.";
   if (param === "sign-in-required") return "Sign in before linking a Quran.com account.";

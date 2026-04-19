@@ -117,6 +117,29 @@ export async function storeQuranFoundationConnection(input: {
   }
 
   const identity = input.identity ?? decodeQuranFoundationIdentity(input.tokenSet.idToken);
+  if (identity.sub) {
+    const linkedElsewhere = await db().quranFoundationAccount.findFirst({
+      where: {
+        quranFoundationUserId: identity.sub,
+        userId: {
+          not: context.profile.id,
+        },
+      },
+      select: {
+        userId: true,
+      },
+    });
+    if (linkedElsewhere) {
+      throw new QuranFoundationError(
+        "This Quran.com account is already linked to another Hifzer account. Disconnect it there before linking here.",
+        {
+          status: 409,
+          code: "qf_identity_already_linked",
+          retryable: false,
+        },
+      );
+    }
+  }
   const refreshTokenCiphertext = input.tokenSet.refreshToken
     ? encryptQuranFoundationSecret(input.tokenSet.refreshToken)
     : null;
