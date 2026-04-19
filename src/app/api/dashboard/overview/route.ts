@@ -1,23 +1,10 @@
 import * as Sentry from "@sentry/nextjs";
-import { unstable_cache } from "next/cache";
 import { NextResponse } from "next/server";
-import { getDashboardOverview } from "@/hifzer/dashboard/server";
+import { getCachedDashboardOverview, getDashboardOverview } from "@/hifzer/dashboard/server";
 import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import { resolveAuditNowFromRequestHeader } from "@/hifzer/testing/request-now";
 
 export const runtime = "nodejs";
-
-function makeCachedDashboardOverview(clerkUserId: string) {
-  return unstable_cache(
-    async () => getDashboardOverview(clerkUserId),
-    // Cache key is user-scoped to prevent cross-user cache contamination
-    [`dashboard-overview:${clerkUserId}`],
-    {
-      revalidate: 120,
-      tags: [`dashboard-overview:${clerkUserId}`],
-    },
-  );
-}
 
 export async function GET(request: Request) {
   const userId = await resolveClerkUserIdForServer(request);
@@ -30,7 +17,7 @@ export async function GET(request: Request) {
   try {
     const overview = auditNow
       ? await getDashboardOverview(userId, { now: auditNow })
-      : await makeCachedDashboardOverview(userId)();
+      : await getCachedDashboardOverview(userId);
     if (!overview) {
       return NextResponse.json({ error: "Database not configured." }, { status: 503 });
     }

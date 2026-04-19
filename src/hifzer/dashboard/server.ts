@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { AttemptStage, SrsGrade, SrsMode } from "@prisma/client";
+import { unstable_cache } from "next/cache";
 import { addIsoDaysUtc } from "@/hifzer/derived/dates";
 import { computeDebtRatioPct, computeReviewDebtMinutes } from "@/hifzer/engine/debt";
 import { isoDateInTimeZone } from "@/hifzer/engine/date";
@@ -94,6 +95,8 @@ export type DashboardOverview = {
     value: number;
   }>;
 };
+
+export const DASHBOARD_OVERVIEW_CACHE_TTL_SECONDS = 120;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
@@ -510,4 +513,15 @@ export async function getDashboardOverview(clerkUserId: string, input?: { now?: 
     },
     activityByDate,
   };
+}
+
+export function getCachedDashboardOverview(clerkUserId: string) {
+  return unstable_cache(
+    async () => getDashboardOverview(clerkUserId),
+    [`dashboard-overview:${clerkUserId}`],
+    {
+      revalidate: DASHBOARD_OVERVIEW_CACHE_TTL_SECONDS,
+      tags: [`dashboard-overview:${clerkUserId}`],
+    },
+  )();
 }

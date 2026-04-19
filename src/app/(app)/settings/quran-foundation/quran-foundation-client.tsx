@@ -9,6 +9,8 @@ import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
 import {
   getQuranFoundationFeedbackLabel,
+  hasQuranFoundationGrantedScope,
+  isQuranFoundationReconnectRequired,
   isQuranFoundationScopeApprovalBlocked,
 } from "@/hifzer/quran-foundation/feedback";
 import type { QuranFoundationConnectedOverview, QuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/types";
@@ -58,13 +60,18 @@ export function QuranFoundationSettingsClient(props: {
   const status = props.initialStatus;
   const overview = props.initialOverview;
   const missingAdvancedScopes = ADVANCED_SYNC_SCOPES.filter((scope) => !status.scopes.includes(scope));
+  const reconnectRequired = isQuranFoundationReconnectRequired(status);
   const needsRelink = (status.state === "connected" || status.state === "degraded") && missingAdvancedScopes.length > 0;
   const scopeApprovalBlocked = isQuranFoundationScopeApprovalBlocked(status, feedbackParam);
-  const hasReadingSessionScope = status.scopes.includes("reading_session");
-  const hasStreakReadScope = status.scopes.includes("streak.read");
-  const hasGoalReadScope = status.scopes.includes("goal.read");
-  const hasCollectionScope = status.scopes.includes("collection");
-  const hasNoteScope = status.scopes.includes("note");
+  const hasReadingSessionScope = hasQuranFoundationGrantedScope(
+    status.scopes,
+    "reading_session",
+    "reading_session.read",
+  );
+  const hasStreakReadScope = hasQuranFoundationGrantedScope(status.scopes, "streak", "streak.read");
+  const hasGoalReadScope = hasQuranFoundationGrantedScope(status.scopes, "goal", "goal.read");
+  const hasCollectionScope = hasQuranFoundationGrantedScope(status.scopes, "collection", "collection.read");
+  const hasNoteScope = hasQuranFoundationGrantedScope(status.scopes, "note", "note.read");
 
   return (
     <div className="space-y-4">
@@ -85,9 +92,11 @@ export function QuranFoundationSettingsClient(props: {
             {status.lastSyncedAt ? (
               <p className="mt-2 text-xs text-[color:var(--kw-faint)]">Last synced: {new Date(status.lastSyncedAt).toLocaleString()}</p>
             ) : null}
-            {needsRelink ? (
+            {reconnectRequired || needsRelink ? (
               <div className="mt-3 rounded-[18px] border border-[rgba(214,153,46,0.25)] bg-[rgba(214,153,46,0.08)] px-4 py-3 text-sm text-[color:var(--kw-muted)]">
-                {scopeApprovalBlocked
+                {reconnectRequired
+                  ? "The stored Quran.com authorization is no longer valid. Reconnect once so Hifzer can refresh tokens and resume sync."
+                  : scopeApprovalBlocked
                   ? "The live Quran.com OAuth client is not approved for the newer streak, goals, and notes scopes yet. Retrying authorization will keep failing until Quran Foundation enables those scopes for this client."
                   : "Reconnect Quran.com once to grant the new activity-day, collections, and reading-session permissions."}
               </div>
@@ -104,19 +113,24 @@ export function QuranFoundationSettingsClient(props: {
           <div className="flex flex-wrap gap-2">
             {status.state === "connected" || status.state === "degraded" ? (
               <>
-                {needsRelink ? (
+                {reconnectRequired || needsRelink ? (
                   <Button
                     onClick={() => {
                       window.location.href = `/api/quran-foundation/connect?returnTo=${encodeURIComponent("/settings/quran-foundation")}`;
                     }}
                   >
-                    {scopeApprovalBlocked ? "Retry authorization" : "Refresh permissions"}
+                    {reconnectRequired
+                      ? "Reconnect Quran.com"
+                      : scopeApprovalBlocked
+                        ? "Retry authorization"
+                        : "Refresh permissions"}
                   </Button>
                 ) : null}
                 <Button
                   variant="secondary"
                   onClick={() => void post("/api/quran-foundation/bookmarks/push", "Existing bookmarks synced to Quran.com.")}
                   loading={busyKey === "/api/quran-foundation/bookmarks/push"}
+                  disabled={reconnectRequired}
                 >
                   Sync local bookmarks
                 </Button>
@@ -124,6 +138,7 @@ export function QuranFoundationSettingsClient(props: {
                   variant="secondary"
                   onClick={() => void post("/api/quran-foundation/bookmarks/hydrate", "Quran.com bookmarks imported into Hifzer.")}
                   loading={busyKey === "/api/quran-foundation/bookmarks/hydrate"}
+                  disabled={reconnectRequired}
                 >
                   Import Quran.com bookmarks
                 </Button>
@@ -131,7 +146,7 @@ export function QuranFoundationSettingsClient(props: {
                   variant="secondary"
                   onClick={() => void post("/api/quran-foundation/collections/sync", "Bookmark collections synced to Quran.com.")}
                   loading={busyKey === "/api/quran-foundation/collections/sync"}
-                  disabled={!hasCollectionScope}
+                  disabled={reconnectRequired || !hasCollectionScope}
                 >
                   Sync bookmark collections
                 </Button>
@@ -140,6 +155,7 @@ export function QuranFoundationSettingsClient(props: {
                     variant="secondary"
                     onClick={() => void post("/api/quran-foundation/notes/hydrate", "Quran.com notes imported into your journal.")}
                     loading={busyKey === "/api/quran-foundation/notes/hydrate"}
+                    disabled={reconnectRequired}
                   >
                     Import Quran.com notes
                   </Button>

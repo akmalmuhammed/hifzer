@@ -14,7 +14,9 @@ import { dbConfigured } from "@/lib/db";
 import { resolveInitialThemeState, resolveInitialUiLanguage } from "@/lib/layout-preferences";
 
 export default async function AppGroupLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = await cookies();
+  const cookieStorePromise = cookies();
+  const userIdPromise = clerkEnabled() ? resolveClerkUserIdForServer() : Promise.resolve<string | null>(null);
+  const cookieStore = await cookieStorePromise;
   const initialUiLanguage = resolveInitialUiLanguage(cookieStore);
   const initialDistractionFree = normalizeDistractionFree(cookieStore.get(DISTRACTION_FREE_COOKIE)?.value);
   const initialThemeState = resolveInitialThemeState(cookieStore);
@@ -22,7 +24,7 @@ export default async function AppGroupLayout({ children }: { children: React.Rea
   let profileFetchFailed = false;
 
   if (clerkEnabled()) {
-    const userId = await resolveClerkUserIdForServer();
+    const userId = await userIdPromise;
     if (!userId) {
       redirect("/login");
     }

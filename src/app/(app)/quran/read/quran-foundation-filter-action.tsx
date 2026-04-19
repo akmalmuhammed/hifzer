@@ -2,7 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { getQuranFoundationFeedbackLabel } from "@/hifzer/quran-foundation/feedback";
+import {
+  getQuranFoundationFeedbackLabel,
+  isQuranFoundationReconnectRequired,
+} from "@/hifzer/quran-foundation/feedback";
 import type { QuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/types";
 
 function statusLabel(status: QuranFoundationConnectionStatus): string {
@@ -19,6 +22,7 @@ export function QuranFoundationFilterAction(props: { status: QuranFoundationConn
   const searchParams = useSearchParams();
   const feedback = useMemo(() => getQuranFoundationFeedbackLabel(searchParams.get("qf")), [searchParams]);
   const [value, setValue] = useState("");
+  const reconnectRequired = isQuranFoundationReconnectRequired(props.status);
 
   if (!props.status.available || props.status.state === "not_configured") {
     return null;
@@ -58,6 +62,7 @@ export function QuranFoundationFilterAction(props: { status: QuranFoundationConn
         <option value="">Choose an option</option>
         {props.status.state === "connected" || props.status.state === "degraded" ? (
           <>
+            {reconnectRequired ? <option value="connect">Reconnect Quran.com</option> : null}
             <option value="settings">Open Quran.com settings</option>
             <option value="bookmarks">Open bookmarks</option>
           </>

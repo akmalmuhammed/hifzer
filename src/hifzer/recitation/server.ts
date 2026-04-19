@@ -1,6 +1,7 @@
 import "server-only";
 
 import { SrsGrade } from "@prisma/client";
+import { unstable_cache } from "next/cache";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { getAyahById } from "@/hifzer/quran/lookup.server";
 import { db } from "@/lib/db";
@@ -38,6 +39,8 @@ export type RecitationInsights = {
   uniqueChallengeAyahs30d: number;
   openWeakTransitions: number;
 };
+
+const RECITATION_INSIGHTS_CACHE_TTL_SECONDS = 120;
 
 function trimSnippet(text: string | null | undefined, limit = 52): string | null {
   if (!text) {
@@ -164,4 +167,21 @@ export async function getRecitationInsights(
     uniqueChallengeAyahs30d: challengeMap.size,
     openWeakTransitions,
   };
+}
+
+export function getCachedRecitationInsights(
+  clerkUserId: string,
+  input?: { challengeLimit?: number; transitionLimit?: number },
+) {
+  const challengeLimit = Math.max(1, Math.min(12, input?.challengeLimit ?? 6));
+  const transitionLimit = Math.max(1, Math.min(12, input?.transitionLimit ?? 6));
+
+  return unstable_cache(
+    async () => getRecitationInsights(clerkUserId, { challengeLimit, transitionLimit }),
+    [`recitation-insights:${clerkUserId}:${challengeLimit}:${transitionLimit}`],
+    {
+      revalidate: RECITATION_INSIGHTS_CACHE_TTL_SECONDS,
+      tags: [`recitation-insights:${clerkUserId}`],
+    },
+  )();
 }

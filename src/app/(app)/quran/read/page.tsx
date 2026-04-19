@@ -10,10 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import { getDistractionFreeServer } from "@/hifzer/focus/server";
 import { getProfileSnapshot } from "@/hifzer/profile/server";
-import {
-  getQuranFoundationAyahEnrichment,
-  getQuranFoundationContentCatalog,
-} from "@/hifzer/quran-foundation/content";
+import { getQuranFoundationContentCatalog } from "@/hifzer/quran-foundation/content";
 import { getQuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/server";
 import {
   filterAyahs,
@@ -167,12 +164,17 @@ export const metadata = {
 };
 
 export default async function QuranReaderPage(props: { searchParams: Promise<SearchParamShape> }) {
-  const searchParams = await props.searchParams;
-  const cookieStore = await cookies();
+  const searchParamsPromise = props.searchParams;
+  const cookieStorePromise = cookies();
+  const distractionFreePromise = getDistractionFreeServer();
   const authEnabled = clerkEnabled();
-  const userId = authEnabled ? (await auth()).userId : null;
-  const distractionFree = await getDistractionFreeServer();
-  const profile = userId ? await getProfileSnapshot(userId) : null;
+  const userIdPromise = authEnabled ? auth().then((result) => result.userId) : Promise.resolve<string | null>(null);
+  const [searchParams, cookieStore, distractionFree, userId] = await Promise.all([
+    searchParamsPromise,
+    cookieStorePromise,
+    distractionFreePromise,
+    userIdPromise,
+  ]);
   const anonymous = readSingle(searchParams.anon) === "1";
   const ignoreSavedFilters = readSingle(searchParams.ignoreSaved) === "1";
   const hasExplicitReaderFilterQuery = Boolean(
@@ -184,12 +186,15 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
     readSingle(searchParams.tafsir) ||
     readSingle(searchParams.tafsirId),
   );
-  const persistedReaderFilters = userId && !anonymous ? await getQuranReaderFilterPrefs(userId) : null;
+  const [profile, persistedReaderFilters, quranFoundationStatus] = await Promise.all([
+    userId ? getProfileSnapshot(userId) : Promise.resolve(null),
+    userId && !anonymous ? getQuranReaderFilterPrefs(userId) : Promise.resolve(null),
+    getQuranFoundationConnectionStatus(userId ?? null),
+  ]);
   const savedReaderFilters =
     !anonymous && !ignoreSavedFilters && !hasExplicitReaderFilterQuery
       ? persistedReaderFilters
       : null;
-  const quranFoundationStatus = await getQuranFoundationConnectionStatus(userId ?? null);
   const reciterId = profile?.reciterId ?? "default";
   const requestedView = parseView(searchParams.view ?? savedReaderFilters?.view);
   const view = distractionFree ? "compact" : requestedView;
@@ -267,16 +272,10 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
         surahNumber: ayah.surahNumber,
         ayahNumber: ayah.ayahNumber,
         textUthmani: ayah.textUthmani,
-        phonetic: getPhoneticByAyahId(ayah.id),
-        translation: getQuranTranslationByAyahId(ayah.id, quranTranslationId),
+        phonetic: showPhonetic ? getPhoneticByAyahId(ayah.id) : null,
+        translation: showTranslation ? getQuranTranslationByAyahId(ayah.id, quranTranslationId) : null,
       }))
     : [];
-  const initialCompactTafsir =
-    view === "compact" && compact.current && showTafsir && selectedTafsirId != null
-      ? await getQuranFoundationAyahEnrichment(`${compact.current.surahNumber}:${compact.current.ayahNumber}`, {
-          tafsirIds: [selectedTafsirId],
-        })
-      : null;
 
   const baseQuery = { surahNumber, ayahId };
   const detailQuery = { showPhonetic, showTranslation, showTafsir, tafsirId: selectedTafsirId };
@@ -729,16 +728,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
           showTafsir={showTafsir}
           selectedTafsirId={selectedTafsirId}
           selectedTafsirLabel={selectedTafsirResource?.label ?? null}
-          initialOfficialTafsir={
-            initialCompactTafsir
-              ? {
-                  ayahId: compact.current.id,
-                  status: initialCompactTafsir.status,
-                  detail: initialCompactTafsir.detail,
-                  tafsir: initialCompactTafsir.officialTafsirs[0] ?? null,
-                }
-              : null
-          }
+          initialOfficialTafsir={null}
           ui={ui}
           translationDir={translationDir}
           translationAlignClass={translationAlignClass}

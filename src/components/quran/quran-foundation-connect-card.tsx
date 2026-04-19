@@ -8,7 +8,10 @@ import clsx from "clsx";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
-import { getQuranFoundationFeedbackLabel } from "@/hifzer/quran-foundation/feedback";
+import {
+  getQuranFoundationFeedbackLabel,
+  isQuranFoundationReconnectRequired,
+} from "@/hifzer/quran-foundation/feedback";
 import type { QuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/types";
 
 type QuranFoundationConnectCardProps = {
@@ -49,6 +52,7 @@ export function QuranFoundationConnectCard(props: QuranFoundationConnectCardProp
   }
 
   const linked = status.state === "connected" || status.state === "degraded";
+  const reconnectRequired = isQuranFoundationReconnectRequired(status);
   const shouldRender = props.variant === "onboarding" || Boolean(feedback) || status.state !== "connected";
 
   if (!shouldRender) {
@@ -64,7 +68,9 @@ export function QuranFoundationConnectCard(props: QuranFoundationConnectCardProp
       ? "Quran.com linked"
       : "Link Quran.com";
   const body = linked
-    ? "Your Quran.com account is linked and ready in Hifzer."
+    ? reconnectRequired
+      ? "Your Quran.com account is saved in Hifzer, but it needs to be reconnected before sync can continue."
+      : "Your Quran.com account is linked and ready in Hifzer."
     : "Link Quran.com to bring bookmarks and official Qur'an content into Hifzer.";
 
   return (
@@ -105,12 +111,24 @@ export function QuranFoundationConnectCard(props: QuranFoundationConnectCardProp
       <div className="mt-6 flex flex-wrap items-center gap-2">
         {linked ? (
           <>
-            <Button asChild>
-              <Link href="/settings/quran-foundation">
-                Manage Quran.com
-                <ArrowUpRight size={14} />
-              </Link>
-            </Button>
+            {reconnectRequired ? (
+              <Button
+                onClick={() => {
+                  setConnecting(true);
+                  window.location.href = `/api/quran-foundation/connect?returnTo=${encodeURIComponent(props.returnTo)}`;
+                }}
+                loading={connecting}
+              >
+                Reconnect Quran.com
+              </Button>
+            ) : (
+              <Button asChild>
+                <Link href="/settings/quran-foundation">
+                  Manage Quran.com
+                  <ArrowUpRight size={14} />
+                </Link>
+              </Button>
+            )}
             {props.variant === "hub" ? (
               <Button asChild variant="secondary">
                 <Link href="/quran/bookmarks">

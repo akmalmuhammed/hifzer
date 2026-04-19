@@ -9,6 +9,8 @@ import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import {
   getQuranFoundationFeedbackLabel,
+  hasQuranFoundationGrantedScope,
+  isQuranFoundationReconnectRequired,
   isQuranFoundationScopeApprovalBlocked,
 } from "@/hifzer/quran-foundation/feedback";
 import type { QuranFoundationConnectedOverview, QuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/types";
@@ -129,13 +131,24 @@ export function DashboardConnectedQuranCard() {
     () => (status ? ADVANCED_SYNC_SCOPES.filter((scope) => !status.scopes.includes(scope)) : []),
     [status],
   );
+  const reconnectRequired = isQuranFoundationReconnectRequired(status);
   const needsRelink = Boolean(connected && missingAdvancedScopes.length > 0);
   const scopeApprovalBlocked = isQuranFoundationScopeApprovalBlocked(status, feedbackParam);
-  const hasReadingSessionScope = Boolean(status?.scopes.includes("reading_session"));
-  const hasStreakReadScope = Boolean(status?.scopes.includes("streak.read"));
-  const hasGoalReadScope = Boolean(status?.scopes.includes("goal.read"));
-  const hasCollectionScope = Boolean(status?.scopes.includes("collection"));
-  const hasNoteScope = Boolean(status?.scopes.includes("note"));
+  const hasReadingSessionScope = Boolean(
+    status && hasQuranFoundationGrantedScope(status.scopes, "reading_session", "reading_session.read"),
+  );
+  const hasStreakReadScope = Boolean(
+    status && hasQuranFoundationGrantedScope(status.scopes, "streak", "streak.read"),
+  );
+  const hasGoalReadScope = Boolean(
+    status && hasQuranFoundationGrantedScope(status.scopes, "goal", "goal.read"),
+  );
+  const hasCollectionScope = Boolean(
+    status && hasQuranFoundationGrantedScope(status.scopes, "collection", "collection.read"),
+  );
+  const hasNoteScope = Boolean(
+    status && hasQuranFoundationGrantedScope(status.scopes, "note", "note.read"),
+  );
 
   if (loading && !payload) {
     return <LoadingState />;
@@ -202,7 +215,17 @@ export function DashboardConnectedQuranCard() {
 
           <div className="flex flex-wrap gap-2">
             {connected ? (
-              needsRelink ? (
+              reconnectRequired ? (
+                <Button
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => {
+                    window.location.href = "/api/quran-foundation/connect?returnTo=%2Fdashboard";
+                  }}
+                >
+                  Reconnect Quran.com <ArrowRight size={15} />
+                </Button>
+              ) : needsRelink ? (
                 <Button
                   size="sm"
                   className="gap-2"
@@ -242,7 +265,9 @@ export function DashboardConnectedQuranCard() {
 
         {connected && (status.state === "degraded" || needsRelink) ? (
           <div className={styles.warning}>
-            {needsRelink ? (
+            {reconnectRequired
+              ? "This Quran.com link is saved, but the stored authorization is no longer valid. Reconnect once to restore sync."
+              : needsRelink ? (
               scopeApprovalBlocked
                 ? "This account is linked, but the live Quran.com OAuth client is not approved for the newer streak, goal, and notes scopes yet."
                 : "This account is linked, but it still has the older Quran.com scopes. Reconnect once to unlock activity-day, reading-session, and collection sync for the demo flow."

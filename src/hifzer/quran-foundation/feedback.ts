@@ -2,6 +2,32 @@ import type { QuranFoundationConnectionStatus } from "./types";
 
 const ADVANCED_SCOPE_LABEL =
   "streak, goal, and notes";
+const RECONNECT_ERROR_PATTERNS = [
+  "invalid_grant",
+  "authorization grant",
+  "refresh token",
+  "access token is expired or inactive",
+  "expired or inactive",
+  "issued to another client",
+  "does not match the redirection uri",
+  "revoked",
+] as const;
+
+const RECONNECT_MESSAGE =
+  "Reconnect Quran.com. The stored authorization is no longer valid, so Hifzer cannot refresh the sync token.";
+
+function normalizeError(input: string | null | undefined): string {
+  return input?.trim().toLowerCase() ?? "";
+}
+
+export function hasQuranFoundationGrantedScope(
+  scopes: string[] | string | null | undefined,
+  ...candidates: string[]
+): boolean {
+  const values = Array.isArray(scopes) ? scopes : typeof scopes === "string" ? scopes.split(/\s+/) : [];
+  const granted = new Set(values.map((value) => value.trim()).filter(Boolean));
+  return candidates.some((candidate) => granted.has(candidate));
+}
 
 export function getQuranFoundationFeedbackLabel(param: string | null): string | null {
   if (param === "connected") return "Quran.com account linked.";
@@ -25,7 +51,7 @@ export function getQuranFoundationProviderErrorMessage(
   if (code === "access_denied") {
     return description?.trim() || "Quran.com authorization was cancelled.";
   }
-  return description?.trim() || code;
+  return humanizeQuranFoundationConnectionIssue(description?.trim() || code) ?? code;
 }
 
 export function isQuranFoundationScopeApprovalBlocked(
@@ -37,4 +63,30 @@ export function isQuranFoundationScopeApprovalBlocked(
   }
   const error = status?.lastError?.toLowerCase() ?? "";
   return error.includes("invalid_scope") || error.includes("not approved for the newer");
+}
+
+export function isQuranFoundationReconnectRequired(
+  status: Pick<QuranFoundationConnectionStatus, "state" | "lastError"> | null | undefined,
+): boolean {
+  if (!status || status.state !== "degraded") {
+    return false;
+  }
+  const error = normalizeError(status.lastError);
+  return RECONNECT_ERROR_PATTERNS.some((pattern) => error.includes(pattern));
+}
+
+export function humanizeQuranFoundationConnectionIssue(
+  issue: string | null | undefined,
+): string | null {
+  const error = normalizeError(issue);
+  if (!error) {
+    return null;
+  }
+  if (error.includes("invalid_scope") || error.includes("not approved for the newer")) {
+    return `Quran.com rejected the reauthorization request because this OAuth client is not approved for the newer ${ADVANCED_SCOPE_LABEL} scopes yet.`;
+  }
+  if (RECONNECT_ERROR_PATTERNS.some((pattern) => error.includes(pattern))) {
+    return RECONNECT_MESSAGE;
+  }
+  return issue?.trim() ?? null;
 }

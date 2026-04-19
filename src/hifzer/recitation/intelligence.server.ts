@@ -1,6 +1,7 @@
 import "server-only";
 
 import { MemorizationBand, SrsGrade } from "@prisma/client";
+import { unstable_cache } from "next/cache";
 import { loadTodayState } from "@/hifzer/engine/server";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { getAyahById, getSurahInfo, listAyahsForSurah } from "@/hifzer/quran/lookup.server";
@@ -216,6 +217,8 @@ export type MemorizationIntelligence = {
     meaningFrames: number;
   };
 };
+
+const MEMORIZATION_INTELLIGENCE_CACHE_TTL_SECONDS = 120;
 
 type RecentStruggleEvent = {
   ayahId: number;
@@ -1215,4 +1218,15 @@ export async function getMemorizationIntelligence(clerkUserId: string): Promise<
       meaningFrames: meaningFrames.length,
     },
   };
+}
+
+export function getCachedMemorizationIntelligence(clerkUserId: string) {
+  return unstable_cache(
+    async () => getMemorizationIntelligence(clerkUserId),
+    [`memorization-intelligence:${clerkUserId}`],
+    {
+      revalidate: MEMORIZATION_INTELLIGENCE_CACHE_TTL_SECONDS,
+      tags: [`memorization-intelligence:${clerkUserId}`],
+    },
+  )();
 }

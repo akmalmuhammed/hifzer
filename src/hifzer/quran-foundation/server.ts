@@ -10,6 +10,7 @@ import {
   getQuranFoundationConfig,
 } from "./config";
 import { decryptQuranFoundationSecret, encryptQuranFoundationSecret } from "./crypto";
+import { humanizeQuranFoundationConnectionIssue } from "./feedback";
 import {
   decodeQuranFoundationIdentity,
   refreshQuranFoundationToken,
@@ -253,7 +254,8 @@ export async function getQuranFoundationConnectionStatus(
     available: true,
     state: degraded ? "degraded" : "connected",
     detail: degraded
-      ? context.account.lastError ?? "The Quran.com connection needs attention before remote sync can continue."
+      ? humanizeQuranFoundationConnectionIssue(context.account.lastError) ??
+        "The Quran.com connection needs attention before remote sync can continue."
       : contentApiReady
         ? "Bookmarks can sync to Quran.com and the reader can load Quran Foundation enrichment."
         : "Bookmarks can sync to Quran.com. Add content credentials to enable official reader enrichment.",
@@ -351,11 +353,19 @@ export async function getQuranFoundationUserApiSession(
   try {
     return await refreshStoredAccountTokens({ context, refreshToken });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Could not refresh the Quran.com access token.";
+    const rawMessage = error instanceof Error ? error.message : "Could not refresh the Quran.com access token.";
+    const message = humanizeQuranFoundationConnectionIssue(rawMessage) ?? rawMessage;
     await updateAccount(context.profile.id, {
       status: "degraded",
       lastError: message,
     });
+    if (error instanceof QuranFoundationError && message !== error.message) {
+      throw new QuranFoundationError(message, {
+        status: error.status,
+        code: error.code,
+        retryable: error.retryable,
+      });
+    }
     throw error;
   }
 }

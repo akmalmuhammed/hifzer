@@ -6,8 +6,8 @@ import { PageHeader } from "@/components/app/page-header";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
-import { getDashboardOverview } from "@/hifzer/dashboard/server";
-import { getRecitationInsights } from "@/hifzer/recitation/server";
+import { getCachedDashboardOverview } from "@/hifzer/dashboard/server";
+import { getCachedRecitationInsights } from "@/hifzer/recitation/server";
 
 export const metadata = {
   title: "Fluency",
@@ -20,8 +20,8 @@ export default async function FluencyPage() {
   }
 
   const [overview, insights] = await Promise.all([
-    getDashboardOverview(userId),
-    getRecitationInsights(userId, { challengeLimit: 5, transitionLimit: 5 }),
+    getCachedDashboardOverview(userId),
+    getCachedRecitationInsights(userId, { challengeLimit: 5, transitionLimit: 5 }),
   ]);
 
   return (

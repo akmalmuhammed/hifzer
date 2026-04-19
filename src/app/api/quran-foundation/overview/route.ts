@@ -1,10 +1,44 @@
 import * as Sentry from "@sentry/nextjs";
+import { unstable_cache } from "next/cache";
 import { NextResponse } from "next/server";
 import { getQuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/server";
 import { getQuranFoundationConnectedOverview } from "@/hifzer/quran-foundation/user-features";
 import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 
 export const runtime = "nodejs";
+
+const QURAN_FOUNDATION_OVERVIEW_CACHE_TTL_SECONDS = 120;
+
+function getCachedQuranFoundationOverview(userId: string) {
+  return unstable_cache(
+    async () => {
+      const status = await getQuranFoundationConnectionStatus(userId);
+      let overview = null;
+
+      if (status.state === "connected" || status.state === "degraded") {
+        try {
+          overview = await getQuranFoundationConnectedOverview(userId);
+        } catch (error) {
+          Sentry.captureException(error, {
+            tags: {
+              route: "/api/quran-foundation/overview",
+              phase: "connected-overview",
+            },
+            user: { id: userId },
+            extra: { quranFoundationState: status.state },
+          });
+        }
+      }
+
+      return { status, overview };
+    },
+    [`quran-foundation-overview:${userId}`],
+    {
+      revalidate: QURAN_FOUNDATION_OVERVIEW_CACHE_TTL_SECONDS,
+      tags: [`quran-foundation-overview:${userId}`],
+    },
+  )();
+}
 
 export async function GET(request: Request) {
   const userId = await resolveClerkUserIdForServer(request);
@@ -13,23 +47,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const status = await getQuranFoundationConnectionStatus(userId);
-    let overview = null;
-
-    if (status.state === "connected" || status.state === "degraded") {
-      try {
-        overview = await getQuranFoundationConnectedOverview(userId);
-      } catch (error) {
-        Sentry.captureException(error, {
-          tags: {
-            route: "/api/quran-foundation/overview",
-            phase: "connected-overview",
-          },
-          user: { id: userId },
-          extra: { quranFoundationState: status.state },
-        });
-      }
-    }
+    const { status, overview } = await getCachedQuranFoundationOverview(userId);
 
     return NextResponse.json({
       ok: true,

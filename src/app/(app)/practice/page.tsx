@@ -6,8 +6,8 @@ import { PageHeader } from "@/components/app/page-header";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
-import { getDashboardOverview } from "@/hifzer/dashboard/server";
-import { getMemorizationIntelligence } from "@/hifzer/recitation/intelligence.server";
+import { getCachedDashboardOverview } from "@/hifzer/dashboard/server";
+import { getCachedMemorizationIntelligence } from "@/hifzer/recitation/intelligence.server";
 
 export const metadata = {
   title: "Practice",
@@ -20,8 +20,8 @@ export default async function PracticePage() {
   }
 
   const [overview, intelligence] = await Promise.all([
-    getDashboardOverview(userId),
-    getMemorizationIntelligence(userId),
+    getCachedDashboardOverview(userId),
+    getCachedMemorizationIntelligence(userId),
   ]);
 
   return (

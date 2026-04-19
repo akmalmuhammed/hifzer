@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
-import { getDashboardOverview } from "@/hifzer/dashboard/server";
+import { getCachedDashboardOverview } from "@/hifzer/dashboard/server";
 
 export const metadata = {
   title: "Milestones",
@@ -22,7 +22,7 @@ export default async function MilestonesPage() {
     redirect("/login");
   }
 
-  const overview = await getDashboardOverview(userId);
+  const overview = await getCachedDashboardOverview(userId);
 
   return (
     <div className="space-y-6">

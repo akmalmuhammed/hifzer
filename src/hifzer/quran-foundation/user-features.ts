@@ -5,7 +5,7 @@ import { buildLegacyJournalBlocks, type JournalEntry, type JournalLinkedAyah } f
 import { getAyahById, getSurahInfo } from "@/hifzer/quran/lookup.server";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { db, dbConfigured } from "@/lib/db";
-import { getQuranFoundationConfig } from "./config";
+import { getQuranFoundationConfig, normalizeQuranFoundationScopes } from "./config";
 import {
   getQuranFoundationUserApiSession,
   quranFoundationUserApiRequest,
@@ -274,6 +274,21 @@ async function ensureLinkedQuranFoundationUser(clerkUserId: string) {
     });
   }
   return session;
+}
+
+function hasGrantedScope(scopes: string[] | null | undefined, ...candidates: string[]): boolean {
+  const granted = normalizeQuranFoundationScopes(scopes);
+  return candidates.some((scope) => granted.includes(scope));
+}
+
+function assertGrantedScope(scopes: string[] | null | undefined, candidates: string[], message: string) {
+  if (!hasGrantedScope(scopes, ...candidates)) {
+    throw new QuranFoundationError(message, {
+      status: 412,
+      code: "qf_scope_missing",
+      retryable: false,
+    });
+  }
 }
 
 async function listRemoteCollections(clerkUserId: string): Promise<RemoteCollection[]> {
@@ -549,7 +564,12 @@ export async function syncReadingSessionToQuranFoundation(input: {
   surahNumber: number;
   ayahNumber: number;
 }) {
-  await ensureLinkedQuranFoundationUser(input.clerkUserId);
+  const session = await ensureLinkedQuranFoundationUser(input.clerkUserId);
+  assertGrantedScope(
+    session.account.scopes,
+    ["reading_session", "reading_session.create", "reading_session.update"],
+    "Reconnect Quran.com to grant reading-session sync.",
+  );
   await quranFoundationUserApiRequest(input.clerkUserId, {
     path: "/reading-sessions",
     method: "POST",
@@ -577,7 +597,12 @@ export async function syncActivityDayToQuranFoundation(input: {
     return false;
   }
 
-  await ensureLinkedQuranFoundationUser(input.clerkUserId);
+  const session = await ensureLinkedQuranFoundationUser(input.clerkUserId);
+  assertGrantedScope(
+    session.account.scopes,
+    ["activity_day", "activity_day.create", "activity_day.update", "activity_day.estimate"],
+    "Reconnect Quran.com to grant activity-day sync.",
+  );
   const ranges = buildVerseRangesFromAyahIds(input.ayahIds);
   if (ranges.length === 0) {
     return false;
@@ -623,7 +648,8 @@ export async function syncQuranReadingContinuityToQuranFoundation(input: {
   localDate: string | null;
   timezone: string;
 }) {
-  if (!(await getQuranFoundationUserApiSession(input.clerkUserId))) {
+  const session = await getQuranFoundationUserApiSession(input.clerkUserId);
+  if (!session) {
     return {
       linked: false,
       readingSessionSynced: false,
@@ -631,18 +657,35 @@ export async function syncQuranReadingContinuityToQuranFoundation(input: {
     };
   }
 
+  const canSyncReadingSession = hasGrantedScope(
+    session.account.scopes,
+    "reading_session",
+    "reading_session.create",
+    "reading_session.update",
+  );
+  const canSyncActivityDay = hasGrantedScope(
+    session.account.scopes,
+    "activity_day",
+    "activity_day.create",
+    "activity_day.update",
+  );
+
   const [readingSessionResult, activityDayResult] = await Promise.allSettled([
-    syncReadingSessionToQuranFoundation({
-      clerkUserId: input.clerkUserId,
-      surahNumber: input.latestSurahNumber,
-      ayahNumber: input.latestAyahNumber,
-    }),
-    syncActivityDayToQuranFoundation({
-      clerkUserId: input.clerkUserId,
-      ayahIds: input.ayahIds,
-      localDate: input.localDate,
-      timezone: input.timezone,
-    }),
+    canSyncReadingSession
+      ? syncReadingSessionToQuranFoundation({
+          clerkUserId: input.clerkUserId,
+          surahNumber: input.latestSurahNumber,
+          ayahNumber: input.latestAyahNumber,
+        })
+      : Promise.resolve(),
+    canSyncActivityDay
+      ? syncActivityDayToQuranFoundation({
+          clerkUserId: input.clerkUserId,
+          ayahIds: input.ayahIds,
+          localDate: input.localDate,
+          timezone: input.timezone,
+        })
+      : Promise.resolve(false),
   ]);
 
   const firstFailure = [readingSessionResult, activityDayResult].find((result) => result.status === "rejected");
@@ -655,7 +698,7 @@ export async function syncQuranReadingContinuityToQuranFoundation(input: {
 
   return {
     linked: true,
-    readingSessionSynced: readingSessionResult.status === "fulfilled",
+    readingSessionSynced: canSyncReadingSession && readingSessionResult.status === "fulfilled",
     activityDaySynced: activityDayResult.status === "fulfilled" && Boolean(activityDayResult.value),
   };
 }
@@ -675,7 +718,12 @@ export async function syncBookmarkCollectionsToQuranFoundation(clerkUserId: stri
       code: "db_unavailable",
     });
   }
-  await ensureLinkedQuranFoundationUser(clerkUserId);
+  const session = await ensureLinkedQuranFoundationUser(clerkUserId);
+  assertGrantedScope(
+    session.account.scopes,
+    ["collection", "collection.create", "collection.update"],
+    "Reconnect Quran.com to grant bookmark-collection sync.",
+  );
 
   const categories = await db().bookmarkCategory.findMany({
     where: {
@@ -758,7 +806,12 @@ export async function syncBookmarkCollectionMembershipForBookmark(input: {
   categoryName: string | null | undefined;
 }) {
   const categoryName = normalizeText(input.categoryName);
-  if (!categoryName || !(await getQuranFoundationUserApiSession(input.clerkUserId))) {
+  const session = await getQuranFoundationUserApiSession(input.clerkUserId);
+  if (
+    !categoryName ||
+    !session ||
+    !hasGrantedScope(session.account.scopes, "collection", "collection.create", "collection.update")
+  ) {
     return false;
   }
 
@@ -795,7 +848,11 @@ export async function syncJournalEntryNoteToQuranFoundation(input: {
   clientEntryId: string | null | undefined;
   entry: JournalEntry;
 }) {
-  if (!(await getQuranFoundationUserApiSession(input.clerkUserId))) {
+  const session = await getQuranFoundationUserApiSession(input.clerkUserId);
+  if (!session) {
+    return null;
+  }
+  if (!hasGrantedScope(session.account.scopes, "note", "note.create", "note.update")) {
     return null;
   }
 
@@ -866,7 +923,8 @@ export async function deleteJournalEntryNoteFromQuranFoundation(input: {
   clientEntryId: string | null | undefined;
 }) {
   const remoteNoteId = parseRemoteNoteId(input.clientEntryId);
-  if (!remoteNoteId || !(await getQuranFoundationUserApiSession(input.clerkUserId))) {
+  const session = await getQuranFoundationUserApiSession(input.clerkUserId);
+  if (!remoteNoteId || !session || !hasGrantedScope(session.account.scopes, "note", "note.delete")) {
     return false;
   }
 
@@ -892,7 +950,12 @@ export async function deleteJournalEntryNoteFromQuranFoundation(input: {
 }
 
 export async function listJournalEntriesFromQuranFoundationNotes(clerkUserId: string): Promise<JournalEntry[]> {
-  await ensureLinkedQuranFoundationUser(clerkUserId);
+  const session = await ensureLinkedQuranFoundationUser(clerkUserId);
+  assertGrantedScope(
+    session.account.scopes,
+    ["note", "note.read"],
+    "Quran.com notes are not approved for this client yet.",
+  );
   const notes = await listRemoteNotes(clerkUserId);
 
   return notes.map((note) => {
@@ -927,8 +990,9 @@ export async function getQuranFoundationConnectedOverview(
     return null;
   }
 
+  let session;
   try {
-    const session = await getQuranFoundationUserApiSession(clerkUserId);
+    session = await getQuranFoundationUserApiSession(clerkUserId);
     if (!session) {
       return null;
     }
@@ -944,12 +1008,23 @@ export async function getQuranFoundationConnectedOverview(
     return null;
   }
 
+  const grantedScopes = normalizeQuranFoundationScopes(session.account.scopes);
   const [readingSession, streak, goalPlan, remoteCollections, remoteNotes] = await Promise.allSettled([
-    fetchLatestRemoteReadingSession(clerkUserId),
-    fetchRemoteStreakSummary(clerkUserId),
-    fetchRemoteGoalPlan(clerkUserId, profile.timezone),
-    listRemoteCollections(clerkUserId),
-    listRemoteNotes(clerkUserId),
+    hasGrantedScope(grantedScopes, "reading_session", "reading_session.read")
+      ? fetchLatestRemoteReadingSession(clerkUserId)
+      : Promise.resolve(null),
+    hasGrantedScope(grantedScopes, "streak", "streak.read")
+      ? fetchRemoteStreakSummary(clerkUserId)
+      : Promise.resolve(null),
+    hasGrantedScope(grantedScopes, "goal", "goal.read")
+      ? fetchRemoteGoalPlan(clerkUserId, profile.timezone)
+      : Promise.resolve(null),
+    hasGrantedScope(grantedScopes, "collection", "collection.read")
+      ? listRemoteCollections(clerkUserId)
+      : Promise.resolve([]),
+    hasGrantedScope(grantedScopes, "note", "note.read")
+      ? listRemoteNotes(clerkUserId)
+      : Promise.resolve([]),
   ]);
 
   const overview: QuranFoundationConnectedOverview = {
