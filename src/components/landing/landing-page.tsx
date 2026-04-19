@@ -220,18 +220,59 @@ function HeroChapter() {
 }
 
 function SignalStrip() {
+  const signalPillars = [
+    {
+      label: "Consistency",
+      eyebrow: "Return ready",
+      body: "Return without rebuilding the routine every time.",
+      accent: "rgba(10, 138, 119, 0.28)",
+      edge: "rgba(10, 138, 119, 0.52)",
+    },
+    {
+      label: "Retention",
+      eyebrow: "Memory defense",
+      body: "Protect memorization before weak spots disappear.",
+      accent: "rgba(216, 182, 107, 0.26)",
+      edge: "rgba(176, 132, 46, 0.54)",
+    },
+    {
+      label: "Understanding",
+      eyebrow: "Source grounded",
+      body: "Ask grounded Qur'anic questions without vague guessing.",
+      accent: "rgba(58, 108, 92, 0.24)",
+      edge: "rgba(36, 78, 70, 0.52)",
+    },
+    {
+      label: "Reflection",
+      eyebrow: "Private interior",
+      body: "Keep private notes, duas, and ayah moments together.",
+      accent: "rgba(111, 115, 81, 0.24)",
+      edge: "rgba(87, 92, 61, 0.54)",
+    },
+  ] as const;
+
   return (
     <section className={styles.signalStrip} aria-label="What Hifzer is built around">
-      {[
-        ["Consistency", "Return without rebuilding the routine every time."],
-        ["Retention", "Protect memorization before weak spots disappear."],
-        ["Understanding", "Ask grounded Qur'anic questions without vague guessing."],
-        ["Reflection", "Keep private notes, duas, and ayah moments together."],
-      ].map(([label, body]) => (
-        <div key={label} className={styles.signalItem}>
-          <p>{label}</p>
-          <span>{body}</span>
-        </div>
+      {signalPillars.map((item, index) => (
+        <article
+          key={item.label}
+          className={styles.signalItem}
+          style={{
+            "--signal-accent": item.accent,
+            "--signal-edge": item.edge,
+          } as CSSProperties}
+        >
+          <div className={styles.signalItemGlow} aria-hidden />
+          <div className={styles.signalTopline}>
+            <span className={styles.signalIndex}>{String(index + 1).padStart(2, "0")}</span>
+            <span className={styles.signalEyebrow}>{item.eyebrow}</span>
+          </div>
+          <p className={styles.signalTitle}>{item.label}</p>
+          <span className={styles.signalBody}>{item.body}</span>
+          <div className={styles.signalRule} aria-hidden>
+            <span />
+          </div>
+        </article>
       ))}
     </section>
   );

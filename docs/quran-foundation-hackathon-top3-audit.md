@@ -393,3 +393,179 @@ One-sentence demo hook:
 - [ ] Journal reflection save works.
 - [ ] Demo video follows one loop, not every product surface.
 - [ ] Submission explains Content API, User API, and MCP usage clearly.
+
+## Top-3 Build Checklist
+
+Use this as the execution list for the submission sprint.
+
+### Phase 1 - Must-Have Proof
+
+- [ ] Confirm the live product thesis:
+  Hifzer is a Quran companion with a connected retention loop, not just a hifz tracker.
+- [ ] Lock the demo story to one loop:
+  Dashboard -> Reader -> Official enrichment -> Grounded AI -> Bookmark -> Journal -> Return.
+- [ ] Make sure the first screen in the demo is `/dashboard`, not settings or a public landing page.
+- [ ] Make sure the judge can reach the connected reader in one click from the dashboard.
+- [ ] Keep `/quran/read?view=compact` as the main demo surface.
+
+Acceptance check:
+
+- [ ] A new viewer can understand the product in under 20 seconds.
+- [ ] A judge can see the main value without being told where to click next.
+
+### Phase 2 - Quran Foundation User API Readiness
+
+- [ ] Verify Quran.com OAuth is healthy in production.
+- [ ] Verify the demo account reconnect flow works cleanly.
+- [ ] Request approval for `note`, `note.read`, `note.create`, `note.update`, `note.delete`, `streak.read`, `goal.read`, and optionally `preference.read`.
+- [ ] Update requested scopes in `src/hifzer/quran-foundation/config.ts` after approval.
+- [ ] Update scope tests in `src/hifzer/quran-foundation/config.test.ts`.
+- [ ] Reconnect the demo Quran.com account after the scope update.
+- [ ] Verify `/api/quran-foundation/status` returns healthy state.
+- [ ] Verify `/api/quran-foundation/overview` returns real connected data.
+
+Acceptance check:
+
+- [ ] Dashboard shows linked Quran.com state with no misleading “pending” messaging for approved scopes.
+- [ ] Reader activity creates visible reading-session/activity-day proof.
+- [ ] Bookmarks and notes clearly show connected sync behavior.
+
+### Phase 3 - Mission Control UI
+
+- [ ] Tighten the dashboard Connected Quran card so it reads like a judge-facing proof block.
+- [ ] Surface Content API readiness in plain language.
+- [ ] Surface User API readiness in plain language.
+- [ ] Surface latest resume point from Quran.com reading session.
+- [ ] Surface connected memory summary:
+  collections, notes, bookmark sync, and last successful sync.
+- [ ] Surface one primary action:
+  “Open connected reader”.
+- [ ] Surface one recovery action when scopes are stale:
+  “Refresh permissions” or “Reconnect Quran.com”.
+- [ ] Mirror the same mental model on `/quran` so the story stays consistent.
+
+Acceptance check:
+
+- [ ] A judge can tell which APIs are in use without opening settings.
+- [ ] A stale scope problem has one obvious recovery path.
+
+### Phase 4 - Reader Demo Surface
+
+- [ ] Make the compact reader the strongest single-product surface in the app.
+- [ ] Confirm official tafsir loads reliably for the demo ayah.
+- [ ] Confirm official translation selection is visible and understandable.
+- [ ] Confirm a Quran.com reciter is selected for the demo account.
+- [ ] Confirm Quran.com audio works without weird fallback confusion.
+- [ ] Add or refine subtle provider labels:
+  “Official Quran.com tafsir”, “Quran.com reciter”, “Grounded with Quran MCP”.
+- [ ] Keep bookmark control visible and easy to use on the same screen.
+- [ ] Keep “Explain this ayah” visible without clutter.
+
+Acceptance check:
+
+- [ ] In one reader screen, the judge can see Content API, User API, and MCP-backed value.
+- [ ] Nothing important is hidden behind more than one click.
+
+### Phase 5 - Bookmark And Memory Layer
+
+- [ ] Make bookmark save state legible:
+  local only, synced, or needs reconnect.
+- [ ] Make bookmark sync wording explicitly mention Quran.com when connected.
+- [ ] Verify category-to-collection sync works for the demo account.
+- [ ] Verify `/quran/bookmarks` shows provider and sync state clearly.
+- [ ] If notes scopes are approved, make journal/note sync status visible after reflection save.
+
+Acceptance check:
+
+- [ ] The judge can see that Hifzer is not just reading Quran.com content, it is also writing connected memory back to the user layer.
+
+### Phase 6 - Reflection And Emotional Hook
+
+- [ ] Make AI explanation feel grounded first, useful second, flashy never.
+- [ ] Make the transition from AI explanation to journal reflection feel natural.
+- [ ] Prefill reflection with ayah context and AI reflection prompt.
+- [ ] Preserve source framing so the AI does not feel ungrounded.
+- [ ] Show that journal reflection is private.
+- [ ] If available, show that the reflection can sync into Quran.com notes.
+
+Acceptance check:
+
+- [ ] The product ends the demo on a meaningful personal action, not just a technical feature.
+
+### Phase 7 - Submission Copy And Judge Support
+
+- [ ] Write a final one-sentence hook for the submission.
+- [ ] Write a short description focused on post-Ramadan Quran continuity.
+- [ ] Write a technical explanation that clearly separates:
+  Content API, User API, and Quran MCP usage.
+- [ ] Add a judge-facing proof page such as `/quran-hackathon`, or equivalent public documentation.
+- [ ] Include exact API map, architecture summary, and known limitations.
+- [ ] Make sure public copy stays Quran-companion first, not hifz-only.
+
+Acceptance check:
+
+- [ ] A judge can understand the technical architecture without reading the codebase.
+- [ ] A judge can understand the user value without reading long marketing copy.
+
+### Phase 8 - Demo Recording Preparation
+
+- [ ] Prepare one clean demo account with fresh Quran.com scopes.
+- [ ] Seed the account with realistic bookmark, reading, and reflection state.
+- [ ] Choose one strong ayah for the demo:
+  official tafsir available, AI explanation strong, reflection meaningful.
+- [ ] Verify production deployment before recording.
+- [ ] Verify the Cloudflare AI worker before recording.
+- [ ] Verify the reader, bookmark sync, and journal save flow before recording.
+- [ ] Record mobile and desktop sanity checks if the app will be viewed responsively.
+- [ ] Script the demo to 2-3 minutes and rehearse it.
+
+Acceptance check:
+
+- [ ] The video has no dead clicks, waiting confusion, or explanation detours.
+- [ ] The whole loop completes smoothly in one take.
+
+### Phase 9 - Final Verification
+
+- [ ] Run a pre-submission verification pass on:
+  `/api/quran-foundation/status`
+- [ ] Run a pre-submission verification pass on:
+  `/api/quran-foundation/overview`
+- [ ] Run a pre-submission verification pass on:
+  `/api/quran/content-panel?ayahId=1`
+- [ ] Run a pre-submission verification pass on:
+  `/api/quran/audio-source?ayahId=1&reciterId=[demo-reciter]`
+- [ ] Run a pre-submission verification pass on:
+  `/api/quran/ai-explain`
+- [ ] Verify bookmark create and sync.
+- [ ] Verify journal save and note sync if approved.
+- [ ] Verify no stale “read access pending” states remain in the recorded flow.
+- [ ] Verify no `/today` references appear anywhere in hackathon copy or demo flow.
+
+Acceptance check:
+
+- [ ] Every claim in the submission can be demonstrated live.
+
+### Nice-To-Have If Time Remains
+
+- [ ] Import Quran.com preferences if `preference.read` is approved.
+- [ ] Add a small “Connected Quran” badge trail in the reader and bookmarks flow.
+- [ ] Add a lightweight verification script or runbook for demo-day checks.
+- [ ] Add one architecture diagram for the judge page:
+  Next.js -> Quran Foundation APIs -> Cloudflare AI worker -> Quran MCP.
+
+### Do Not Spend Time Here Unless Everything Above Is Done
+
+- [ ] New social features
+- [ ] Teacher circles expansion
+- [ ] Big new landing experiments
+- [ ] Extra AI modes
+- [ ] Non-essential gamification
+
+## Recommended Build Order
+
+1. Quran Foundation scopes and production readiness
+2. Dashboard mission-control proof block
+3. Reader proof surface
+4. Bookmark plus reflection loop
+5. Judge-facing copy and proof page
+6. Demo rehearsal and final verification

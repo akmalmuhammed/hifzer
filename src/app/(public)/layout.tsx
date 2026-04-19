@@ -5,7 +5,12 @@ import { PublicAuthProvider } from "@/components/landing/public-auth-context";
 import { DEFAULT_UI_LANGUAGE } from "@/hifzer/i18n/ui-language";
 import { DEFAULT_THEME_DOCUMENT_STATE } from "@/hifzer/theme/preferences";
 import { clerkEnabled } from "@/lib/clerk-config";
-import { marketingDisplayFont, quranFont } from "@/lib/fonts";
+import {
+  marketingAccentMonoFont,
+  marketingDisplayFont,
+  marketingEditorialFont,
+  quranFont,
+} from "@/lib/fonts";
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   const authEnabled = clerkEnabled();
@@ -17,7 +22,15 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       initialThemeState={DEFAULT_THEME_DOCUMENT_STATE}
     >
       <PublicAuthProvider authEnabled={authEnabled}>
-        <div className={`min-h-dvh ${marketingDisplayFont.variable} ${quranFont.variable}`}>
+        <div
+          className={[
+            "min-h-dvh",
+            marketingDisplayFont.variable,
+            marketingEditorialFont.variable,
+            marketingAccentMonoFont.variable,
+            quranFont.variable,
+          ].join(" ")}
+        >
           <MarketingNav />
           <main id="main-content" className="w-full overflow-x-hidden">
             {children}
