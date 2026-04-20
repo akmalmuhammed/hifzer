@@ -11,8 +11,8 @@ import { Pill } from "@/components/ui/pill";
 const ROWS = [
   { feature: "Spaced repetition (SRS)", teacher: false, generic: true, hifzer: true },
   { feature: "Sabaq / Sabqi / Manzil tiers", teacher: true, generic: false, hifzer: true },
-  { feature: "Review debt protection", teacher: false, generic: false, hifzer: true },
-  { feature: "Quality gates (warm-up + weekly)", teacher: false, generic: false, hifzer: true },
+  { feature: "Protects review from piling up", teacher: false, generic: false, hifzer: true },
+  { feature: "Memory checks before moving ahead", teacher: false, generic: false, hifzer: true },
   { feature: "Transition / link tracking", teacher: "partial", generic: false, hifzer: true },
   { feature: "Adapts to missed days", teacher: false, generic: false, hifzer: true },
   { feature: "Mode switching (auto)", teacher: false, generic: false, hifzer: true },

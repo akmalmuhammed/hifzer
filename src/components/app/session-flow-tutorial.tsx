@@ -60,7 +60,7 @@ const STEPS: TutorialStep[] = [
     key: "grade",
     title: "Grade",
     what: "Choose Again, Hard, Good, or Easy after each attempt.",
-    why: "Your grade controls spacing and keeps tomorrow's queue accurate.",
+    why: "Your grade controls spacing and keeps tomorrow's review accurate.",
   },
 ];
 

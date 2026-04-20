@@ -77,7 +77,7 @@ const LANES: Lane[] = [
     milestones: [
       {
         title: "Native iOS app",
-        detail: "Focused daily workflow with offline recitation loops, queue sync, and push reminders.",
+        detail: "Focused daily workflow with offline recitation loops, progress sync, and push reminders.",
         status: "planned",
       },
       {

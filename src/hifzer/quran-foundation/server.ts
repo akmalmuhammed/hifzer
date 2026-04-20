@@ -209,8 +209,7 @@ export async function getQuranFoundationConnectionStatus(
     return {
       available: false,
       state: "not_configured",
-      detail:
-        "Set the Quran.com OAuth client ID, client secret, and token encryption secret to enable Quran.com account linking.",
+      detail: "Quran.com linking is not available right now.",
       userApiReady,
       contentApiReady,
       displayName: null,
@@ -226,7 +225,7 @@ export async function getQuranFoundationConnectionStatus(
     return {
       available: true,
       state: "disconnected",
-      detail: "Sign in, then link a Quran.com account to sync bookmarks, notes, and streak context.",
+      detail: "Sign in to connect Quran.com and bring in your reading place, bookmarks, and notes.",
       userApiReady,
       contentApiReady,
       displayName: null,
@@ -243,7 +242,7 @@ export async function getQuranFoundationConnectionStatus(
     return {
       available: false,
       state: "not_configured",
-      detail: "Quran.com linking is unavailable until the latest database migrations are applied.",
+      detail: "Quran.com linking is temporarily unavailable while Hifzer finishes an update.",
       userApiReady,
       contentApiReady,
       displayName: null,
@@ -258,7 +257,7 @@ export async function getQuranFoundationConnectionStatus(
     return {
       available: true,
       state: "disconnected",
-      detail: "Link your Quran.com account to sync bookmarks, notes, streaks, and official enrichment.",
+      detail: "Connect Quran.com to bring in your reading place, bookmarks, notes, and official reader extras.",
       userApiReady,
       contentApiReady,
       displayName: null,
@@ -278,10 +277,10 @@ export async function getQuranFoundationConnectionStatus(
     state: degraded ? "degraded" : "connected",
     detail: degraded
       ? humanizeQuranFoundationConnectionIssue(context.account.lastError) ??
-        "The Quran.com connection needs attention before remote sync can continue."
+        "Your Quran.com connection needs attention before syncing can continue."
       : contentApiReady
-        ? "Bookmarks, notes, streak context, and official Quran Foundation enrichment are available."
-        : "Bookmarks, notes, and streak context can sync to Quran.com. Add content credentials to enable official reader enrichment.",
+        ? "Your reading place, bookmarks, notes, and official reader extras are ready in Hifzer."
+        : "Your reading place, bookmarks, and notes are ready in Hifzer.",
     userApiReady,
     contentApiReady,
     displayName: context.account.displayName,

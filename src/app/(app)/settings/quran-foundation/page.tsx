@@ -20,7 +20,7 @@ export default async function QuranFoundationSettingsPage() {
     <div className="space-y-6">
       <SettingsDetailHeader
         title="Quran.com"
-        subtitle="Link and sync Quran.com."
+        subtitle="Keep your Quran.com reading place, bookmarks, and notes together in Hifzer."
       />
       <QuranFoundationSettingsClient initialStatus={status} initialOverview={overview} />
     </div>

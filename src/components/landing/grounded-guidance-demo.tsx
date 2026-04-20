@@ -165,7 +165,7 @@ export function GroundedGuidanceDemo() {
       <div className={styles.header}>
         <div className={styles.pills}>
           <Pill tone="accent">AI assistant</Pill>
-          <Pill tone="neutral">Quran MCP grounded</Pill>
+          <Pill tone="neutral">Grounded in trusted Qur&apos;an sources</Pill>
         </div>
         <span className={styles.sampleLabel}>Stored sample</span>
       </div>

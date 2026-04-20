@@ -14,12 +14,12 @@ describe("quran foundation feedback helpers", () => {
   });
 
   it("returns a clear message for invalid_scope redirects", () => {
-    expect(getQuranFoundationFeedbackLabel("invalid_scope")).toContain("not approved");
+    expect(getQuranFoundationFeedbackLabel("invalid_scope")).toContain("newest");
   });
 
   it("maps invalid_scope provider errors to a friendly stored message", () => {
     expect(getQuranFoundationProviderErrorMessage("invalid_scope", "scope mismatch")).toContain(
-      "not approved",
+      "newest",
     );
   });
 
@@ -31,7 +31,7 @@ describe("quran foundation feedback helpers", () => {
     expect(
       isQuranFoundationScopeApprovalBlocked({
         lastError:
-          "Quran.com rejected the reauthorization request because this OAuth client is not approved for the newer streak, goal, reading-session, collection, and notes scopes yet.",
+          "Quran.com has not enabled the newest reading place, streak, and notes permissions for Hifzer yet. Please try again later.",
       }),
     ).toBe(true);
   });

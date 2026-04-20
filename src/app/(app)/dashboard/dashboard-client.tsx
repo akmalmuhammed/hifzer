@@ -995,7 +995,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                   <QuickActionCard
                     href="/hifz"
                     eyebrow="Hifz"
-                    title="Review"
+                    title={shouldShowGuide ? "Open Hifz" : "Review"}
                     note={
                       summary.reviewHealth.dueNow > 0
                         ? `${summary.reviewHealth.dueNow} due now`
@@ -1003,28 +1003,33 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                     }
                     icon={PlayCircle}
                   />
-                  <QuickActionCard
-                    href="/dua"
-                    eyebrow="Dua"
-                    title="Dua"
-                    icon={MoonStar}
-                  />
-                  <QuickActionCard
-                    href="/journal"
-                    eyebrow="Journal"
-                    title="Reflect"
-                    icon={SquarePen}
-                  />
+                  {!shouldShowGuide ? (
+                    <>
+                      <QuickActionCard
+                        href="/dua"
+                        eyebrow="Dua"
+                        title="Dua"
+                        icon={MoonStar}
+                      />
+                      <QuickActionCard
+                        href="/journal"
+                        eyebrow="Journal"
+                        title="Reflect"
+                        icon={SquarePen}
+                      />
+                    </>
+                  ) : null}
                 </div>
+                {shouldShowGuide ? (
+                  <p className="text-sm leading-7 text-[color:var(--kw-muted)]">
+                    Start with reading or Hifz first. Dua and reflection will still be here when you want them.
+                  </p>
+                ) : null}
               </div>
             </div>
           </section>
 
-          <div className="kw-fade-in" style={{ animationDelay: "36ms" }}>
-            <DashboardConnectedQuranCard />
-          </div>
-
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className={`grid gap-5 md:grid-cols-2 ${shouldShowGuide ? "" : "xl:grid-cols-4"}`}>
             <MetricTile
               label="This week"
               value={summary.kpis.totalSessionMinutes7d}
@@ -1035,14 +1040,16 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
               foot={<Sparkline values={summary.sessionTrend14d.map((d) => d.minutes)} tone="accent" className={styles.metricSparkline} />}
             />
 
-            <MetricTile
-              label="Recall"
-              value={summary.kpis.retentionScore14d}
-              icon={Gauge}
-              tone="neutral"
-              delayMs={80}
-              foot={<Sparkline values={trendRecall} tone="brand" className={styles.metricSparkline} />}
-            />
+            {!shouldShowGuide ? (
+              <MetricTile
+                label="Recall"
+                value={summary.kpis.retentionScore14d}
+                icon={Gauge}
+                tone="neutral"
+                delayMs={80}
+                foot={<Sparkline values={trendRecall} tone="brand" className={styles.metricSparkline} />}
+              />
+            ) : null}
 
             <MetricTile
               label="Review due"
@@ -1058,7 +1065,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
               )}
             />
 
-            {streak ? (
+            {!shouldShowGuide && streak ? (
               <MetricTile
                 label="Streak"
                 value={`${streak.currentStreakDays}d`}
@@ -1068,7 +1075,9 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                 delayMs={160}
                 foot={<Pill tone="neutral">Today ayahs: {streak.todayQualifiedAyahs}</Pill>}
               />
-            ) : (
+            ) : null}
+
+            {!shouldShowGuide && !streak ? (
               <MetricTile
                 label="Streak"
                 value={loadingStreak ? "..." : "Unavailable"}
@@ -1077,7 +1086,11 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                 tone="neutral"
                 delayMs={160}
               />
-            )}
+            ) : null}
+          </div>
+
+          <div className="kw-fade-in" style={{ animationDelay: "36ms" }}>
+            <DashboardConnectedQuranCard mode={shouldShowGuide ? "simple" : "full"} />
           </div>
 
           <DisclosureCard

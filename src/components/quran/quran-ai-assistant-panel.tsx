@@ -92,7 +92,7 @@ export function QuranAiAssistantPanel(props: { ayahId?: number | null; compact?:
     <Card className={props.compact ? "mt-4" : "mt-5"}>
       <div className="flex flex-wrap items-center gap-2">
         <Pill tone="accent">AI assistant</Pill>
-        <Pill tone="neutral">Quran MCP grounded</Pill>
+        <Pill tone="neutral">Grounded in trusted Qur&apos;an sources</Pill>
       </div>
 
       <div className="mt-3">

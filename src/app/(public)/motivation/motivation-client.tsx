@@ -39,7 +39,7 @@ const MOTIVATION_TILES: MotivationTile[] = [
   { category: "Hifz", title: "Your tongue repeats. Your heart records.", source: "Hifzer Method" },
   { category: "Progress", title: "Protect your rhythm and your rhythm will protect you.", source: "Hifzer Principle" },
   { category: "Qur'an", title: "Never underestimate one sincere return to Allah.", source: "Qur'an 2:186" },
-  { category: "Hifz", title: "Review debt shrinks when you act early.", source: "Hifzer Method" },
+  { category: "Hifz", title: "Review pressure shrinks when you act early.", source: "Hifzer Method" },
   { category: "Progress", title: "The disciplined become unstoppable with time.", source: "Hifzer Principle" },
   { category: "Qur'an", title: "Make the Qur'an your daily meeting, not a someday goal.", source: "Qur'an 20:14" },
   { category: "Hifz", title: "Precision in tajweed is respect for revelation.", source: "Qur'an 73:4" },

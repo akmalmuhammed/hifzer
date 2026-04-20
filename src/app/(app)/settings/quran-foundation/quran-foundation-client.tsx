@@ -23,6 +23,19 @@ const ADVANCED_SYNC_SCOPES = [
   "note",
 ] as const;
 
+function connectionStateLabel(state: QuranFoundationConnectionStatus["state"]): string {
+  if (state === "connected") {
+    return "Connected";
+  }
+  if (state === "degraded") {
+    return "Needs attention";
+  }
+  if (state === "disconnected") {
+    return "Not connected";
+  }
+  return "Unavailable";
+}
+
 export function QuranFoundationSettingsClient(props: {
   initialStatus: QuranFoundationConnectionStatus;
   initialOverview: QuranFoundationConnectedOverview | null;
@@ -39,7 +52,7 @@ export function QuranFoundationSettingsClient(props: {
     try {
       const response = await fetch(path, { method: "POST" });
       if (!response.ok) {
-        throw new Error((await response.json().catch(() => null))?.error ?? "Request failed.");
+        throw new Error((await response.json().catch(() => null))?.error ?? "Something went wrong.");
       }
       router.refresh();
       window.history.replaceState(null, "", "/settings/quran-foundation");
@@ -51,8 +64,8 @@ export function QuranFoundationSettingsClient(props: {
     } catch (error) {
       pushToast({
         tone: "warning",
-        title: "Quran.com request failed",
-        message: error instanceof Error ? error.message : "Request failed.",
+        title: "Quran.com action failed",
+        message: error instanceof Error ? error.message : "Something went wrong.",
       });
     } finally {
       setBusyKey(null);
@@ -71,7 +84,6 @@ export function QuranFoundationSettingsClient(props: {
     "reading_session.read",
   );
   const hasStreakReadScope = hasQuranFoundationGrantedScope(status.scopes, "streak", "streak.read");
-  const hasGoalReadScope = hasQuranFoundationGrantedScope(status.scopes, "goal", "goal.read");
   const hasCollectionScope = hasQuranFoundationGrantedScope(status.scopes, "collection", "collection.read");
   const hasNoteScope = hasQuranFoundationGrantedScope(status.scopes, "note", "note.read");
 
@@ -82,32 +94,32 @@ export function QuranFoundationSettingsClient(props: {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <Pill tone={status.state === "connected" ? "accent" : status.state === "degraded" ? "warn" : "neutral"}>
-                {status.state.replace("_", " ")}
+                {connectionStateLabel(status.state)}
               </Pill>
-              {status.userApiReady ? <Pill tone="neutral">User API ready</Pill> : null}
-              {status.contentApiReady ? <Pill tone="neutral">Content API ready</Pill> : <Pill tone="warn">Content API pending</Pill>}
+              {status.contentApiReady ? <Pill tone="neutral">Official tafsir and audio</Pill> : null}
+              {needsRelink ? <Pill tone="warn">Reconnect needed</Pill> : null}
             </div>
             <p className="mt-3 text-sm font-semibold text-[color:var(--kw-ink)]">
               {status.displayName ?? status.email ?? "Quran.com connection"}
             </p>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">{status.detail}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Pill tone="neutral">Reading place</Pill>
+              <Pill tone="neutral">Bookmarks</Pill>
+              <Pill tone="neutral">Bookmark folders</Pill>
+              <Pill tone="neutral">Notes</Pill>
+              {status.contentApiReady ? <Pill tone="neutral">Official tafsir and audio</Pill> : null}
+            </div>
             {status.lastSyncedAt ? (
               <p className="mt-2 text-xs text-[color:var(--kw-faint)]">Last synced: {new Date(status.lastSyncedAt).toLocaleString()}</p>
             ) : null}
             {reconnectRequired || needsRelink ? (
               <div className="mt-3 rounded-[18px] border border-[rgba(214,153,46,0.25)] bg-[rgba(214,153,46,0.08)] px-4 py-3 text-sm text-[color:var(--kw-muted)]">
                 {reconnectRequired
-                  ? "The stored Quran.com authorization is no longer valid. Reconnect once so Hifzer can refresh tokens and resume sync."
+                  ? "This Quran.com connection needs to be renewed before syncing can continue."
                   : scopeApprovalBlocked
-                  ? "The live Quran.com OAuth client is not approved for the newer streak and notes scopes yet. Retrying authorization will keep failing until Quran Foundation enables those scopes for this client."
-                  : "Reconnect Quran.com once to grant the approved activity-day, reading-session, collection, streak, and note permissions."}
-              </div>
-            ) : null}
-            {status.scopes.length > 0 ? (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {status.scopes.map((scope) => (
-                  <Pill key={scope} tone="neutral">{scope}</Pill>
-                ))}
+                  ? "Quran.com has not enabled the newest permissions for Hifzer yet. Your connection is safe, but some extras are still waiting."
+                  : "Reconnect once so Hifzer can sync your reading place, bookmark folders, and notes more fully."}
               </div>
             ) : null}
           </div>
@@ -121,64 +133,9 @@ export function QuranFoundationSettingsClient(props: {
                       window.location.href = `/api/quran-foundation/connect?returnTo=${encodeURIComponent("/settings/quran-foundation")}`;
                     }}
                   >
-                    {reconnectRequired
-                      ? "Reconnect Quran.com"
-                      : scopeApprovalBlocked
-                        ? "Retry authorization"
-                        : "Refresh permissions"}
+                    Reconnect Quran.com
                   </Button>
                 ) : null}
-                <Button
-                  variant="secondary"
-                  onClick={() => void post("/api/quran-foundation/bookmarks/push", "Existing bookmarks synced to Quran.com.")}
-                  loading={busyKey === "/api/quran-foundation/bookmarks/push"}
-                  disabled={reconnectRequired}
-                >
-                  Sync local bookmarks
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => void post("/api/quran-foundation/bookmarks/hydrate", "Quran.com bookmarks imported into Hifzer.")}
-                  loading={busyKey === "/api/quran-foundation/bookmarks/hydrate"}
-                  disabled={reconnectRequired}
-                >
-                  Import Quran.com bookmarks
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => void post("/api/quran-foundation/collections/sync", "Bookmark collections synced to Quran.com.")}
-                  loading={busyKey === "/api/quran-foundation/collections/sync"}
-                  disabled={reconnectRequired || !hasCollectionScope}
-                >
-                  Sync bookmark collections
-                </Button>
-                {hasNoteScope ? (
-                  <>
-                    <Button
-                      variant="secondary"
-                      onClick={() => void post("/api/quran-foundation/notes/push", "Local journal entries synced to Quran.com notes.")}
-                      loading={busyKey === "/api/quran-foundation/notes/push"}
-                      disabled={reconnectRequired}
-                    >
-                      Sync local journal notes
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={() => void post("/api/quran-foundation/notes/hydrate", "Quran.com notes imported into your journal.")}
-                      loading={busyKey === "/api/quran-foundation/notes/hydrate"}
-                      disabled={reconnectRequired}
-                    >
-                      Import Quran.com notes
-                    </Button>
-                  </>
-                ) : null}
-                <Button
-                  variant="danger"
-                  onClick={() => void post("/api/quran-foundation/disconnect", "Quran.com account disconnected.")}
-                  loading={busyKey === "/api/quran-foundation/disconnect"}
-                >
-                  Disconnect
-                </Button>
               </>
             ) : (
               <Button
@@ -186,7 +143,7 @@ export function QuranFoundationSettingsClient(props: {
                   window.location.href = `/api/quran-foundation/connect?returnTo=${encodeURIComponent("/settings/quran-foundation")}`;
                 }}
               >
-                Link Quran.com account
+                Connect Quran.com
               </Button>
             )}
             <Button variant="ghost" className="gap-2" onClick={() => router.refresh()}>
@@ -198,81 +155,164 @@ export function QuranFoundationSettingsClient(props: {
 
       {overview ? (
         <Card>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Reading session</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Reading place</p>
               <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
                 {hasReadingSessionScope && overview.readingSession
                   ? `Surah ${overview.readingSession.surahNumber}:${overview.readingSession.ayahNumber}`
                   : hasReadingSessionScope
-                    ? "Not synced yet"
-                    : "Pending reconnect"}
+                    ? "Not saved yet"
+                    : "Reconnect needed"}
               </p>
               <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
                 {hasReadingSessionScope && overview.readingSession?.updatedAt
-                  ? `Updated ${new Date(overview.readingSession.updatedAt).toLocaleString()}`
+                  ? `Last updated ${new Date(overview.readingSession.updatedAt).toLocaleString()}`
                   : hasReadingSessionScope
-                    ? "Resume points can travel between Hifzer and Quran.com."
-                    : "Reconnect once to unlock reading-session sync."}
+                    ? "Your place in the Qur'an can travel between Hifzer and Quran.com."
+                    : "Reconnect once to sync your reading place."}
               </p>
             </div>
 
             <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Quran.com streak</p>
               <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
-                {hasStreakReadScope ? `${overview.streak ? `${overview.streak.currentDays} days` : "No streak data yet"}` : "Read access pending"}
+                {hasStreakReadScope ? `${overview.streak ? `${overview.streak.currentDays} days` : "No streak yet"}` : "Reconnect needed"}
               </p>
               <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
                 {hasStreakReadScope
                   ? overview.streak?.bestDays
                     ? `Best so far: ${overview.streak.bestDays} days`
-                    : "Activity days keep the external streak updated."
-                  : "Reconnect once to grant Quran.com streak readback."}
+                    : "Your Quran.com streak will appear here as you keep going."
+                  : "Reconnect once to show your Quran.com streak here."}
               </p>
             </div>
 
             <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Today&apos;s goal</p>
-              <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
-                {hasGoalReadScope ? overview.goalPlan?.title ?? "No Quran.com goal found" : "Read access pending"}
-              </p>
-              <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
-                {hasGoalReadScope
-                  ? overview.goalPlan?.remaining ?? "If you set a Quran.com goal, it will appear here."
-                  : "Quran.com has not approved goal readback for this client yet."}
-              </p>
-            </div>
-
-            <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Collections</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Bookmark folders</p>
               <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
                 {hasCollectionScope
                   ? overview.collections
-                    ? `${overview.collections.count} remote collections`
-                    : "Not synced yet"
-                  : "Pending reconnect"}
+                    ? `${overview.collections.count} folders`
+                    : "No folders yet"
+                  : "Reconnect needed"}
               </p>
               <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
                 {hasCollectionScope
-                  ? "Bookmark categories can export into Quran.com collections."
-                  : "Reconnect once to unlock collection sync."}
+                  ? "Your bookmark folders can stay together between Quran.com and Hifzer."
+                  : "Reconnect once to sync bookmark folders."}
               </p>
             </div>
 
             <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Private notes</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Notes and reflections</p>
               <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
                 {hasNoteScope
                   ? overview.notes
-                    ? `${overview.notes.count} Quran.com notes`
-                    : "No imported notes yet"
-                  : "Pending approval"}
+                    ? `${overview.notes.count} notes`
+                    : "No notes yet"
+                  : "Reconnect needed"}
               </p>
               <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
                 {hasNoteScope
-                  ? "Journal reflections stay private and can sync through Quran.com notes."
-                  : "Reconnect once to grant Quran.com notes sync."}
+                  ? "Private reflections and notes can stay together across both apps."
+                  : "Reconnect once to sync notes and reflections."}
               </p>
+            </div>
+          </div>
+        </Card>
+      ) : null}
+
+      {status.state === "connected" || status.state === "degraded" ? (
+        <Card>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Manage what stays in sync</p>
+              <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
+                Most syncing happens while you read, bookmark, and reflect. Use these actions only when you want to move existing items between Hifzer and Quran.com.
+              </p>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">Bring into Hifzer</p>
+                <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">Pull your saved Quran.com items here</p>
+                <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+                  Use this when you want your Quran.com bookmarks or notes to appear inside Hifzer right away.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Button
+                    variant="secondary"
+                    onClick={() => void post("/api/quran-foundation/bookmarks/hydrate", "Quran.com bookmarks imported into Hifzer.")}
+                    loading={busyKey === "/api/quran-foundation/bookmarks/hydrate"}
+                    disabled={reconnectRequired}
+                  >
+                    Bring Quran.com bookmarks into Hifzer
+                  </Button>
+                  {hasNoteScope ? (
+                    <Button
+                      variant="secondary"
+                      onClick={() => void post("/api/quran-foundation/notes/hydrate", "Quran.com notes imported into your journal.")}
+                      loading={busyKey === "/api/quran-foundation/notes/hydrate"}
+                      disabled={reconnectRequired}
+                    >
+                      Bring Quran.com notes into Hifzer
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">Save from Hifzer</p>
+                <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">Send your latest Hifzer memory back to Quran.com</p>
+                <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+                  Use this when you want your Hifzer bookmarks, folders, or reflections saved into your Quran.com account.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Button
+                    variant="secondary"
+                    onClick={() => void post("/api/quran-foundation/bookmarks/push", "Your Hifzer bookmarks were saved to Quran.com.")}
+                    loading={busyKey === "/api/quran-foundation/bookmarks/push"}
+                    disabled={reconnectRequired}
+                  >
+                    Save Hifzer bookmarks to Quran.com
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => void post("/api/quran-foundation/collections/sync", "Your bookmark folders were saved to Quran.com.")}
+                    loading={busyKey === "/api/quran-foundation/collections/sync"}
+                    disabled={reconnectRequired || !hasCollectionScope}
+                  >
+                    Save bookmark folders to Quran.com
+                  </Button>
+                  {hasNoteScope ? (
+                    <Button
+                      variant="secondary"
+                      onClick={() => void post("/api/quran-foundation/notes/push", "Your journal reflections were saved to Quran.com notes.")}
+                      loading={busyKey === "/api/quran-foundation/notes/push"}
+                      disabled={reconnectRequired}
+                    >
+                      Save journal reflections to Quran.com
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-[20px] border border-[rgba(148,163,184,0.18)] bg-[rgba(255,255,255,0.58)] px-4 py-4">
+              <div>
+                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Need to disconnect?</p>
+                <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">
+                  You can remove this connection at any time. Your Hifzer account stays intact.
+                </p>
+              </div>
+              <Button
+                variant="danger"
+                onClick={() => void post("/api/quran-foundation/disconnect", "Quran.com account disconnected.")}
+                loading={busyKey === "/api/quran-foundation/disconnect"}
+              >
+                Disconnect Quran.com
+              </Button>
             </div>
           </div>
         </Card>

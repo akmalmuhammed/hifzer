@@ -29,7 +29,7 @@ export default async function PracticePage() {
       <PageHeader
         eyebrow="Practice"
         title="Practice drills"
-        subtitle="Target the exact places where recall bends: similar ayahs, weak seams, rescue work, and meaning cues. None of this mutates today's scheduled Hifz queue."
+        subtitle="Target the exact places where recall bends: similar ayahs, weak seams, rescue work, and meaning cues. This supports today&apos;s Hifz plan without moving you ahead too fast."
       />
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -52,7 +52,7 @@ export default async function PracticePage() {
           <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
             {intelligence?.metrics.weakSeams ?? 0}
           </p>
-          <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Open transition repairs that deserve seam-only drilling, separate from the normal ayah queue.</p>
+          <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Open transition repairs that deserve seam-only drilling, separate from your main Hifz flow.</p>
         </Card>
       </div>
 
@@ -88,7 +88,7 @@ export default async function PracticePage() {
           ) : (
             <div className="mt-4">
               <EmptyState
-                title="No rescue work queued"
+                title="No rescue work yet"
                 message="Once recent weak points accumulate, Hifzer will build a short recovery session here."
                 icon={<RotateCcw size={18} />}
               />
@@ -210,7 +210,7 @@ export default async function PracticePage() {
           ) : (
             <div className="mt-3">
               <EmptyState
-                title="No new ayahs queued today"
+                title="No new ayahs planned today"
                 message="Meaning cues appear when today's Hifz plan contains new memorization."
                 icon={<BookOpenText size={18} />}
               />
@@ -224,7 +224,7 @@ export default async function PracticePage() {
           <div>
             <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Scheduled pressure still matters</p>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-              These drills are deliberately separate from the official Hifz queue. They help you stabilise weak points without silently advancing progression or bypassing the daily gate logic.
+              These drills stay separate from your main Hifz plan. They help you steady weak points without quietly pushing new memorization forward before you are ready.
             </p>
           </div>
           <Link

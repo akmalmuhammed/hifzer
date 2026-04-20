@@ -571,7 +571,7 @@ export async function syncReadingSessionToQuranFoundation(input: {
   assertGrantedScope(
     session.account.scopes,
     ["reading_session", "reading_session.create", "reading_session.update"],
-    "Reconnect Quran.com to grant reading-session sync.",
+    "Reconnect Quran.com to sync your reading place.",
   );
   await quranFoundationUserApiRequest(input.clerkUserId, {
     path: "/reading-sessions",
@@ -604,7 +604,7 @@ export async function syncActivityDayToQuranFoundation(input: {
   assertGrantedScope(
     session.account.scopes,
     ["activity_day", "activity_day.create", "activity_day.update", "activity_day.estimate"],
-    "Reconnect Quran.com to grant activity-day sync.",
+    "Reconnect Quran.com to sync your reading activity.",
   );
   const ranges = buildVerseRangesFromAyahIds(input.ayahIds);
   if (ranges.length === 0) {
@@ -725,7 +725,7 @@ export async function syncBookmarkCollectionsToQuranFoundation(clerkUserId: stri
   assertGrantedScope(
     session.account.scopes,
     ["collection", "collection.create", "collection.update"],
-    "Reconnect Quran.com to grant bookmark-collection sync.",
+    "Reconnect Quran.com to sync bookmark folders.",
   );
 
   const categories = await db().bookmarkCategory.findMany({
@@ -960,7 +960,7 @@ export async function listJournalEntriesFromQuranFoundationNotes(clerkUserId: st
   assertGrantedScope(
     session.account.scopes,
     ["note", "note.read"],
-    "Quran.com notes are not approved for this client yet.",
+    "Quran.com notes are not available for this connection yet.",
   );
   const notes = await listRemoteNotes(clerkUserId);
 

@@ -17,7 +17,7 @@ export const metadata = {
 const CORE_FEATURES = [
   "Daily reading and listening",
   "Bookmarks, translations, and reminders",
-  "Core Hifz plan, session flow, and review queue",
+  "Core Hifz plan, guided sessions, and daily review",
   "Basic fluency and progress surfaces",
 ];
 
@@ -59,7 +59,7 @@ export default async function BillingUpgradePage() {
                 $0
               </p>
               <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                Reading, hifz, and dua remain available without a subscription gate.
+                Reading, Hifz, and dua remain available without a subscription.
               </p>
             </div>
             <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)]">
@@ -82,7 +82,7 @@ export default async function BillingUpgradePage() {
             <div>
               <Pill tone="accent">One-time support</Pill>
               <p className="mt-3 text-3xl font-[family-name:var(--font-kw-display)] tracking-tight text-[color:var(--kw-ink)]">
-                Custom scope
+                Flexible help
               </p>
               <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
                 One-time checkout for Hifzer-related support through Paddle. No recurring billing and no subscription plan change.

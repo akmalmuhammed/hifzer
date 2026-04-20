@@ -62,7 +62,7 @@ export const LANDING_GUIDANCE_DEMO: LandingGuidanceDemo = {
       { label: "Quran 2:153", kind: "quran" },
       { label: "Sahih translation", kind: "translation" },
       { label: "Tafsir summary", kind: "tafsir" },
-      { label: "Quran MCP grounded", kind: "other" },
+      { label: "Grounded in trusted Qur'an sources", kind: "other" },
     ],
   },
   assistant: {

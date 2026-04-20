@@ -30,8 +30,7 @@ export default async function QuranBookmarksPage() {
           Smart bookmark system
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
-          Save multiple ayah bookmarks, organize them by category, and keep personal notes. Pending changes stay queued
-          locally until sync succeeds.
+          Save multiple ayah bookmarks, organize them by category, and keep personal notes. If you go offline, your latest changes stay on this device until sync finishes.
         </p>
       </div>
 

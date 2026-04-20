@@ -29,7 +29,7 @@ export default async function FluencyPage() {
       <PageHeader
         eyebrow="Fluency"
         title="Fluency track"
-        subtitle="This track is for smoother recitation, fewer stops, and better forward flow. It is deliberately separate from the Hifz queue."
+        subtitle="This track is for smoother recitation, fewer stops, and better forward flow. It stays separate from your main Hifz plan."
       />
 
       <div className="grid gap-4 md:grid-cols-3">

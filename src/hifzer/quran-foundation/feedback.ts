@@ -1,7 +1,7 @@
 import type { QuranFoundationConnectionStatus } from "./types";
 
-const ADVANCED_SCOPE_LABEL =
-  "streak and notes";
+const ADVANCED_PERMISSION_LABEL =
+  "reading place, streak, and notes";
 const RECONNECT_ERROR_PATTERNS = [
   "invalid_grant",
   "authorization grant",
@@ -14,7 +14,7 @@ const RECONNECT_ERROR_PATTERNS = [
 ] as const;
 
 const RECONNECT_MESSAGE =
-  "Reconnect Quran.com. The stored authorization is no longer valid, so Hifzer cannot refresh the sync token.";
+  "Reconnect Quran.com. The saved connection has expired, so Hifzer cannot keep your reading place, bookmarks, and notes in sync.";
 
 function normalizeError(input: string | null | undefined): string {
   return input?.trim().toLowerCase() ?? "";
@@ -30,16 +30,16 @@ export function hasQuranFoundationGrantedScope(
 }
 
 export function getQuranFoundationFeedbackLabel(param: string | null): string | null {
-  if (param === "connected") return "Quran.com account linked.";
-  if (param === "oauth-failed") return "The Quran.com OAuth exchange failed.";
+  if (param === "connected") return "Quran.com is connected.";
+  if (param === "oauth-failed") return "Quran.com could not finish linking right now.";
   if (param === "already-linked") {
-    return "This Quran.com account is already linked to another Hifzer account. Disconnect it there before linking here.";
+    return "This Quran.com account is already linked to another Hifzer account. Disconnect it there first, then try again here.";
   }
-  if (param === "state-mismatch") return "The Quran.com OAuth state check failed.";
-  if (param === "not-configured") return "Quran.com linking is not configured yet.";
-  if (param === "sign-in-required") return "Sign in before linking a Quran.com account.";
+  if (param === "state-mismatch") return "Quran.com linking could not be verified. Please try again.";
+  if (param === "not-configured") return "Quran.com linking is not available right now.";
+  if (param === "sign-in-required") return "Sign in before connecting Quran.com.";
   if (param === "invalid_scope") {
-    return `Quran.com rejected the reauthorization request because this OAuth client is not approved for the newer ${ADVANCED_SCOPE_LABEL} scopes yet.`;
+    return `Quran.com has not enabled the newest ${ADVANCED_PERMISSION_LABEL} permissions for Hifzer yet. Please try again later.`;
   }
   return null;
 }
@@ -49,7 +49,7 @@ export function getQuranFoundationProviderErrorMessage(
   description?: string | null,
 ): string {
   if (code === "invalid_scope") {
-    return `Quran.com rejected the reauthorization request because this OAuth client is not approved for the newer ${ADVANCED_SCOPE_LABEL} scopes yet.`;
+    return `Quran.com has not enabled the newest ${ADVANCED_PERMISSION_LABEL} permissions for Hifzer yet. Please try again later.`;
   }
   if (code === "access_denied") {
     return description?.trim() || "Quran.com authorization was cancelled.";
@@ -65,7 +65,9 @@ export function isQuranFoundationScopeApprovalBlocked(
     return true;
   }
   const error = status?.lastError?.toLowerCase() ?? "";
-  return error.includes("invalid_scope") || error.includes("not approved for the newer");
+  return error.includes("invalid_scope") ||
+    error.includes("not approved for the newer") ||
+    error.includes("has not enabled the newest");
 }
 
 export function isQuranFoundationReconnectRequired(
@@ -85,8 +87,12 @@ export function humanizeQuranFoundationConnectionIssue(
   if (!error) {
     return null;
   }
-  if (error.includes("invalid_scope") || error.includes("not approved for the newer")) {
-    return `Quran.com rejected the reauthorization request because this OAuth client is not approved for the newer ${ADVANCED_SCOPE_LABEL} scopes yet.`;
+  if (
+    error.includes("invalid_scope") ||
+    error.includes("not approved for the newer") ||
+    error.includes("has not enabled the newest")
+  ) {
+    return `Quran.com has not enabled the newest ${ADVANCED_PERMISSION_LABEL} permissions for Hifzer yet. Please try again later.`;
   }
   if (RECONNECT_ERROR_PATTERNS.some((pattern) => error.includes(pattern))) {
     return RECONNECT_MESSAGE;

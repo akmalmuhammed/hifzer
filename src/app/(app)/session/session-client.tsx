@@ -301,7 +301,7 @@ function stepSummary(step: Step): string {
       : "Practice moving smoothly from one ayah to the next.";
   }
   if (step.stage === "WARMUP") {
-    return "Recite yesterday's new ayahs from memory. Passing this gate unlocks new memorization.";
+    return "Recite yesterday's new ayahs from memory. Once this memory check is solid, you can continue with new memorization.";
   }
   if (step.stage === "WEEKLY_TEST") {
     return "Mandatory weekly check to protect retention. Passing keeps your plan stable.";
@@ -874,8 +874,8 @@ export function SessionClient() {
           setReviewOnlyLock(true);
           pushToast({
             tone: "warning",
-            title: "Weekly gate failed",
-            message: "Switched to review-only to stabilize retention.",
+            title: "Weekly memory check needs more work",
+            message: "Switched to review-only so you can steady what is already learned.",
           });
         }
       }
@@ -1198,13 +1198,13 @@ export function SessionClient() {
         <PageHeader
           eyebrow="Practice"
           title="Hifz"
-          subtitle={quickReviewMode ? "No review items are due right now." : "No steps queued today."}
+          subtitle={quickReviewMode ? "No review items are due right now." : "Nothing is scheduled right now."}
           right={rightActions}
         />
         <Card>
           <EmptyState
-            title="No queue"
-            message={quickReviewMode ? "Your due-review queue is currently empty." : "There are no scheduled steps at the moment."}
+            title="Nothing scheduled"
+            message={quickReviewMode ? "You're caught up for now." : "There is nothing planned right now."}
             icon={<PlayCircle size={18} />}
             action={
               <Link href="/dashboard">
@@ -1346,9 +1346,9 @@ export function SessionClient() {
             <div className="rounded-[20px] border border-[rgba(234,88,12,0.28)] bg-[rgba(234,88,12,0.10)] p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Weekly consolidation gate</p>
+                  <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Weekly memory check</p>
                   <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">
-                    This gate is required before new memorization continues. It protects retention and prevents hidden decay.
+                    This weekly memory check comes before more new memorization. It helps protect retention before you move on.
                   </p>
                 </div>
                 <Button size="sm" variant="secondary" onClick={() => markCoachSeen("weeklyGate")}>

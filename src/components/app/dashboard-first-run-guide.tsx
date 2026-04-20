@@ -93,18 +93,18 @@ function debtTone(ratio: number): GuidePillTone {
 
 function debtLabel(ratio: number): string {
   if (ratio >= 45) {
-    return "Heavy load";
+    return "Heavy catch-up";
   }
   if (ratio >= 25) {
-    return "Watch load";
+    return "Building up";
   }
-  return "Healthy";
+  return "Steady";
 }
 
 function nextActionStep(lane: OnboardingStartLane | null, overview: DashboardGuideOverview): GuideStep {
-  const queueNote = overview.reviewHealth.dueNow > 0
+  const reviewNote = overview.reviewHealth.dueNow > 0
     ? `${overview.reviewHealth.dueNow} due now`
-    : "Queue is light";
+    : "Today is light";
   const highlights: GuideHighlight[] = [
     { label: "Today status", value: todayStatusLabel(overview.today.status), tone: "neutral" },
     { label: "Due now", value: String(overview.reviewHealth.dueNow), tone: overview.reviewHealth.dueNow > 0 ? "warn" : "success" },
@@ -115,7 +115,7 @@ function nextActionStep(lane: OnboardingStartLane | null, overview: DashboardGui
     return {
       key: "fluency",
       label: "Next action",
-      note: `Guided fluency | ${queueNote}`,
+      note: `Guided fluency | ${reviewNote}`,
       title: "Start with fluency.",
       body: "Steady the sound first, then come back to Hifz.",
       href: "/fluency",
@@ -129,7 +129,7 @@ function nextActionStep(lane: OnboardingStartLane | null, overview: DashboardGui
     return {
       key: "listen",
       label: "Next action",
-      note: `Listen and repeat | ${queueNote}`,
+      note: `Listen and repeat | ${reviewNote}`,
       title: "Begin with listen and repeat.",
       body: "Settle pronunciation and rhythm first.",
       href: "/fluency/lesson/listen-repeat",
@@ -143,7 +143,7 @@ function nextActionStep(lane: OnboardingStartLane | null, overview: DashboardGui
     return {
       key: "transitions",
       label: "Next action",
-      note: `Transition repair | ${queueNote}`,
+      note: `Transition repair | ${reviewNote}`,
       title: "Fix joins first.",
       body: "Your weak spot is transitions, so start there.",
       href: "/fluency/lesson/transitions",
@@ -156,13 +156,13 @@ function nextActionStep(lane: OnboardingStartLane | null, overview: DashboardGui
   return {
     key: "hifz",
     label: "Next action",
-    note: `Main Hifz flow | ${queueNote}`,
+    note: `Main Hifz flow | ${reviewNote}`,
     title: overview.reviewHealth.dueNow > 0
       ? "Open Hifz and clear due review first."
       : "Open Hifz and begin the next block.",
     body: overview.reviewHealth.dueNow > 0
       ? "Review first, then add more."
-      : "The queue is light, so this is a good time to move.",
+      : "Today is light, so this is a good time to continue.",
     href: "/hifz",
     cta: "Open Hifz",
     icon: PlayCircle,
@@ -173,12 +173,12 @@ function nextActionStep(lane: OnboardingStartLane | null, overview: DashboardGui
 function queueHealthStep(overview: DashboardGuideOverview): GuideStep {
   return {
     key: "queue-health",
-    label: "Queue",
+    label: "Today",
     note: `${overview.reviewHealth.dueNow} due now | ${overview.reviewHealth.dueSoon6h} due soon`,
-    title: "Check the queue first.",
+    title: "Check today's review first.",
     body: "Due now comes first. Weak links are joins worth revisiting.",
     href: "/hifz",
-    cta: "Open Hifz queue",
+    cta: "Open Hifz plan",
     icon: RefreshCcw,
     highlights: [
       { label: "Due now", value: String(overview.reviewHealth.dueNow), tone: overview.reviewHealth.dueNow > 0 ? "warn" : "success" },
@@ -203,10 +203,10 @@ function debtRatioStep(overview: DashboardGuideOverview): GuideStep {
     key: "debt-ratio",
     label: "Load",
     note: `${roundedRatio} of today budget`,
-    title: "Load shows when review is crowding out new work.",
+    title: "Today's load shows when review is crowding out new work.",
     body,
     href: "/hifz",
-    cta: "See live queue",
+    cta: "See today's plan",
     icon: Gauge,
     highlights: [
       { label: "Workload", value: roundedRatio, tone: debtTone(overview.reviewHealth.debtRatioPct) },
@@ -223,7 +223,7 @@ function modeStep(overview: DashboardGuideOverview): GuideStep {
   if (mode === "CONSOLIDATION") {
     body = "Consolidation slows new work so retention can settle.";
   } else if (mode === "CATCH_UP") {
-    body = "Catch-up means the queue needs repair before you add more.";
+    body = "Catch-up means recent review needs attention before you add more.";
   }
 
   return {
@@ -238,7 +238,7 @@ function modeStep(overview: DashboardGuideOverview): GuideStep {
     highlights: [
       { label: "Current mode", value: modeLabel(mode), tone: mode === "NORMAL" ? "accent" : mode === "CONSOLIDATION" ? "warn" : "danger" },
       { label: "Today status", value: todayStatusLabel(overview.today.status), tone: "neutral" },
-      { label: "Debt state", value: debtLabel(overview.reviewHealth.debtRatioPct), tone: debtTone(overview.reviewHealth.debtRatioPct) },
+      { label: "Review load", value: debtLabel(overview.reviewHealth.debtRatioPct), tone: debtTone(overview.reviewHealth.debtRatioPct) },
     ],
   };
 }
@@ -285,7 +285,7 @@ export function DashboardFirstRunGuide(props: {
             Start here.
           </p>
           <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
-            These tips show what to open first and how busy the queue is.
+            {"These tips show what to open first and how full today's review is."}
           </p>
         </div>
 
