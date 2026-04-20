@@ -28,9 +28,7 @@ const STREAK_BADGE_CACHE_KEY = "hifzer.streak.badge.v1";
 const STREAK_BADGE_CACHE_TTL_MS = 5 * 60 * 1000;
 
 export function StreakCornerBadge(props: { enabled: boolean }) {
-  const [data, setData] = useState<StreakPayload | null>(() =>
-    readSessionCache<StreakPayload>(STREAK_BADGE_CACHE_KEY, STREAK_BADGE_CACHE_TTL_MS),
-  );
+  const [data, setData] = useState<StreakPayload | null>(null);
 
   useEffect(() => {
     if (!props.enabled) {
@@ -38,6 +36,17 @@ export function StreakCornerBadge(props: { enabled: boolean }) {
     }
 
     let cancelled = false;
+    let cacheTimer: number | null = null;
+
+    const cached = readSessionCache<StreakPayload>(STREAK_BADGE_CACHE_KEY, STREAK_BADGE_CACHE_TTL_MS);
+    if (cached) {
+      cacheTimer = window.setTimeout(() => {
+        if (!cancelled) {
+          setData(cached);
+        }
+      }, 0);
+    }
+
     const load = async () => {
       try {
         const res = await fetch("/api/streak/summary", { cache: "no-store" });
@@ -60,6 +69,9 @@ export function StreakCornerBadge(props: { enabled: boolean }) {
     if (!mobileViewport) {
       return () => {
         cancelled = true;
+        if (cacheTimer != null) {
+          window.clearTimeout(cacheTimer);
+        }
       };
     }
 
@@ -73,6 +85,9 @@ export function StreakCornerBadge(props: { enabled: boolean }) {
 
     return () => {
       cancelled = true;
+      if (cacheTimer != null) {
+        window.clearTimeout(cacheTimer);
+      }
       document.removeEventListener("visibilitychange", onVisible);
       window.clearInterval(interval);
     };
@@ -133,4 +148,3 @@ export function StreakCornerBadge(props: { enabled: boolean }) {
     </div>
   );
 }
-
