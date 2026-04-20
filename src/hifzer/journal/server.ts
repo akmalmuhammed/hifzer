@@ -734,6 +734,51 @@ export async function deletePrivateJournalEntry(clerkUserId: string, entryId: st
   });
 }
 
+export async function syncPrivateJournalEntriesToQuranFoundation(
+  clerkUserId: string,
+  now: Date = new Date(),
+): Promise<{ total: number; synced: number; skipped: number; failed: number }> {
+  const profile = await requireProfile(clerkUserId);
+
+  return withJournalSchemaGuard(async () => {
+    await pruneExpiredEntries(profile.id, now);
+
+    const rows = await db().privateJournalEntry.findMany({
+      where: { userId: profile.id },
+      orderBy: [{ updatedAt: "desc" }],
+    });
+
+    let synced = 0;
+    let skipped = 0;
+    let failed = 0;
+
+    for (const row of rows as JournalEntryRow[]) {
+      try {
+        const remoteNoteId = await syncJournalEntryNoteToQuranFoundation({
+          clerkUserId,
+          journalEntryId: row.id,
+          clientEntryId: row.clientEntryId,
+          entry: toSnapshot(row),
+        });
+        if (remoteNoteId) {
+          synced += 1;
+        } else {
+          skipped += 1;
+        }
+      } catch {
+        failed += 1;
+      }
+    }
+
+    return {
+      total: rows.length,
+      synced,
+      skipped,
+      failed,
+    };
+  });
+}
+
 export async function importPrivateJournalEntries(
   clerkUserId: string,
   entries: JournalEntry[],

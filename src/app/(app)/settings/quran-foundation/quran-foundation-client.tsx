@@ -19,6 +19,8 @@ const ADVANCED_SYNC_SCOPES = [
   "activity_day",
   "reading_session",
   "collection",
+  "streak",
+  "note",
 ] as const;
 
 export function QuranFoundationSettingsClient(props: {
@@ -97,8 +99,8 @@ export function QuranFoundationSettingsClient(props: {
                 {reconnectRequired
                   ? "The stored Quran.com authorization is no longer valid. Reconnect once so Hifzer can refresh tokens and resume sync."
                   : scopeApprovalBlocked
-                  ? "The live Quran.com OAuth client is not approved for the newer streak, goals, and notes scopes yet. Retrying authorization will keep failing until Quran Foundation enables those scopes for this client."
-                  : "Reconnect Quran.com once to grant the approved activity-day, reading-session, and collection permissions."}
+                  ? "The live Quran.com OAuth client is not approved for the newer streak and notes scopes yet. Retrying authorization will keep failing until Quran Foundation enables those scopes for this client."
+                  : "Reconnect Quran.com once to grant the approved activity-day, reading-session, collection, streak, and note permissions."}
               </div>
             ) : null}
             {status.scopes.length > 0 ? (
@@ -151,14 +153,24 @@ export function QuranFoundationSettingsClient(props: {
                   Sync bookmark collections
                 </Button>
                 {hasNoteScope ? (
-                  <Button
-                    variant="secondary"
-                    onClick={() => void post("/api/quran-foundation/notes/hydrate", "Quran.com notes imported into your journal.")}
-                    loading={busyKey === "/api/quran-foundation/notes/hydrate"}
-                    disabled={reconnectRequired}
-                  >
-                    Import Quran.com notes
-                  </Button>
+                  <>
+                    <Button
+                      variant="secondary"
+                      onClick={() => void post("/api/quran-foundation/notes/push", "Local journal entries synced to Quran.com notes.")}
+                      loading={busyKey === "/api/quran-foundation/notes/push"}
+                      disabled={reconnectRequired}
+                    >
+                      Sync local journal notes
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => void post("/api/quran-foundation/notes/hydrate", "Quran.com notes imported into your journal.")}
+                      loading={busyKey === "/api/quran-foundation/notes/hydrate"}
+                      disabled={reconnectRequired}
+                    >
+                      Import Quran.com notes
+                    </Button>
+                  </>
                 ) : null}
                 <Button
                   variant="danger"
@@ -215,7 +227,7 @@ export function QuranFoundationSettingsClient(props: {
                   ? overview.streak?.bestDays
                     ? `Best so far: ${overview.streak.bestDays} days`
                     : "Activity days keep the external streak updated."
-                  : "Quran.com has not approved streak readback for this client yet."}
+                  : "Reconnect once to grant Quran.com streak readback."}
               </p>
             </div>
 
@@ -259,7 +271,7 @@ export function QuranFoundationSettingsClient(props: {
               <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
                 {hasNoteScope
                   ? "Journal reflections stay private and can sync through Quran.com notes."
-                  : "Quran.com notes are not approved for this client yet."}
+                  : "Reconnect once to grant Quran.com notes sync."}
               </p>
             </div>
           </div>

@@ -226,7 +226,7 @@ export async function getQuranFoundationConnectionStatus(
     return {
       available: true,
       state: "disconnected",
-      detail: "Sign in, then link a Quran.com account to sync bookmarks.",
+      detail: "Sign in, then link a Quran.com account to sync bookmarks, notes, and streak context.",
       userApiReady,
       contentApiReady,
       displayName: null,
@@ -258,7 +258,7 @@ export async function getQuranFoundationConnectionStatus(
     return {
       available: true,
       state: "disconnected",
-      detail: "Link your Quran.com account to sync bookmarks and show official enrichment.",
+      detail: "Link your Quran.com account to sync bookmarks, notes, streaks, and official enrichment.",
       userApiReady,
       contentApiReady,
       displayName: null,
@@ -280,8 +280,8 @@ export async function getQuranFoundationConnectionStatus(
       ? humanizeQuranFoundationConnectionIssue(context.account.lastError) ??
         "The Quran.com connection needs attention before remote sync can continue."
       : contentApiReady
-        ? "Bookmarks can sync to Quran.com and the reader can load Quran Foundation enrichment."
-        : "Bookmarks can sync to Quran.com. Add content credentials to enable official reader enrichment.",
+        ? "Bookmarks, notes, streak context, and official Quran Foundation enrichment are available."
+        : "Bookmarks, notes, and streak context can sync to Quran.com. Add content credentials to enable official reader enrichment.",
     userApiReady,
     contentApiReady,
     displayName: context.account.displayName,

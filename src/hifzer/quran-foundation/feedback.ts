@@ -1,7 +1,7 @@
 import type { QuranFoundationConnectionStatus } from "./types";
 
 const ADVANCED_SCOPE_LABEL =
-  "streak, goal, and notes";
+  "streak and notes";
 const RECONNECT_ERROR_PATTERNS = [
   "invalid_grant",
   "authorization grant",

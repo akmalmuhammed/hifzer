@@ -39,17 +39,20 @@ type RemoteReadingSession = {
   createdAt?: string;
 };
 
+type RemoteAttachedEntity = {
+  entityId?: string;
+  entityType?: string;
+  entityMetadata?: Record<string, unknown> | null;
+};
+
 type RemoteNote = {
   id: string;
   createdAt?: string;
   updatedAt?: string;
   body: string;
   source?: string | null;
-  attachedEntities?: Array<{
-    entityId?: string;
-    entityType?: string;
-    entityMetadata?: Record<string, unknown> | null;
-  }>;
+  attachedEntity?: RemoteAttachedEntity | null;
+  attachedEntities?: RemoteAttachedEntity[];
   ranges?: string[];
 };
 
@@ -862,19 +865,22 @@ export async function syncJournalEntryNoteToQuranFoundation(input: {
   }
 
   const ranges = buildVerseRangesFromAyahIds(collectJournalAyahIds(input.entry));
-  const notePayload = {
+  const attachedEntity = {
+    entityId: input.journalEntryId,
+    entityType: "reflection",
+    entityMetadata: {
+      entryType: input.entry.type,
+    },
+  };
+  const createNotePayload = {
     body,
-    source: "hifzer",
-    attachedEntities: [
-      {
-        entityId: input.journalEntryId,
-        entityType: "reflection",
-        entityMetadata: {
-          entryType: input.entry.type,
-        },
-      },
-    ],
+    saveToQR: false,
+    attachedEntity,
     ranges,
+  };
+  const updateNotePayload = {
+    body,
+    saveToQR: false,
   };
 
   const remoteNoteId = parseRemoteNoteId(input.clientEntryId);
@@ -883,7 +889,7 @@ export async function syncJournalEntryNoteToQuranFoundation(input: {
       path: `/notes/${encodeURIComponent(remoteNoteId)}`,
       method: "PATCH",
       mutation: true,
-      body: notePayload,
+      body: updateNotePayload,
     });
     await updateQuranFoundationAccountSyncState(input.clerkUserId, {
       lastSyncedAt: new Date(),
@@ -897,7 +903,7 @@ export async function syncJournalEntryNoteToQuranFoundation(input: {
     path: "/notes",
     method: "POST",
     mutation: true,
-    body: notePayload,
+    body: createNotePayload,
   });
 
   const createdNoteId = normalizeText(data.id);

@@ -20,6 +20,8 @@ const ADVANCED_SYNC_SCOPES = [
   "activity_day",
   "reading_session",
   "collection",
+  "streak",
+  "note",
 ] as const;
 
 type OverviewPayload = {
@@ -211,8 +213,8 @@ export function DashboardConnectedQuranCard() {
             </p>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
               {connected
-                ? "Resume points, collection sync, activity-day writeback, and official reader layers stay visible from one calmer dashboard."
-                : "Link Quran.com so Hifzer can surface synced reading state, bookmark collections, activity-day writeback, and official content directly in the reader."}
+                ? "Resume points, collection sync, activity-day writeback, streak readback, note import, and official reader layers stay visible from one calmer dashboard."
+                : "Link Quran.com so Hifzer can surface synced reading state, bookmark collections, streak context, notes, activity-day writeback, and official content directly in the reader."}
             </p>
           </div>
 
@@ -272,8 +274,8 @@ export function DashboardConnectedQuranCard() {
               ? "This Quran.com link is saved, but the stored authorization is no longer valid. Reconnect once to restore sync."
               : needsRelink ? (
               scopeApprovalBlocked
-                ? "This account is linked, but the live Quran.com OAuth client is not approved for the newer streak, goal, and notes scopes yet."
-                : "This account is linked, but it still has the older Quran.com scopes. Reconnect once to unlock activity-day, reading-session, and collection sync for the demo flow."
+                ? "This account is linked, but the live Quran.com OAuth client is not approved for the newer streak and notes scopes yet."
+                : "This account is linked, but it still has the older Quran.com scopes. Reconnect once to unlock activity-day, reading-session, collection, streak, and note sync for the demo flow."
             ) : status.detail}
           </div>
         ) : null}
@@ -309,7 +311,7 @@ export function DashboardConnectedQuranCard() {
               {connected
                 ? hasStreakReadScope
                   ? formatStreakDetail(overview)
-                  : "Hifzer can write activity days now. Quran.com has not approved streak readback for this client yet."
+                  : "Reconnect once to grant Quran.com streak readback."
                 : "Activity-day sync can keep the external streak visible."}
             </p>
           </div>
@@ -343,9 +345,9 @@ export function DashboardConnectedQuranCard() {
               {connected
                 ? hasCollectionScope || hasNoteScope
                   ? hasCollectionScope && !hasNoteScope
-                    ? "Collection sync is live. Quran.com notes still await client approval."
+                    ? "Collection sync is live. Reconnect once to grant Quran.com notes sync."
                     : formatMemoryDetail(overview)
-                  : "Reconnect once to unlock collection sync."
+                  : "Reconnect once to unlock collection and note sync."
                 : "Bookmarks, collections, and notes can stay connected to your reading."}
             </p>
           </div>
