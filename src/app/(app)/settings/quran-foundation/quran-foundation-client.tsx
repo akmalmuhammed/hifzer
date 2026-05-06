@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { RefreshCcw } from "lucide-react";
@@ -20,8 +21,24 @@ const ADVANCED_SYNC_SCOPES = [
   "reading_session",
   "collection",
   "streak",
+  "goal",
   "note",
 ] as const;
+
+function formatSyncedAt(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "UTC",
+    timeZoneName: "short",
+  }).format(new Date(value));
+}
 
 function connectionStateLabel(state: QuranFoundationConnectionStatus["state"]): string {
   if (state === "connected") {
@@ -74,18 +91,43 @@ export function QuranFoundationSettingsClient(props: {
 
   const status = props.initialStatus;
   const overview = props.initialOverview;
+  const connected = status.state === "connected" || status.state === "degraded";
   const missingAdvancedScopes = ADVANCED_SYNC_SCOPES.filter((scope) => !status.scopes.includes(scope));
   const reconnectRequired = isQuranFoundationReconnectRequired(status);
-  const needsRelink = (status.state === "connected" || status.state === "degraded") && missingAdvancedScopes.length > 0;
+  const needsRelink = connected && missingAdvancedScopes.length > 0;
   const scopeApprovalBlocked = isQuranFoundationScopeApprovalBlocked(status, feedbackParam);
+  const hasBookmarkScope = hasQuranFoundationGrantedScope(
+    status.scopes,
+    "bookmark",
+    "bookmark.read",
+    "bookmark.create",
+    "bookmark.update",
+    "bookmark.delete",
+  );
+  const hasActivityDayScope = hasQuranFoundationGrantedScope(status.scopes, "activity_day", "activity_day.read");
   const hasReadingSessionScope = hasQuranFoundationGrantedScope(
     status.scopes,
     "reading_session",
     "reading_session.read",
   );
   const hasStreakReadScope = hasQuranFoundationGrantedScope(status.scopes, "streak", "streak.read");
+  const hasGoalScope = hasQuranFoundationGrantedScope(status.scopes, "goal", "goal.read");
   const hasCollectionScope = hasQuranFoundationGrantedScope(status.scopes, "collection", "collection.read");
   const hasNoteScope = hasQuranFoundationGrantedScope(status.scopes, "note", "note.read");
+  const lastSyncedAtLabel = formatSyncedAt(status.lastSyncedAt);
+  const readingSessionUpdatedAtLabel = formatSyncedAt(overview?.readingSession?.updatedAt);
+  const userApiProof = [
+    { label: "OAuth account link", ready: connected },
+    { label: "Bookmark sync", ready: hasBookmarkScope },
+    { label: "Reading place", ready: hasReadingSessionScope },
+    { label: "Reading activity", ready: hasActivityDayScope },
+    { label: "Streak", ready: hasStreakReadScope },
+    { label: "Goals", ready: hasGoalScope },
+    { label: "Bookmark folders", ready: hasCollectionScope },
+    { label: "Notes", ready: hasNoteScope },
+  ];
+  const activeUserApiProofCount = userApiProof.filter((item) => item.ready).length;
+  const userApiReady = connected && hasBookmarkScope && activeUserApiProofCount >= 4;
 
   return (
     <div className="space-y-4">
@@ -107,11 +149,12 @@ export function QuranFoundationSettingsClient(props: {
               <Pill tone="neutral">Reading place</Pill>
               <Pill tone="neutral">Bookmarks</Pill>
               <Pill tone="neutral">Bookmark folders</Pill>
+              <Pill tone="neutral">Goals</Pill>
               <Pill tone="neutral">Notes</Pill>
               {status.contentApiReady ? <Pill tone="neutral">Official tafsir and audio</Pill> : null}
             </div>
-            {status.lastSyncedAt ? (
-              <p className="mt-2 text-xs text-[color:var(--kw-faint)]">Last synced: {new Date(status.lastSyncedAt).toLocaleString()}</p>
+            {lastSyncedAtLabel ? (
+              <p className="mt-2 text-xs text-[color:var(--kw-faint)]">Last synced: {lastSyncedAtLabel}</p>
             ) : null}
             {reconnectRequired || needsRelink ? (
               <div className="mt-3 rounded-[18px] border border-[rgba(214,153,46,0.25)] bg-[rgba(214,153,46,0.08)] px-4 py-3 text-sm text-[color:var(--kw-muted)]">
@@ -153,9 +196,107 @@ export function QuranFoundationSettingsClient(props: {
         </div>
       </Card>
 
+      <Card>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-3xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <Pill tone="brand">Quran Foundation API proof</Pill>
+              <Pill tone={userApiReady ? "accent" : "warn"}>
+                User API {activeUserApiProofCount}/{userApiProof.length}
+              </Pill>
+              <Pill tone={status.contentApiReady ? "accent" : "warn"}>
+                Content API {status.contentApiReady ? "ready" : "not ready"}
+              </Pill>
+            </div>
+            <p className="mt-3 text-sm font-semibold text-[color:var(--kw-ink)]">
+              Hifzer uses Quran Foundation APIs inside real reading, bookmark, note, and content flows.
+            </p>
+            <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+              This is the judge-checkable integration surface: user data sync comes from the linked Quran.com account, and official translations, tafsir, and reciter audio are available inside the reader.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="secondary" size="sm">
+              <Link href="/quran/read?view=compact">
+                Check reader content
+              </Link>
+            </Button>
+            <Button asChild variant="secondary" size="sm">
+              <Link href="/quran/bookmarks">
+                Check bookmark sync
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">User API</p>
+                <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">Live Quran.com account data</p>
+              </div>
+              <Pill tone={userApiReady ? "accent" : "warn"}>
+                {userApiReady ? "Visible in app" : "Needs reconnect"}
+              </Pill>
+            </div>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              {userApiProof.map((item) => (
+                <div
+                  key={item.label}
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3 py-2 text-sm"
+                >
+                  <span className="font-medium text-[color:var(--kw-ink-2)]">{item.label}</span>
+                  <span
+                    className={
+                      item.ready
+                        ? "rounded-full bg-[color:var(--kw-pill-success-bg)] px-2 py-1 text-xs font-semibold text-[color:var(--kw-pill-success-fg)]"
+                        : "rounded-full bg-[color:var(--kw-pill-warn-bg)] px-2 py-1 text-xs font-semibold text-[color:var(--kw-pill-warn-fg)]"
+                    }
+                  >
+                    {item.ready ? "Active" : "Missing"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">Content API</p>
+                <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">Official reader enrichment</p>
+              </div>
+              <Pill tone={status.contentApiReady ? "accent" : "warn"}>
+                {status.contentApiReady ? "Live" : "Unavailable"}
+              </Pill>
+            </div>
+            <div className="mt-4 space-y-2">
+              {["Official translations", "Tafsir selection", "Reciter audio", "Ayah-level alignment"].map((label) => (
+                <div
+                  key={label}
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3 py-2 text-sm"
+                >
+                  <span className="font-medium text-[color:var(--kw-ink-2)]">{label}</span>
+                  <span
+                    className={
+                      status.contentApiReady
+                        ? "rounded-full bg-[color:var(--kw-pill-success-bg)] px-2 py-1 text-xs font-semibold text-[color:var(--kw-pill-success-fg)]"
+                        : "rounded-full bg-[color:var(--kw-pill-warn-bg)] px-2 py-1 text-xs font-semibold text-[color:var(--kw-pill-warn-fg)]"
+                    }
+                  >
+                    {status.contentApiReady ? "Ready" : "Missing"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Card>
+
       {overview ? (
         <Card>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
             <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Reading place</p>
               <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
@@ -166,8 +307,8 @@ export function QuranFoundationSettingsClient(props: {
                     : "Reconnect needed"}
               </p>
               <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
-                {hasReadingSessionScope && overview.readingSession?.updatedAt
-                  ? `Last updated ${new Date(overview.readingSession.updatedAt).toLocaleString()}`
+                {hasReadingSessionScope && readingSessionUpdatedAtLabel
+                  ? `Last updated ${readingSessionUpdatedAtLabel}`
                   : hasReadingSessionScope
                     ? "Your place in the Qur'an can travel between Hifzer and Quran.com."
                     : "Reconnect once to sync your reading place."}
@@ -201,6 +342,22 @@ export function QuranFoundationSettingsClient(props: {
                 {hasCollectionScope
                   ? "Your bookmark folders can stay together between Quran.com and Hifzer."
                   : "Reconnect once to sync bookmark folders."}
+              </p>
+            </div>
+
+            <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Quran.com goal</p>
+              <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
+                {hasGoalScope
+                  ? overview.goalPlan
+                    ? overview.goalPlan.title
+                    : "No goal yet"
+                  : "Reconnect needed"}
+              </p>
+              <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
+                {hasGoalScope
+                  ? overview.goalPlan?.remaining ?? "Your Quran.com goal can appear here beside Hifzer progress."
+                  : "Reconnect once to show Quran.com goals here."}
               </p>
             </div>
 

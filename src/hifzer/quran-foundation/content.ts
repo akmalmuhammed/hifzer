@@ -23,6 +23,7 @@ const CONTENT_TOKEN_SCOPE = "content";
 const RESOURCE_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const FETCH_REVALIDATE_SECONDS = 60 * 60;
 const MAX_DEFAULT_TAFSIRS = 2;
+const DEFAULT_QURAN_FOUNDATION_AUDIO_BASE_URL = "https://verses.quran.com/";
 
 const LANGUAGE_PRIORITY = ["english", "arabic", "urdu", "indonesian", "turkish", "persian", "bengali", "malayalam"];
 const FEATURED_TRANSLATION_TOKENS = [
@@ -833,7 +834,29 @@ async function resolveQuranFoundationRecitation(input: {
 }
 
 function extractAudioUrl(row: QuranFoundationRawRecitationAudio): string | null {
-  return readString(row, "url", "audio_url");
+  return normalizeRemoteAudioUrl(readString(row, "url", "audio_url"));
+}
+
+function normalizeRemoteAudioUrl(rawUrl: string | null): string | null {
+  if (!rawUrl) {
+    return null;
+  }
+
+  const trimmed = rawUrl.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  if (trimmed.startsWith("//")) {
+    return `https:${trimmed}`;
+  }
+
+  const configuredBase = process.env.QF_AUDIO_BASE_URL?.trim() || DEFAULT_QURAN_FOUNDATION_AUDIO_BASE_URL;
+  const base = configuredBase.endsWith("/") ? configuredBase : `${configuredBase}/`;
+  return new URL(trimmed.replace(/^\/+/, ""), base).toString();
 }
 
 function matchesVerseKey(row: QuranFoundationRawRecitationAudio, verseKey: string): boolean {

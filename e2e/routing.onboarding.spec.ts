@@ -89,6 +89,6 @@ test.describe("onboarding routing", () => {
 
     await page.getByRole("button", { name: /open dashboard/i }).first().click();
     await expect(page).toHaveURL(/\/dashboard(?:\?|$)/);
-    await expect(page.getByText(/start here/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: /^dashboard$/i })).toBeVisible();
   });
 });

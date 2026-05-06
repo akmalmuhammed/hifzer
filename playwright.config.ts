@@ -5,7 +5,8 @@ export default defineConfig({
   globalSetup: "./e2e/global.setup.ts",
   timeout: 30_000,
   expect: { timeout: 7_000 },
-  fullyParallel: true,
+  fullyParallel: false,
+  workers: 1,
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? "github" : "list",
   use: {
@@ -13,7 +14,7 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   webServer: {
-    command: "npm run dev -- --port 3002",
+    command: "corepack pnpm exec next dev --port 3002",
     url: "http://localhost:3002",
     reuseExistingServer: false,
     timeout: 120_000,

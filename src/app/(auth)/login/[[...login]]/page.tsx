@@ -31,6 +31,7 @@ export default async function LoginPage(props: {
     searchParams.redirect_url,
     clerkAuthRoutes.signInForceRedirectUrl,
   );
+  const signUpHref = `/signup?redirect_url=${encodeURIComponent(redirectPath)}`;
   const configured = clerkEnabled();
   if (configured) {
     const { userId } = await auth();
@@ -67,7 +68,7 @@ CLERK_SECRET_KEY=...`}
             </div>
           </>
         ) : (
-          <div className="grid place-items-center py-6">
+          <div className="grid w-full min-w-0 place-items-center overflow-hidden py-6 [&_.cl-cardBox]:max-w-full [&_.cl-rootBox]:max-w-full">
             <SignIn
               path="/login"
               routing="path"
@@ -80,7 +81,7 @@ CLERK_SECRET_KEY=...`}
 
       <p className="text-sm text-[color:var(--kw-muted)]">
         Don&apos;t have an account?{" "}
-        <Link href="/signup" className="font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">
+        <Link href={signUpHref} className="font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">
           Create one
         </Link>
         .

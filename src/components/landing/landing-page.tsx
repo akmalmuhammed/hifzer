@@ -71,17 +71,17 @@ const hifzMetrics = [
 ] as const;
 
 const assistantSources = [
-  "Explain this ayah",
-  "Predefined prompts",
+  "Official ayah context",
+  "Tafsir summaries",
   "Matched ayahs",
   "Source labels",
 ] as const;
 
-const summaryStats = [
-  ["21", "days returning"],
-  ["14", "hifz sessions"],
-  ["38", "ayahs revisited"],
-  ["9", "reflections saved"],
+const continuityFeatures = [
+  ["Reading place", "Resume from the exact ayah you last touched."],
+  ["Hifz review", "Keep sabaq, sabqi, and manzil visible."],
+  ["Bookmarks and notes", "Save ayahs, categories, and reflections together."],
+  ["Dua and journal", "Return to personal worship moments privately."],
 ] as const;
 
 const faqs = [
@@ -180,10 +180,10 @@ function HeroChapter() {
         <Reveal className={styles.heroCopy}>
           <p className={styles.heroEyebrow}>Hifzer</p>
           <h1 id="landing-hero-title" className={styles.heroTitle}>
-            Reconnect with the Qur&apos;an, and stay connected.
+            Keep your Qur&apos;an routine steady.
           </h1>
           <p className={styles.heroSummary}>
-            A modern Qur&apos;an companion for memorization, trusted guidance, meaningful duas, and private reflection.
+            Read from your last ayah, protect your hifz review, ask source-grounded questions, and keep personal reflections in one calm place.
           </p>
           <div className={styles.heroActions}>
             <Button asChild size="lg" className="w-full sm:w-auto">
@@ -202,11 +202,11 @@ function HeroChapter() {
                 telemetryName="landing.hero_story_click"
                 telemetryMeta={{ placement: "hero" }}
               >
-                See how it works <ArrowRight size={17} />
+                Preview the routine <ArrowRight size={17} />
               </TrackedLink>
             </Button>
           </div>
-          <p className={styles.heroMicro}>Browser first. No card required.</p>
+          <p className={styles.heroMicro}>Free in the browser. No card required.</p>
         </Reveal>
 
         <Reveal className={styles.heroVisual}>
@@ -286,8 +286,8 @@ function RoutineChapter() {
         <Reveal>
           <SectionHeading
             eyebrow="Guided routine"
-            title="A Qur'an rhythm that feels possible."
-            body="Hifzer is built for the real day: a few ayahs, a review that needs care, a dua you want nearby, and a reflection you do not want to lose."
+            title="Read, review, reflect, then return."
+            body="Hifzer keeps the next step clear: continue Qur'an reading, protect memorization, save what matters, and come back tomorrow without rebuilding the routine."
           />
         </Reveal>
         <Reveal className={styles.planBuilder}>
@@ -356,9 +356,9 @@ function GuidanceChapter() {
       <div className={styles.chapterGrid}>
         <Reveal>
           <SectionHeading
-            eyebrow="Grounded AI"
-            title="Ask AI, then inspect the Qur'anic trail."
-            body="Explain a single ayah or start from predefined questions, then see the ayah references, translation, tafsir summary, and source labels behind the answer."
+            eyebrow="Trusted guidance"
+            title="Start with sources, then ask better questions."
+            body="Hifzer keeps AI grounded in ayah references, translation, tafsir summaries, and source labels so answers feel inspectable instead of vague."
           />
           <div className={styles.sourceList}>
             {assistantSources.map((source) => (
@@ -448,7 +448,7 @@ function ContinuityChapter() {
         <SectionHeading
           eyebrow="Continuity"
           title="Keep the journey together across days."
-          body="Profile, bookmarks, progress, journal entries, and Qur'an habits are designed to move with the user instead of becoming scattered across separate tools."
+          body="Your Qur'an place, hifz review, saved ayahs, duas, and private reflections stay connected without turning worship into a spreadsheet."
           align="center"
         />
       </Reveal>
@@ -460,10 +460,10 @@ function ContinuityChapter() {
           <span><Lock size={18} /></span>
         </div>
         <div className={styles.summaryStats}>
-          {summaryStats.map(([value, label]) => (
+          {continuityFeatures.map(([label, body]) => (
             <div key={label}>
-              <strong>{value}</strong>
-              <span>{label}</span>
+              <strong>{label}</strong>
+              <span>{body}</span>
             </div>
           ))}
         </div>
@@ -514,12 +514,12 @@ function ClosingCta() {
               telemetryName="landing.final_start_click"
               telemetryMeta={{ placement: "final-cta" }}
             >
-              {isSignedIn ? "Open app" : "Start your Qur'an journey"} <ArrowRight size={17} />
+              {isSignedIn ? "Open app" : "Start free"} <ArrowRight size={17} />
             </PublicAuthLink>
           </Button>
           <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
             <TrackedLink href="#routine" telemetryName="landing.final_story_click">
-              Review the flow
+              Preview the routine
             </TrackedLink>
           </Button>
         </div>

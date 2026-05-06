@@ -12,10 +12,7 @@ import {
   CalendarDays,
   ChevronLeft,
   ChevronRight,
-  Clock3,
   Compass,
-  Flame,
-  Gauge,
   MoonStar,
   PlayCircle,
   RefreshCcw,
@@ -42,11 +39,6 @@ const AreaTrend = dynamic(
 const DonutProgress = dynamic(
   () => import("@/components/charts/donut-progress").then((mod) => mod.DonutProgress),
   { ssr: false, loading: () => <DonutSkeleton /> },
-);
-
-const Sparkline = dynamic(
-  () => import("@/components/charts/sparkline").then((mod) => mod.Sparkline),
-  { ssr: false, loading: () => <SparklineSkeleton /> },
 );
 
 const DashboardFirstRunGuide = dynamic(
@@ -257,18 +249,6 @@ function formatLocalDate(isoDate: string): string {
   });
 }
 
-function formatMaybeDateTime(value: string | null): string {
-  if (!value) {
-    return "No review due";
-  }
-  return new Date(value).toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
 function activityColor(value: number, max: number): string {
   if (value <= 0) {
     return "rgba(10,138,119,0.07)";
@@ -354,10 +334,6 @@ function ChartBlockSkeleton(props: { height: number }) {
   );
 }
 
-function SparklineSkeleton() {
-  return <div className="mt-[18px] h-7 w-full animate-pulse rounded-full bg-[color:var(--kw-skeleton)]" />;
-}
-
 function DonutSkeleton() {
   return <div className="h-24 w-24 animate-pulse rounded-full bg-[color:var(--kw-skeleton)]" />;
 }
@@ -400,39 +376,12 @@ function QuickActionCard(props: {
   );
 }
 
-function MetricTile(props: {
-  label: string;
-  value: ReactNode;
-  detail?: ReactNode;
-  icon: LucideIcon;
-  tone: "accent" | "neutral" | "warn";
-  foot?: ReactNode;
-  delayMs?: number;
-}) {
-  const Icon = props.icon;
+function TodayStat(props: { label: string; value: ReactNode; detail?: ReactNode }) {
   return (
-    <div className="kw-fade-in h-full" style={{ animationDelay: `${props.delayMs ?? 0}ms` }}>
-      <Card className={`${styles.metricCard} h-full`}>
-        <div className={styles.metricHeader}>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">
-              {props.label}
-            </p>
-            <div className={`${styles.numericValue} mt-3 text-3xl text-[color:var(--kw-ink)]`}>
-              {props.value}
-            </div>
-            {props.detail ? (
-              <p className={`${styles.metricBody} mt-2 text-sm leading-6 text-[color:var(--kw-muted)]`}>
-                {props.detail}
-              </p>
-            ) : null}
-          </div>
-          <span className={clsx(styles.iconBadge, iconToneClass(props.tone))}>
-            <Icon size={17} />
-          </span>
-        </div>
-        {props.foot ? <div className={styles.metricFoot}>{props.foot}</div> : null}
-      </Card>
+    <div className={styles.snapshotItem}>
+      <p className={styles.snapshotLabel}>{props.label}</p>
+      <p className={styles.snapshotValue}>{props.value}</p>
+      {props.detail ? <p className={styles.snapshotDetail}>{props.detail}</p> : null}
     </div>
   );
 }
@@ -804,10 +753,6 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
     () => summary?.sessionTrend14d.map((point) => ({ t: `${point.date}T00:00:00.000Z`, v: point.minutes })) ?? [],
     [summary],
   );
-  const trendRecall = useMemo(
-    () => summary?.sessionTrend14d.map((point) => point.recallEvents) ?? [],
-    [summary],
-  );
   const activityByDate = useMemo(() => {
     if (!activity) {
       return new Map<string, number>();
@@ -932,21 +877,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Dashboard"
-        right={
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="secondary" size="sm" className="gap-2" onClick={() => void refreshDashboard()}>
-              Refresh <RefreshCcw size={16} />
-            </Button>
-            <Link href="/quran/read?view=compact">
-              <Button size="sm" className="gap-2">
-                Continue reading <ArrowRight size={16} />
-              </Button>
-            </Link>
-          </div>
-        }
-      />
+      <PageHeader title="Dashboard" />
 
       {loading ? <DashboardSkeleton /> : null}
 
@@ -973,124 +904,84 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
           <section className={`kw-fade-in ${styles.commandDeck} px-4 py-4 sm:px-5 sm:py-5`}>
             <div className={styles.pulseOrb} />
             <div className={styles.driftOrb} />
-            <div className="relative space-y-4">
-              <div className="space-y-3">
+            <div className={`relative ${styles.todayGrid}`}>
+              <div className={styles.todayMain}>
                 <div className="flex flex-wrap items-center gap-2">
                   {status ? <Pill tone={status.tone}>{status.label}</Pill> : null}
-                  <Pill tone="neutral">{summary.quran.currentSurahName} | {summary.quran.cursorRef}</Pill>
-                  {summary.reviewHealth.dueNow > 0 ? (
-                    <Pill tone="warn">{summary.reviewHealth.dueNow} due</Pill>
-                  ) : null}
+                  {summary.reviewHealth.dueNow > 0 ? <Pill tone="warn">{summary.reviewHealth.dueNow} due</Pill> : null}
                 </div>
 
-                <div className={styles.actionRail}>
+                <p className={styles.todayKicker}>Today</p>
+                <h2 className={styles.todayTitle}>Continue from {summary.quran.cursorRef}</h2>
+                <p className={styles.todayBody}>
+                  You are in {summary.quran.currentSurahName}. Read a little, review what is due, or leave a reflection when something lands.
+                </p>
+
+                <div className={styles.todayButtons}>
+                  <Link href="/quran/read?view=compact">
+                    <Button className="gap-2">
+                      Continue reading <ArrowRight size={16} />
+                    </Button>
+                  </Link>
+                  <Link href="/hifz">
+                    <Button variant="secondary" className="gap-2">
+                      {summary.reviewHealth.dueNow > 0 ? "Review Hifz" : "Open Hifz"} <PlayCircle size={16} />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className={styles.compactActions}>
                   <QuickActionCard
-                    href="/quran/read?view=compact"
-                    eyebrow="Qur'an"
-                    title="Continue"
-                    note={`${summary.quran.currentSurahName} | ${summary.quran.cursorRef}`}
-                    icon={BookOpenText}
-                    tone="accent"
+                    href="/dua"
+                    eyebrow="Dua"
+                    title="Make dua"
+                    note="Open a guided module."
+                    icon={MoonStar}
                   />
                   <QuickActionCard
-                    href="/hifz"
-                    eyebrow="Hifz"
-                    title={shouldShowGuide ? "Open Hifz" : "Review"}
-                    note={
-                      summary.reviewHealth.dueNow > 0
-                        ? `${summary.reviewHealth.dueNow} due now`
-                        : "Ready"
-                    }
-                    icon={PlayCircle}
+                    href="/journal"
+                    eyebrow="Journal"
+                    title="Reflect"
+                    note="Save a private note."
+                    icon={SquarePen}
                   />
-                  {!shouldShowGuide ? (
-                    <>
-                      <QuickActionCard
-                        href="/dua"
-                        eyebrow="Dua"
-                        title="Dua"
-                        icon={MoonStar}
-                      />
-                      <QuickActionCard
-                        href="/journal"
-                        eyebrow="Journal"
-                        title="Reflect"
-                        icon={SquarePen}
-                      />
-                    </>
-                  ) : null}
                 </div>
                 {shouldShowGuide ? (
                   <p className="text-sm leading-7 text-[color:var(--kw-muted)]">
-                    Start with reading or Hifz first. Dua and reflection will still be here when you want them.
+                    Start with reading or Hifz first. Dua and reflection can wait.
                   </p>
                 ) : null}
+              </div>
+
+              <div className={`${styles.snapshotRail} xl:col-span-2`}>
+                <TodayStat
+                  label="Streak"
+                  value={streak ? `${streak.currentStreakDays}d` : loadingStreak ? "..." : "Not ready"}
+                  detail={streak ? `Best ${streak.bestStreakDays}d` : (streakError ?? "Loading")}
+                />
+                <TodayStat
+                  label="Review"
+                  value={summary.reviewHealth.dueNow}
+                  detail={summary.reviewHealth.dueSoon6h > 0 ? `${summary.reviewHealth.dueSoon6h} later today` : "Clear now"}
+                />
+                <TodayStat
+                  label="This week"
+                  value={`${summary.kpis.totalSessionMinutes7d}m`}
+                  detail={`${summary.kpis.completedSessions7d} sessions`}
+                />
+                <TodayStat
+                  label="Recall"
+                  value={summary.kpis.retentionScore14d}
+                  detail="Last 14 days"
+                />
               </div>
             </div>
           </section>
 
-          <div className={`grid gap-5 md:grid-cols-2 ${shouldShowGuide ? "" : "xl:grid-cols-4"}`}>
-            <MetricTile
-              label="This week"
-              value={summary.kpis.totalSessionMinutes7d}
-              detail={`${summary.kpis.avgSessionMinutes7d.toFixed(1)} min avg`}
-              icon={Clock3}
-              tone="accent"
-              delayMs={40}
-              foot={<Sparkline values={summary.sessionTrend14d.map((d) => d.minutes)} tone="accent" className={styles.metricSparkline} />}
-            />
-
-            {!shouldShowGuide ? (
-              <MetricTile
-                label="Recall"
-                value={summary.kpis.retentionScore14d}
-                icon={Gauge}
-                tone="neutral"
-                delayMs={80}
-                foot={<Sparkline values={trendRecall} tone="brand" className={styles.metricSparkline} />}
-              />
-            ) : null}
-
-            <MetricTile
-              label="Review due"
-              value={summary.reviewHealth.dueNow}
-              detail={summary.reviewHealth.dueSoon6h > 0 ? `${summary.reviewHealth.dueSoon6h} later today` : undefined}
-              icon={RefreshCcw}
-              tone="warn"
-              delayMs={120}
-              foot={(
-                <p className={`${styles.metricDate} text-xs text-[color:var(--kw-faint)]`} title={formatMaybeDateTime(summary.reviewHealth.nextDueAt)}>
-                  {formatMaybeDateTime(summary.reviewHealth.nextDueAt)}
-                </p>
-              )}
-            />
-
-            {!shouldShowGuide && streak ? (
-              <MetricTile
-                label="Streak"
-                value={`${streak.currentStreakDays}d`}
-                detail={`Best ${streak.bestStreakDays}d${streak.graceInUseToday ? " | grace" : ""}`}
-                icon={Flame}
-                tone="accent"
-                delayMs={160}
-                foot={<Pill tone="neutral">Today ayahs: {streak.todayQualifiedAyahs}</Pill>}
-              />
-            ) : null}
-
-            {!shouldShowGuide && !streak ? (
-              <MetricTile
-                label="Streak"
-                value={loadingStreak ? "..." : "Unavailable"}
-                detail={loadingStreak ? "Loading long-term consistency..." : (streakError ?? "Streak details are not ready yet.")}
-                icon={Flame}
-                tone="neutral"
-                delayMs={160}
-              />
-            ) : null}
-          </div>
-
           <div className="kw-fade-in" style={{ animationDelay: "36ms" }}>
-            <DashboardConnectedQuranCard mode={shouldShowGuide ? "simple" : "full"} />
+            <DashboardConnectedQuranCard mode="simple" />
           </div>
 
           <DisclosureCard

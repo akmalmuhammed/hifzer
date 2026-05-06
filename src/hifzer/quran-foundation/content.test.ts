@@ -5,6 +5,7 @@ const ORIGINAL_ENV = {
   QF_CONTENT_CLIENT_SECRET: process.env.QF_CONTENT_CLIENT_SECRET,
   QF_CLIENT_ID: process.env.QF_CLIENT_ID,
   QF_CLIENT_SECRET: process.env.QF_CLIENT_SECRET,
+  QF_AUDIO_BASE_URL: process.env.QF_AUDIO_BASE_URL,
 };
 
 afterEach(() => {
@@ -12,6 +13,7 @@ afterEach(() => {
   process.env.QF_CONTENT_CLIENT_SECRET = ORIGINAL_ENV.QF_CONTENT_CLIENT_SECRET;
   process.env.QF_CLIENT_ID = ORIGINAL_ENV.QF_CLIENT_ID;
   process.env.QF_CLIENT_SECRET = ORIGINAL_ENV.QF_CLIENT_SECRET;
+  process.env.QF_AUDIO_BASE_URL = ORIGINAL_ENV.QF_AUDIO_BASE_URL;
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
   vi.resetModules();
@@ -132,5 +134,69 @@ describe("quran foundation content integration", () => {
 
     expect(audio.status).toBe("degraded");
     expect(audio.detail).toContain("required scopes");
+  });
+
+  it("normalizes relative Quran.com recitation audio paths to the Quran.com audio CDN", async () => {
+    process.env.QF_CONTENT_CLIENT_ID = "content_client_123";
+    process.env.QF_CONTENT_CLIENT_SECRET = "content_secret_123";
+    delete process.env.QF_AUDIO_BASE_URL;
+
+    const fetchMock = vi.fn(async (...[input]: Parameters<typeof fetch>) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url.includes("/oauth2/token")) {
+        return new Response(JSON.stringify({
+          access_token: "token_123",
+          expires_in: 3600,
+        }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }
+
+      if (url.includes("/resources/recitations")) {
+        return new Response(JSON.stringify({
+          recitations: [
+            {
+              id: 7,
+              reciter_name: "Abdul Basit",
+              translated_name: "Abdul Basit",
+              style: "Murattal",
+              language_name: "Arabic",
+            },
+          ],
+        }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }
+
+      if (url.includes("/recitations/7/by_chapter/1")) {
+        return new Response(JSON.stringify({
+          audio_files: [
+            {
+              verse_key: "1:1",
+              url: "AbdulBaset/Murattal/mp3/001001.mp3",
+            },
+          ],
+        }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }
+
+      throw new Error(`Unexpected fetch: ${url}`);
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { getQuranFoundationAyahAudioSource } = await import("./content");
+    const audio = await getQuranFoundationAyahAudioSource({
+      verseKey: "1:1",
+      surahNumber: 1,
+      reciterId: "qf:7",
+    });
+
+    expect(audio.status).toBe("available");
+    expect(audio.url).toBe("https://verses.quran.com/AbdulBaset/Murattal/mp3/001001.mp3");
   });
 });

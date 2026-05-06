@@ -21,6 +21,7 @@ const ADVANCED_SYNC_SCOPES = [
   "reading_session",
   "collection",
   "streak",
+  "goal",
   "note",
 ] as const;
 
@@ -68,6 +69,14 @@ function formatStreakDetail(overview: QuranFoundationConnectedOverview | null): 
     return "Your Quran.com streak will appear here as you keep going.";
   }
   return overview.streak.bestDays ? `Best ${overview.streak.bestDays} days` : "Connected through Quran.com";
+}
+
+function formatGoalValue(overview: QuranFoundationConnectedOverview | null): string {
+  return overview?.goalPlan?.title ?? "No goal yet";
+}
+
+function formatGoalDetail(overview: QuranFoundationConnectedOverview | null): string {
+  return overview?.goalPlan?.remaining ?? "Your Quran.com goal can appear beside Hifzer progress.";
 }
 
 function formatFoldersValue(overview: QuranFoundationConnectedOverview | null): string {
@@ -157,11 +166,27 @@ export function DashboardConnectedQuranCard(props: { mode?: CardMode }) {
   const reconnectRequired = isQuranFoundationReconnectRequired(status);
   const needsRelink = Boolean(connected && missingAdvancedScopes.length > 0);
   const scopeApprovalBlocked = isQuranFoundationScopeApprovalBlocked(status, feedbackParam);
+  const hasBookmarkScope = Boolean(
+    status && hasQuranFoundationGrantedScope(
+      status.scopes,
+      "bookmark",
+      "bookmark.read",
+      "bookmark.create",
+      "bookmark.update",
+      "bookmark.delete",
+    ),
+  );
+  const hasActivityDayScope = Boolean(
+    status && hasQuranFoundationGrantedScope(status.scopes, "activity_day", "activity_day.read"),
+  );
   const hasReadingSessionScope = Boolean(
     status && hasQuranFoundationGrantedScope(status.scopes, "reading_session", "reading_session.read"),
   );
   const hasStreakReadScope = Boolean(
     status && hasQuranFoundationGrantedScope(status.scopes, "streak", "streak.read"),
+  );
+  const hasGoalScope = Boolean(
+    status && hasQuranFoundationGrantedScope(status.scopes, "goal", "goal.read"),
   );
   const hasCollectionScope = Boolean(
     status && hasQuranFoundationGrantedScope(status.scopes, "collection", "collection.read"),
@@ -216,16 +241,17 @@ export function DashboardConnectedQuranCard(props: { mode?: CardMode }) {
             <div className={styles.summary}>
               <div className="flex flex-wrap items-center gap-2">
                 <Pill tone={stateTone}>Quran.com</Pill>
-                {connected ? <Pill tone="neutral">Connected</Pill> : null}
+                {connected ? <Pill tone={hasBookmarkScope ? "accent" : "warn"}>User API sync</Pill> : null}
+                {status.contentApiReady ? <Pill tone="neutral">Content API ready</Pill> : null}
               </div>
               <p className="mt-3 text-base font-semibold tracking-tight text-[color:var(--kw-ink)]">
                 {connected
-                  ? "Your reading place, bookmarks, and notes can stay together."
+                  ? "Quran.com sync is visible in your daily flow."
                   : "Connect Quran.com whenever you want your reading place and saved items to follow you here."}
               </p>
               <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
                 {connected
-                  ? "Continue in the reader now, and Hifzer will keep your Quran.com reading place, bookmarks, and notes close by."
+                  ? "Reading place, bookmarks, folders, goals, notes, and official reader content stay available from Hifzer."
                   : "This is optional. You can start with Hifz or reading first, then connect Quran.com later when you want everything in one place."}
               </p>
               {connected && hasReadingSessionScope && overview?.readingSession ? (
@@ -288,11 +314,15 @@ export function DashboardConnectedQuranCard(props: { mode?: CardMode }) {
           ) : null}
 
           <div className={styles.featureRail}>
-            <span className={styles.featurePill}><Waves size={14} /> Reading place</span>
-            <span className={styles.featurePill}><BookMarked size={14} /> Bookmarks</span>
-            <span className={styles.featurePill}><FileText size={14} /> Notes</span>
+            <span className={styles.featurePill}><Waves size={14} /> User API: reading place</span>
+            <span className={styles.featurePill}><BookMarked size={14} /> User API: bookmarks</span>
+            {hasActivityDayScope || hasStreakReadScope ? (
+              <span className={styles.featurePill}><Sparkles size={14} /> User API: streak</span>
+            ) : null}
+            <span className={styles.featurePill}><Sparkles size={14} /> User API: goals</span>
+            <span className={styles.featurePill}><FileText size={14} /> User API: notes</span>
             {status.contentApiReady ? (
-              <span className={styles.featurePill}><AudioLines size={14} /> Official tafsir and audio</span>
+              <span className={styles.featurePill}><AudioLines size={14} /> Content API: tafsir and audio</span>
             ) : null}
           </div>
         </div>
@@ -308,7 +338,8 @@ export function DashboardConnectedQuranCard(props: { mode?: CardMode }) {
             <div className="flex flex-wrap items-center gap-2">
               <Pill tone={stateTone}>Quran.com</Pill>
               <Pill tone={stateTone}>{connectionStateLabel(status.state)}</Pill>
-              {status.contentApiReady ? <Pill tone="neutral">Official tafsir and audio</Pill> : null}
+              {connected ? <Pill tone={hasBookmarkScope ? "accent" : "warn"}>User API sync</Pill> : null}
+              {status.contentApiReady ? <Pill tone="neutral">Content API ready</Pill> : null}
               {needsRelink ? (
                 <Pill tone="warn">Reconnect needed</Pill>
               ) : null}
@@ -468,17 +499,37 @@ export function DashboardConnectedQuranCard(props: { mode?: CardMode }) {
               </p>
             </div>
           ) : null}
+          {!simpleMode ? (
+            <div className={styles.stat}>
+              <p className={styles.statLabel}>Quran.com goal</p>
+              <p className={styles.statValue}>
+                {connected
+                  ? hasGoalScope
+                    ? formatGoalValue(overview)
+                    : "Reconnect needed"
+                  : "Visible after you connect"}
+              </p>
+              <p className={styles.statDetail}>
+                {connected
+                  ? hasGoalScope
+                    ? formatGoalDetail(overview)
+                    : "Reconnect once to show your Quran.com goals here."
+                  : "Your Quran.com goal can stay visible beside Hifzer progress."}
+              </p>
+            </div>
+          ) : null}
         </div>
 
         <div className={styles.featureRail}>
-          <span className={styles.featurePill}><BookMarked size={14} /> Bookmarks</span>
-          <span className={styles.featurePill}><LibraryBig size={14} /> Bookmark folders</span>
-          <span className={styles.featurePill}><Waves size={14} /> Reading place</span>
-          <span className={styles.featurePill}><FileText size={14} /> Notes</span>
+          <span className={styles.featurePill}><BookMarked size={14} /> User API: bookmarks</span>
+          <span className={styles.featurePill}><LibraryBig size={14} /> User API: folders</span>
+          <span className={styles.featurePill}><Waves size={14} /> User API: reading place</span>
+          <span className={styles.featurePill}><Sparkles size={14} /> User API: goals</span>
+          <span className={styles.featurePill}><FileText size={14} /> User API: notes</span>
           {status.contentApiReady ? (
             <>
-              <span className={styles.featurePill}><AudioLines size={14} /> Official audio</span>
-              <span className={styles.featurePill}><Sparkles size={14} /> Answers with sources</span>
+              <span className={styles.featurePill}><AudioLines size={14} /> Content API: official audio</span>
+              <span className={styles.featurePill}><Sparkles size={14} /> Quran MCP: sourced answers</span>
             </>
           ) : null}
         </div>

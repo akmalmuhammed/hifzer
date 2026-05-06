@@ -510,16 +510,18 @@ export async function prepareProgressSimulationUser(input: {
     planBias: "BALANCED",
     hasTeacher: false,
     timezone: input.timezone,
-  });
-  await markOnboardingComplete({
-    clerkUserId: input.clerkUserId,
     onboardingStartLane: "hifz",
   });
   await saveStartPoint(
     input.clerkUserId,
     input.hifzStartSurahNumber,
     cursorAyahIdFromRef(input.hifzStartSurahNumber, input.hifzStartAyahNumber),
+    { onboardingStep: "complete" },
   );
+  await markOnboardingComplete({
+    clerkUserId: input.clerkUserId,
+    onboardingStartLane: "hifz",
+  });
   await saveQuranStartPoint(
     input.clerkUserId,
     input.quranStartSurahNumber,

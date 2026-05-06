@@ -11,24 +11,24 @@ import { usePaddle } from "@/components/billing/paddle-provider";
 const PRESET_OPTIONS = [
   {
     amount: 49,
-    label: "Quick support",
-    detail: "Good for a small Hifzer question, account issue, or narrow product polish request.",
+    label: "Account help",
+    detail: "One focused Hifzer account, billing, or setup question with written follow-up.",
   },
   {
     amount: 99,
-    label: "Priority support",
-    detail: "Best starting point for one clear Hifzer issue, product question, or account-specific help.",
+    label: "Priority assistance",
+    detail: "One Hifzer product issue or workflow question with priority written follow-up.",
     recommended: true,
   },
   {
     amount: 249,
-    label: "Deep support",
-    detail: "For a deeper investigation, broader product feedback pass, or multi-step help inside Hifzer.",
+    label: "Product review",
+    detail: "A deeper review of one Hifzer area, such as setup, sync, bookmarks, or dashboard flow.",
   },
   {
     amount: 499,
-    label: "Extended support",
-    detail: "For heavier Hifzer support needs, a larger product review, or a higher-impact feedback block.",
+    label: "Extended review",
+    detail: "A larger async review across multiple Hifzer flows or launch-readiness questions.",
   },
 ] as const;
 
@@ -43,7 +43,7 @@ const PRESETS: readonly PresetOption[] = PRESET_OPTIONS;
 
 const TRUST_POINTS = [
   "One-time payment",
-  "Hifzer-linked support",
+  "No subscription",
   "Paddle receipt included",
 ] as const;
 
@@ -135,10 +135,10 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <label className="block text-sm font-semibold text-[color:var(--kw-ink)]" htmlFor="support-amount">
-              Use your own amount
+              Custom amount
             </label>
             <p className="mt-1 max-w-[42ch] text-sm leading-6 text-[color:var(--kw-muted)]">
-              If your Hifzer support need is larger or smaller than the starting amounts above, set a custom amount here.
+              Use a custom one-time amount for the same Hifzer assistance scope.
             </p>
           </div>
           {selectedPreset ? (
@@ -227,11 +227,11 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
               }
             }}
           >
-            Continue with ${normalizedAmount || "0.00"} <ArrowUpRight size={16} />
+            Pay ${normalizedAmount || "0.00"} once <ArrowUpRight size={16} />
           </Button>
         </div>
         <p id="support-amount-help" className="mt-2 text-xs leading-6 text-[color:var(--kw-faint)]">
-          One-time payment only. No subscription is created.
+          One-time payment for Hifzer assistance. No subscription is created.
         </p>
         {amountError ? (
           <p
@@ -255,14 +255,14 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
               <p className="text-sm font-semibold text-[color:var(--kw-ink)]">What happens after checkout</p>
               <Pill tone="brand" className="gap-1">
                 <Sparkles size={12} />
-                Product-linked follow-up
+                Written follow-up
               </Pill>
             </div>
             <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">
-              You will receive a receipt through Paddle, and the payment can stay linked to your Hifzer account. If you
-              need follow-up, use support so we can review the Hifzer issue, account question, or product request in
-              that thread. One-time payments support Hifzer and related help, but they do not guarantee custom
-              development delivery.
+              Paddle sends the receipt. Send your request through support using the same email so we can match the
+              payment to your Hifzer account. This covers written assistance for Hifzer software and account questions;
+              it is not a donation, subscription, device repair service, roadmap purchase, or custom development
+              guarantee.
             </p>
             {props.hasPortal ? (
               <p className="mt-2 text-xs text-[color:var(--kw-faint)]">

@@ -1,7 +1,7 @@
 import type { QuranFoundationConnectionStatus } from "./types";
 
 const ADVANCED_PERMISSION_LABEL =
-  "reading place, streak, and notes";
+  "reading place, streak, goals, folders, and notes";
 const RECONNECT_ERROR_PATTERNS = [
   "invalid_grant",
   "authorization grant",

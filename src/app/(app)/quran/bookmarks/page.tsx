@@ -1,8 +1,8 @@
-import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Pill } from "@/components/ui/pill";
 import { getQuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { BookmarkManagerClient } from "./bookmarks-client";
 
@@ -11,7 +11,7 @@ export const metadata = {
 };
 
 export default async function QuranBookmarksPage() {
-  const userId = clerkEnabled() ? (await auth()).userId : null;
+  const userId = clerkEnabled() ? await resolveClerkUserIdForServer() : null;
   const connectionStatus = await getQuranFoundationConnectionStatus(userId ?? null);
 
   return (

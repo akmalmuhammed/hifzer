@@ -492,7 +492,28 @@ async function requireProfile(clerkUserId: string) {
   return profile;
 }
 
-async function pruneExpiredEntries(userId: string, now: Date) {
+async function pruneExpiredEntries(clerkUserId: string, userId: string, now: Date) {
+  const expiredRows = await db().privateJournalEntry.findMany({
+    where: {
+      userId,
+      autoDeleteAt: {
+        lte: now,
+      },
+    },
+    select: {
+      clientEntryId: true,
+    },
+  });
+
+  await Promise.allSettled(
+    expiredRows.map((row) =>
+      deleteJournalEntryNoteFromQuranFoundation({
+        clerkUserId,
+        clientEntryId: row.clientEntryId,
+      }),
+    ),
+  );
+
   await db().privateJournalEntry.deleteMany({
     where: {
       userId,
@@ -503,8 +524,8 @@ async function pruneExpiredEntries(userId: string, now: Date) {
   });
 }
 
-async function listEntriesForUserId(userId: string, now: Date): Promise<JournalEntry[]> {
-  await pruneExpiredEntries(userId, now);
+async function listEntriesForUserId(clerkUserId: string, userId: string, now: Date): Promise<JournalEntry[]> {
+  await pruneExpiredEntries(clerkUserId, userId, now);
 
   const rows = await db().privateJournalEntry.findMany({
     where: { userId },
@@ -514,8 +535,8 @@ async function listEntriesForUserId(userId: string, now: Date): Promise<JournalE
   return rows.map((row) => toSnapshot(row as JournalEntryRow));
 }
 
-async function listEntrySummariesForUserId(userId: string, now: Date): Promise<JournalEntry[]> {
-  await pruneExpiredEntries(userId, now);
+async function listEntrySummariesForUserId(clerkUserId: string, userId: string, now: Date): Promise<JournalEntry[]> {
+  await pruneExpiredEntries(clerkUserId, userId, now);
 
   const rows = await db().privateJournalEntry.findMany({
     where: { userId },
@@ -551,7 +572,9 @@ export async function listPrivateJournalEntries(
 ): Promise<JournalEntry[]> {
   const profile = await requireProfile(clerkUserId);
   return withJournalSchemaGuard(() =>
-    input?.summary ? listEntrySummariesForUserId(profile.id, now) : listEntriesForUserId(profile.id, now),
+    input?.summary
+      ? listEntrySummariesForUserId(clerkUserId, profile.id, now)
+      : listEntriesForUserId(clerkUserId, profile.id, now),
   );
 }
 
@@ -559,7 +582,7 @@ export async function getPrivateJournalEntry(clerkUserId: string, entryId: strin
   const profile = await requireProfile(clerkUserId);
 
   return withJournalSchemaGuard(async () => {
-    await pruneExpiredEntries(profile.id, now);
+    await pruneExpiredEntries(clerkUserId, profile.id, now);
     const row = await db().privateJournalEntry.findFirst({
       where: {
         id: entryId.trim(),
@@ -583,7 +606,7 @@ export async function savePrivateJournalEntry(
   const profile = await requireProfile(clerkUserId);
 
   return withJournalSchemaGuard(async () => {
-    await pruneExpiredEntries(profile.id, now);
+    await pruneExpiredEntries(clerkUserId, profile.id, now);
 
     const existing =
       typeof input.id === "string" && input.id.trim()
@@ -741,7 +764,7 @@ export async function syncPrivateJournalEntriesToQuranFoundation(
   const profile = await requireProfile(clerkUserId);
 
   return withJournalSchemaGuard(async () => {
-    await pruneExpiredEntries(profile.id, now);
+    await pruneExpiredEntries(clerkUserId, profile.id, now);
 
     const rows = await db().privateJournalEntry.findMany({
       where: { userId: profile.id },
@@ -787,7 +810,7 @@ export async function importPrivateJournalEntries(
   const profile = await requireProfile(clerkUserId);
 
   return withJournalSchemaGuard(async () => {
-    await pruneExpiredEntries(profile.id, now);
+    await pruneExpiredEntries(clerkUserId, profile.id, now);
 
     const sanitized = entries
       .slice(0, MAX_IMPORT_ENTRIES)
@@ -835,7 +858,7 @@ export async function importPrivateJournalEntries(
       .filter((entry) => entry !== null);
 
     if (sanitized.length === 0) {
-      return listEntriesForUserId(profile.id, now);
+      return listEntriesForUserId(clerkUserId, profile.id, now);
     }
 
     const pinnedCount = await db().privateJournalEntry.count({
@@ -911,6 +934,6 @@ export async function importPrivateJournalEntries(
       });
     }
 
-    return listEntriesForUserId(profile.id, now);
+    return listEntriesForUserId(clerkUserId, profile.id, now);
   });
 }

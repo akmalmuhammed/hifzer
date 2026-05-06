@@ -20,7 +20,7 @@ test.describe("legacy routing", () => {
         expectedPath: "/legacy/sign-in",
         expectedNext: "/legacy/app/projects/proj_ns_1",
       },
-      { oldPath: "/sign-in", expectedPath: "/legacy/sign-in" },
+      { oldPath: "/sign-in", expectedPath: "/login" },
     ] as const;
 
     for (const route of routes) {

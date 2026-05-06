@@ -561,6 +561,15 @@ export async function reconcileQuranFoundationBookmarks(clerkUserId: string) {
     },
     orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
   });
+  const pendingDeletedBookmarks = await db().bookmark.findMany({
+    where: {
+      userId: profile.id,
+      deletedAt: { not: null },
+      quranFoundationBookmarkId: { not: null },
+      quranFoundationSyncState: { in: ["error", "local_only", "not_linked"] },
+    },
+    orderBy: [{ updatedAt: "desc" }],
+  });
 
   let synced = 0;
   let failed = 0;
@@ -577,9 +586,21 @@ export async function reconcileQuranFoundationBookmarks(clerkUserId: string) {
       failed += 1;
     }
   }
+  for (const bookmark of pendingDeletedBookmarks) {
+    try {
+      await syncBookmarkToQuranFoundation({
+        clerkUserId,
+        bookmarkId: bookmark.id,
+        action: "delete",
+      });
+      synced += 1;
+    } catch {
+      failed += 1;
+    }
+  }
 
   const pushed = {
-    total: pendingBookmarks.length,
+    total: pendingBookmarks.length + pendingDeletedBookmarks.length,
     synced,
     failed,
   };

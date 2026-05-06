@@ -46,17 +46,25 @@ function toDraft(bookmark: BookmarkSnapshot): BookmarkDraft {
   };
 }
 
+function formatBookmarkSyncedAt(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "UTC",
+    timeZoneName: "short",
+  }).format(new Date(value));
+}
+
 export function BookmarkManagerClient(props: { connectionStatus: QuranFoundationConnectionStatus }) {
-  const cached = readCachedBookmarkState();
-  const [categories, setCategories] = useState<BookmarkCategorySnapshot[]>(cached.categories);
-  const [bookmarks, setBookmarks] = useState<BookmarkSnapshot[]>(cached.bookmarks);
-  const [drafts, setDrafts] = useState<Record<string, BookmarkDraft>>(() => {
-    const next: Record<string, BookmarkDraft> = {};
-    for (const bookmark of cached.bookmarks) {
-      next[bookmark.id] = toDraft(bookmark);
-    }
-    return next;
-  });
+  const [categories, setCategories] = useState<BookmarkCategorySnapshot[]>([]);
+  const [bookmarks, setBookmarks] = useState<BookmarkSnapshot[]>([]);
+  const [drafts, setDrafts] = useState<Record<string, BookmarkDraft>>({});
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [showDeleted, setShowDeleted] = useState(false);
@@ -65,7 +73,7 @@ export function BookmarkManagerClient(props: { connectionStatus: QuranFoundation
   const [loading, setLoading] = useState(true);
   const [busyKey, setBusyKey] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
-  const [pendingCount, setPendingCount] = useState(getPendingBookmarkSyncMutations().length);
+  const [pendingCount, setPendingCount] = useState(0);
 
   const applyState = useCallback((next: { categories: BookmarkCategorySnapshot[]; bookmarks: BookmarkSnapshot[] }) => {
     setCategories(next.categories);
@@ -109,6 +117,11 @@ export function BookmarkManagerClient(props: { connectionStatus: QuranFoundation
   useEffect(() => {
     let cancelled = false;
     async function bootstrap() {
+      const cached = readCachedBookmarkState();
+      if (!cancelled) {
+        applyState(cached);
+        setPendingCount(getPendingBookmarkSyncMutations().length);
+      }
       await syncQueuedMutations();
       await refreshFromApi();
       if (!cancelled) {
@@ -120,7 +133,7 @@ export function BookmarkManagerClient(props: { connectionStatus: QuranFoundation
     return () => {
       cancelled = true;
     };
-  }, [refreshFromApi, syncQueuedMutations]);
+  }, [applyState, refreshFromApi, syncQueuedMutations]);
 
   const visibleBookmarks = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -430,6 +443,7 @@ export function BookmarkManagerClient(props: { connectionStatus: QuranFoundation
         const draft = drafts[bookmark.id] ?? toDraft(bookmark);
         const categoryName = bookmark.category?.name ?? "No category";
         const openHref = `/quran/read?view=compact&surah=${bookmark.surahNumber}&cursor=${bookmark.ayahId}`;
+        const syncedAtLabel = formatBookmarkSyncedAt(bookmark.lastSyncedAt);
         const rowBusy = busyKey === `bookmark-save-${bookmark.id}` ||
           busyKey === `bookmark-delete-${bookmark.id}` ||
           busyKey === `bookmark-restore-${bookmark.id}`;
@@ -452,14 +466,14 @@ export function BookmarkManagerClient(props: { connectionStatus: QuranFoundation
                 </div>
                 <p className="text-xs text-[color:var(--kw-faint)]">
                   Category: {categoryName}
-                  {bookmark.lastSyncedAt ? ` · synced ${new Date(bookmark.lastSyncedAt).toLocaleString()}` : ""}
+                  {syncedAtLabel ? ` - synced ${syncedAtLabel}` : ""}
                 </p>
                 {bookmark.syncError ? <p className="text-xs text-[color:var(--kw-faint)]">{bookmark.syncError}</p> : null}
               </div>
 
-              <Link href={openHref}>
-                <Button size="sm" variant="secondary">Open in reader</Button>
-              </Link>
+              <Button asChild size="sm" variant="secondary">
+                <Link href={openHref}>Open in reader</Link>
+              </Button>
             </div>
 
             <div className="mt-4 grid gap-3 md:grid-cols-2">

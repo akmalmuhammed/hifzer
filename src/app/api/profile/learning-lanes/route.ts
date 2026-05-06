@@ -15,7 +15,6 @@ export async function GET() {
     const lanes = await listLearningLanes(userId, 10);
     return NextResponse.json({ ok: true, lanes });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to load learning lanes.";
     Sentry.captureException(error, {
       tags: {
         route: "/api/profile/learning-lanes",

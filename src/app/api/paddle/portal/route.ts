@@ -28,7 +28,7 @@ export async function POST() {
     return NextResponse.json({
       portalUrl: session.urls.general.overview,
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to create customer portal session." }, { status: 500 });
   }
 }

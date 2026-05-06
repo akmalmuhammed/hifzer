@@ -20,6 +20,36 @@
   mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), transparent 88%);
 }
 
+.choiceCard,
+.emailChip {
+  position: relative;
+  z-index: 1;
+}
+
+.choiceCard {
+  border-radius: 20px;
+  border: 1px solid var(--kw-border-2);
+  background:
+    radial-gradient(140% 140% at 0% 0%, rgba(var(--kw-accent-rgb), 0.08), transparent 58%),
+    var(--kw-panel-gradient-strong);
+  box-shadow: var(--kw-shadow-soft);
+  padding: 1rem;
+}
+
+.emailChip {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--kw-border-2);
+  background: var(--kw-card-strong);
+  padding: 0 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--kw-ink-2);
+}
+
 .panel {
   border-radius: 18px;
   border: 1px solid var(--kw-border-2);
@@ -64,6 +94,7 @@
 
 .policyGrid {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
   gap: 0.9rem;
 }
 
@@ -97,12 +128,6 @@
   flex: 0 0 auto;
   border-radius: 999px;
   background: rgba(var(--kw-accent-rgb), 1);
-}
-
-@media (min-width: 900px) {
-  .policyGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 640px) {

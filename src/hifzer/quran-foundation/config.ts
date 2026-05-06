@@ -16,6 +16,7 @@ export const QURAN_FOUNDATION_REQUESTED_USER_SCOPES = [
   "reading_session",
   "collection",
   "streak",
+  "goal",
   "note",
 ] as const;
 

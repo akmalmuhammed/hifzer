@@ -76,10 +76,121 @@
   animation: orbitPulse 10s ease-in-out infinite reverse;
 }
 
-.actionRail {
+.todayGrid {
+  display: grid;
+  gap: 16px;
+}
+
+.todayMain {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.18);
+  background:
+    radial-gradient(420px 220px at 92% 8%, rgba(var(--kw-accent-rgb), 0.16), transparent 64%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(248, 251, 252, 0.78));
+  padding: 18px;
+  box-shadow: 0 16px 34px rgba(11, 18, 32, 0.08);
+}
+
+:global(html[data-mode="dark"]) .todayMain {
+  border-color: rgba(var(--kw-accent-rgb), 0.24);
+  background:
+    radial-gradient(420px 220px at 92% 8%, rgba(var(--kw-accent-rgb), 0.2), transparent 64%),
+    linear-gradient(145deg, rgba(23, 35, 56, 0.88), rgba(12, 20, 36, 0.78));
+  box-shadow:
+    0 18px 38px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.todayKicker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--kw-faint);
+}
+
+.todayTitle {
+  margin-top: 10px;
+  max-width: 720px;
+  font-size: clamp(1.65rem, 3vw, 2.6rem);
+  font-weight: 760;
+  letter-spacing: -0.06em;
+  line-height: 0.98;
+  color: var(--kw-ink);
+}
+
+.todayBody {
+  margin-top: 12px;
+  max-width: 640px;
+  color: var(--kw-muted);
+  font-size: 0.98rem;
+  line-height: 1.75;
+}
+
+.todayButtons {
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.compactActions {
   display: grid;
   gap: 10px;
-  grid-template-columns: 1fr;
+}
+
+.snapshotRail {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.snapshotItem {
+  border-radius: 18px;
+  border: 1px solid var(--kw-border-2);
+  background: rgba(255, 255, 255, 0.66);
+  padding: 12px 13px;
+  box-shadow: 0 12px 26px rgba(11, 18, 32, 0.06);
+}
+
+:global(html[data-mode="dark"]) .snapshotItem {
+  border-color: rgba(148, 163, 184, 0.16);
+  background:
+    radial-gradient(110% 120% at 100% 100%, rgba(var(--kw-accent-rgb), 0.12), transparent 64%),
+    linear-gradient(155deg, rgba(23, 33, 55, 0.78), rgba(13, 20, 36, 0.7));
+  box-shadow:
+    0 14px 28px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.snapshotLabel {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--kw-faint);
+}
+
+.snapshotValue {
+  margin-top: 7px;
+  font-family:
+    var(--font-kw-mono),
+    "IBM Plex Mono",
+    ui-monospace,
+    monospace;
+  font-size: 1.25rem;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+  color: var(--kw-ink);
+}
+
+.snapshotDetail {
+  margin-top: 4px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--kw-muted);
 }
 
 .actionTile {
@@ -87,11 +198,11 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 14px;
-  min-height: 96px;
+  min-height: 86px;
   border-radius: 18px;
   border: 1px solid var(--kw-border-2);
   background: rgba(255, 255, 255, 0.78);
-  padding: 14px;
+  padding: 13px;
   box-shadow: 0 12px 26px rgba(11, 18, 32, 0.08);
   transition:
     transform 180ms ease,
@@ -224,58 +335,6 @@
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.03),
     0 14px 28px rgba(0, 0, 0, 0.16);
-}
-
-.metricCard {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  min-height: 176px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(249, 251, 255, 0.82));
-}
-
-:global(html[data-mode="dark"]) .metricCard {
-  background:
-    radial-gradient(130% 130% at 100% 100%, rgba(var(--kw-accent-rgb), 0.16), transparent 62%),
-    linear-gradient(180deg, rgba(25, 37, 60, 0.9), rgba(12, 19, 35, 0.82));
-}
-
-.metricCard::before {
-  content: "";
-  position: absolute;
-  inset: auto -28% -76% auto;
-  width: 180px;
-  height: 180px;
-  border-radius: 999px;
-  background: radial-gradient(circle, rgba(var(--kw-accent-rgb), 0.18), transparent 70%);
-  pointer-events: none;
-}
-
-.metricHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.metricBody {
-  min-height: 2.1rem;
-}
-
-.metricFoot {
-  margin-top: auto;
-}
-
-.metricSparkline {
-  margin-top: 18px;
-}
-
-.metricDate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .numericValue {
@@ -501,14 +560,19 @@
 }
 
 @media (min-width: 768px) {
-  .actionRail {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .snapshotRail {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
 @media (min-width: 1280px) {
-  .actionRail {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  .todayGrid {
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+    align-items: stretch;
+  }
+
+  .compactActions {
+    grid-template-columns: 1fr;
   }
 }
 

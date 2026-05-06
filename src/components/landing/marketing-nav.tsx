@@ -15,10 +15,10 @@ import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
 import styles from "./landing.module.css";
 
 const STORY_LINKS = [
-  { href: "#routine", label: "Routine" },
-  { href: "#hifz", label: "Hifz" },
-  { href: "#guidance", label: "Guidance" },
-  { href: "#reflection", label: "Reflection" },
+  { href: "/#routine", label: "Read" },
+  { href: "/#hifz", label: "Memorize" },
+  { href: "/#guidance", label: "Understand" },
+  { href: "/#reflection", label: "Reflect" },
 ] as const;
 
 export function MarketingNav() {
@@ -28,7 +28,7 @@ export function MarketingNav() {
   const copy = getAppUiCopy(language);
   const signInLabel = copy.marketing.signIn;
   const getStartedLabel = "Start free";
-  const brandTagline = "Return to the Qur'an with clarity.";
+  const brandTagline = "Daily Qur'an practice system.";
 
   return (
     <header className="sticky top-0 z-40">

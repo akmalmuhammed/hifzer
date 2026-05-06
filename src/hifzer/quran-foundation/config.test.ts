@@ -61,6 +61,7 @@ describe("quran foundation config", () => {
       "reading_session",
       "collection",
       "streak",
+      "goal",
       "note",
     ]);
   });

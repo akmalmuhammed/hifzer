@@ -154,7 +154,6 @@ export async function POST(req: Request) {
   try {
     event = await paddleClient().webhooks.unmarshal(requestBody, paddleWebhookSecret(), signature);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Invalid webhook signature.";
     Sentry.captureException(error, { tags: { route: "/api/paddle/webhook" } });
     return NextResponse.json({ error: "Webhook processing failed." }, { status: 400 });
   }

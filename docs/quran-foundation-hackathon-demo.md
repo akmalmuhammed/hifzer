@@ -20,17 +20,20 @@ For the judge account, open `/dashboard` first and confirm the `Connected Quran`
 
 If the card says `Refresh permissions`, reconnect Quran.com before recording. Older links may only have `bookmark` and `user` scopes; the strongest demo needs the newer goal, streak, reading-session, collection, activity-day, and note permissions.
 
+Open `/settings/quran-foundation` once before the final recording and confirm the `Quran Foundation API proof` card shows live User API scope coverage and Content API readiness. This is the fastest way to prove the integration is real if a judge asks.
+
 ## Recommended Demo Path
 
 1. Open `/dashboard`.
 2. Show the `Connected Quran` card:
    - Quran.com connection state
+   - User API sync badge
    - Content API readiness
    - resume point
    - streak or goal state
    - collections and notes
 3. If permissions are stale, use `Refresh permissions` before recording the final demo.
-4. Open `/settings/quran-foundation` only if you need to show bookmark import, collection sync, or note import explicitly.
+4. Open `/settings/quran-foundation` if you need to show exact API proof, bookmark import, collection sync, or note import explicitly.
 5. Use the dashboard to continue into the Qur'an lane.
 6. Open `/quran/read?view=compact`.
 7. Open reader filters and show:

@@ -35,6 +35,16 @@ export async function signInAsClerkTestUser(
         body: JSON.stringify({ onboardingStartLane: "hifz" }),
       }).catch(() => null);
     });
+  } else {
+    await page.evaluate(async () => {
+      window.localStorage.removeItem("hifzer_onboarding_completed_v1");
+      const response = await fetch("/api/profile/onboarding-test-reset", {
+        method: "POST",
+      });
+      if (!response.ok) {
+        throw new Error(`Could not reset onboarding test state: ${response.status}`);
+      }
+    });
   }
 
   await page.goto("/dashboard");

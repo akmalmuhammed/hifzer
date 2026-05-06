@@ -17,9 +17,25 @@ const STATE_COOKIE = "hifzer_qf_oauth_state";
 const VERIFIER_COOKIE = "hifzer_qf_oauth_verifier";
 const NONCE_COOKIE = "hifzer_qf_oauth_nonce";
 const RETURN_TO_COOKIE = "hifzer_qf_oauth_return_to";
+const DEFAULT_RETURN_TO = "/settings/quran-foundation";
+
+function sanitizeReturnTo(value: string | null) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return DEFAULT_RETURN_TO;
+  }
+  try {
+    const url = new URL(value, "https://hifzer.local");
+    if (url.origin !== "https://hifzer.local") {
+      return DEFAULT_RETURN_TO;
+    }
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return DEFAULT_RETURN_TO;
+  }
+}
 
 function buildReturnUrl(req: URL, returnTo: string, qf: string) {
-  const url = new URL(returnTo, req);
+  const url = new URL(sanitizeReturnTo(returnTo), req);
   url.searchParams.set("qf", qf);
   return url;
 }
@@ -27,7 +43,7 @@ function buildReturnUrl(req: URL, returnTo: string, qf: string) {
 export async function GET(req: Request) {
   const { userId } = await auth();
   const requestUrl = new URL(req.url);
-  const returnTo = requestUrl.searchParams.get("returnTo") || "/settings/quran-foundation";
+  const returnTo = sanitizeReturnTo(requestUrl.searchParams.get("returnTo"));
 
   if (!userId) {
     return NextResponse.redirect(buildReturnUrl(requestUrl, returnTo, "sign-in-required"));

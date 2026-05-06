@@ -61,7 +61,7 @@ export async function POST(req: Request) {
       currencyCode: currencyCode as never,
       collectionMode: "automatic",
       checkout: {
-        url: new URL("/billing/upgrade", appPublicUrl()).toString(),
+        url: new URL("/support", appPublicUrl()).toString(),
       },
       customData: {
         clerk_user_id: userId,
@@ -71,14 +71,14 @@ export async function POST(req: Request) {
         {
           quantity: 1,
           price: {
-            description: "One-time Hifzer product support and account assistance.",
+            description: "One-time Hifzer software account and product assistance.",
             unitPrice: {
               amount: normalizedAmount.cents,
               currencyCode: currencyCode as never,
             },
             product: {
-              name: "Hifzer Product Support",
-              description: `One-time Hifzer product support purchase of ${currencyCode} ${normalizedAmount.display}.`,
+              name: "Hifzer One-Time Assistance",
+              description: `One-time written assistance for Hifzer software account, billing, setup, or product questions. No subscription. Amount: ${currencyCode} ${normalizedAmount.display}.`,
               taxCategory: "standard",
             },
           },
