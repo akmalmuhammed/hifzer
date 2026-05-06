@@ -15,7 +15,7 @@ const DEMO_STEPS = [
     loading: true,
     bubble: "Explain this ayah",
     loader: "Grounding this ayah with ayah text, translation, and tafsir context...",
-    duration: 1250,
+    duration: 2400,
   },
   {
     id: "explain-ready",
@@ -23,7 +23,7 @@ const DEMO_STEPS = [
     loading: false,
     bubble: "Explain this ayah",
     loader: "",
-    duration: 3600,
+    duration: 6200,
   },
   {
     id: "assistant-loading",
@@ -31,7 +31,7 @@ const DEMO_STEPS = [
     loading: true,
     bubble: LANDING_GUIDANCE_DEMO.assistant.prompt,
     loader: "Searching grounded Qur'an matches for patience...",
-    duration: 1250,
+    duration: 2400,
   },
   {
     id: "assistant-ready",
@@ -39,7 +39,7 @@ const DEMO_STEPS = [
     loading: false,
     bubble: LANDING_GUIDANCE_DEMO.assistant.prompt,
     loader: "",
-    duration: 4200,
+    duration: 7000,
   },
 ] as const;
 
@@ -220,7 +220,7 @@ export function GroundedGuidanceDemo() {
               initial={{ opacity: 0, y: 8, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.98 }}
-              transition={{ duration: 0.28 }}
+              transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1] }}
               className={styles.bubble}
             >
               <MessageSquareQuote size={15} aria-hidden />
@@ -247,7 +247,7 @@ export function GroundedGuidanceDemo() {
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.34, ease: "easeOut" }}
+                transition={{ duration: 0.62, ease: [0.22, 1, 0.36, 1] }}
               >
                 {step.loading ? (
                   <LoadingCard detail={step.loader} />
