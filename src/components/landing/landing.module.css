@@ -67,37 +67,65 @@
 
 .hero {
   position: relative;
+  isolation: isolate;
+  overflow: hidden;
   min-height: min(760px, calc(100dvh - 84px));
   padding: clamp(2.6rem, 5.8vw, 4.8rem) clamp(1rem, 4vw, 3rem) clamp(2.8rem, 6vw, 4.5rem);
-  color: rgba(248, 250, 252, 0.94);
+  color: #082b25;
   background:
-    radial-gradient(42rem 32rem at 72% 28%, rgba(20, 184, 166, 0.26), transparent 72%),
-    radial-gradient(36rem 24rem at 16% 18%, rgba(216, 182, 107, 0.18), transparent 68%),
-    linear-gradient(135deg, #06110f 0%, #0b151c 48%, #08120f 100%);
+    radial-gradient(46rem 32rem at 74% 24%, rgba(20, 184, 166, 0.2), transparent 72%),
+    radial-gradient(42rem 24rem at 16% 20%, rgba(255, 255, 255, 0.95), transparent 66%),
+    radial-gradient(38rem 22rem at 52% 88%, rgba(153, 246, 228, 0.18), transparent 74%),
+    linear-gradient(135deg, #fbfffd 0%, #eefaf5 42%, #e3f8f5 100%);
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: -24% -12%;
+  pointer-events: none;
+  background:
+    radial-gradient(32rem 24rem at 18% 28%, rgba(20, 184, 166, 0.16), transparent 70%),
+    radial-gradient(34rem 26rem at 78% 18%, rgba(10, 138, 119, 0.12), transparent 72%),
+    radial-gradient(30rem 22rem at 74% 84%, rgba(255, 255, 255, 0.9), transparent 70%);
+  opacity: 0.8;
+  animation: heroGradientDrift 24s ease-in-out infinite alternate;
 }
 
 .hero::after {
   content: "";
   position: absolute;
+  z-index: 0;
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 30%),
-    radial-gradient(circle at 22% 26%, rgba(255, 255, 255, 0.08), transparent 0.15rem),
-    radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.06), transparent 0.12rem),
-    radial-gradient(circle at 58% 78%, rgba(255, 255, 255, 0.045), transparent 0.11rem);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), transparent 34%, rgba(255, 255, 255, 0.5) 100%),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 104px,
+      rgba(8, 18, 15, 0.026) 104px,
+      rgba(8, 18, 15, 0.026) 105px
+    );
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.72), transparent 92%);
 }
 
 .heroGlow {
   position: absolute;
+  z-index: 0;
   inset: auto -10% -18% 48%;
   height: 42rem;
   pointer-events: none;
-  background: radial-gradient(circle, rgba(20, 184, 166, 0.22), transparent 68%);
-  filter: blur(24px);
+  background: radial-gradient(circle, rgba(20, 184, 166, 0.2), transparent 68%);
+  filter: blur(34px);
+  opacity: 0.72;
+  animation: heroGlowDrift 28s ease-in-out infinite alternate;
 }
 
 .heroGrid {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.18fr);
   gap: clamp(2rem, 4.4vw, 4.2rem);
@@ -121,7 +149,7 @@
 }
 
 .heroEyebrow {
-  color: rgba(216, 182, 107, 0.9);
+  color: #0a8a77;
 }
 
 .eyebrow {
@@ -134,13 +162,14 @@
   font-size: clamp(3.15rem, 5.7vw, 5.9rem);
   line-height: 0.92;
   letter-spacing: -0.068em;
+  color: #082b25;
   text-wrap: balance;
 }
 
 .heroSummary {
   max-width: 35rem;
   margin-top: 1.4rem;
-  color: rgba(248, 250, 252, 0.72);
+  color: rgba(9, 39, 33, 0.68);
   font-size: clamp(1rem, 1.25vw, 1.14rem);
   line-height: 1.68;
 }
@@ -156,10 +185,17 @@
 .noCard {
   display: block;
   margin-top: 1rem;
-  color: rgba(248, 250, 252, 0.46);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.04em;
+}
+
+.heroMicro {
+  color: rgba(9, 39, 33, 0.48);
+}
+
+.noCard {
+  color: rgba(248, 250, 252, 0.46);
 }
 
 .heroVisual {
@@ -170,10 +206,10 @@
 .screenCard {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.14);
   border-radius: 2rem;
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.64);
+  box-shadow: 0 30px 90px rgba(8, 18, 15, 0.16);
   backdrop-filter: blur(18px);
 }
 
@@ -243,6 +279,8 @@
 }
 
 .signalStrip {
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   max-width: 1120px;
@@ -251,9 +289,32 @@
   gap: 1rem;
 }
 
+.signalStrip::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -5rem;
+  bottom: -5.5rem;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background:
+    radial-gradient(42rem 16rem at 24% 36%, rgba(var(--kw-accent-rgb), 0.12), transparent 72%),
+    radial-gradient(32rem 14rem at 82% 24%, rgba(153, 246, 228, 0.12), transparent 74%),
+    linear-gradient(
+      180deg,
+      rgba(251, 255, 253, 0) 0%,
+      rgba(239, 250, 245, 0.82) 24%,
+      rgba(231, 248, 243, 0.72) 54%,
+      rgba(239, 249, 246, 0.56) 82%,
+      rgba(239, 249, 246, 0) 100%
+    );
+}
+
 .signalItem {
-  --signal-accent: rgba(10, 138, 119, 0.24);
-  --signal-edge: rgba(10, 138, 119, 0.52);
+  --signal-accent: rgba(20, 184, 166, 0.14);
+  --signal-edge: rgba(20, 184, 166, 0.3);
 
   position: relative;
   isolation: isolate;
@@ -261,16 +322,16 @@
   display: grid;
   align-content: start;
   min-height: 9.6rem;
-  border: 1px solid rgba(var(--kw-accent-rgb), 0.14);
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.12);
   border-radius: 1.6rem;
   padding: 1rem;
   background:
-    radial-gradient(12rem 8rem at 14% 110%, var(--signal-accent), transparent 72%),
-    radial-gradient(12rem 8rem at 100% 0%, rgba(255, 255, 255, 0.9), transparent 62%),
-    linear-gradient(155deg, rgba(255, 255, 255, 0.92), rgba(247, 250, 247, 0.78));
+    radial-gradient(13rem 9rem at 0% 108%, var(--signal-accent), transparent 74%),
+    radial-gradient(11rem 7rem at 100% 0%, rgba(255, 255, 255, 0.66), transparent 64%),
+    linear-gradient(150deg, rgba(255, 255, 255, 0.86), rgba(239, 249, 246, 0.72));
   box-shadow:
-    0 24px 70px rgba(8, 18, 15, 0.09),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    0 22px 60px rgba(8, 18, 15, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(22px) saturate(132%);
   transition:
     transform 220ms ease,
@@ -285,7 +346,7 @@
   border-radius: inherit;
   padding: 1px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.9), var(--signal-edge), transparent 68%);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.72), var(--signal-edge), transparent 70%);
   mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -304,15 +365,15 @@
   height: 1px;
   pointer-events: none;
   background: linear-gradient(90deg, var(--signal-edge), rgba(8, 18, 15, 0.06), transparent);
-  opacity: 0.85;
+  opacity: 0.58;
 }
 
 .signalItem:hover {
   transform: translateY(-0.22rem);
-  border-color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(var(--kw-accent-rgb), 0.22);
   box-shadow:
-    0 30px 86px rgba(8, 18, 15, 0.13),
-    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+    0 28px 78px rgba(8, 18, 15, 0.11),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
 }
 
 .signalItemGlow {
@@ -323,8 +384,8 @@
   height: 8.5rem;
   border-radius: 999px;
   background: radial-gradient(circle, var(--signal-accent), transparent 70%);
-  filter: blur(12px);
-  opacity: 0.66;
+  filter: blur(14px);
+  opacity: 0.42;
   pointer-events: none;
   z-index: 0;
 }
@@ -364,19 +425,19 @@
   background: rgba(255, 255, 255, 0.62);
   color: #0b5f52;
   font-size: 0.55rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
+  font-weight: 700;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
 .signalTitle {
-  margin-top: 1.15rem;
+  margin-top: 1.05rem;
   font-family: var(--font-kw-display);
-  font-size: clamp(1.45rem, 1.85vw, 2rem);
-  font-weight: 850;
-  line-height: 0.95;
-  letter-spacing: -0.058em;
+  font-size: clamp(1.32rem, 1.55vw, 1.72rem);
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: -0.045em;
   color: #092721;
   text-wrap: balance;
 }
@@ -384,11 +445,11 @@
 .signalBody {
   display: block;
   max-width: 26ch;
-  margin-top: 0.72rem;
-  color: rgba(9, 39, 33, 0.72);
-  font-size: 0.82rem;
-  font-weight: 650;
-  line-height: 1.55;
+  margin-top: 0.68rem;
+  color: rgba(9, 39, 33, 0.7);
+  font-size: 0.8rem;
+  font-weight: 520;
+  line-height: 1.62;
 }
 
 .signalRule {
@@ -414,6 +475,15 @@
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   gap: clamp(2rem, 5vw, 4.5rem);
   align-items: center;
+}
+
+.guidanceGrid {
+  align-items: start;
+}
+
+.guidanceCopy {
+  align-self: start;
+  padding-top: clamp(0.4rem, 1.4vw, 1rem);
 }
 
 .sectionTitle {
@@ -461,11 +531,11 @@
   border-radius: 1.35rem;
   color: #0b5f52;
   background: rgba(10, 138, 119, 0.1);
-  font-weight: 900;
+  font-weight: 760;
 }
 
 .planStep p {
-  font-weight: 800;
+  font-weight: 680;
   color: var(--kw-ink);
 }
 
@@ -473,6 +543,7 @@
   display: block;
   margin-top: 0.25rem;
   color: var(--kw-muted);
+  font-weight: 480;
   line-height: 1.55;
 }
 
@@ -626,8 +697,10 @@
 }
 
 .assistantMock {
+  align-self: start;
   display: grid;
   gap: 1rem;
+  min-height: clamp(42rem, 56vw, 48rem);
   padding: clamp(1rem, 3vw, 1.6rem);
   background:
     radial-gradient(24rem 16rem at 100% 0%, rgba(10, 138, 119, 0.12), transparent 72%),
@@ -705,9 +778,56 @@
   color: rgba(248, 250, 252, 0.64);
 }
 
+.readerApiProof {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.45rem;
+}
+
+.readerApiProof span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.1rem;
+  border: 1px solid rgba(153, 246, 228, 0.18);
+  border-radius: 999px;
+  padding: 0.45rem 0.76rem;
+  color: rgba(153, 246, 228, 0.94);
+  background: rgba(20, 184, 166, 0.09);
+  font-size: 0.78rem;
+  font-weight: 760;
+}
+
 .readerMock {
+  display: grid;
+  gap: 1rem;
   padding: 1.1rem;
-  background: rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(18rem 12rem at 100% 0%, rgba(20, 184, 166, 0.14), transparent 70%),
+    rgba(255, 255, 255, 0.08);
+}
+
+.readerApiTopline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.readerApiTopline span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 0.38rem 0.7rem;
+  color: rgba(248, 250, 252, 0.82);
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .ayahLine {
@@ -734,13 +854,55 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem;
-  margin-top: 1rem;
+}
+
+.readerApiPanel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  border: 1px solid rgba(153, 246, 228, 0.14);
+  border-radius: 1.25rem;
+  padding: 0.9rem 1rem;
+  background:
+    linear-gradient(135deg, rgba(20, 184, 166, 0.12), rgba(255, 255, 255, 0.04)),
+    rgba(255, 255, 255, 0.05);
+}
+
+.readerApiPanel div {
+  display: grid;
+  gap: 0.22rem;
+}
+
+.readerApiPanel small {
+  color: rgba(248, 250, 252, 0.52);
+  font-size: 0.66rem;
+  font-weight: 850;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.readerApiPanel strong {
+  color: rgba(248, 250, 252, 0.94);
+  font-size: 0.95rem;
+  font-weight: 780;
+}
+
+.readerApiPanel > span {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.45rem 0.72rem;
+  color: #99f6e4;
+  background: rgba(20, 184, 166, 0.13);
+  font-size: 0.78rem;
+  font-weight: 800;
 }
 
 .progressTrack {
   overflow: hidden;
   height: 0.55rem;
-  margin-top: 1.2rem;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.12);
 }
@@ -992,6 +1154,20 @@ html[data-mode="dark"] .page::before {
     );
 }
 
+html[data-mode="dark"] .signalStrip::before {
+  background:
+    radial-gradient(42rem 16rem at 24% 36%, rgba(153, 246, 228, 0.14), transparent 74%),
+    radial-gradient(32rem 14rem at 82% 24%, rgba(255, 255, 255, 0.08), transparent 76%),
+    linear-gradient(
+      180deg,
+      rgba(251, 255, 253, 0) 0%,
+      rgba(239, 250, 245, 0.34) 24%,
+      rgba(153, 246, 228, 0.14) 48%,
+      rgba(8, 15, 28, 0.12) 78%,
+      rgba(8, 15, 28, 0) 100%
+    );
+}
+
 html[data-mode="dark"] .navFrame,
 html[data-mode="dark"] .footerFrame,
 html[data-mode="dark"] .planStep,
@@ -1011,41 +1187,41 @@ html[data-mode="dark"] .faqItem {
 }
 
 html[data-mode="dark"] .signalItem {
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(153, 246, 228, 0.1);
   background:
-    radial-gradient(13rem 9rem at 8% 108%, rgba(20, 184, 166, 0.2), transparent 74%),
-    radial-gradient(12rem 8rem at 100% 0%, var(--signal-accent), transparent 62%),
-    linear-gradient(155deg, rgba(20, 31, 46, 0.94), rgba(9, 17, 30, 0.88));
+    radial-gradient(13rem 9rem at 0% 108%, rgba(20, 184, 166, 0.12), transparent 76%),
+    radial-gradient(11rem 7rem at 100% 0%, var(--signal-accent), transparent 68%),
+    linear-gradient(150deg, rgba(13, 28, 38, 0.78), rgba(9, 17, 30, 0.72));
   box-shadow:
-    0 28px 86px rgba(0, 0, 0, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 24px 70px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 html[data-mode="dark"] .signalItem::before {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(20, 184, 166, 0.44), transparent 68%);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(20, 184, 166, 0.24), transparent 70%);
 }
 
 html[data-mode="dark"] .signalItem::after {
-  background: linear-gradient(90deg, rgba(20, 184, 166, 0.58), rgba(255, 255, 255, 0.09), transparent);
-  opacity: 0.76;
+  background: linear-gradient(90deg, rgba(20, 184, 166, 0.34), rgba(255, 255, 255, 0.06), transparent);
+  opacity: 0.56;
 }
 
 html[data-mode="dark"] .signalItem:hover {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(153, 246, 228, 0.18);
   box-shadow:
-    0 34px 96px rgba(0, 0, 0, 0.42),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 30px 84px rgba(0, 0, 0, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09);
 }
 
 html[data-mode="dark"] .signalIndex {
-  color: rgba(248, 250, 252, 0.48);
+  color: rgba(226, 232, 240, 0.42);
 }
 
 html[data-mode="dark"] .signalEyebrow {
-  border-color: rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(153, 246, 228, 0.95);
+  border-color: rgba(153, 246, 228, 0.16);
+  background: rgba(153, 246, 228, 0.07);
+  color: rgba(204, 251, 241, 0.9);
 }
 
 html[data-mode="dark"] .signalTitle,
@@ -1143,6 +1319,24 @@ html[data-mode="dark"] .syncOrbit::before {
   }
 }
 
+@keyframes heroGradientDrift {
+  0% {
+    transform: translate3d(-1.2rem, -0.6rem, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(1.4rem, 0.9rem, 0) scale(1.04);
+  }
+}
+
+@keyframes heroGlowDrift {
+  0% {
+    transform: translate3d(-1rem, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(1.2rem, -0.8rem, 0) scale(1.03);
+  }
+}
+
 @keyframes slideSettle {
   from {
     opacity: 0;
@@ -1182,6 +1376,10 @@ html[data-mode="dark"] .syncOrbit::before {
 
   .hero {
     min-height: auto;
+  }
+
+  .assistantMock {
+    min-height: 0;
   }
 
   .heroVisual {
@@ -1288,6 +1486,8 @@ html[data-mode="dark"] .syncOrbit::before {
   .heroFloatOne,
   .heroFloatTwo,
   .heroFloatThree,
+  .hero::before,
+  .heroGlow,
   .planStep,
   .metricGraph span,
   .syncOrbit::before {

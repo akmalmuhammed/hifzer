@@ -226,29 +226,29 @@ function SignalStrip() {
       label: "Consistency",
       eyebrow: "Return ready",
       body: "Return without rebuilding the routine every time.",
-      accent: "rgba(10, 138, 119, 0.28)",
-      edge: "rgba(10, 138, 119, 0.52)",
+      accent: "rgba(20, 184, 166, 0.16)",
+      edge: "rgba(20, 184, 166, 0.34)",
     },
     {
       label: "Retention",
       eyebrow: "Memory defense",
       body: "Protect memorization before weak spots disappear.",
-      accent: "rgba(216, 182, 107, 0.26)",
-      edge: "rgba(176, 132, 46, 0.54)",
+      accent: "rgba(153, 246, 228, 0.12)",
+      edge: "rgba(153, 246, 228, 0.28)",
     },
     {
       label: "Understanding",
       eyebrow: "Source grounded",
       body: "Ask grounded Qur'anic questions without vague guessing.",
-      accent: "rgba(58, 108, 92, 0.24)",
-      edge: "rgba(36, 78, 70, 0.52)",
+      accent: "rgba(45, 212, 191, 0.13)",
+      edge: "rgba(45, 212, 191, 0.3)",
     },
     {
       label: "Reflection",
       eyebrow: "Private interior",
       body: "Keep private notes, duas, and ayah moments together.",
-      accent: "rgba(111, 115, 81, 0.24)",
-      edge: "rgba(87, 92, 61, 0.54)",
+      accent: "rgba(148, 163, 184, 0.12)",
+      edge: "rgba(153, 246, 228, 0.24)",
     },
   ] as const;
 
@@ -353,8 +353,8 @@ function HifzChapter() {
 function GuidanceChapter() {
   return (
     <section id="guidance" className={styles.chapter}>
-      <div className={styles.chapterGrid}>
-        <Reveal>
+      <div className={`${styles.chapterGrid} ${styles.guidanceGrid}`}>
+        <Reveal className={styles.guidanceCopy}>
           <SectionHeading
             eyebrow="Trusted guidance"
             title="Start with sources, then ask better questions."
@@ -383,20 +383,37 @@ function ReaderChapter() {
       <div className={styles.readerShell}>
         <Reveal>
           <SectionHeading
-            eyebrow="Qur'an reader"
-            title="Return exactly where you left off."
-            body="Your reading place, reciter, tafsir, bookmarks, and saved filters stay close so returning to the Qur'an feels frictionless."
+            eyebrow="Quran.com API integration"
+            title="Trusted Quran.com content, inside Hifzer."
+            body="Choose official translations, tafsir, and reciters from the Quran.com ecosystem, then keep bookmarks synced with your Quran.com account. It feels native to Hifzer, backed by a source readers already trust."
           />
+          <div className={styles.readerApiProof}>
+            <span>Trusted translations</span>
+            <span>Saved ayahs travel with you</span>
+            <span>Recitation and tafsir, in one place</span>
+          </div>
         </Reveal>
         <Reveal className={styles.readerMock}>
+          <div className={styles.readerApiTopline}>
+            <span>Powered by Quran.com</span>
+            <span>Trusted sources, beautifully woven in</span>
+          </div>
           <div className={styles.ayahLine}>
             <span>2:286</span>
             <p dir="rtl">لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا</p>
           </div>
           <div className={styles.readerControls}>
-            <span><BookMarked size={14} /> Bookmarked</span>
-            <span>Reciter selected</span>
-            <span>68% today</span>
+            <span><BookOpenText size={14} /> Read with trusted translation</span>
+            <span>Go deeper with tafsir</span>
+            <span>Listen with your reciter</span>
+            <span><BookMarked size={14} /> Keep saved ayahs close</span>
+          </div>
+          <div className={styles.readerApiPanel}>
+            <div>
+              <small>As you read</small>
+              <strong>Meaning, recitation, and context stay beside the ayah.</strong>
+            </div>
+            <span>No tab switching</span>
           </div>
           <div className={styles.progressTrack}><span /></div>
         </Reveal>
