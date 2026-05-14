@@ -1212,14 +1212,14 @@ html[data-mode="dark"] .screenCard {
 
 html[data-mode="dark"] .signalStrip::before {
   background:
-    radial-gradient(42rem 16rem at 24% 36%, rgba(153, 246, 228, 0.14), transparent 74%),
-    radial-gradient(32rem 14rem at 82% 24%, rgba(255, 255, 255, 0.08), transparent 76%),
+    radial-gradient(42rem 16rem at 24% 36%, rgba(20, 184, 166, 0.1), transparent 74%),
+    radial-gradient(32rem 14rem at 82% 24%, rgba(6, 78, 59, 0.12), transparent 76%),
     linear-gradient(
       180deg,
-      rgba(251, 255, 253, 0) 0%,
-      rgba(239, 250, 245, 0.34) 24%,
-      rgba(153, 246, 228, 0.14) 48%,
-      rgba(8, 15, 28, 0.12) 78%,
+      rgba(6, 17, 15, 0) 0%,
+      rgba(6, 17, 15, 0.42) 24%,
+      rgba(7, 21, 34, 0.52) 48%,
+      rgba(8, 15, 28, 0.4) 78%,
       rgba(8, 15, 28, 0) 100%
     );
 }
