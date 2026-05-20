@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { ArrowRight, MoonStar } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -8,6 +7,7 @@ import { Pill } from "@/components/ui/pill";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { getAyahById } from "@/hifzer/quran/lookup.server";
 import { getQuranReadProgress } from "@/hifzer/quran/read-progress.server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 
 export const metadata = {
   title: "Ramadan Planner",
@@ -17,7 +17,7 @@ const TOTAL_AYAHS = 6236;
 const TRACKS = [30, 20, 10] as const;
 
 export default async function RamadanPage() {
-  const { userId } = await auth();
+  const userId = await resolveClerkUserIdForServer();
   if (!userId) {
     redirect("/login");
   }

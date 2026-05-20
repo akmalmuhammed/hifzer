@@ -45,7 +45,7 @@ export function QuranAiAssistantPanel(props: { ayahId?: number | null; compact?:
     }
 
     if (!online) {
-      setState({ phase: "error", detail: "AI assistant needs connection. Qur'an reading still works offline." });
+      setState({ phase: "error", detail: "Ask Qur'an needs connection. Qur'an reading still works offline." });
       return;
     }
 
@@ -61,14 +61,14 @@ export function QuranAiAssistantPanel(props: { ayahId?: number | null; compact?:
       if (!response.ok || !payload?.ok) {
         setState({
           phase: "error",
-          detail: payload && !payload.ok ? payload.detail : "AI assistant is unavailable right now.",
+          detail: payload && !payload.ok ? payload.detail : "Ask Qur'an is unavailable right now.",
         });
         return;
       }
       setQuery(finalQuery);
       setState({ phase: "ready", payload });
     } catch {
-      setState({ phase: "error", detail: "AI assistant is unavailable right now." });
+      setState({ phase: "error", detail: "Ask Qur'an is unavailable right now." });
     }
   }
 
@@ -91,7 +91,7 @@ export function QuranAiAssistantPanel(props: { ayahId?: number | null; compact?:
   return (
     <Card className={props.compact ? "mt-4" : "mt-5"}>
       <div className="flex flex-wrap items-center gap-2">
-        <Pill tone="accent">AI assistant</Pill>
+        <Pill tone="accent">Ask Qur&apos;an</Pill>
         <Pill tone="neutral">Grounded in trusted Qur&apos;an sources</Pill>
       </div>
 

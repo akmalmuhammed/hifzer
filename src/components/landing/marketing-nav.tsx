@@ -19,6 +19,7 @@ const STORY_LINKS = [
   { href: "/#hifz", label: "Memorize" },
   { href: "/#guidance", label: "Understand" },
   { href: "/#reflection", label: "Reflect" },
+  { href: "/judge", label: "Proof" },
 ] as const;
 
 export function MarketingNav() {
@@ -28,10 +29,10 @@ export function MarketingNav() {
   const copy = getAppUiCopy(language);
   const signInLabel = copy.marketing.signIn;
   const getStartedLabel = "Start free";
-  const brandTagline = "Daily Qur'an practice system.";
+  const brandTagline = "Your daily Qur'an companion.";
 
   return (
-    <header className="sticky top-0 z-40">
+    <header className="relative z-40">
       <div className={styles.navWrap}>
         <div className={styles.navFrame}>
           <div className="flex items-center justify-between gap-3 px-4 py-3">

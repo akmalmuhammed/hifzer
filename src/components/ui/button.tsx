@@ -1,7 +1,7 @@
 "use client";
 
 import type { ButtonHTMLAttributes, MouseEvent, ReactElement } from "react";
-import { cloneElement, forwardRef, isValidElement } from "react";
+import { Children, cloneElement, forwardRef, isValidElement } from "react";
 import clsx from "clsx";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
@@ -63,11 +63,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   );
 
   if (asChild) {
-    if (!isValidElement(children)) {
+    const childNodes = Children.toArray(children).filter(
+      (child) => !(typeof child === "string" && child.trim().length === 0),
+    );
+
+    if (childNodes.length !== 1 || !isValidElement(childNodes[0])) {
       throw new Error("Button with `asChild` requires a single React element child.");
     }
 
-    const child = children as ReactElement<{
+    const child = childNodes[0] as ReactElement<{
       [key: string]: unknown;
       className?: string;
       onClick?: (event: MouseEvent<HTMLElement>) => void;

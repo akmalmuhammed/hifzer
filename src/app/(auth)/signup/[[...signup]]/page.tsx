@@ -51,14 +51,15 @@ export default async function SignupPage(props: {
       <Card>
         {!configured ? (
           <>
-            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Clerk not configured</p>
+            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Account creation is temporarily unavailable</p>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-              This page will render Clerk&apos;s sign-up UI once configured.
+              You can still preview the Qur&apos;an reader without creating an account. Saving progress, bookmarks,
+              and connected Quran.com memory will be available after sign-in is restored.
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
-              <Link href="/login">
-                <Button variant="secondary" className="gap-2">
-                  Go to login <ArrowRight size={16} />
+              <Link href="/quran/read?view=compact&anon=1&surah=1&cursor=1&translation=1&tafsir=1&ignoreSaved=1">
+                <Button className="gap-2">
+                  Preview reader <ArrowRight size={16} />
                 </Button>
               </Link>
               <Link href="/">

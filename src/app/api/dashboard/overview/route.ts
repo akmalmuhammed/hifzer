@@ -16,11 +16,12 @@ import {
 } from "@/hifzer/dashboard/server";
 import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import { resolveAuditNowFromRequestHeader } from "@/hifzer/testing/request-now";
+import { clerkEnabled } from "@/lib/clerk-config";
 
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
-  const userId = await resolveClerkUserIdForServer(request);
+  const userId = clerkEnabled() ? await resolveClerkUserIdForServer(request) : null;
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

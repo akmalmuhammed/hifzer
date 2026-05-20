@@ -117,7 +117,7 @@ export function OnboardingCompleteClient(props: {
                   }}
                   loading={finishing}
                 >
-                  Open dashboard <ArrowRight size={18} />
+                  Open Today <ArrowRight size={18} />
                 </Button>
 
                 {quranLinkReady ? (

@@ -66,7 +66,7 @@ export async function POST(req: Request) {
 
   if (!dbConfigured()) {
     return NextResponse.json({
-      error: "Persistence unavailable: database is not configured. Reader filters cannot be saved.",
+      error: "Persistence unavailable: database is not configured. Reading settings cannot be saved.",
     }, { status: 503 });
   }
 

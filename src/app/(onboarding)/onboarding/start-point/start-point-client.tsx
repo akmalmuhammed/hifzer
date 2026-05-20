@@ -89,7 +89,7 @@ export function OnboardingStartPointClient(props: {
       window.localStorage.removeItem(LEGACY_STORAGE_KEYS.cursorAyahId);
       pushToast({
         title: "Starting point saved",
-        message: `Surah ${selected.surahNumber}:${clampedAyah} (ayahId ${cursorAyahId})`,
+        message: `You will begin at Surah ${selected.surahNumber}:${clampedAyah}.`,
         tone: "success",
       });
       router.push("/onboarding/complete");
@@ -136,7 +136,7 @@ export function OnboardingStartPointClient(props: {
         },
         {
           title: "Pick the ayah",
-          description: "Set the exact ayah you want to begin from and we translate it into the correct global ayah id.",
+          description: "Set the exact ayah you want to begin from so Hifzer opens at the right place.",
         },
         {
           title: "Easy to change later",
@@ -178,7 +178,7 @@ export function OnboardingStartPointClient(props: {
               </span>
             </div>
             <p className="mt-2 text-xs text-[color:var(--kw-faint)]">
-              Global ayahId: <span className="font-semibold text-[color:var(--kw-ink)]">{cursorAyahId}</span>
+              Your reading will resume from this exact ayah.
             </p>
           </div>
         </div>

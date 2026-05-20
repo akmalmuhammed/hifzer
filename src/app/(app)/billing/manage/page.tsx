@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { auth } from "@clerk/nextjs/server";
 import { CalendarClock, SlidersHorizontal } from "lucide-react";
 import { redirect } from "next/navigation";
 import { ManagePortalButton } from "@/components/billing/manage-portal-button";
@@ -8,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import { getProfileSnapshot } from "@/hifzer/profile/server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import { clerkEnabled } from "@/lib/clerk-config";
 
 export const metadata = {
@@ -35,7 +35,7 @@ export default async function BillingManagePage() {
   let hasPortal = false;
 
   if (clerkEnabled()) {
-    const { userId } = await auth();
+    const userId = await resolveClerkUserIdForServer();
     if (!userId) {
       redirect("/login");
     }

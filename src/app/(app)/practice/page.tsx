@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { ArrowRight, BookOpenText, HeartHandshake, Link2, Radar, RotateCcw } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -8,13 +7,14 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
 import { getCachedDashboardOverview } from "@/hifzer/dashboard/server";
 import { getCachedMemorizationIntelligence } from "@/hifzer/recitation/intelligence.server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 
 export const metadata = {
   title: "Practice",
 };
 
 export default async function PracticePage() {
-  const { userId } = await auth();
+  const userId = await resolveClerkUserIdForServer();
   if (!userId) {
     redirect("/login");
   }

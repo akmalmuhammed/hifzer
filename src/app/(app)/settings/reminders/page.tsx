@@ -1,14 +1,14 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { RemindersSettingsClient } from "./reminders-client";
 import { getProfileSnapshot } from "@/hifzer/profile/server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 
 export const metadata = {
   title: "Reminders",
 };
 
 export default async function ReminderSettingsPage() {
-  const { userId } = await auth();
+  const userId = await resolveClerkUserIdForServer();
   if (!userId) {
     redirect("/login");
   }

@@ -43,15 +43,15 @@ type AppNavCopyKey = Exclude<NavKey, "journal" | "assistant">;
 
 const PRIMARY: NavItem[] = [
   { href: "/dashboard", key: "dashboard", icon: CalendarDays },
-  { href: "/hifz", key: "hifz", icon: PlayCircle },
   { href: "/quran", key: "quran", icon: BookOpenText },
+  { href: "/hifz", key: "hifz", icon: PlayCircle },
   { href: "/dua", key: "dua", icon: MoonStar },
   { href: "/journal", key: "journal", icon: SquarePen, label: "Journal" },
 ];
 
 const INSIGHTS: NavItem[] = [
   { href: "/quran/glossary", key: "glossary", icon: LibraryBig },
-  { href: "/assistant", key: "assistant", icon: MessageSquareQuote, label: "AI assistant" },
+  { href: "/assistant", key: "assistant", icon: MessageSquareQuote, label: "Ask Qur'an" },
 ];
 
 const PLATFORM: NavItem[] = [
@@ -60,12 +60,11 @@ const PLATFORM: NavItem[] = [
 ];
 
 const MOBILE_NAV: NavItem[] = [
-  { href: "/dashboard", key: "dashboard", icon: CalendarDays },
-  { href: "/hifz", key: "hifz", icon: PlayCircle },
+  { href: "/dashboard", key: "dashboard", icon: CalendarDays, label: "Today" },
   { href: "/quran", key: "quran", icon: BookOpenText },
+  { href: "/hifz", key: "hifz", icon: PlayCircle },
   { href: "/dua", key: "dua", icon: MoonStar },
-  { href: "/journal", key: "journal", icon: SquarePen, label: "Journal" },
-  { href: "/settings", key: "settings", icon: Settings },
+  { href: "/settings", key: "settings", icon: Settings, label: "More" },
 ];
 
 function getLikelyNextRoutes(pathname: string): string[] {
@@ -133,7 +132,7 @@ function getNavLabel(item: NavItem, copy: ReturnType<typeof getAppUiCopy>): stri
     case "journal":
       return "Journal";
     case "assistant":
-      return "AI assistant";
+      return "Ask Qur'an";
     default:
       return copy.nav[item.key as AppNavCopyKey];
   }
@@ -329,7 +328,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
         </main>
       </div>
 
-      <nav className="fixed bottom-3 left-1/2 z-40 w-[min(560px,calc(100vw-1.5rem))] -translate-x-1/2 rounded-[26px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-2 py-2 shadow-[var(--kw-shadow)] backdrop-blur md:hidden">
+      <nav className={clsx(styles.mobileNav, "fixed left-1/2 z-40 w-[min(520px,calc(100vw-1.5rem))] -translate-x-1/2 rounded-[26px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-2 py-2 shadow-[var(--kw-shadow)] backdrop-blur md:hidden")}>
         <div
           className="grid gap-1"
           style={{ gridTemplateColumns: `repeat(${MOBILE_NAV.length}, minmax(0, 1fr))` }}

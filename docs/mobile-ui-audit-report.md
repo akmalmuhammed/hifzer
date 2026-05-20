@@ -1,10 +1,8 @@
 # Mobile UI Audit Report
 
-> Archive note: This report is a February 2026 snapshot. It predates the current super-app pivot, the landing rewrite, and the removal of `/today`. Use `AGENTS.md`, `README.md`, and `docs/HIFZER_PROJECT_HANDOFF.md` for current product truth.
+Generated: 2026-05-18T15:01:37.755Z
 
-Generated: 2026-02-20T11:43:43.593Z
-
-Base URL: `http://127.0.0.1:3130`
+Base URL: `https://www.hifzer.com`
 
 ## Route Matrix
 
@@ -12,51 +10,43 @@ Base URL: `http://127.0.0.1:3130`
 | --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- |
 | `/` | public | 0px | 0px | hidden | hidden | manifest | manifest | `/` | `/` |
 | `/welcome` | public | 0px | 0px | hidden | hidden | manifest | manifest | `/` | `/` |
-| `/compare` | public | 0px | 0px | hidden | hidden | manifest | manifest | `/compare` | `/compare` |
-| `/changelog` | public | 0px | 0px | hidden | hidden | manifest | manifest | `/changelog` | `/changelog` |
-| `/quran-preview` | public | 0px | 0px | hidden | hidden | manifest | manifest | `/quran-preview` | `/quran-preview` |
-| `/legal` | public | 0px | 0px | hidden | hidden | manifest | manifest | `/legal` | `/legal` |
-| `/legal/privacy` | public | 0px | 0px | hidden | hidden | manifest | manifest | `/legal/privacy` | `/legal/privacy` |
-| `/legal/terms` | public | 0px | 0px | hidden | hidden | manifest | manifest | `/legal/terms` | `/legal/terms` |
-| `/login` | auth | 0px | 0px | hidden | hidden | manifest | manifest | `/login` | `/login` |
-| `/signup` | auth | 0px | 0px | hidden | hidden | manifest | manifest | `/signup` | `/signup` |
-| `/forgot-password` | auth | 0px | 0px | hidden | hidden | manifest | manifest | `/forgot-password` | `/forgot-password` |
-| `/today` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/today` | `/today` |
-| `/session` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/session` | `/session` |
-| `/quran` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/quran` | `/quran` |
-| `/quran/bookmarks` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/quran/bookmarks` | `/quran/bookmarks` |
-| `/quran/glossary` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/quran/glossary` | `/quran/glossary` |
-| `/quran/juz/1` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/quran/juz/1` | `/quran/juz/1` |
-| `/quran/read` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/quran/read` | `/quran/read` |
-| `/quran/surah/1` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/quran/surah/1` | `/quran/surah/1` |
-| `/dashboard` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/dashboard` | `/dashboard` |
-| `/progress` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/progress` | `/progress` |
-| `/progress/map` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/progress/map` | `/progress/map` |
-| `/progress/mistakes` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/progress/mistakes` | `/progress/mistakes` |
-| `/progress/retention` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/progress/retention` | `/progress/retention` |
-| `/progress/transitions` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/progress/transitions` | `/progress/transitions` |
-| `/practice` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/practice` | `/practice` |
-| `/milestones` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/milestones` | `/milestones` |
-| `/notifications` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/notifications` | `/notifications` |
-| `/streak` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/streak` | `/streak` |
-| `/settings` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/settings` | `/settings` |
-| `/settings/account` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/settings/account` | `/settings/account` |
-| `/settings/display` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/settings/display` | `/settings/display` |
-| `/settings/plan` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/settings/plan` | `/settings/plan` |
-| `/settings/privacy` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/settings/privacy` | `/settings/privacy` |
-| `/settings/reciter` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/settings/reciter` | `/settings/reciter` |
-| `/settings/reminders` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/settings/reminders` | `/settings/reminders` |
-| `/settings/scoring` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/settings/scoring` | `/settings/scoring` |
-| `/settings/teacher` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/settings/teacher` | `/settings/teacher` |
-| `/settings/thresholds` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/settings/thresholds` | `/settings/thresholds` |
-| `/support` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/support` | `/support` |
-| `/roadmap` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/roadmap` | `/roadmap` |
-| `/fluency` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/fluency` | `/fluency` |
-| `/fluency/lesson/1` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/fluency/lesson/1` | `/fluency/lesson/1` |
-| `/fluency/retest` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/fluency/retest` | `/fluency/retest` |
-| `/billing/manage` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/billing/manage` | `/billing/manage` |
-| `/billing/success` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/billing/success` | `/billing/success` |
-| `/billing/upgrade` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/billing/upgrade` | `/billing/upgrade` |
+| `/compare` | public | 0px | 0px | hidden | hidden | manifest | manifest+sw | `/compare` | `/compare` |
+| `/changelog` | public | 0px | 0px | hidden | hidden | manifest | manifest+sw | `/changelog` | `/changelog` |
+| `/quran-preview` | public | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/quran-preview` | `/quran-preview` |
+| `/legal` | public | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/legal` | `/legal` |
+| `/legal/privacy` | public | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/legal/privacy` | `/legal/privacy` |
+| `/legal/terms` | public | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/legal/terms` | `/legal/terms` |
+| `/login` | auth | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login` | `/login` |
+| `/signup` | auth | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/signup` | `/signup` |
+| `/forgot-password` | auth | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login` | `/login` |
+| `/hifz` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fhifz` | `/login?redirect_url=%2Fhifz` |
+| `/session` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fsession` | `/login?redirect_url=%2Fsession` |
+| `/quran` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fquran` | `/login?redirect_url=%2Fquran` |
+| `/quran/bookmarks` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fquran%2Fbookmarks` | `/login?redirect_url=%2Fquran%2Fbookmarks` |
+| `/quran/glossary` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fquran%2Fglossary` | `/login?redirect_url=%2Fquran%2Fglossary` |
+| `/quran/juz/1` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fquran%2Fjuz%2F1` | `/login?redirect_url=%2Fquran%2Fjuz%2F1` |
+| `/quran/read` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fquran%2Fread` | `/login?redirect_url=%2Fquran%2Fread` |
+| `/quran/surah/1` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fquran%2Fsurah%2F1` | `/login?redirect_url=%2Fquran%2Fsurah%2F1` |
+| `/dashboard` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fdashboard` | `/login?redirect_url=%2Fdashboard` |
+| `/practice` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fpractice` | `/login?redirect_url=%2Fpractice` |
+| `/milestones` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fmilestones` | `/login?redirect_url=%2Fmilestones` |
+| `/notifications` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fnotifications` | `/login?redirect_url=%2Fnotifications` |
+| `/settings` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fsettings` | `/login?redirect_url=%2Fsettings` |
+| `/settings/account` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fsettings%2Faccount` | `/login?redirect_url=%2Fsettings%2Faccount` |
+| `/settings/display` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fsettings%2Fdisplay` | `/login?redirect_url=%2Fsettings%2Fdisplay` |
+| `/settings/language` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fsettings%2Flanguage` | `/login?redirect_url=%2Fsettings%2Flanguage` |
+| `/settings/plan` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fsettings%2Fplan` | `/login?redirect_url=%2Fsettings%2Fplan` |
+| `/settings/quran-foundation` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fsettings%2Fquran-foundation` | `/login?redirect_url=%2Fsettings%2Fquran-foundation` |
+| `/settings/reciter` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fsettings%2Freciter` | `/login?redirect_url=%2Fsettings%2Freciter` |
+| `/settings/reminders` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fsettings%2Freminders` | `/login?redirect_url=%2Fsettings%2Freminders` |
+| `/support` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fsupport` | `/login?redirect_url=%2Fsupport` |
+| `/roadmap` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Froadmap` | `/login?redirect_url=%2Froadmap` |
+| `/fluency` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Ffluency` | `/login?redirect_url=%2Ffluency` |
+| `/fluency/lesson/1` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Ffluency%2Flesson%2F1` | `/login?redirect_url=%2Ffluency%2Flesson%2F1` |
+| `/fluency/retest` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Ffluency%2Fretest` | `/login?redirect_url=%2Ffluency%2Fretest` |
+| `/billing/manage` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fbilling%2Fmanage` | `/login?redirect_url=%2Fbilling%2Fmanage` |
+| `/billing/success` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fbilling%2Fsuccess` | `/login?redirect_url=%2Fbilling%2Fsuccess` |
+| `/billing/upgrade` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fbilling%2Fupgrade` | `/login?redirect_url=%2Fbilling%2Fupgrade` |
 
 ## Offenders
 
@@ -81,7 +71,7 @@ Base URL: `http://127.0.0.1:3130`
 ## Reproduction Steps
 
 1. Open app on mobile browser (Safari iOS / Chrome Android).
-2. Navigate to `/session`, `/today`, `/quran`, and `/quran/bookmarks`.
+2. Navigate to `/dashboard`, `/hifz`, `/quran`, and `/quran/bookmarks`.
 3. Swipe horizontally left/right while near top and mid-page.
 4. Verify no blank canvas is revealed outside page content.
 5. Verify install CTA behavior:

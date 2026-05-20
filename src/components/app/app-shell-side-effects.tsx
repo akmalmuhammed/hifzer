@@ -13,11 +13,16 @@ type ProfileSnapshotPayload = {
   profile: ProfileSnapshot | null;
 };
 
-export function AppShellSideEffects() {
+export function AppShellSideEffects(props: { disabled?: boolean }) {
   const [enabled, setEnabled] = useState(false);
   const [profile, setProfile] = useState<ProfileSnapshot | null>(null);
 
   useEffect(() => {
+    if (props.disabled) {
+      setEnabled(false);
+      return;
+    }
+
     let timeoutId: number | null = null;
     let idleHandle: number | null = null;
 
@@ -39,7 +44,7 @@ export function AppShellSideEffects() {
         window.cancelIdleCallback?.(idleHandle);
       }
     };
-  }, []);
+  }, [props.disabled]);
 
   useEffect(() => {
     if (!enabled) {

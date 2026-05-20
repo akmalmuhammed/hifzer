@@ -17,24 +17,26 @@ export const metadata: Metadata = {
 };
 
 export default function QuranPreviewPage() {
-  const topSurahs = SURAH_INDEX.slice(0, 18);
-
   return (
     <div className="pb-12 pt-10 md:pb-16 md:pt-14">
       <Pill tone="neutral">Qur&apos;an</Pill>
       <h1 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
-        Qur&apos;an preview.
-        <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Browse surahs before signing in.</span>
+        Preview the Qur&apos;an reader.
+        <span className="block text-[rgba(var(--kw-accent-rgb),1)]">Read before creating an account.</span>
       </h1>
       <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
-        You can preview surah names and structure here. Sign in to open full ayah browsing,
-        session practice, and saved progress.
+        Start reading without an account. Sign in when you want progress, bookmarks, and Quran.com sync to follow you.
       </p>
 
       <div className="mt-7 flex flex-wrap items-center gap-3">
         <Button asChild className="gap-2">
+          <Link href="/quran/read?view=compact&anon=1&surah=1&cursor=1&translation=1&tafsir=1&ignoreSaved=1">
+            Try read-only reader <ArrowRight size={16} />
+          </Link>
+        </Button>
+        <Button asChild variant="secondary" className="gap-2">
           <Link href="/login?redirect_url=%2Fquran">
-            Sign in for full Qur&apos;an view <ArrowRight size={16} />
+            Sign in to save progress <ArrowRight size={16} />
           </Link>
         </Button>
         <Button asChild variant="secondary" className="gap-2">
@@ -45,7 +47,7 @@ export default function QuranPreviewPage() {
       </div>
 
       <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {topSurahs.map((surah) => (
+        {SURAH_INDEX.map((surah) => (
           <Card key={surah.surahNumber}>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">

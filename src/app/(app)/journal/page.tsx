@@ -10,6 +10,7 @@ import {
   QURAN_TRANSLATION_OPTIONS,
   normalizeQuranTranslationId,
 } from "@/hifzer/quran/translation-prefs";
+import { clerkEnabled } from "@/lib/clerk-config";
 import { dbConfigured } from "@/lib/db";
 
 export const metadata = {
@@ -27,7 +28,7 @@ export default async function JournalPage() {
     nameEnglish: surah.nameEnglish,
   }));
 
-  const userId = await resolveClerkUserIdForServer();
+  const userId = clerkEnabled() ? await resolveClerkUserIdForServer() : null;
   let initialEntries: JournalEntry[] = [];
   const syncEnabled = Boolean(userId && dbConfigured());
   let initialSyncError = false;

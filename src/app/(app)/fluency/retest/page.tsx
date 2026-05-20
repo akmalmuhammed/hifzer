@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { ArrowRight, RotateCcw } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -7,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import { getDashboardOverview } from "@/hifzer/dashboard/server";
 import { getRecitationInsights } from "@/hifzer/recitation/server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 
 export const metadata = {
   title: "Fluency Retest",
@@ -33,7 +33,7 @@ function readinessLabel(score: number, challenges: number, weakTransitions: numb
 }
 
 export default async function FluencyRetestPage() {
-  const { userId } = await auth();
+  const userId = await resolveClerkUserIdForServer();
   if (!userId) {
     redirect("/login");
   }

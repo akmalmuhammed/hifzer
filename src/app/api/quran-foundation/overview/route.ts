@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { getQuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/server";
 import { getQuranFoundationConnectedOverview } from "@/hifzer/quran-foundation/user-features";
 import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
+import { clerkEnabled } from "@/lib/clerk-config";
 
 export const runtime = "nodejs";
 
@@ -41,9 +42,15 @@ function getCachedQuranFoundationOverview(userId: string) {
 }
 
 export async function GET(request: Request) {
-  const userId = await resolveClerkUserIdForServer(request);
+  const authEnabled = clerkEnabled();
+  const userId = authEnabled ? await resolveClerkUserIdForServer(request) : null;
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (authEnabled) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const status = await getQuranFoundationConnectionStatus(null);
+    return NextResponse.json({ ok: true, status, overview: null });
   }
 
   try {

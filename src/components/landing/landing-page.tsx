@@ -183,7 +183,7 @@ function HeroChapter() {
             Keep your Qur&apos;an routine steady.
           </h1>
           <p className={styles.heroSummary}>
-            Read from your last ayah, protect your hifz review, ask source-grounded questions, and keep personal reflections in one calm place.
+            Return tomorrow with your ayah, trusted sources, review, and reflections already waiting. Hifzer brings reading, hifz, dua, and grounded guidance into one calm daily loop.
           </p>
           <div className={styles.heroActions}>
             <Button asChild size="lg" className="w-full sm:w-auto">
@@ -198,11 +198,11 @@ function HeroChapter() {
             </Button>
             <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
               <TrackedLink
-                href="#routine"
+                href="/judge"
                 telemetryName="landing.hero_story_click"
                 telemetryMeta={{ placement: "hero" }}
               >
-                Preview the routine <ArrowRight size={17} />
+                See Quran Foundation proof <ArrowRight size={17} />
               </TrackedLink>
             </Button>
           </div>
@@ -383,20 +383,20 @@ function ReaderChapter() {
       <div className={styles.readerShell}>
         <Reveal>
           <SectionHeading
-            eyebrow="Quran.com API integration"
-            title="Trusted Quran.com content, inside Hifzer."
-            body="Choose official translations, tafsir, and reciters from the Quran.com ecosystem, then keep bookmarks synced with your Quran.com account. It feels native to Hifzer, backed by a source readers already trust."
+            eyebrow="Trusted Qur'an sources"
+            title="Your reader stays close to the sources."
+            body="Choose the translation, tafsir, and reciter you need without leaving the ayah. Connect Quran.com when you want bookmarks, notes, goals, and streaks to travel with you."
           />
           <div className={styles.readerApiProof}>
-            <span>Trusted translations</span>
-            <span>Saved ayahs travel with you</span>
-            <span>Recitation and tafsir, in one place</span>
+            <span>Meaning and context beside each ayah</span>
+            <span>Saved ayahs can follow your account</span>
+            <span>Recitation, tafsir, and notes in one flow</span>
           </div>
         </Reveal>
         <Reveal className={styles.readerMock}>
           <div className={styles.readerApiTopline}>
-            <span>Powered by Quran.com</span>
-            <span>Trusted sources, beautifully woven in</span>
+            <span>Trusted Qur&apos;an content</span>
+            <span>Translation, tafsir, and recitation in place</span>
           </div>
           <div className={styles.ayahLine}>
             <span>2:286</span>

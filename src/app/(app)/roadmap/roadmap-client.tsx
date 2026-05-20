@@ -108,14 +108,14 @@ export function RoadmapClient() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Product"
-        title="Roadmap"
-        subtitle="A transparent view of what is actively being tightened now, what is coming next, and what Hifzer will grow into after the core gets stronger."
+        eyebrow="Help"
+        title="What's next"
+        subtitle="A simple view of what is being tightened now, what is coming next, and where Hifzer will grow after the core gets stronger."
         right={(
           <div className="flex flex-wrap gap-2">
             <Link href="/dashboard">
               <Button variant="secondary" className="gap-2">
-                Open dashboard <ArrowRight size={15} />
+                Open Today <ArrowRight size={15} />
               </Button>
             </Link>
             <Link href="/support">

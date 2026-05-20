@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { ArrowRight, BookOpen, Headphones, Link2, Mic } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -8,13 +7,14 @@ import { Pill } from "@/components/ui/pill";
 import { PageHeader } from "@/components/app/page-header";
 import { getDashboardOverview } from "@/hifzer/dashboard/server";
 import { getRecitationInsights } from "@/hifzer/recitation/server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 
 export const metadata = {
   title: "Fluency Lesson",
 };
 
 export default async function FluencyLessonPage(props: { params: Promise<{ id: string }> }) {
-  const { userId } = await auth();
+  const userId = await resolveClerkUserIdForServer();
   if (!userId) {
     redirect("/login");
   }

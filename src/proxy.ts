@@ -1,6 +1,10 @@
 import type { NextFetchEvent, NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { resolveTestAuthUserIdFromHeaders } from "@/hifzer/testing/request-auth";
+import {
+  HIFZER_TEST_USER_COOKIE,
+  HIFZER_TEST_USER_HEADER,
+  resolveTestAuthUserIdFromRequest,
+} from "@/hifzer/testing/request-auth";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { normalizeLegacyDashboardPath } from "@/lib/auth-redirects";
 
@@ -9,7 +13,12 @@ const PROTECTED_ROUTE_PATTERNS = [
   "/dashboard(.*)",
   "/assistant(.*)",
   "/dua(.*)",
+  "/duas(.*)",
   "/hifz(.*)",
+  "/journal(.*)",
+  "/bookmarks(.*)",
+  "/reader(.*)",
+  "/today(.*)",
   "/session(.*)",
   "/practice(.*)",
   "/notifications(.*)",
@@ -23,6 +32,8 @@ const PROTECTED_ROUTE_PATTERNS = [
   "/billing(.*)",
 ] as const;
 
+const HIFZER_PUBLIC_QURAN_DEMO_HEADER = "x-hifzer-public-quran-demo";
+
 function routeMatchesPattern(pathname: string, pattern: string): boolean {
   const base = pattern.replace(/\(\.\*\)$/, "");
   return pathname === base || pathname.startsWith(`${base}/`);
@@ -34,6 +45,11 @@ function isProtectedRoute(pathname: string): boolean {
 
 function isProtectedQuranPath(pathname: string): boolean {
   return pathname === "/quran" || pathname.startsWith("/quran/");
+}
+
+function isPublicQuranDemoPath(req: NextRequest): boolean {
+  const pathname = req.nextUrl.pathname;
+  return pathname === "/quran/read" && req.nextUrl.searchParams.get("anon") === "1";
 }
 
 function safeRedirectPath(candidate: string | null | undefined, fallback = "/dashboard"): string {
@@ -51,9 +67,14 @@ function safeRedirectPath(candidate: string | null | undefined, fallback = "/das
 }
 
 export default async function proxy(req: NextRequest, event: NextFetchEvent) {
+  if (req.nextUrl.pathname === "/legacy" || req.nextUrl.pathname.startsWith("/legacy/")) {
+    const redirectUrl = new URL("/", req.url);
+    return withRequestId(req, NextResponse.redirect(redirectUrl));
+  }
+
   if (!clerkEnabled()) {
     const pathname = req.nextUrl.pathname;
-    const shouldProtect = isProtectedRoute(pathname) || isProtectedQuranPath(pathname);
+    const shouldProtect = (isProtectedRoute(pathname) || isProtectedQuranPath(pathname)) && !isPublicQuranDemoPath(req);
     const failClosed = process.env.NODE_ENV === "production";
 
     if (shouldProtect && failClosed) {
@@ -72,8 +93,24 @@ export default async function proxy(req: NextRequest, event: NextFetchEvent) {
     return withRequestId(req, NextResponse.next());
   }
 
-  if (resolveTestAuthUserIdFromHeaders(req.headers)) {
-    return withRequestId(req, NextResponse.next());
+  const testUserId = resolveTestAuthUserIdFromRequest(req);
+  if (testUserId) {
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set(HIFZER_TEST_USER_HEADER, testUserId);
+    const cookie = requestHeaders.get("cookie");
+    if (!cookie?.includes(`${HIFZER_TEST_USER_COOKIE}=`)) {
+      requestHeaders.set(
+        "cookie",
+        `${cookie ? `${cookie}; ` : ""}${HIFZER_TEST_USER_COOKIE}=${encodeURIComponent(testUserId)}`,
+      );
+    }
+    return withRequestId(req, NextResponse.next({ request: { headers: requestHeaders } }));
+  }
+
+  if (isPublicQuranDemoPath(req)) {
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set(HIFZER_PUBLIC_QURAN_DEMO_HEADER, "1");
+    return withRequestId(req, NextResponse.next({ request: { headers: requestHeaders } }));
   }
 
   const { clerkMiddleware } = await import("@clerk/nextjs/server");
@@ -85,7 +122,7 @@ export default async function proxy(req: NextRequest, event: NextFetchEvent) {
       return withRequestId(innerReq, NextResponse.next(), requestId);
     }
 
-    const auditUserId = resolveTestAuthUserIdFromHeaders(innerReq.headers);
+    const auditUserId = resolveTestAuthUserIdFromRequest(innerReq);
     const { userId } = auditUserId ? { userId: null } : await auth();
     const effectiveUserId = auditUserId ?? userId;
     if (!effectiveUserId) {

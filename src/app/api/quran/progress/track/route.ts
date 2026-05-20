@@ -1,10 +1,10 @@
-import { auth } from "@clerk/nextjs/server";
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getAyahById } from "@/hifzer/quran/lookup.server";
 import { getOrCreateUserProfile, saveQuranStartPoint } from "@/hifzer/profile/server";
 import { syncQuranReadingContinuityToQuranFoundation } from "@/hifzer/quran-foundation/user-features";
 import { recordQuranBrowseAyahSet } from "@/hifzer/quran/read-progress.server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 
 type Payload = {
   ayahIds?: unknown;
@@ -64,7 +64,7 @@ function parseLatestCursor(raw: Payload, ayahIds: number[]): {
 }
 
 export async function POST(req: Request) {
-  const { userId } = await auth();
+  const userId = await resolveClerkUserIdForServer(req);
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

@@ -66,7 +66,7 @@ export function ReaderFilterSaveButton(props: ReaderFilterSaveButtonProps) {
       pushToast({
         tone: "success",
         title: props.ui.savedTitle,
-        message: props.ui.filtersSavedMessage ?? "Reader filters saved.",
+        message: props.ui.filtersSavedMessage ?? "Reading settings saved.",
       });
     } catch (error) {
       pushToast({

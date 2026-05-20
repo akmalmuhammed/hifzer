@@ -214,12 +214,12 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/app/:path*",
-        destination: "/legacy/app/:path*",
+        destination: "/dashboard",
         permanent: false,
       },
       {
         source: "/app",
-        destination: "/legacy/app",
+        destination: "/dashboard",
         permanent: false,
       },
       {

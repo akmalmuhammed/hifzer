@@ -1,7 +1,7 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { PlanSettingsClient } from "@/app/(app)/settings/plan/plan-client";
 import { getProfileSnapshot } from "@/hifzer/profile/server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import { clerkEnabled } from "@/lib/clerk-config";
 
 export const metadata = {
@@ -21,7 +21,7 @@ export default async function PlanSettingsPage() {
     return <PlanSettingsClient initial={FALLBACK_INITIAL} />;
   }
 
-  const { userId } = await auth();
+  const userId = await resolveClerkUserIdForServer();
   if (!userId) {
     redirect("/login");
   }

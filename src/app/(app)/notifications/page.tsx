@@ -1,6 +1,6 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { getProfileSnapshot } from "@/hifzer/profile/server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import { NotificationsClient } from "./notifications-client";
 
 export const metadata = {
@@ -8,7 +8,7 @@ export const metadata = {
 };
 
 export default async function NotificationsPage() {
-  const { userId } = await auth();
+  const userId = await resolveClerkUserIdForServer();
   if (!userId) {
     redirect("/login");
   }

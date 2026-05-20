@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { requestQuranAssistantAnswer } from "@/hifzer/ai/server";
@@ -11,6 +10,8 @@ import {
   QURAN_TRANSLATION_COOKIE,
 } from "@/hifzer/quran/translation-prefs";
 import { getQuranTranslationByAyahId } from "@/hifzer/quran/translation.server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
+import { enforceAnonymousAiRateLimit } from "@/lib/anonymous-ai-rate-limit.server";
 import { clerkEnabled } from "@/lib/clerk-config";
 
 export const runtime = "nodejs";
@@ -42,7 +43,11 @@ export async function POST(req: Request) {
   }
 
   const authEnabled = clerkEnabled();
-  const userId = authEnabled ? (await auth()).userId : null;
+  const userId = authEnabled ? await resolveClerkUserIdForServer(req) : null;
+  const rateLimited = enforceAnonymousAiRateLimit(req, userId);
+  if (rateLimited) {
+    return rateLimited;
+  }
   const profile = userId ? await getProfileSnapshot(userId) : null;
   const cookieStore = await cookies();
   const translationId = normalizeQuranTranslationId(

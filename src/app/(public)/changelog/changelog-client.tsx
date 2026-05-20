@@ -48,7 +48,7 @@ export function ChangelogClient() {
       <div className="mt-10 space-y-4">
         {ENTRIES.map((entry, index) => (
           <motion.div
-            key={entry.date}
+            key={`${entry.date}-${entry.title}`}
             initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.25 }}

@@ -76,8 +76,8 @@ export function ComparisonMatrix() {
           </h2>
         </div>
         <p className="max-w-xl text-sm leading-6 text-[color:var(--kw-muted)]">
-          Teacher-only methods rely on intuition. Flashcard apps ignore Hifz methodology.
-          Hifzer combines both and adds retention protection.
+          Teachers remain essential for recitation and tajweed. Hifzer supports the work between lessons:
+          reading continuity, structured hifz review, source-grounded understanding, and private reflection.
         </p>
       </div>
 

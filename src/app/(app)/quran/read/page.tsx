@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -28,6 +27,7 @@ import {
 import { getReaderUiCopy } from "@/hifzer/quran/reader-ui-copy";
 import { getQuranReaderFilterPrefs } from "@/hifzer/quran/reader-filter-prefs.server";
 import { getPhoneticByAyahId, getQuranTranslationByAyahId } from "@/hifzer/quran/translation.server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { CompactOfficialTafsir } from "./compact-official-tafsir";
 import { CompactReaderScroll } from "./compact-reader-scroll";
@@ -164,18 +164,19 @@ export const metadata = {
 };
 
 export default async function QuranReaderPage(props: { searchParams: Promise<SearchParamShape> }) {
-  const searchParamsPromise = props.searchParams;
+  const searchParams = await props.searchParams;
   const cookieStorePromise = cookies();
   const distractionFreePromise = getDistractionFreeServer();
+  const anonymous = readSingle(searchParams.anon) === "1";
   const authEnabled = clerkEnabled();
-  const userIdPromise = authEnabled ? auth().then((result) => result.userId) : Promise.resolve<string | null>(null);
-  const [searchParams, cookieStore, distractionFree, userId] = await Promise.all([
-    searchParamsPromise,
+  const userIdPromise = authEnabled && !anonymous
+    ? resolveClerkUserIdForServer()
+    : Promise.resolve<string | null>(null);
+  const [cookieStore, distractionFree, userId] = await Promise.all([
     cookieStorePromise,
     distractionFreePromise,
     userIdPromise,
   ]);
-  const anonymous = readSingle(searchParams.anon) === "1";
   const ignoreSavedFilters = readSingle(searchParams.ignoreSaved) === "1";
   const hasExplicitReaderFilterQuery = Boolean(
     readSingle(searchParams.view) ||

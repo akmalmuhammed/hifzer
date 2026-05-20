@@ -19,8 +19,8 @@ export default function ComparePage() {
         Built for retention, not streaks.
       </h1>
       <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
-        Use this page when you want the full framework-level comparison. The homepage stays simple,
-        this page provides deeper detail.
+        Most tools track activity. Hifzer protects the loop: read with trusted sources, review what may fade,
+        save what matters, and return tomorrow without starting over.
       </p>
       <ComparisonMatrix />
     </div>

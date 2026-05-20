@@ -113,8 +113,8 @@ export function SupportClient(props: { hasPortal?: boolean }) {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Support"
-        title="Support"
+        eyebrow="Help"
+        title="How can we help?"
         subtitle="Report broken app behavior for free, or buy one-time Hifzer assistance when you need focused account or product help."
         right={(
           <div className="flex flex-wrap gap-2">

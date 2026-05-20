@@ -105,8 +105,8 @@
   --kw-card-pad-x: clamp(0.95rem, 1.2vw, 1.15rem);
   --kw-card-pad-y: clamp(0.95rem, 1.2vw, 1.1rem);
   --kw-control-sm-height: 2.25rem;
-  --kw-control-md-height: 2.625rem;
-  --kw-control-lg-height: 2.875rem;
+  --kw-control-md-height: 2.75rem;
+  --kw-control-lg-height: 3rem;
   --kw-control-sm-radius: 12px;
   --kw-control-md-radius: 15px;
   --kw-control-lg-radius: 18px;

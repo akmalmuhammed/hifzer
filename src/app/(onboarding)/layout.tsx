@@ -1,11 +1,11 @@
 import { cookies } from "next/headers";
-import { auth } from "@clerk/nextjs/server";
 import * as Sentry from "@sentry/nextjs";
 import { redirect } from "next/navigation";
 import { AppProviders } from "@/components/providers/app-providers";
 import { ProfileHydrator } from "@/components/providers/profile-hydrator";
 import { DISTRACTION_FREE_COOKIE, normalizeDistractionFree } from "@/hifzer/focus/distraction-free";
 import { getProfileSnapshot } from "@/hifzer/profile/server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { resolveInitialThemeState, resolveInitialUiLanguage } from "@/lib/layout-preferences";
 import { marketingDisplayFont } from "@/lib/fonts";
@@ -18,7 +18,7 @@ export default async function OnboardingLayout({ children }: { children: React.R
   let profile = null;
 
   if (clerkEnabled()) {
-    const { userId } = await auth();
+    const userId = await resolveClerkUserIdForServer();
     if (!userId) {
       redirect("/login");
     }

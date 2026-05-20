@@ -37,12 +37,17 @@ export function ReaderBookmarkControl(props: Props) {
   );
 
   const refreshCategories = useCallback(async () => {
+    if (props.anonymous) {
+      setCategories(readCachedBookmarkState().categories.filter((x) => !x.archivedAt));
+      setPendingCount(getPendingBookmarkSyncMutations().length);
+      return;
+    }
     const state = await loadBookmarksFromApi({ includeDeleted: false, includeArchivedCategories: false });
     if (state) {
       setCategories(state.categories.filter((x) => !x.archivedAt));
     }
     setPendingCount(getPendingBookmarkSyncMutations().length);
-  }, []);
+  }, [props.anonymous]);
 
   useEffect(() => {
     setName(defaultName);
@@ -58,6 +63,12 @@ export function ReaderBookmarkControl(props: Props) {
 
   useEffect(() => {
     let cancelled = false;
+    if (props.anonymous) {
+      setConnectionStatus(null);
+      return () => {
+        cancelled = true;
+      };
+    }
     void (async () => {
       try {
         const response = await fetch("/api/quran-foundation/status", { cache: "no-store" });
@@ -74,7 +85,7 @@ export function ReaderBookmarkControl(props: Props) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [props.anonymous]);
 
   useEffect(() => {
     if (!open) {
@@ -185,7 +196,7 @@ export function ReaderBookmarkControl(props: Props) {
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">Bookmark ayah</p>
               <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
-                {props.surahNumber}:{props.ayahNumber} <span className="text-[color:var(--kw-faint)]">#{props.ayahId}</span>
+                {props.surahNumber}:{props.ayahNumber}
               </p>
             </div>
             <button

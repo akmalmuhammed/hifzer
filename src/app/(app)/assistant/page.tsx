@@ -2,7 +2,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { QuranAiAssistantPanel } from "@/components/quran/quran-ai-assistant-panel";
 
 export const metadata = {
-  title: "AI Assistant",
+  title: "Ask Qur'an",
 };
 
 type SearchParamShape = {
@@ -31,8 +31,8 @@ export default async function AssistantPage(props: { searchParams: Promise<Searc
   return (
     <div className="pb-12 pt-10 md:pb-16 md:pt-14">
       <PageHeader
-        eyebrow="Insights"
-        title="AI assistant"
+        eyebrow="Learn"
+        title="Ask Qur'an"
         subtitle={
           ayahId
             ? "Ask grounded questions about this ayah or the Qur'an and open matched verses with sources."

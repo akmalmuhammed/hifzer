@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { ArrowRight, Headphones, Link2, Mic } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -8,13 +7,14 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
 import { getCachedDashboardOverview } from "@/hifzer/dashboard/server";
 import { getCachedRecitationInsights } from "@/hifzer/recitation/server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 
 export const metadata = {
   title: "Fluency",
 };
 
 export default async function FluencyPage() {
-  const { userId } = await auth();
+  const userId = await resolveClerkUserIdForServer();
   if (!userId) {
     redirect("/login");
   }

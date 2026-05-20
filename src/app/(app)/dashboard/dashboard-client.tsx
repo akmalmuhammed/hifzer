@@ -877,19 +877,35 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Dashboard" />
+      <PageHeader title="Today" />
 
       {loading ? <DashboardSkeleton /> : null}
 
       {!loading && error ? (
         <Card>
           <EmptyState
-            title="Dashboard unavailable"
-            message={error}
+            title="We could not load your day yet"
+            message={
+              error === "Unauthorized"
+                ? "Your session needs a refresh before Hifzer can show today's plan."
+                : "Your reading place is still safe. Try again, or open the Qur'an while we reconnect."
+            }
             action={(
-              <Button variant="secondary" className="gap-2" onClick={() => void refreshDashboard()}>
-                Retry <RefreshCcw size={16} />
-              </Button>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button variant="secondary" className="gap-2" onClick={() => void refreshDashboard()}>
+                  Try again <RefreshCcw size={16} />
+                </Button>
+                <Link href="/quran">
+                  <Button className="gap-2">
+                    Open Qur&apos;an <BookOpenText size={16} />
+                  </Button>
+                </Link>
+                <Link href="/support">
+                  <Button variant="secondary" className="gap-2">
+                    Get help <ArrowRight size={16} />
+                  </Button>
+                </Link>
+              </div>
             )}
           />
         </Card>
@@ -989,7 +1005,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
               <div>
                 <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Progress and details</p>
                 <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
-                  Charts, recall, reading progress, and activity.
+                  A quiet look at recent reading, review, and return patterns.
                 </p>
               </div>
             )}
@@ -1041,7 +1057,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                         <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{details.kpis.trackedAyahs}</p>
                       </div>
                       <div className={`${styles.kpiTile} px-3 py-2`}>
-                        <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Joins to fix</p>
+                        <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Transitions to smooth</p>
                         <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{details.reviewHealth.weakTransitions}</p>
                       </div>
                       <div className={`${styles.kpiTile} px-3 py-2`}>
@@ -1082,8 +1098,8 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-2">
-                      <Pill tone="danger">Again {details.gradeMix14d.AGAIN}</Pill>
-                      <Pill tone="warn">Hard {details.gradeMix14d.HARD}</Pill>
+                      <Pill tone="danger">Needs another pass {details.gradeMix14d.AGAIN}</Pill>
+                      <Pill tone="warn">Needs care {details.gradeMix14d.HARD}</Pill>
                       <Pill tone="success">Good {details.gradeMix14d.GOOD}</Pill>
                       <Pill tone="accent">Easy {details.gradeMix14d.EASY}</Pill>
                     </div>
@@ -1279,12 +1295,12 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
       {!loading && !error && !summary ? (
         <Card>
           <EmptyState
-            title="Dashboard unavailable"
-            message="Database is not configured for this environment."
+            title="Today is not ready yet"
+            message="We could not prepare your personal plan in this environment. You can still open the Qur'an and continue reading."
             action={(
-              <Link href="/dashboard">
+              <Link href="/quran">
                 <Button className="gap-2">
-                  Back to dashboard <TrendingUp size={16} />
+                  Open Qur&apos;an <BookOpenText size={16} />
                 </Button>
               </Link>
             )}

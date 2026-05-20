@@ -1,7 +1,7 @@
 import { DashboardClient } from "./dashboard-client";
 
 export const metadata = {
-  title: "Dashboard",
+  title: "Today",
 };
 
 export default async function DashboardPage() {

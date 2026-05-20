@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
+import { clerkEnabled } from "@/lib/clerk-config";
 import { SessionClient } from "../session/session-client";
 
 export const metadata = {
@@ -8,6 +10,8 @@ export const metadata = {
 };
 
 export default async function HifzPage() {
+  const userId = clerkEnabled() ? await resolveClerkUserIdForServer() : null;
+
   return (
     <div className="space-y-6">
       <div className="flex justify-start">
@@ -17,7 +21,7 @@ export default async function HifzPage() {
           </Link>
         </Button>
       </div>
-      <SessionClient />
+      <SessionClient userId={userId} />
     </div>
   );
 }

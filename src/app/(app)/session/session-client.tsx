@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, CheckCircle2, CornerDownLeft, Link2, PauseCircle, PlayCircle, RotateCcw } from "lucide-react";
 import clsx from "clsx";
@@ -398,10 +397,10 @@ function toEvent(step: Step, input: {
   };
 }
 
-export function SessionClient() {
+export function SessionClient(props: { userId?: string | null }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { userId } = useAuth();
+  const userId = props.userId ?? null;
   const progressStorageKey = useMemo(() => sessionProgressStorageKey(userId), [userId]);
   const supportPrefsStorageKey = useMemo(() => sessionSupportPrefsStorageKey(userId), [userId]);
   const quickReviewMode = searchParams.get("focus") === "review";

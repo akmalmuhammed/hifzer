@@ -1,7 +1,7 @@
 import { RoadmapClient } from "./roadmap-client";
 
 export const metadata = {
-  title: "Roadmap",
+  title: "What's next",
 };
 
 export default function RoadmapPage() {

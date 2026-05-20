@@ -33,19 +33,18 @@ export default function LegalSourcesPage() {
       <Pill tone="neutral">Legal</Pill>
       <h1 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
         Sources.
-        <span className="block text-[rgba(31,54,217,1)]">Attribution and source governance.</span>
+        <span className="block text-[rgba(31,54,217,1)]">Attribution and trusted source status.</span>
       </h1>
       <p className="mt-4 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
-        Hifzer now treats Qur&apos;an content as a governed source stack, not just bundled files.
-        This page shows what is active in the app today, which official/open datasets are easiest
-        to add next, and the required attribution lines for the bundles already shipped.
+        This page lists the Qur&apos;an text, translations, metadata, and external source providers used in Hifzer,
+        with attribution and current verification status.
       </p>
 
       <div className="mt-10 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
         <Card>
           <div className="flex items-center gap-2">
             <Pill tone="accent">Active in Hifzer</Pill>
-            <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">Current registry</span>
+            <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">Verified today</span>
           </div>
           <p className="mt-4 text-sm font-semibold text-[color:var(--kw-ink)]">Core text and metadata</p>
           <div className="mt-3 grid gap-3 md:grid-cols-2">
@@ -105,12 +104,12 @@ export default function LegalSourcesPage() {
 
         <Card>
           <div className="flex items-center gap-2">
-            <Pill tone="neutral">Seed notes</Pill>
-            <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">Build inputs</span>
+            <Pill tone="neutral">Source notes</Pill>
+            <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">Local bundle inputs</span>
           </div>
-          <p className="mt-4 text-sm font-semibold text-[color:var(--kw-ink)]">Seed build notes</p>
+          <p className="mt-4 text-sm font-semibold text-[color:var(--kw-ink)]">Local source notes</p>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-            These lines describe the seed inputs and local bundle mappings currently used to boot the Qur&apos;an stack.
+            These lines describe the local Qur&apos;an bundle mappings currently used by Hifzer.
           </p>
           <pre className="mt-4 whitespace-pre-wrap rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-3 text-xs leading-6 text-[color:var(--kw-ink-2)]">
             {HIFZER_SEED_SOURCE_LINES.join("\n")}
@@ -120,7 +119,7 @@ export default function LegalSourcesPage() {
 
       <div className="mt-10">
         <div className="flex items-center gap-2">
-          <Pill tone="neutral">Adoption stack</Pill>
+          <Pill tone="neutral">Possible source additions</Pill>
           <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">Sorted by integration effort</span>
         </div>
         <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">

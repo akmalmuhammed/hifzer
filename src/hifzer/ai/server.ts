@@ -34,9 +34,9 @@ export async function requestQuranAssistantAnswer(
   input: QuranAssistantGatewayRequest,
 ): Promise<QuranAssistantAskGatewayResponse> {
   return requestGateway("/v1/quran/ask", input, {
-    notConfigured: "Quran AI assistant is not configured on this deployment yet.",
-    unavailable: "Quran AI assistant is unavailable right now.",
-    timeout: "Quran AI assistant is taking longer than expected. Please try again.",
+    notConfigured: "Ask Qur'an is not configured on this deployment yet.",
+    unavailable: "Ask Qur'an is unavailable right now.",
+    timeout: "Ask Qur'an is taking longer than expected. Please try again.",
   });
 }
 
@@ -44,9 +44,9 @@ export async function requestQuranAssistant(
   input: QuranAssistantGatewayRequest,
 ): Promise<QuranAssistantGatewayResponse> {
   return requestGateway("/v1/quran/assistant", input, {
-    notConfigured: "Quran AI assistant is not configured on this deployment yet.",
-    unavailable: "Quran AI assistant is unavailable right now.",
-    timeout: "Quran AI assistant is taking longer than expected. Please try again.",
+    notConfigured: "Ask Qur'an is not configured on this deployment yet.",
+    unavailable: "Ask Qur'an is unavailable right now.",
+    timeout: "Ask Qur'an is taking longer than expected. Please try again.",
   });
 }
 

@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { ArrowRight, Award } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -7,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
 import { getCachedDashboardOverview } from "@/hifzer/dashboard/server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 
 export const metadata = {
   title: "Milestones",
@@ -17,7 +17,7 @@ function nextStep(current: number, steps: number[]): number {
 }
 
 export default async function MilestonesPage() {
-  const { userId } = await auth();
+  const userId = await resolveClerkUserIdForServer();
   if (!userId) {
     redirect("/login");
   }
@@ -118,7 +118,7 @@ export default async function MilestonesPage() {
                   href="/dashboard"
                   className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
                 >
-                  Open dashboard <ArrowRight size={14} />
+                  Open Today <ArrowRight size={14} />
                 </Link>
                 <Link
                   href="/quran"

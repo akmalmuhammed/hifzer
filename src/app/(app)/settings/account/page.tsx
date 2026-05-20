@@ -23,8 +23,8 @@ export default function AccountSettingsPage() {
       ) : (
         <Card>
           <EmptyState
-            title="Clerk not configured"
-            message="Set Clerk env vars to enable real auth. This page will then show a user menu + sign out."
+            title="Account settings are unavailable"
+            message="Account controls are not available in this environment. Your reading preview can still be opened without signing in."
             icon={<UserRound size={18} />}
           />
         </Card>

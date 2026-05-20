@@ -200,30 +200,31 @@ export function QuranFoundationSettingsClient(props: {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-3xl">
             <div className="flex flex-wrap items-center gap-2">
-              <Pill tone="brand">Quran Foundation API proof</Pill>
+              <Pill tone="brand">Quran.com connection</Pill>
               <Pill tone={userApiReady ? "accent" : "warn"}>
-                User API {activeUserApiProofCount}/{userApiProof.length}
+                Memory sync {activeUserApiProofCount}/{userApiProof.length}
               </Pill>
               <Pill tone={status.contentApiReady ? "accent" : "warn"}>
-                Content API {status.contentApiReady ? "ready" : "not ready"}
+                Trusted sources {status.contentApiReady ? "ready" : "not ready"}
               </Pill>
             </div>
             <p className="mt-3 text-sm font-semibold text-[color:var(--kw-ink)]">
-              Hifzer uses Quran Foundation APIs inside real reading, bookmark, note, and content flows.
+              Keep your Qur&apos;an memory connected between Hifzer and Quran.com.
             </p>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-              This is the judge-checkable integration surface: user data sync comes from the linked Quran.com account, and official translations, tafsir, and reciter audio are available inside the reader.
+              Your reader can use trusted translations, tafsir, and reciter audio. When Quran.com is connected,
+              saved ayahs, folders, notes, goals, streaks, and reading place can stay closer to your account.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="secondary" size="sm">
               <Link href="/quran/read?view=compact">
-                Check reader content
+                Open reader settings
               </Link>
             </Button>
             <Button asChild variant="secondary" size="sm">
               <Link href="/quran/bookmarks">
-                Check bookmark sync
+                Open saved ayahs
               </Link>
             </Button>
           </div>

@@ -1,12 +1,12 @@
-import { auth } from "@clerk/nextjs/server";
 import { listDuaDeckState } from "@/hifzer/ramadan/custom-dua.server";
 import { buildDuaModules, type DuaModuleId } from "@/hifzer/ramadan/laylat-al-qadr";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import { clerkEnabled } from "@/lib/clerk-config";
 
 export async function loadDuaPageData(userIdOverride?: string | null) {
   const authEnabled = clerkEnabled();
   const userId = userIdOverride === undefined
-    ? (authEnabled ? (await auth()).userId : null)
+    ? (authEnabled ? await resolveClerkUserIdForServer() : null)
     : userIdOverride;
   const state = userId
     ? await listDuaDeckState(userId)

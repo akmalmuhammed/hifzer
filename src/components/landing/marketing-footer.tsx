@@ -25,7 +25,7 @@ export function MarketingFooter() {
 
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--kw-faint)]">
-                Product
+                Explore
               </p>
               <div className="mt-3 grid gap-2 text-sm">
                 {PRODUCT_LINKS.map((link) => (
@@ -44,7 +44,7 @@ export function MarketingFooter() {
 
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--kw-faint)]">
-                Support
+                Help
               </p>
               <div className="mt-3 grid gap-2 text-sm">
                 <PublicAuthLink
@@ -52,8 +52,14 @@ export function MarketingFooter() {
                   signedOutHref="/login?redirect_url=%2Fsupport"
                   className="text-[color:var(--kw-muted)] transition hover:text-[color:var(--kw-ink)]"
                 >
-                  Support
+                  Help
                 </PublicAuthLink>
+                <Link href="/judge" className="text-[color:var(--kw-muted)] transition hover:text-[color:var(--kw-ink)]">
+                  Quran Foundation proof
+                </Link>
+                <Link href="/legal/sources" className="text-[color:var(--kw-muted)] transition hover:text-[color:var(--kw-ink)]">
+                  Sources
+                </Link>
                 <Link href="/legal/privacy" className="text-[color:var(--kw-muted)] transition hover:text-[color:var(--kw-ink)]">
                   Privacy
                 </Link>

@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AyahAudioPlayer } from "@/components/audio/ayah-audio-player";
@@ -9,6 +8,7 @@ import { Pill } from "@/components/ui/pill";
 import { getProfileSnapshot } from "@/hifzer/profile/server";
 import { getSurahInfo, listAyahsForSurah } from "@/hifzer/quran/lookup.server";
 import { getSahihTranslationByAyahId } from "@/hifzer/quran/translation.server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 
 const QURAN_AUDIO_SPEED_PREF_KEY = "hifzer_quran_audio_speed_v1";
 
@@ -22,7 +22,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
 }
 
 export default async function SurahPage(props: { params: Promise<{ id: string }> }) {
-  const { userId } = await auth();
+  const userId = await resolveClerkUserIdForServer();
   const profile = userId ? await getProfileSnapshot(userId) : null;
   const reciterId = profile?.reciterId ?? "default";
   const params = await props.params;
@@ -69,7 +69,7 @@ export default async function SurahPage(props: { params: Promise<{ id: string }>
           </span>
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
-          {info.revelationType} - {info.ayahCount} ayahs - Global IDs {info.startAyahId}-{info.endAyahId}
+          {info.revelationType} - {info.ayahCount} ayahs
         </p>
       </div>
 
@@ -89,7 +89,6 @@ export default async function SurahPage(props: { params: Promise<{ id: string }>
                 <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1 text-xs font-semibold text-[color:var(--kw-muted)]">
                   {info.surahNumber}:{a.ayahNumber}
                 </span>
-                <span className="text-xs text-[color:var(--kw-faint)]">#{a.id}</span>
               </div>
               <div className="w-full sm:w-auto">
                 <AyahAudioPlayer

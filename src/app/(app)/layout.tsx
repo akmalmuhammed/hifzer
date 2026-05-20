@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import * as Sentry from "@sentry/nextjs";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app/app-shell";
@@ -12,17 +12,28 @@ import { clerkEnabled } from "@/lib/clerk-config";
 import { dbConfigured } from "@/lib/db";
 import { resolveInitialThemeState, resolveInitialUiLanguage } from "@/lib/layout-preferences";
 
+const HIFZER_PUBLIC_QURAN_DEMO_HEADER = "x-hifzer-public-quran-demo";
+
 export default async function AppGroupLayout({ children }: { children: React.ReactNode }) {
   const cookieStorePromise = cookies();
-  const userIdPromise = clerkEnabled() ? resolveClerkUserIdForServer() : Promise.resolve<string | null>(null);
+  const headerStorePromise = headers();
   const cookieStore = await cookieStorePromise;
+  const headerStore = await headerStorePromise;
+  const publicQuranDemo = headerStore.get(HIFZER_PUBLIC_QURAN_DEMO_HEADER) === "1";
+  const authRequest = {
+    headers: headerStore,
+    url: `http://${headerStore.get("host") ?? "localhost"}`,
+  };
+  const userIdPromise = clerkEnabled() && !publicQuranDemo
+    ? resolveClerkUserIdForServer(authRequest)
+    : Promise.resolve<string | null>(null);
   const initialUiLanguage = resolveInitialUiLanguage(cookieStore);
   const initialDistractionFree = normalizeDistractionFree(cookieStore.get(DISTRACTION_FREE_COOKIE)?.value);
   const initialThemeState = resolveInitialThemeState(cookieStore);
   let profile = null;
   let profileFetchFailed = false;
 
-  if (clerkEnabled()) {
+  if (clerkEnabled() && !publicQuranDemo) {
     const userId = await userIdPromise;
     if (!userId) {
       redirect("/login");
@@ -58,7 +69,7 @@ export default async function AppGroupLayout({ children }: { children: React.Rea
       initialThemeState={initialThemeState}
     >
       <AppShell streakEnabled={Boolean(profile?.onboardingCompleted)}>
-        <AppShellSideEffects />
+        <AppShellSideEffects disabled={publicQuranDemo} />
         {children}
       </AppShell>
     </AppProviders>

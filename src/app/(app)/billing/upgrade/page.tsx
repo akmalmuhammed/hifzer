@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { auth } from "@clerk/nextjs/server";
 import { Check, CreditCard, HeartHandshake } from "lucide-react";
 import { redirect } from "next/navigation";
 import { SupportCheckoutCard } from "@/components/billing/support-checkout-card";
@@ -8,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
 import { getProfileSnapshot } from "@/hifzer/profile/server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import { clerkEnabled } from "@/lib/clerk-config";
 
 export const metadata = {
@@ -32,7 +32,7 @@ export default async function BillingUpgradePage() {
   let hasPortal = false;
 
   if (clerkEnabled()) {
-    const { userId } = await auth();
+    const userId = await resolveClerkUserIdForServer();
     if (!userId) {
       redirect("/login");
     }

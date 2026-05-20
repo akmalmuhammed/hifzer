@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import {
   BookmarkError,
@@ -6,6 +5,8 @@ import {
   isBookmarkError,
   listBookmarks,
 } from "@/hifzer/bookmarks/server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
+import { clerkEnabled } from "@/lib/clerk-config";
 
 type CreatePayload = {
   ayahId?: unknown;
@@ -60,9 +61,11 @@ function handleError(error: unknown) {
 }
 
 export async function GET(req: Request) {
-  const { userId } = await auth();
+  const userId = clerkEnabled() ? await resolveClerkUserIdForServer(req) : null;
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return clerkEnabled()
+      ? NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      : NextResponse.json({ ok: true, state: { categories: [], bookmarks: [] } });
   }
 
   try {
@@ -80,7 +83,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const { userId } = await auth();
+  const userId = clerkEnabled() ? await resolveClerkUserIdForServer(req) : null;
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

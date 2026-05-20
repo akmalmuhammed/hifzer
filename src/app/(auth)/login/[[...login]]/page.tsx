@@ -51,15 +51,17 @@ export default async function LoginPage(props: {
       <Card>
         {!configured ? (
           <>
-            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Clerk not configured</p>
+            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Sign-in is temporarily unavailable</p>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-              This prototype page is scaffolded. To enable real auth, set Clerk env vars:
+              Account access is not available in this environment. You can still preview the reader or return to
+              the landing page.
             </p>
-            <pre className="mt-4 max-w-full overflow-x-auto whitespace-pre-wrap break-all rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-3 text-xs leading-6 text-[color:var(--kw-ink-2)]">
-              {`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=...
-CLERK_SECRET_KEY=...`}
-            </pre>
             <div className="mt-6 flex flex-wrap gap-2">
+              <Link href="/quran/read?view=compact&anon=1&surah=1&cursor=1&translation=1&tafsir=1&ignoreSaved=1">
+                <Button className="gap-2">
+                  Preview reader <ArrowRight size={16} />
+                </Button>
+              </Link>
               <Link href="/">
                 <Button variant="secondary" className="gap-2">
                   Back to landing <ArrowRight size={16} />

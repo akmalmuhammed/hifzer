@@ -1,9 +1,9 @@
-import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { SurahProgressSection } from "@/components/progress/surah-progress-section";
 import { Pill } from "@/components/ui/pill";
 import { listQuranSurahProgress } from "@/hifzer/progress/surah-progress.server";
+import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import { clerkEnabled } from "@/lib/clerk-config";
 
 export const metadata = {
@@ -13,7 +13,7 @@ export const metadata = {
 export default async function QuranSurahProgressPage() {
   let items = [] as Awaited<ReturnType<typeof listQuranSurahProgress>>;
   if (clerkEnabled()) {
-    const { userId } = await auth();
+    const userId = await resolveClerkUserIdForServer();
     if (userId) {
       items = await listQuranSurahProgress(userId);
     }
