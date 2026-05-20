@@ -11,7 +11,7 @@ import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import { clerkEnabled } from "@/lib/clerk-config";
 
 export const metadata = {
-  title: "One-Time Support",
+  title: "One-Time Premium",
 };
 
 const CORE_FEATURES = [
@@ -22,10 +22,10 @@ const CORE_FEATURES = [
 ];
 
 const SUPPORT_REASONS = [
-  "Get Hifzer-related help without starting a subscription",
-  "Support the product while raising a concrete improvement request",
-  "Pay for Hifzer account assistance or product-linked follow-up",
-  "Use one-time checkout instead of a recurring subscription",
+  "Unlock premium without starting a subscription",
+  "Support ongoing Hifzer development",
+  "Use one-time checkout instead of recurring billing",
+  "Keep the core app available without a plan change",
 ];
 
 export default async function BillingUpgradePage() {
@@ -46,8 +46,8 @@ export default async function BillingUpgradePage() {
     <div className="space-y-6">
       <PageHeader
         eyebrow="Billing"
-        title="One-time Hifzer support"
-        subtitle="Use one-time Paddle checkout for Hifzer-related support, account help, and product-linked requests."
+        title="One-time Hifzer premium"
+        subtitle="Use one-time Paddle checkout to unlock premium access and support Hifzer development."
       />
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -80,12 +80,12 @@ export default async function BillingUpgradePage() {
         <Card>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <Pill tone="accent">One-time support</Pill>
+              <Pill tone="accent">One-time premium</Pill>
               <p className="mt-3 text-3xl font-[family-name:var(--font-kw-display)] tracking-tight text-[color:var(--kw-ink)]">
-                Flexible help
+                Flexible premium
               </p>
               <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-                One-time checkout for Hifzer-related support through Paddle. No recurring billing and no subscription plan change.
+                One payment through Paddle. No recurring billing and no subscription required.
               </p>
             </div>
             <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] text-[color:var(--kw-ink)]">

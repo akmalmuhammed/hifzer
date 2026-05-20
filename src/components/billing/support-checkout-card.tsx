@@ -11,24 +11,24 @@ import { usePaddle } from "@/components/billing/paddle-provider";
 const PRESET_OPTIONS = [
   {
     amount: 49,
-    label: "Account help",
-    detail: "One focused Hifzer account, billing, or setup question with written follow-up.",
+    label: "Starter unlock",
+    detail: "Simple one-time premium access.",
   },
   {
     amount: 99,
-    label: "Priority assistance",
-    detail: "One Hifzer product issue or workflow question with priority written follow-up.",
+    label: "Premium unlock",
+    detail: "Recommended one-time premium access.",
     recommended: true,
   },
   {
     amount: 249,
-    label: "Product review",
-    detail: "A deeper review of one Hifzer area, such as setup, sync, bookmarks, or dashboard flow.",
+    label: "Supporter unlock",
+    detail: "Premium access with a bigger contribution to ongoing development.",
   },
   {
     amount: 499,
-    label: "Extended review",
-    detail: "A larger async review across multiple Hifzer flows or launch-readiness questions.",
+    label: "Builder unlock",
+    detail: "Premium access with the strongest one-time contribution.",
   },
 ] as const;
 
@@ -138,7 +138,7 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
               Custom amount
             </label>
             <p className="mt-1 max-w-[42ch] text-sm leading-6 text-[color:var(--kw-muted)]">
-              Use a custom one-time amount for the same Hifzer assistance scope.
+              Use a custom one-time amount for Hifzer premium access.
             </p>
           </div>
           {selectedPreset ? (
@@ -231,7 +231,7 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
           </Button>
         </div>
         <p id="support-amount-help" className="mt-2 text-xs leading-6 text-[color:var(--kw-faint)]">
-          One-time payment for Hifzer assistance. No subscription is created.
+          One-time payment for Hifzer premium. No subscription is created.
         </p>
         {amountError ? (
           <p
@@ -252,21 +252,19 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
           </span>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">What happens after checkout</p>
+              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">After checkout</p>
               <Pill tone="brand" className="gap-1">
                 <Sparkles size={12} />
-                Written follow-up
+                Paddle receipt
               </Pill>
             </div>
             <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">
-              Paddle sends the receipt. Send your request through support using the same email so we can match the
-              payment to your Hifzer account. This covers written assistance for Hifzer software and account questions;
-              it is not a donation, subscription, device repair service, roadmap purchase, or custom development
-              guarantee.
+              Paddle sends the receipt. Your one-time purchase unlocks Hifzer premium and helps support ongoing
+              development.
             </p>
             {props.hasPortal ? (
               <p className="mt-2 text-xs text-[color:var(--kw-faint)]">
-                Your Paddle customer record is already linked, so receipts and payment history can appear in the buyer portal.
+                Receipts and payment history can appear in the buyer portal.
               </p>
             ) : null}
           </div>

@@ -25,31 +25,31 @@ const DEFAULT_BODY = [
 ].join("\n");
 
 const PAYMENT_REASONS = [
-  "Account, billing, setup, or Hifzer product help",
-  "Written follow-up tied to your support request",
-  "One-time checkout through Paddle, with no subscription",
+  "Unlock premium Hifzer access",
+  "One-time checkout through Paddle",
+  "Also supports ongoing development",
 ] as const;
 
 const SUPPORT_POLICY_SECTIONS = [
   {
     title: "Free problem reports",
     points: [
-      "Broken pages, blocked flows, and confusing app behavior can be reported without paying.",
-      "Include the page, what happened, what you expected, and a screenshot if you have one.",
+      "Broken pages and blocked flows can still be reported without paying.",
+      "Include the page, what happened, and a screenshot if you have one.",
     ],
   },
   {
-    title: "One-time Hifzer assistance",
+    title: "One-time premium checkout",
     points: [
-      "Use checkout for account, billing, setup, or product help related to your Hifzer use.",
-      "This is not a donation, subscription, custom development guarantee, or device repair service.",
+      "Paid checkout is for Hifzer premium access with a one-time payment.",
+      "It is not a subscription or recurring plan.",
     ],
   },
   {
     title: "Billing and receipts",
     points: [
-      "Paddle processes the payment and sends the receipt for the one-time transaction.",
-      "If we cannot handle the request as scoped, contact support so the payment can be reviewed.",
+      "Paddle processes the payment and emails the receipt.",
+      "If there is a billing issue, contact support and include the purchase email.",
     ],
   },
 ] as const;
@@ -78,10 +78,10 @@ export function SupportClient(props: { hasPortal?: boolean }) {
           <div>
             <div className="flex items-center gap-2">
               <ShieldCheck size={16} className="text-[color:var(--kw-ink-2)]" />
-              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">One-time assistance</p>
+              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">One-time premium</p>
             </div>
             <h2 className="mt-3 max-w-[20ch] text-balance text-3xl font-[family-name:var(--font-kw-display)] tracking-tight text-[color:var(--kw-ink)] sm:text-[2.2rem]">
-              Buy focused Hifzer help with a one-time payment.
+              Unlock Hifzer premium with a one-time payment.
             </h2>
           </div>
           <div className={styles.purchaseBadge}>
@@ -92,8 +92,7 @@ export function SupportClient(props: { hasPortal?: boolean }) {
           </div>
         </div>
         <p className="mt-4 max-w-[62ch] text-sm leading-7 text-[color:var(--kw-muted)]">
-          Use this when you need Hifzer account help, billing help, setup guidance, or a product issue reviewed in a
-          focused support thread.
+          One checkout unlocks premium access and helps support Hifzer development.
         </p>
         <div className="mt-4 grid gap-2 sm:grid-cols-3">
           {PAYMENT_REASONS.map((reason) => (
@@ -115,7 +114,7 @@ export function SupportClient(props: { hasPortal?: boolean }) {
       <PageHeader
         eyebrow="Help"
         title="How can we help?"
-        subtitle="Report broken app behavior for free, or buy one-time Hifzer assistance when you need focused account or product help."
+        subtitle="Report problems for free, or use one-time checkout to unlock Hifzer premium."
         right={(
           <div className="flex flex-wrap gap-2">
             <a href={mailtoHref}>
@@ -125,7 +124,7 @@ export function SupportClient(props: { hasPortal?: boolean }) {
             </a>
             <Link href="#paid-support">
               <Button variant="secondary" className="gap-2">
-                Buy one-time help <ArrowRight size={15} />
+                Unlock premium <ArrowRight size={15} />
               </Button>
             </Link>
           </div>
@@ -168,15 +167,15 @@ export function SupportClient(props: { hasPortal?: boolean }) {
               </span>
             </div>
             <h2 className="mt-4 text-2xl font-[family-name:var(--font-kw-display)] tracking-tight text-[color:var(--kw-ink)]">
-              Buy Hifzer assistance
+              Unlock premium
             </h2>
             <p className="mt-2 max-w-[54ch] text-sm leading-7 text-[color:var(--kw-muted)]">
-              Use this for focused help with your Hifzer account, setup, billing, reading workflow, or product issue.
+              One payment, no subscription. Premium access plus support for ongoing development.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Link href="#paid-support">
                 <Button variant="secondary" className="gap-2">
-                  See one-time options <ArrowRight size={15} />
+                  See premium options <ArrowRight size={15} />
                 </Button>
               </Link>
               <span className={styles.emailChip}>
@@ -200,11 +199,11 @@ export function SupportClient(props: { hasPortal?: boolean }) {
               <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Support policy</p>
             </div>
             <p className="mt-3 max-w-[60ch] text-sm leading-7 text-[color:var(--kw-muted)]">
-              Bug reports stay free. One-time payments are for Hifzer software help tied to your account or app use.
+              Bug reports stay free. One-time payments are for Hifzer premium access, with no subscription.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <Pill tone="accent">Bug help first</Pill>
-              <Pill tone="brand">One-time assistance</Pill>
+              <Pill tone="accent">Bug reports free</Pill>
+              <Pill tone="brand">One-time premium</Pill>
               <Pill tone="neutral">No subscription</Pill>
             </div>
             <div className={`${styles.policyGrid} mt-4`}>

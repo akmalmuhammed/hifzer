@@ -478,12 +478,13 @@
 }
 
 .guidanceGrid {
-  align-items: start;
+  align-items: center;
 }
 
 .guidanceCopy {
-  align-self: start;
-  padding-top: clamp(0.4rem, 1.4vw, 1rem);
+  align-self: center;
+  max-width: 34rem;
+  padding-top: 0;
 }
 
 .sectionTitle {
@@ -506,40 +507,95 @@
 
 .planBuilder {
   display: grid;
-  gap: 1rem;
+  gap: 1.05rem;
+  align-self: center;
+  padding-block: 0.4rem;
 }
 
 .planStep {
+  position: relative;
+  overflow: hidden;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 1rem;
   align-items: center;
+  min-height: 8rem;
   border: 1px solid rgba(var(--kw-accent-rgb), 0.14);
-  border-radius: 1.55rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.76);
-  box-shadow: 0 18px 50px rgba(8, 18, 15, 0.08);
+  border-radius: 1.75rem;
+  padding: 1.1rem 1.15rem;
+  background:
+    radial-gradient(16rem 10rem at 0% 100%, rgba(var(--kw-accent-rgb), 0.14), transparent 72%),
+    radial-gradient(14rem 9rem at 100% 0%, rgba(255, 255, 255, 0.78), transparent 64%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(243, 251, 247, 0.78));
+  box-shadow:
+    0 22px 54px rgba(8, 18, 15, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(18px) saturate(130%);
   animation: slideSettle 650ms ease-out both;
   animation-delay: calc(var(--step) * 120ms);
 }
 
-.planStep > span {
-  display: grid;
-  place-items: center;
-  width: 4.8rem;
-  height: 4.8rem;
-  border-radius: 1.35rem;
-  color: #0b5f52;
-  background: rgba(10, 138, 119, 0.1);
-  font-weight: 760;
+.planStep::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, transparent 0 42%, rgba(255, 255, 255, 0.62) 49%, transparent 56%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent 45%);
+  opacity: 0.58;
+  transform: translateX(-38%);
+  animation: sheenSweep 11s ease-in-out infinite;
 }
 
-.planStep p {
+.planStepBadge,
+.planStepState {
+  position: relative;
+  z-index: 1;
+}
+
+.planStepBadge {
+  display: grid;
+  justify-items: center;
+  gap: 0.4rem;
+  width: 5.2rem;
+  padding: 0.65rem 0.45rem;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.14);
+  border-radius: 1.55rem;
+  color: #0b5f52;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(227, 246, 240, 0.84)),
+    rgba(10, 138, 119, 0.08);
+  box-shadow:
+    0 14px 34px rgba(8, 18, 15, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.planStepBadge span {
+  font-size: 1.08rem;
+  font-weight: 820;
+  line-height: 1;
+}
+
+.planStepBadge small {
+  color: rgba(9, 39, 33, 0.48);
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.planStepCopy {
+  position: relative;
+  z-index: 1;
+}
+
+.planStepCopy p {
   font-weight: 680;
   color: var(--kw-ink);
 }
 
-.planStep small {
+.planStepCopy small {
   display: block;
   margin-top: 0.25rem;
   color: var(--kw-muted);
@@ -547,8 +603,19 @@
   line-height: 1.55;
 }
 
-.planStep svg {
+.planStepState {
+  display: grid;
+  place-items: center;
+  width: 2.9rem;
+  height: 2.9rem;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.16);
+  border-radius: 999px;
   color: rgba(var(--kw-accent-rgb), 0.95);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(237, 250, 245, 0.8));
+  box-shadow:
+    0 12px 28px rgba(8, 18, 15, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.76);
 }
 
 .metricsGrid {
@@ -575,20 +642,45 @@
 .metricsPanel {
   display: grid;
   place-items: center;
+  align-content: center;
   min-height: 28rem;
   padding: 2rem;
+  background:
+    radial-gradient(22rem 15rem at 50% 0%, rgba(var(--kw-accent-rgb), 0.14), transparent 72%),
+    radial-gradient(18rem 12rem at 50% 100%, rgba(153, 246, 228, 0.12), transparent 72%),
+    rgba(255, 255, 255, 0.76);
+}
+
+.retentionRingShell {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.retentionRingGlow {
+  position: absolute;
+  width: min(76vw, 19.5rem);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(var(--kw-accent-rgb), 0.16), transparent 66%);
+  filter: blur(20px);
+  animation: haloBreathe 9s ease-in-out infinite;
 }
 
 .retentionRing {
+  position: relative;
   display: grid;
   place-items: center;
   width: min(70vw, 18rem);
   aspect-ratio: 1;
   border-radius: 999px;
   background:
-    radial-gradient(circle at center, #fff 0 58%, transparent 59%),
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.96) 0 58%, transparent 59%),
+    conic-gradient(from -90deg, rgba(255, 255, 255, 0.2) 0 16%, transparent 16% 100%),
     conic-gradient(from -90deg, #0a8a77 0 82%, rgba(10, 138, 119, 0.12) 82% 100%);
-  box-shadow: inset 0 0 0 1px rgba(10, 138, 119, 0.08);
+  box-shadow:
+    inset 0 0 0 1px rgba(10, 138, 119, 0.08),
+    0 28px 70px rgba(8, 18, 15, 0.1);
 }
 
 .retentionRing div {
@@ -600,6 +692,29 @@
   background: #fff;
   text-align: center;
   box-shadow: 0 20px 50px rgba(8, 18, 15, 0.1);
+}
+
+.retentionCaption {
+  display: grid;
+  gap: 0.35rem;
+  max-width: 26rem;
+  margin-top: 1.35rem;
+  text-align: center;
+}
+
+.retentionCaption small {
+  color: rgba(var(--kw-accent-rgb), 0.9);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.retentionCaption strong {
+  color: rgba(9, 35, 31, 0.84);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.6;
 }
 
 .retentionRing strong {
@@ -631,7 +746,10 @@
   flex: 1;
   border-radius: 999px 999px 0 0;
   background: linear-gradient(180deg, rgba(10, 138, 119, 0.9), rgba(10, 138, 119, 0.24));
-  animation: riseSoft 900ms ease-out both;
+  animation:
+    riseSoft 900ms ease-out both,
+    graphPulse 5.5s ease-in-out infinite;
+  animation-delay: var(--bar-delay), var(--bar-delay);
 }
 
 .metricCards {
@@ -639,13 +757,35 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
   padding: 1rem;
+  background:
+    radial-gradient(20rem 12rem at 100% 0%, rgba(255, 255, 255, 0.72), transparent 60%),
+    radial-gradient(16rem 12rem at 0% 100%, rgba(var(--kw-accent-rgb), 0.1), transparent 72%),
+    rgba(255, 255, 255, 0.72);
 }
 
 .metricCard {
+  position: relative;
+  overflow: hidden;
   border: 1px solid rgba(10, 138, 119, 0.12);
   border-radius: 1.45rem;
-  padding: 1.1rem;
-  background: rgba(255, 255, 255, 0.72);
+  padding: 1.2rem;
+  background:
+    radial-gradient(12rem 8rem at 100% 0%, rgba(255, 255, 255, 0.66), transparent 62%),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.88), rgba(242, 251, 247, 0.74));
+  box-shadow:
+    0 16px 36px rgba(8, 18, 15, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  animation: slideSettle 680ms ease-out both;
+  animation-delay: var(--metric-delay);
+}
+
+.metricCard::after {
+  content: "";
+  position: absolute;
+  inset: auto 1.2rem 0.95rem;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(var(--kw-accent-rgb), 0.28), transparent);
+  opacity: 0.5;
 }
 
 .metricCard p,
@@ -697,10 +837,10 @@
 }
 
 .assistantMock {
-  align-self: start;
+  align-self: center;
   display: grid;
   gap: 1rem;
-  min-height: clamp(42rem, 56vw, 48rem);
+  min-height: clamp(44rem, 58vw, 50rem);
   padding: clamp(1rem, 3vw, 1.6rem);
   background:
     radial-gradient(24rem 16rem at 100% 0%, rgba(10, 138, 119, 0.12), transparent 72%),
@@ -756,17 +896,33 @@
 }
 
 .readerShell {
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
   gap: clamp(2rem, 5vw, 4.5rem);
   align-items: center;
   overflow: hidden;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.12);
   border-radius: 2.4rem;
   padding: clamp(1.3rem, 4vw, 3rem);
   color: rgba(248, 250, 252, 0.9);
   background:
-    radial-gradient(32rem 22rem at 100% 0%, rgba(20, 184, 166, 0.22), transparent 74%),
-    linear-gradient(135deg, #07120f, #101827);
+    radial-gradient(34rem 22rem at 100% 0%, rgba(20, 184, 166, 0.18), transparent 74%),
+    radial-gradient(24rem 18rem at 0% 100%, rgba(255, 255, 255, 0.08), transparent 72%),
+    linear-gradient(140deg, rgba(7, 18, 15, 0.98), rgba(12, 25, 33, 0.96));
+  box-shadow: 0 28px 88px rgba(8, 18, 15, 0.18);
+}
+
+.readerShell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(120deg, transparent 0 34%, rgba(255, 255, 255, 0.08) 44%, transparent 54%),
+    radial-gradient(32rem 12rem at 50% 0%, rgba(255, 255, 255, 0.08), transparent 72%);
+  opacity: 0.72;
 }
 
 .readerShell .eyebrow,
@@ -800,11 +956,53 @@
 
 .readerMock {
   display: grid;
+  gap: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.readerWindow {
+  display: grid;
   gap: 1rem;
-  padding: 1.1rem;
+  padding: 1.15rem;
+  border: 1px solid rgba(153, 246, 228, 0.16);
+  border-radius: 1.9rem;
   background:
-    radial-gradient(18rem 12rem at 100% 0%, rgba(20, 184, 166, 0.14), transparent 70%),
-    rgba(255, 255, 255, 0.08);
+    radial-gradient(20rem 12rem at 100% 0%, rgba(20, 184, 166, 0.16), transparent 72%),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 18px 42px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(18px);
+}
+
+.readerWindowBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.readerWindowBar p {
+  color: rgba(248, 250, 252, 0.62);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.readerWindowDots {
+  display: inline-flex;
+  gap: 0.38rem;
+}
+
+.readerWindowDots span {
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 999px;
+  background: rgba(248, 250, 252, 0.36);
 }
 
 .readerApiTopline {
@@ -900,6 +1098,25 @@
   font-weight: 800;
 }
 
+.readerSignalRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.readerSignalRow span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  border: 1px solid rgba(153, 246, 228, 0.12);
+  border-radius: 999px;
+  padding: 0.42rem 0.72rem;
+  color: rgba(226, 232, 240, 0.82);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.75rem;
+  font-weight: 760;
+}
+
 .progressTrack {
   overflow: hidden;
   height: 0.55rem;
@@ -913,6 +1130,7 @@
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #d8b66b, #14b8a6);
+  animation: progressFlow 7s ease-in-out infinite;
 }
 
 .splitCards {
@@ -996,45 +1214,112 @@
   align-items: center;
   margin-top: 2.5rem;
   padding: clamp(1rem, 4vw, 2rem);
+  overflow: hidden;
 }
 
 .syncOrbit {
   position: relative;
   display: grid;
   place-items: center;
-  min-height: 19rem;
+  min-height: 22rem;
   border-radius: 1.8rem;
   background:
-    radial-gradient(circle at center, rgba(10, 138, 119, 0.16), transparent 42%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.48));
+    radial-gradient(circle at center, rgba(10, 138, 119, 0.18), transparent 34%),
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.68), transparent 56%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(245, 251, 248, 0.56));
 }
 
 .syncOrbit::before {
   content: "";
   position: absolute;
-  width: 12rem;
+  width: 14rem;
   aspect-ratio: 1;
-  border: 1px dashed rgba(10, 138, 119, 0.28);
+  border: 1px dashed rgba(10, 138, 119, 0.24);
   border-radius: 999px;
-  animation: spinSlow 22s linear infinite;
+  animation: spinSlow 24s linear infinite;
 }
 
-.syncOrbit span {
+.syncOrbitCore {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 0.4rem;
+  max-width: 12.5rem;
+  text-align: center;
+}
+
+.syncOrbitCore small {
+  color: rgba(var(--kw-accent-rgb), 0.84);
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.syncOrbitCore strong {
+  color: #09231f;
+  font-size: 1.28rem;
+  font-weight: 820;
+  line-height: 1.1;
+}
+
+.syncOrbitCore span {
+  color: var(--kw-muted);
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.65;
+}
+
+.syncOrbitRing {
+  position: absolute;
+  inset: 50%;
+  width: 14rem;
+  aspect-ratio: 1;
+  margin-left: -7rem;
+  margin-top: -7rem;
+  animation: spinSlow 24s linear infinite;
+}
+
+.syncOrbitNode {
   position: absolute;
   display: grid;
   place-items: center;
-  width: 3.4rem;
-  height: 3.4rem;
+  width: 3.7rem;
+  height: 3.7rem;
   border-radius: 1.1rem;
   color: #0b5f52;
-  background: #fff;
-  box-shadow: 0 16px 36px rgba(8, 18, 15, 0.1);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(236, 249, 244, 0.84));
+  box-shadow:
+    0 16px 36px rgba(8, 18, 15, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  animation: counterSpin 24s linear infinite;
 }
 
-.syncOrbit span:nth-child(1) { transform: translate(0, -6.2rem); }
-.syncOrbit span:nth-child(2) { transform: translate(6.2rem, 0); }
-.syncOrbit span:nth-child(3) { transform: translate(0, 6.2rem); }
-.syncOrbit span:nth-child(4) { transform: translate(-6.2rem, 0); }
+.syncOrbitNodeTop {
+  left: 50%;
+  top: 0;
+  margin-left: -1.85rem;
+}
+
+.syncOrbitNodeRight {
+  right: 0;
+  top: 50%;
+  margin-top: -1.85rem;
+}
+
+.syncOrbitNodeBottom {
+  left: 50%;
+  bottom: 0;
+  margin-left: -1.85rem;
+}
+
+.syncOrbitNodeLeft {
+  left: 0;
+  top: 50%;
+  margin-top: -1.85rem;
+}
 
 .summaryStats {
   display: grid;
@@ -1046,7 +1331,12 @@
   border: 1px solid rgba(var(--kw-accent-rgb), 0.12);
   border-radius: 1.35rem;
   padding: 1.1rem;
-  background: rgba(255, 255, 255, 0.7);
+  background:
+    radial-gradient(12rem 8rem at 100% 0%, rgba(255, 255, 255, 0.66), transparent 64%),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.86), rgba(244, 251, 247, 0.74));
+  box-shadow:
+    0 16px 38px rgba(8, 18, 15, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.74);
 }
 
 .summaryStats strong {
@@ -1295,7 +1585,7 @@ html[data-mode="dark"] .cardBody,
 html[data-mode="dark"] .faqItem p,
 html[data-mode="dark"] .journalNote span,
 html[data-mode="dark"] .summaryStats span,
-html[data-mode="dark"] .planStep small,
+html[data-mode="dark"] .planStepCopy small,
 html[data-mode="dark"] .metricCard span {
   color: rgba(226, 232, 240, 0.72);
 }
@@ -1304,7 +1594,7 @@ html[data-mode="dark"] .signalRule span {
   background: linear-gradient(90deg, rgba(20, 184, 166, 0.6), rgba(255, 255, 255, 0.08));
 }
 
-html[data-mode="dark"] .planStep p,
+html[data-mode="dark"] .planStepCopy p,
 html[data-mode="dark"] .chatBubbleAssistant,
 html[data-mode="dark"] .ayahResult span,
 html[data-mode="dark"] .summaryPanel,
@@ -1313,10 +1603,12 @@ html[data-mode="dark"] .summaryStats div {
   color: rgba(248, 250, 252, 0.9);
 }
 
-html[data-mode="dark"] .planStep > span,
+html[data-mode="dark"] .planStepBadge,
 html[data-mode="dark"] .cardIcon {
   color: #99f6e4;
-  background: rgba(20, 184, 166, 0.14);
+  background:
+    linear-gradient(180deg, rgba(20, 184, 166, 0.16), rgba(15, 23, 42, 0.22)),
+    rgba(20, 184, 166, 0.14);
 }
 
 html[data-mode="dark"] .metricCard,
@@ -1334,25 +1626,64 @@ html[data-mode="dark"] .readerControls span,
 html[data-mode="dark"] .duaChips span,
 html[data-mode="dark"] .ayahResult strong,
 html[data-mode="dark"] .metricCard p,
-html[data-mode="dark"] .journalNote small {
+html[data-mode="dark"] .journalNote small,
+html[data-mode="dark"] .retentionCaption small,
+html[data-mode="dark"] .syncOrbitCore small {
   color: rgba(153, 246, 228, 0.92);
+}
+
+html[data-mode="dark"] .planStepBadge small {
+  color: rgba(226, 232, 240, 0.54);
+}
+
+html[data-mode="dark"] .planStepState {
+  border-color: rgba(153, 246, 228, 0.18);
+  color: rgba(153, 246, 228, 0.94);
+  background:
+    linear-gradient(180deg, rgba(20, 184, 166, 0.1), rgba(15, 23, 42, 0.9)),
+    rgba(15, 23, 42, 0.92);
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 html[data-mode="dark"] .retentionRing {
   background:
     radial-gradient(circle at center, rgba(8, 15, 28, 0.96) 0 58%, transparent 59%),
+    conic-gradient(from -90deg, rgba(255, 255, 255, 0.08) 0 16%, transparent 16% 100%),
     conic-gradient(from -90deg, #14b8a6 0 82%, rgba(20, 184, 166, 0.16) 82% 100%);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
 html[data-mode="dark"] .retentionRing div,
-html[data-mode="dark"] .syncOrbit span {
+html[data-mode="dark"] .syncOrbitNode {
   background: rgba(12, 18, 32, 0.92);
   box-shadow: 0 20px 56px rgba(0, 0, 0, 0.38);
 }
 
 html[data-mode="dark"] .retentionRing strong {
   color: rgba(248, 250, 252, 0.94);
+}
+
+html[data-mode="dark"] .retentionCaption strong,
+html[data-mode="dark"] .syncOrbitCore strong {
+  color: rgba(248, 250, 252, 0.92);
+}
+
+html[data-mode="dark"] .readerWindow {
+  border-color: rgba(153, 246, 228, 0.14);
+  background:
+    radial-gradient(20rem 12rem at 100% 0%, rgba(20, 184, 166, 0.14), transparent 72%),
+    linear-gradient(155deg, rgba(18, 26, 44, 0.72), rgba(12, 18, 32, 0.58));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 18px 42px rgba(0, 0, 0, 0.24);
+}
+
+html[data-mode="dark"] .readerSignalRow span {
+  border-color: rgba(153, 246, 228, 0.12);
+  color: rgba(226, 232, 240, 0.8);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 html[data-mode="dark"] .syncOrbit {
@@ -1363,6 +1694,10 @@ html[data-mode="dark"] .syncOrbit {
 
 html[data-mode="dark"] .syncOrbit::before {
   border-color: rgba(153, 246, 228, 0.24);
+}
+
+html[data-mode="dark"] .syncOrbitCore span {
+  color: rgba(226, 232, 240, 0.72);
 }
 
 @keyframes floatSoft {
@@ -1415,9 +1750,63 @@ html[data-mode="dark"] .syncOrbit::before {
   }
 }
 
+@keyframes sheenSweep {
+  0%,
+  100% {
+    transform: translateX(-38%);
+  }
+  50% {
+    transform: translateX(42%);
+  }
+}
+
+@keyframes haloBreathe {
+  0%,
+  100% {
+    transform: scale(0.96);
+    opacity: 0.42;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 0.72;
+  }
+}
+
+@keyframes graphPulse {
+  0%,
+  100% {
+    opacity: 0.88;
+    transform: scaleY(1);
+    transform-origin: bottom;
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1.08);
+    transform-origin: bottom;
+  }
+}
+
 @keyframes spinSlow {
   to {
     rotate: 360deg;
+  }
+}
+
+@keyframes counterSpin {
+  to {
+    rotate: -360deg;
+  }
+}
+
+@keyframes progressFlow {
+  0%,
+  100% {
+    width: 68%;
+    transform: translateX(0);
+  }
+  50% {
+    width: 74%;
+    transform: translateX(3%);
   }
 }
 
@@ -1507,16 +1896,24 @@ html[data-mode="dark"] .syncOrbit::before {
     grid-template-columns: 1fr auto;
   }
 
-  .planStep > span {
-    width: auto;
-    height: auto;
+  .planStepBadge {
+    width: max-content;
+    grid-column: 1 / -1;
     justify-self: start;
     padding: 0.55rem 0.75rem;
     border-radius: 999px;
   }
 
-  .planStep div {
+  .planStepBadge small {
+    display: none;
+  }
+
+  .planStepCopy {
     grid-column: 1 / -1;
+  }
+
+  .planStepState {
+    grid-row: 1;
   }
 
   .metricsPanel {
@@ -1526,6 +1923,15 @@ html[data-mode="dark"] .syncOrbit::before {
   .readerShell,
   .finalCta {
     border-radius: 1.8rem;
+  }
+
+  .readerWindowBar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .syncOrbit {
+    min-height: 19rem;
   }
 
   .ayahLine p {
@@ -1545,8 +1951,13 @@ html[data-mode="dark"] .syncOrbit::before {
   .hero::before,
   .heroGlow,
   .planStep,
+  .planStep::before,
+  .retentionRingGlow,
   .metricGraph span,
-  .syncOrbit::before {
+  .progressTrack span,
+  .syncOrbit::before,
+  .syncOrbitRing,
+  .syncOrbitNode {
     animation: none;
   }
 }

@@ -70,6 +70,8 @@ const hifzMetrics = [
   ["Fading soon", "3", "Passages needing care"],
 ] as const;
 
+const hifzGraphBars = [42, 58, 50, 73, 68, 84, 76] as const;
+
 const assistantSources = [
   "Official ayah context",
   "Tafsir summaries",
@@ -293,12 +295,17 @@ function RoutineChapter() {
         <Reveal className={styles.planBuilder}>
           {routineSteps.map((step, index) => (
             <div key={step.label} className={styles.planStep} style={{ "--step": index } as CSSProperties}>
-              <span>{step.label}</span>
-              <div>
+              <div className={styles.planStepBadge}>
+                <span>{step.label}</span>
+                <small>{String(index + 1).padStart(2, "0")}</small>
+              </div>
+              <div className={styles.planStepCopy}>
                 <p>{step.title}</p>
                 <small>{step.body}</small>
               </div>
-              <Check size={18} aria-hidden />
+              <div className={styles.planStepState} aria-hidden>
+                <Check size={18} />
+              </div>
             </div>
           ))}
         </Reveal>
@@ -320,25 +327,40 @@ function HifzChapter() {
       </Reveal>
       <div className={styles.metricsGrid}>
         <Reveal className={styles.metricsPanel}>
-          <div className={styles.retentionRing}>
-            <div>
-              <strong>82%</strong>
-              <span>retention health</span>
+          <div className={styles.retentionRingShell}>
+            <div className={styles.retentionRingGlow} aria-hidden />
+            <div className={styles.retentionRing}>
+              <div>
+                <strong>82%</strong>
+                <span>retention health</span>
+              </div>
             </div>
           </div>
+          <div className={styles.retentionCaption}>
+            <small>Steady this week</small>
+            <strong>Memory is holding, with a few passages asking for repair before they fade.</strong>
+          </div>
           <div className={styles.metricGraph} aria-hidden>
-            <span style={{ height: "42%" }} />
-            <span style={{ height: "58%" }} />
-            <span style={{ height: "50%" }} />
-            <span style={{ height: "73%" }} />
-            <span style={{ height: "68%" }} />
-            <span style={{ height: "84%" }} />
-            <span style={{ height: "76%" }} />
+            {hifzGraphBars.map((height, index) => (
+              <span
+                key={`${height}-${index}`}
+                style={
+                  {
+                    height: `${height}%`,
+                    "--bar-delay": `${index * 160}ms`,
+                  } as CSSProperties
+                }
+              />
+            ))}
           </div>
         </Reveal>
         <Reveal className={styles.metricCards}>
-          {hifzMetrics.map(([label, value, body]) => (
-            <div key={label} className={styles.metricCard}>
+          {hifzMetrics.map(([label, value, body], index) => (
+            <div
+              key={label}
+              className={styles.metricCard}
+              style={{ "--metric-delay": `${index * 120}ms` } as CSSProperties}
+            >
               <p>{label}</p>
               <strong>{value}</strong>
               <span>{body}</span>
@@ -394,6 +416,15 @@ function ReaderChapter() {
           </div>
         </Reveal>
         <Reveal className={styles.readerMock}>
+          <div className={styles.readerWindow}>
+            <div className={styles.readerWindowBar}>
+              <div className={styles.readerWindowDots} aria-hidden>
+                <span />
+                <span />
+                <span />
+              </div>
+              <p>Reader connected to trusted Qur&apos;an content</p>
+            </div>
           <div className={styles.readerApiTopline}>
             <span>Trusted Qur&apos;an content</span>
             <span>Translation, tafsir, and recitation in place</span>
@@ -415,7 +446,13 @@ function ReaderChapter() {
             </div>
             <span>No tab switching</span>
           </div>
+          <div className={styles.readerSignalRow}>
+            <span>Official translation choices</span>
+            <span>Official tafsir options</span>
+            <span>Reciter audio when you need it</span>
+          </div>
           <div className={styles.progressTrack}><span /></div>
+          </div>
         </Reveal>
       </div>
     </section>
@@ -470,11 +507,18 @@ function ContinuityChapter() {
         />
       </Reveal>
       <Reveal className={styles.summaryPanel}>
-        <div className={styles.syncOrbit} aria-hidden>
-          <span><BookOpenText size={18} /></span>
-          <span><LineChart size={18} /></span>
-          <span><MessageCircleQuestion size={18} /></span>
-          <span><Lock size={18} /></span>
+        <div className={styles.syncOrbit}>
+          <div className={styles.syncOrbitCore}>
+            <small>Daily continuity</small>
+            <strong>Return ready</strong>
+            <span>Your reading place, review, notes, and duas stay in one calm loop.</span>
+          </div>
+          <div className={styles.syncOrbitRing} aria-hidden>
+            <span className={`${styles.syncOrbitNode} ${styles.syncOrbitNodeTop}`}><BookOpenText size={18} /></span>
+            <span className={`${styles.syncOrbitNode} ${styles.syncOrbitNodeRight}`}><LineChart size={18} /></span>
+            <span className={`${styles.syncOrbitNode} ${styles.syncOrbitNodeBottom}`}><MessageCircleQuestion size={18} /></span>
+            <span className={`${styles.syncOrbitNode} ${styles.syncOrbitNodeLeft}`}><Lock size={18} /></span>
+          </div>
         </div>
         <div className={styles.summaryStats}>
           {continuityFeatures.map(([label, body]) => (

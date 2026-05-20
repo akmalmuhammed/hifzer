@@ -71,14 +71,14 @@ export async function POST(req: Request) {
         {
           quantity: 1,
           price: {
-            description: "One-time Hifzer software account and product assistance.",
+            description: "One-time Hifzer premium access.",
             unitPrice: {
               amount: normalizedAmount.cents,
               currencyCode: currencyCode as never,
             },
             product: {
-              name: "Hifzer One-Time Assistance",
-              description: `One-time written assistance for Hifzer software account, billing, setup, or product questions. No subscription. Amount: ${currencyCode} ${normalizedAmount.display}.`,
+              name: "Hifzer One-Time Premium",
+              description: `One-time Hifzer premium access purchase. No subscription. Amount: ${currencyCode} ${normalizedAmount.display}.`,
               taxCategory: "standard",
             },
           },

@@ -3,7 +3,9 @@
   isolation: isolate;
   overflow: hidden;
   display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
   gap: 1rem;
+  min-height: 100%;
 }
 
 .shell::before {
@@ -149,6 +151,7 @@
   display: grid;
   gap: 0.75rem;
   align-items: start;
+  align-content: start;
 }
 
 .explainButton,
@@ -192,8 +195,9 @@
 
 .conversation {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 0.9rem;
-  min-height: 19rem;
+  min-height: 31rem;
 }
 
 .bubble {
@@ -237,6 +241,8 @@
 .resultZone {
   display: grid;
   gap: 0.9rem;
+  align-content: start;
+  min-height: 23rem;
 }
 
 .staticStack {
@@ -401,6 +407,11 @@
 
 @media (max-width: 640px) {
   .conversation {
+    min-height: 0;
+    grid-template-rows: auto auto;
+  }
+
+  .resultZone {
     min-height: 0;
   }
 

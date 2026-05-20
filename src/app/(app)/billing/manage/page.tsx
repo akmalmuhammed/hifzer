@@ -52,7 +52,7 @@ export default async function BillingManagePage() {
       <PageHeader
         eyebrow="Billing"
         title="Receipts and buyer help"
-        subtitle="Open Paddle buyer support when it is available for your account and review payment history for your one-time Hifzer support purchases."
+        subtitle="Open Paddle buyer support when it is available for your account and review payment history for your one-time Hifzer premium purchases."
       />
 
       <Card>
@@ -100,7 +100,7 @@ export default async function BillingManagePage() {
             <p className="text-sm font-semibold text-[color:var(--kw-ink)]">What you can find in Paddle</p>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
               Receipt access, saved payment details, and buyer support are handled by Paddle. Since Hifzer is using
-              one-time support purchases here, there is no subscription cancellation flow.
+              one-time premium purchases here, there is no subscription cancellation flow.
             </p>
           </div>
         </div>
