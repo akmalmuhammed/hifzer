@@ -222,65 +222,6 @@ function HeroChapter() {
   );
 }
 
-function SignalStrip() {
-  const signalPillars = [
-    {
-      label: "Consistency",
-      eyebrow: "Return ready",
-      body: "Return without rebuilding the routine every time.",
-      accent: "rgba(20, 184, 166, 0.16)",
-      edge: "rgba(20, 184, 166, 0.34)",
-    },
-    {
-      label: "Retention",
-      eyebrow: "Memory defense",
-      body: "Protect memorization before weak spots disappear.",
-      accent: "rgba(153, 246, 228, 0.12)",
-      edge: "rgba(153, 246, 228, 0.28)",
-    },
-    {
-      label: "Understanding",
-      eyebrow: "Source grounded",
-      body: "Ask grounded Qur'anic questions without vague guessing.",
-      accent: "rgba(45, 212, 191, 0.13)",
-      edge: "rgba(45, 212, 191, 0.3)",
-    },
-    {
-      label: "Reflection",
-      eyebrow: "Private interior",
-      body: "Keep private notes, duas, and ayah moments together.",
-      accent: "rgba(148, 163, 184, 0.12)",
-      edge: "rgba(153, 246, 228, 0.24)",
-    },
-  ] as const;
-
-  return (
-    <section className={styles.signalStrip} aria-label="What Hifzer is built around">
-      {signalPillars.map((item, index) => (
-        <article
-          key={item.label}
-          className={styles.signalItem}
-          style={{
-            "--signal-accent": item.accent,
-            "--signal-edge": item.edge,
-          } as CSSProperties}
-        >
-          <div className={styles.signalItemGlow} aria-hidden />
-          <div className={styles.signalTopline}>
-            <span className={styles.signalIndex}>{String(index + 1).padStart(2, "0")}</span>
-            <span className={styles.signalEyebrow}>{item.eyebrow}</span>
-          </div>
-          <p className={styles.signalTitle}>{item.label}</p>
-          <span className={styles.signalBody}>{item.body}</span>
-          <div className={styles.signalRule} aria-hidden>
-            <span />
-          </div>
-        </article>
-      ))}
-    </section>
-  );
-}
-
 function RoutineChapter() {
   return (
     <section id="routine" className={styles.chapter}>
@@ -293,21 +234,25 @@ function RoutineChapter() {
           />
         </Reveal>
         <Reveal className={styles.planBuilder}>
-          {routineSteps.map((step, index) => (
-            <div key={step.label} className={styles.planStep} style={{ "--step": index } as CSSProperties}>
-              <div className={styles.planStepBadge}>
-                <span>{step.label}</span>
-                <small>{String(index + 1).padStart(2, "0")}</small>
-              </div>
-              <div className={styles.planStepCopy}>
-                <p>{step.title}</p>
-                <small>{step.body}</small>
-              </div>
-              <div className={styles.planStepState} aria-hidden>
-                <Check size={18} />
-              </div>
-            </div>
-          ))}
+          {routineSteps.map((step, index) => {
+            return (
+              <article key={step.label} className={styles.planStep} style={{ "--step": index } as CSSProperties}>
+                <div className={styles.planStepLead}>
+                  <div className={styles.planStepBadge}>
+                    <span>{step.label}</span>
+                    <small>{String(index + 1).padStart(2, "0")}</small>
+                  </div>
+                </div>
+                <div className={styles.planStepCopy}>
+                  <p>{step.title}</p>
+                  <small>{step.body}</small>
+                </div>
+                <div className={styles.planStepState} aria-hidden>
+                  <Check size={18} />
+                </div>
+              </article>
+            );
+          })}
         </Reveal>
       </div>
     </section>
@@ -594,7 +539,6 @@ export function LandingPageContent() {
   return (
     <div className={styles.page}>
       <HeroChapter />
-      <SignalStrip />
       <RoutineChapter />
       <HifzChapter />
       <GuidanceChapter />

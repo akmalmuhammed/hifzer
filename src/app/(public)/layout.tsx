@@ -1,6 +1,7 @@
 import { AppProviders } from "@/components/providers/app-providers";
 import { MarketingFooter } from "@/components/landing/marketing-footer";
 import { MarketingNav } from "@/components/landing/marketing-nav";
+import landingStyles from "@/components/landing/landing.module.css";
 import { PublicAuthProvider } from "@/components/landing/public-auth-context";
 import { DEFAULT_UI_LANGUAGE } from "@/hifzer/i18n/ui-language";
 import { DEFAULT_THEME_DOCUMENT_STATE } from "@/hifzer/theme/preferences";
@@ -24,6 +25,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       <PublicAuthProvider authEnabled={authEnabled}>
         <div
           className={[
+            landingStyles.marketingShell,
             "min-h-dvh",
             marketingDisplayFont.variable,
             marketingEditorialFont.variable,

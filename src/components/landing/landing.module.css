@@ -1,15 +1,7 @@
-.page {
-  --landing-midnight: #08120f;
-  --landing-emerald: #0b6f5f;
-  --landing-emerald-soft: rgba(20, 184, 166, 0.18);
-  --landing-olive: #6f7351;
-  --landing-ivory: #fbf7ee;
-  --landing-gold: #d8b66b;
-
+.marketingShell {
   position: relative;
   overflow: hidden;
-  padding-bottom: 4rem;
-  color: var(--kw-ink);
+  min-height: 100dvh;
   background:
     radial-gradient(54rem 32rem at 10% 2%, rgba(var(--kw-accent-rgb), 0.14), transparent 68%),
     radial-gradient(44rem 28rem at 88% 6%, rgba(10, 138, 119, 0.16), transparent 72%),
@@ -17,7 +9,7 @@
     var(--kw-panel-gradient-strong);
 }
 
-.page::before {
+.marketingShell::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -34,6 +26,30 @@
       rgba(8, 18, 15, 0.032) 105px
     );
   mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent 72%);
+}
+
+.marketingShell > * {
+  position: relative;
+  z-index: 1;
+}
+
+.page {
+  --landing-midnight: #08120f;
+  --landing-emerald: #0b6f5f;
+  --landing-emerald-soft: rgba(20, 184, 166, 0.18);
+  --landing-olive: #6f7351;
+  --landing-ivory: #fbf7ee;
+  --landing-gold: #d8b66b;
+
+  position: relative;
+  overflow: hidden;
+  padding-bottom: 4rem;
+  color: var(--kw-ink);
+  background: transparent;
+}
+
+.page::before {
+  display: none;
 }
 
 .page > * {
@@ -72,11 +88,7 @@
   min-height: min(760px, calc(100dvh - 84px));
   padding: clamp(2.6rem, 5.8vw, 4.8rem) clamp(1rem, 4vw, 3rem) clamp(2.8rem, 6vw, 4.5rem);
   color: #082b25;
-  background:
-    radial-gradient(46rem 32rem at 74% 24%, rgba(20, 184, 166, 0.2), transparent 72%),
-    radial-gradient(42rem 24rem at 16% 20%, rgba(255, 255, 255, 0.95), transparent 66%),
-    radial-gradient(38rem 22rem at 52% 88%, rgba(153, 246, 228, 0.18), transparent 74%),
-    linear-gradient(135deg, #fbfffd 0%, #eefaf5 42%, #e3f8f5 100%);
+  background: transparent;
 }
 
 .hero::before {
@@ -467,7 +479,7 @@
 .chapter {
   max-width: 1180px;
   margin: 0 auto;
-  padding: clamp(3.6rem, 7vw, 6rem) clamp(1rem, 4vw, 2rem) 0;
+  padding: clamp(3rem, 5.6vw, 4.8rem) clamp(1rem, 4vw, 2rem) 0;
 }
 
 .chapterGrid {
@@ -507,115 +519,141 @@
 
 .planBuilder {
   display: grid;
-  gap: 1.05rem;
+  gap: 1rem;
   align-self: center;
-  padding-block: 0.4rem;
 }
 
 .planStep {
   position: relative;
   overflow: hidden;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 1rem;
+  grid-template-columns: 6.5rem minmax(0, 1fr) auto;
+  gap: 1.3rem;
   align-items: center;
-  min-height: 8rem;
-  border: 1px solid rgba(var(--kw-accent-rgb), 0.14);
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.12);
   border-radius: 1.75rem;
-  padding: 1.1rem 1.15rem;
+  padding: 1.15rem 1.2rem;
   background:
-    radial-gradient(16rem 10rem at 0% 100%, rgba(var(--kw-accent-rgb), 0.14), transparent 72%),
-    radial-gradient(14rem 9rem at 100% 0%, rgba(255, 255, 255, 0.78), transparent 64%),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(243, 251, 247, 0.78));
+    radial-gradient(14rem 10rem at 0% 100%, rgba(var(--kw-accent-rgb), 0.1), transparent 72%),
+    radial-gradient(12rem 10rem at 100% 0%, rgba(255, 255, 255, 0.5), transparent 66%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(245, 251, 248, 0.72));
   box-shadow:
-    0 22px 54px rgba(8, 18, 15, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    0 16px 40px rgba(8, 18, 15, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(18px) saturate(130%);
   animation: slideSettle 650ms ease-out both;
   animation-delay: calc(var(--step) * 120ms);
 }
 
 .planStep::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(115deg, transparent 0 42%, rgba(255, 255, 255, 0.62) 49%, transparent 56%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent 45%);
-  opacity: 0.58;
-  transform: translateX(-38%);
-  animation: sheenSweep 11s ease-in-out infinite;
+  display: none;
 }
 
-.planStepBadge,
+.planStepLead,
 .planStepState {
   position: relative;
-  z-index: 1;
+}
+
+.planStepLead {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .planStepBadge {
   display: grid;
-  justify-items: center;
-  gap: 0.4rem;
-  width: 5.2rem;
-  padding: 0.65rem 0.45rem;
+  place-items: center;
+  gap: 0.22rem;
+  width: 5.55rem;
+  min-height: 5.55rem;
+  padding: 0.85rem 0.6rem;
   border: 1px solid rgba(var(--kw-accent-rgb), 0.14);
-  border-radius: 1.55rem;
+  border-radius: 1.6rem;
+  text-align: center;
   color: #0b5f52;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(227, 246, 240, 0.84)),
+    radial-gradient(120% 120% at 30% 15%, rgba(255, 255, 255, 0.78), transparent 54%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(222, 245, 238, 0.9)),
     rgba(10, 138, 119, 0.08);
   box-shadow:
-    0 14px 34px rgba(8, 18, 15, 0.08),
+    0 16px 34px rgba(8, 18, 15, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .planStepBadge span {
-  font-size: 1.08rem;
-  font-weight: 820;
+  color: #09231f;
+  font-size: 0.98rem;
+  font-weight: 800;
   line-height: 1;
 }
 
 .planStepBadge small {
   color: rgba(9, 39, 33, 0.48);
-  font-size: 0.64rem;
-  font-weight: 900;
-  letter-spacing: 0.16em;
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
 .planStepCopy {
-  position: relative;
-  z-index: 1;
+  align-self: center;
 }
 
 .planStepCopy p {
-  font-weight: 680;
+  margin: 0;
+  max-width: 24ch;
+  font-size: clamp(1.05rem, 1.25vw, 1.28rem);
+  font-weight: 760;
+  line-height: 1.22;
   color: var(--kw-ink);
+  text-wrap: balance;
 }
 
 .planStepCopy small {
   display: block;
-  margin-top: 0.25rem;
+  max-width: 42ch;
+  margin-top: 0.45rem;
   color: var(--kw-muted);
-  font-weight: 480;
-  line-height: 1.55;
+  font-size: 0.92rem;
+  font-weight: 520;
+  line-height: 1.6;
 }
 
 .planStepState {
   display: grid;
   place-items: center;
-  width: 2.9rem;
-  height: 2.9rem;
-  border: 1px solid rgba(var(--kw-accent-rgb), 0.16);
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.14);
   border-radius: 999px;
   color: rgba(var(--kw-accent-rgb), 0.95);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(237, 250, 245, 0.8));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(233, 249, 243, 0.78));
   box-shadow:
-    0 12px 28px rgba(8, 18, 15, 0.08),
+    0 14px 30px rgba(8, 18, 15, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.76);
+}
+
+@media (max-width: 860px) {
+  .planStep {
+    grid-template-columns: 5.15rem minmax(0, 1fr) auto;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .planStepLead {
+    justify-content: flex-start;
+  }
+
+  .planStepBadge {
+    width: 5.15rem;
+    min-height: 5.15rem;
+  }
+
+  .planStepCopy p,
+  .planStepCopy small {
+    max-width: none;
+  }
 }
 
 .metricsGrid {
@@ -902,36 +940,21 @@
   grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
   gap: clamp(2rem, 5vw, 4.5rem);
   align-items: center;
-  overflow: hidden;
-  border: 1px solid rgba(var(--kw-accent-rgb), 0.12);
-  border-radius: 2.4rem;
-  padding: clamp(1.3rem, 4vw, 3rem);
-  color: rgba(248, 250, 252, 0.9);
-  background:
-    radial-gradient(34rem 22rem at 100% 0%, rgba(20, 184, 166, 0.18), transparent 74%),
-    radial-gradient(24rem 18rem at 0% 100%, rgba(255, 255, 255, 0.08), transparent 72%),
-    linear-gradient(140deg, rgba(7, 18, 15, 0.98), rgba(12, 25, 33, 0.96));
-  box-shadow: 0 28px 88px rgba(8, 18, 15, 0.18);
+  padding: clamp(0.2rem, 1vw, 0.5rem) 0 0;
+  color: var(--kw-ink);
 }
 
 .readerShell::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(120deg, transparent 0 34%, rgba(255, 255, 255, 0.08) 44%, transparent 54%),
-    radial-gradient(32rem 12rem at 50% 0%, rgba(255, 255, 255, 0.08), transparent 72%);
-  opacity: 0.72;
+  display: none;
 }
 
 .readerShell .eyebrow,
 .readerShell .sectionTitle {
-  color: rgba(248, 250, 252, 0.94);
+  color: #09231f;
 }
 
 .readerShell .sectionBody {
-  color: rgba(248, 250, 252, 0.64);
+  color: var(--kw-muted);
 }
 
 .readerApiProof {
@@ -945,11 +968,11 @@
   display: inline-flex;
   align-items: center;
   min-height: 2.1rem;
-  border: 1px solid rgba(153, 246, 228, 0.18);
+  border: 1px solid rgba(var(--kw-accent-rgb), 0.14);
   border-radius: 999px;
   padding: 0.45rem 0.76rem;
-  color: rgba(153, 246, 228, 0.94);
-  background: rgba(20, 184, 166, 0.09);
+  color: rgba(var(--kw-accent-rgb), 0.9);
+  background: rgba(255, 255, 255, 0.66);
   font-size: 0.78rem;
   font-weight: 760;
 }
@@ -1392,17 +1415,15 @@
 .finalCta {
   max-width: 1180px;
   margin: clamp(4rem, 9vw, 7rem) auto 0;
-  border-radius: 2.4rem;
+  border-radius: 0;
   padding: clamp(4rem, 9vw, 7rem) clamp(1.3rem, 5vw, 3rem);
-  color: rgba(248, 250, 252, 0.94);
-  background:
-    radial-gradient(38rem 24rem at 50% 0%, rgba(20, 184, 166, 0.24), transparent 72%),
-    linear-gradient(135deg, #07120f, #101827);
-  box-shadow: 0 26px 90px rgba(8, 18, 15, 0.2);
+  color: #09231f;
+  background: transparent;
+  box-shadow: none;
 }
 
 .finalCta .eyebrow {
-  color: rgba(216, 182, 107, 0.94);
+  color: rgba(var(--kw-accent-rgb), 0.9);
 }
 
 .finalCta h2 {
@@ -1417,12 +1438,16 @@
 .finalCta p {
   max-width: 46rem;
   margin: 1.2rem auto 0;
-  color: rgba(248, 250, 252, 0.68);
+  color: var(--kw-muted);
   font-size: 1.05rem;
   line-height: 1.8;
 }
 
 html[data-mode="dark"] .page {
+  background: transparent;
+}
+
+html[data-mode="dark"] .marketingShell {
   background:
     radial-gradient(58rem 34rem at 10% 0%, rgba(var(--kw-accent-rgb), 0.2), transparent 66%),
     radial-gradient(42rem 26rem at 88% 8%, rgba(20, 184, 166, 0.16), transparent 72%),
@@ -1430,7 +1455,7 @@ html[data-mode="dark"] .page {
     linear-gradient(180deg, #061019 0%, #091320 42%, #08101b 100%);
 }
 
-html[data-mode="dark"] .page::before {
+html[data-mode="dark"] .marketingShell::before {
   background:
     radial-gradient(70rem 22rem at 50% -6%, rgba(255, 255, 255, 0.08), transparent 68%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 24%, rgba(255, 255, 255, 0.02) 58%, transparent 100%),
@@ -1446,11 +1471,7 @@ html[data-mode="dark"] .page::before {
 
 html[data-mode="dark"] .hero {
   color: rgba(248, 250, 252, 0.94);
-  background:
-    radial-gradient(48rem 32rem at 74% 24%, rgba(20, 184, 166, 0.2), transparent 72%),
-    radial-gradient(42rem 24rem at 16% 20%, rgba(153, 246, 228, 0.08), transparent 68%),
-    radial-gradient(38rem 22rem at 54% 90%, rgba(20, 184, 166, 0.11), transparent 74%),
-    linear-gradient(135deg, #06110f 0%, #071522 48%, #06120f 100%);
+  background: transparent;
 }
 
 html[data-mode="dark"] .hero::before {
@@ -1611,6 +1632,10 @@ html[data-mode="dark"] .cardIcon {
     rgba(20, 184, 166, 0.14);
 }
 
+html[data-mode="dark"] .planStepBadge span {
+  color: rgba(248, 250, 252, 0.9);
+}
+
 html[data-mode="dark"] .metricCard,
 html[data-mode="dark"] .summaryStats div,
 html[data-mode="dark"] .journalNote,
@@ -1680,6 +1705,21 @@ html[data-mode="dark"] .readerWindow {
     0 18px 42px rgba(0, 0, 0, 0.24);
 }
 
+html[data-mode="dark"] .readerShell .eyebrow,
+html[data-mode="dark"] .readerShell .sectionTitle {
+  color: rgba(248, 250, 252, 0.94);
+}
+
+html[data-mode="dark"] .readerShell .sectionBody {
+  color: rgba(226, 232, 240, 0.72);
+}
+
+html[data-mode="dark"] .readerApiProof span {
+  border-color: rgba(153, 246, 228, 0.12);
+  color: rgba(153, 246, 228, 0.9);
+  background: rgba(255, 255, 255, 0.05);
+}
+
 html[data-mode="dark"] .readerSignalRow span {
   border-color: rgba(153, 246, 228, 0.12);
   color: rgba(226, 232, 240, 0.8);
@@ -1697,6 +1737,14 @@ html[data-mode="dark"] .syncOrbit::before {
 }
 
 html[data-mode="dark"] .syncOrbitCore span {
+  color: rgba(226, 232, 240, 0.72);
+}
+
+html[data-mode="dark"] .finalCta {
+  color: rgba(248, 250, 252, 0.94);
+}
+
+html[data-mode="dark"] .finalCta p {
   color: rgba(226, 232, 240, 0.72);
 }
 
@@ -1893,36 +1941,31 @@ html[data-mode="dark"] .syncOrbitCore span {
   }
 
   .planStep {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+    gap: 0.9rem;
+    padding: 0.95rem;
+  }
+
+  .planStepLead {
+    justify-content: flex-start;
   }
 
   .planStepBadge {
-    width: max-content;
-    grid-column: 1 / -1;
-    justify-self: start;
-    padding: 0.55rem 0.75rem;
-    border-radius: 999px;
+    width: 4.5rem;
+    min-height: 4.5rem;
   }
 
-  .planStepBadge small {
-    display: none;
+  .planStepBadge span {
+    font-size: 0.9rem;
   }
 
-  .planStepCopy {
-    grid-column: 1 / -1;
-  }
-
-  .planStepState {
-    grid-row: 1;
+  .planStepCopy p,
+  .planStepCopy small {
+    max-width: none;
   }
 
   .metricsPanel {
     min-height: 22rem;
-  }
-
-  .readerShell,
-  .finalCta {
-    border-radius: 1.8rem;
   }
 
   .readerWindowBar {
