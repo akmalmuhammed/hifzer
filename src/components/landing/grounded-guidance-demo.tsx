@@ -1,45 +1,24 @@
 "use client";
 
 import clsx from "clsx";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { BookOpenText, Loader2, MessageSquareQuote, Search, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
+import { BookOpenText, MessageSquareQuote, Search, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Pill } from "@/components/ui/pill";
 import { LANDING_GUIDANCE_DEMO } from "./grounded-guidance-demo.data";
 import styles from "./grounded-guidance-demo.module.css";
 
 const DEMO_STEPS = [
   {
-    id: "explain-loading",
-    view: "explain",
-    loading: true,
-    bubble: "Explain this ayah",
-    loader: "Grounding this ayah with ayah text, translation, and tafsir context...",
-    duration: 2400,
-  },
-  {
     id: "explain-ready",
     view: "explain",
-    loading: false,
     bubble: "Explain this ayah",
-    loader: "",
-    duration: 6200,
-  },
-  {
-    id: "assistant-loading",
-    view: "assistant",
-    loading: true,
-    bubble: LANDING_GUIDANCE_DEMO.assistant.prompt,
-    loader: "Searching grounded Qur'an matches for patience...",
-    duration: 2400,
+    duration: 9000,
   },
   {
     id: "assistant-ready",
     view: "assistant",
-    loading: false,
     bubble: LANDING_GUIDANCE_DEMO.assistant.prompt,
-    loader: "",
-    duration: 7000,
+    duration: 11000,
   },
 ] as const;
 
@@ -51,20 +30,6 @@ function SourcePills({ sources }: { sources: readonly { label: string; kind: str
           {source.label}
         </Pill>
       ))}
-    </div>
-  );
-}
-
-function LoadingCard({ detail }: { detail: string }) {
-  return (
-    <div className={styles.loaderCard}>
-      <div className={styles.loaderTopline}>
-        <Loader2 size={16} className="animate-spin text-[color:var(--kw-faint)]" />
-        <span>{detail}</span>
-      </div>
-      <div className={styles.loaderBar} aria-hidden>
-        <span />
-      </div>
     </div>
   );
 }
@@ -110,7 +75,7 @@ function AssistantResult() {
       </div>
       <p className={styles.answerText}>{assistant.answer}</p>
       <div className={styles.matches}>
-        {assistant.matches.map((match) => (
+        {assistant.matches.slice(0, 1).map((match) => (
           <article key={match.verseKey} className={styles.matchCard}>
             <div className={styles.matchTopline}>
               <Pill tone="neutral">{match.verseKey}</Pill>
@@ -137,7 +102,9 @@ function AssistantResult() {
 }
 
 export function GroundedGuidanceDemo() {
-  const reduceMotion = useReducedMotion();
+  const shellRef = useRef<HTMLDivElement>(null);
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const [isInView, setIsInView] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const step = DEMO_STEPS[stepIndex] ?? DEMO_STEPS[0];
   const showStatic = Boolean(reduceMotion);
@@ -145,7 +112,27 @@ export function GroundedGuidanceDemo() {
   const activePrompt = showStatic || step.view === "assistant" ? LANDING_GUIDANCE_DEMO.assistant.prompt : null;
 
   useEffect(() => {
-    if (reduceMotion) {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updatePreference = () => setReduceMotion(media.matches);
+    updatePreference();
+    media.addEventListener("change", updatePreference);
+
+    const node = shellRef.current;
+    const observer = node
+      ? new IntersectionObserver(([entry]) => setIsInView(Boolean(entry?.isIntersecting)), {
+          rootMargin: "200px 0px",
+        })
+      : null;
+    if (node) observer?.observe(node);
+
+    return () => {
+      media.removeEventListener("change", updatePreference);
+      observer?.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (reduceMotion || !isInView) {
       return;
     }
 
@@ -154,10 +141,10 @@ export function GroundedGuidanceDemo() {
     }, step.duration);
 
     return () => window.clearTimeout(timer);
-  }, [reduceMotion, step.duration]);
+  }, [isInView, reduceMotion, step.duration]);
 
   return (
-    <div className={styles.shell}>
+    <div ref={shellRef} className={styles.shell}>
       <div className={styles.motionGrid} aria-hidden />
       <div className={styles.orbOne} aria-hidden />
       <div className={styles.orbTwo} aria-hidden />
@@ -212,52 +199,19 @@ export function GroundedGuidanceDemo() {
         </div>
       </div>
 
-      <div className={styles.conversation} aria-live="polite">
-        <AnimatePresence mode="wait">
-          {!showStatic ? (
-            <motion.div
-              key={`bubble:${step.id}`}
-              initial={{ opacity: 0, y: 8, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -8, scale: 0.98 }}
-              transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1] }}
-              className={styles.bubble}
-            >
-              <MessageSquareQuote size={15} aria-hidden />
-              <span>{step.bubble}</span>
-            </motion.div>
-          ) : (
-            <div className={styles.bubble}>
-              <MessageSquareQuote size={15} aria-hidden />
-              <span>Explain this ayah, then ask a predefined question.</span>
-            </div>
-          )}
-        </AnimatePresence>
+      <div className={styles.conversation}>
+        <div key={`bubble:${step.id}`} className={`${styles.bubble} ${styles.stageEnter}`}>
+          <MessageSquareQuote size={15} aria-hidden />
+          <span>{showStatic ? "Explain this ayah, then ask a predefined question." : step.bubble}</span>
+        </div>
 
         <div className={styles.resultZone}>
           {showStatic ? (
-            <div className={styles.staticStack}>
-              <ExplanationResult />
-              <AssistantResult />
-            </div>
+            <ExplanationResult />
           ) : (
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`result:${step.id}`}
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.62, ease: [0.22, 1, 0.36, 1] }}
-              >
-                {step.loading ? (
-                  <LoadingCard detail={step.loader} />
-                ) : step.view === "explain" ? (
-                  <ExplanationResult />
-                ) : (
-                  <AssistantResult />
-                )}
-              </motion.div>
-            </AnimatePresence>
+            <div key={`result:${step.id}`} className={styles.stageEnter}>
+              {step.view === "explain" ? <ExplanationResult /> : <AssistantResult />}
+            </div>
           )}
         </div>
       </div>

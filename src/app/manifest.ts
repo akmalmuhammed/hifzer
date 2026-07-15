@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Hifzer",
     short_name: "Hifzer",
     description:
-      "A calm Qur'an companion for reading, reciting, and memorizing with structure.",
+      "A daily Qur'an routine for reading continuity, hifz retention, trusted guidance, duas, and private reflection.",
     start_url: "/",
     scope: "/",
     display: "standalone",

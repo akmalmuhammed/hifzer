@@ -1,5 +1,3 @@
-"use client";
-
 import Image from "next/image";
 import type { CSSProperties, ReactNode } from "react";
 import {
@@ -7,6 +5,7 @@ import {
   BookMarked,
   BookOpenText,
   Check,
+  ChevronDown,
   Heart,
   LineChart,
   Lock,
@@ -14,8 +13,6 @@ import {
   PenLine,
   Sparkles,
 } from "lucide-react";
-import { PublicAuthLink } from "@/components/landing/public-auth-link";
-import { usePublicAuth } from "@/components/landing/public-auth-context";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { Button } from "@/components/ui/button";
 import { GroundedGuidanceDemo } from "./grounded-guidance-demo";
@@ -92,8 +89,8 @@ const faqs = [
     a: "For Muslims who want a steadier relationship with the Qur'an, whether they are reading daily, memorizing, revising, making dua, or reflecting privately.",
   },
   {
-    q: "Is Hifzer only for hifz students?",
-    a: "No. Hifz is a deep part of the app, but the product is built around staying connected to the Qur'an through reading, guidance, duas, and reflection too.",
+    q: "Do I need a Quran.com account?",
+    a: "No. You can use Hifzer without linking Quran.com. Connecting it is optional and helps supported Qur'an activity, such as saved ayahs, follow your account.",
   },
   {
     q: "What happens after signup?",
@@ -104,8 +101,16 @@ const faqs = [
     a: "No. A teacher still guides recitation and tajweed. Hifzer helps organize the practice, revision, and reflection that happens between lessons.",
   },
   {
+    q: "How should I use the grounded guidance?",
+    a: "Use it to explore matched ayahs, translations, and tafsir context. It is a study aid, not a fatwa service or a replacement for a qualified scholar.",
+  },
+  {
     q: "Are my journal entries private?",
     a: "Yes. Your notes and reflections are treated as a private space, not a social feed.",
+  },
+  {
+    q: "Is Hifzer free?",
+    a: "The core routine is free to start in your browser. Optional premium features, where offered, use a one-time purchase rather than a subscription.",
   },
 ] as const;
 
@@ -164,6 +169,7 @@ function ScreenCard({
           alt={image.alt}
           fill
           priority={priority}
+          fetchPriority={priority ? "high" : undefined}
           sizes="(max-width: 640px) 82vw, (max-width: 1024px) 42vw, 460px"
           className="object-cover object-top"
         />
@@ -173,42 +179,44 @@ function ScreenCard({
 }
 
 function HeroChapter() {
-  const { isSignedIn } = usePublicAuth();
-
   return (
     <section className={styles.hero} aria-labelledby="landing-hero-title">
       <div className={styles.heroGlow} />
       <div className={styles.heroGrid}>
         <Reveal className={styles.heroCopy}>
-          <p className={styles.heroEyebrow}>Hifzer</p>
+          <p className={styles.heroEyebrow}>A daily Qur&apos;an companion for reading and hifz</p>
           <h1 id="landing-hero-title" className={styles.heroTitle}>
-            Keep your Qur&apos;an routine steady.
+            Return to your ayah. Keep what you memorized.
           </h1>
           <p className={styles.heroSummary}>
-            Return tomorrow with your ayah, trusted sources, review, and reflections already waiting. Hifzer brings reading, hifz, dua, and grounded guidance into one calm daily loop.
+            Hifzer brings your next ayah, sabaq, sabqi and manzil review, trusted translation and tafsir, duas, and private reflections into one calm daily routine.
           </p>
           <div className={styles.heroActions}>
-            <Button asChild size="lg" className="w-full sm:w-auto">
-              <PublicAuthLink
-                signedInHref="/dashboard"
-                signedOutHref="/signup"
+            <Button asChild size="lg" className={`${styles.primaryCta} w-full sm:w-auto`}>
+              <TrackedLink
+                href="/signup"
+                prefetch={false}
                 telemetryName="landing.primary_open_app_click"
                 telemetryMeta={{ placement: "hero" }}
               >
-                {isSignedIn ? "Open app" : "Start free"} <ArrowRight size={17} />
-              </PublicAuthLink>
+                Start my free routine <ArrowRight size={17} />
+              </TrackedLink>
             </Button>
             <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
               <TrackedLink
-                href="/judge"
+                href="#routine"
                 telemetryName="landing.hero_story_click"
                 telemetryMeta={{ placement: "hero" }}
               >
-                See Quran Foundation proof <ArrowRight size={17} />
+                See how Hifzer works <ArrowRight size={17} />
               </TrackedLink>
             </Button>
           </div>
-          <p className={styles.heroMicro}>Free in the browser. No card required.</p>
+          <div className={styles.heroTrust} aria-label="Hifzer trust notes">
+            <span>Free in your browser</span>
+            <span>No card required</span>
+            <span>Private reflections</span>
+          </div>
         </Reveal>
 
         <Reveal className={styles.heroVisual}>
@@ -224,19 +232,24 @@ function HeroChapter() {
 
 function RoutineChapter() {
   return (
-    <section id="routine" className={styles.chapter}>
+    <section id="routine" className={styles.chapter} tabIndex={-1}>
       <div className={styles.chapterGrid}>
         <Reveal>
           <SectionHeading
             eyebrow="Guided routine"
             title="Read, review, reflect, then return."
-            body="Hifzer keeps the next step clear: continue Qur'an reading, protect memorization, save what matters, and come back tomorrow without rebuilding the routine."
+            body="One calm path keeps your reading place, review, and reflections ready for the next return."
           />
         </Reveal>
         <Reveal className={styles.planBuilder}>
           {routineSteps.map((step, index) => {
             return (
-              <article key={step.label} className={styles.planStep} style={{ "--step": index } as CSSProperties}>
+              <article
+                key={step.label}
+                className={styles.planStep}
+                style={{ "--step": index } as CSSProperties}
+                aria-labelledby={`routine-step-${index + 1}`}
+              >
                 <div className={styles.planStepLead}>
                   <div className={styles.planStepBadge}>
                     <span>{step.label}</span>
@@ -244,8 +257,8 @@ function RoutineChapter() {
                   </div>
                 </div>
                 <div className={styles.planStepCopy}>
-                  <p>{step.title}</p>
-                  <small>{step.body}</small>
+                  <h3 id={`routine-step-${index + 1}`}>{step.title}</h3>
+                  <p>{step.body}</p>
                 </div>
                 <div className={styles.planStepState} aria-hidden>
                   <Check size={18} />
@@ -261,12 +274,12 @@ function RoutineChapter() {
 
 function HifzChapter() {
   return (
-    <section id="hifz" className={styles.chapter}>
+    <section id="hifz" className={styles.chapter} tabIndex={-1}>
       <Reveal>
         <SectionHeading
           eyebrow="Hifz"
           title="Memorization you can actually keep."
-          body="Progress only matters when it stays with you. Hifzer helps you see what is new, what is recent, what is long-term, and what needs repair before it slips."
+          body="See today's new work, recent revision, long-term review, and passages that need care before they fade."
           align="center"
         />
       </Reveal>
@@ -319,13 +332,13 @@ function HifzChapter() {
 
 function GuidanceChapter() {
   return (
-    <section id="guidance" className={styles.chapter}>
+    <section id="guidance" className={styles.chapter} tabIndex={-1}>
       <div className={`${styles.chapterGrid} ${styles.guidanceGrid}`}>
         <Reveal className={styles.guidanceCopy}>
           <SectionHeading
             eyebrow="Trusted guidance"
-            title="Start with sources, then ask better questions."
-            body="Hifzer keeps AI grounded in ayah references, translation, tafsir summaries, and source labels so answers feel inspectable instead of vague."
+            title="Ask with the sources in view."
+            body="Explore a question with matched ayahs, translation, and tafsir context beside the answer instead of receiving an unsupported summary."
           />
           <div className={styles.sourceList}>
             {assistantSources.map((source) => (
@@ -335,6 +348,9 @@ function GuidanceChapter() {
               </span>
             ))}
           </div>
+          <p className={styles.guidanceNote}>
+            Built for study and reflection. It does not replace a qualified teacher or scholar.
+          </p>
         </Reveal>
         <Reveal className={styles.assistantMock}>
           <GroundedGuidanceDemo />
@@ -346,13 +362,13 @@ function GuidanceChapter() {
 
 function ReaderChapter() {
   return (
-    <section id="reader" className={styles.chapter}>
+    <section id="reader" className={styles.chapter} tabIndex={-1}>
       <div className={styles.readerShell}>
         <Reveal>
           <SectionHeading
             eyebrow="Trusted Qur'an sources"
-            title="Your reader stays close to the sources."
-            body="Choose the translation, tafsir, and reciter you need without leaving the ayah. Connect Quran.com when you want bookmarks, notes, goals, and streaks to travel with you."
+            title="Meaning and recitation stay beside the ayah."
+            body="Choose a trusted translation, tafsir, or reciter without leaving your place. Connect Quran.com only when you want saved Qur'an activity to follow your account."
           />
           <div className={styles.readerApiProof}>
             <span>Meaning and context beside each ayah</span>
@@ -376,7 +392,7 @@ function ReaderChapter() {
           </div>
           <div className={styles.ayahLine}>
             <span>2:286</span>
-            <p dir="rtl">لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا</p>
+            <p dir="rtl" lang="ar">لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا</p>
           </div>
           <div className={styles.readerControls}>
             <span><BookOpenText size={14} /> Read with trusted translation</span>
@@ -406,14 +422,14 @@ function ReaderChapter() {
 
 function ReflectionChapter() {
   return (
-    <section id="reflection" className={styles.chapter}>
+    <section id="reflection" className={styles.chapter} tabIndex={-1}>
       <div className={styles.splitCards}>
         <Reveal className={styles.warmCard}>
           <Heart className={styles.cardIcon} aria-hidden />
           <p className={styles.eyebrow}>Dua</p>
           <h2 className={styles.cardTitle}>Dua that feels present.</h2>
           <p className={styles.cardBody}>
-            Keep duas for repentance, hardship, gratitude, and Allah&apos;s names in a calm space that feels personal, not like a random list.
+            Return to sourced duas for repentance, hardship, gratitude, and Allah&apos;s names without searching through an endless list.
           </p>
           <div className={styles.duaChips}>
             <span>Repentance</span>
@@ -427,7 +443,7 @@ function ReflectionChapter() {
           <p className={styles.eyebrow}>Journal</p>
           <h2 className={styles.cardTitle}>A private space for your Qur&apos;an journey.</h2>
           <p className={styles.cardBody}>
-            Attach an ayah, save a reflection, and keep personal notes with the Qur&apos;an moments that shaped your day.
+            Keep an ayah and the reflection it inspired together, privately under your account.
           </p>
           <div className={styles.journalNote}>
             <small>Linked ayah</small>
@@ -442,12 +458,12 @@ function ReflectionChapter() {
 
 function ContinuityChapter() {
   return (
-    <section id="continuity" className={styles.chapter}>
+    <section id="continuity" className={styles.chapter} tabIndex={-1}>
       <Reveal>
         <SectionHeading
           eyebrow="Continuity"
           title="Keep the journey together across days."
-          body="Your Qur'an place, hifz review, saved ayahs, duas, and private reflections stay connected without turning worship into a spreadsheet."
+          body="Return with your reading place, hifz review, saved ayahs, duas, and reflections already waiting."
           align="center"
         />
       </Reveal>
@@ -480,7 +496,7 @@ function ContinuityChapter() {
 
 function FaqChapter() {
   return (
-    <section className={styles.chapter}>
+    <section className={styles.chapter} tabIndex={-1}>
       <Reveal>
         <SectionHeading
           eyebrow="Questions"
@@ -492,7 +508,10 @@ function FaqChapter() {
       <div className={styles.faqList}>
         {faqs.map((faq) => (
           <details key={faq.q} className={styles.faqItem}>
-            <summary>{faq.q}</summary>
+            <summary>
+              <span>{faq.q}</span>
+              <ChevronDown size={18} aria-hidden />
+            </summary>
             <p>{faq.a}</p>
           </details>
         ))}
@@ -502,34 +521,32 @@ function FaqChapter() {
 }
 
 function ClosingCta() {
-  const { isSignedIn } = usePublicAuth();
-
   return (
     <section className={styles.finalCta}>
       <Reveal className="mx-auto max-w-3xl text-center">
         <p className={styles.eyebrow}>Begin gently</p>
-        <h2>The Qur&apos;an was never meant to stay at the edge of your life.</h2>
+        <h2>Make tomorrow&apos;s return to the Qur&apos;an easier.</h2>
         <p>
-          Build a real relationship with the Qur&apos;an through memorization, trusted guidance, duas, and reflection.
+          Keep your next ayah, review, duas, and reflections ready in one calm place.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Button asChild size="lg" className="w-full sm:w-auto">
-            <PublicAuthLink
-              signedInHref="/dashboard"
-              signedOutHref="/signup"
+          <Button asChild size="lg" className={`${styles.primaryCta} w-full sm:w-auto`}>
+            <TrackedLink
+              href="/signup"
+              prefetch={false}
               telemetryName="landing.final_start_click"
               telemetryMeta={{ placement: "final-cta" }}
             >
-              {isSignedIn ? "Open app" : "Start free"} <ArrowRight size={17} />
-            </PublicAuthLink>
+              Start my free routine <ArrowRight size={17} />
+            </TrackedLink>
           </Button>
           <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
             <TrackedLink href="#routine" telemetryName="landing.final_story_click">
-              Preview the routine
+              See how it works
             </TrackedLink>
           </Button>
         </div>
-        <span className={styles.noCard}>No card required. Start free in the browser.</span>
+        <span className={styles.noCard}>Free in your browser. No card required.</span>
       </Reveal>
     </section>
   );

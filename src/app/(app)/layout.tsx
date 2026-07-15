@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app/app-shell";
 import { AppShellSideEffects } from "@/components/app/app-shell-side-effects";
 import { AppProviders } from "@/components/providers/app-providers";
+import { ClerkRouteProvider } from "@/components/providers/clerk-route-provider";
 import { DISTRACTION_FREE_COOKIE, normalizeDistractionFree } from "@/hifzer/focus/distraction-free";
 import { onboardingPathForStep } from "@/hifzer/profile/onboarding";
 import { getAppShellGateProfile } from "@/hifzer/profile/server";
@@ -63,15 +64,17 @@ export default async function AppGroupLayout({ children }: { children: React.Rea
   }
 
   return (
-    <AppProviders
-      initialUiLanguage={initialUiLanguage}
-      initialDistractionFree={initialDistractionFree}
-      initialThemeState={initialThemeState}
-    >
-      <AppShell streakEnabled={Boolean(profile?.onboardingCompleted)}>
-        <AppShellSideEffects disabled={publicQuranDemo} />
-        {children}
-      </AppShell>
-    </AppProviders>
+    <ClerkRouteProvider>
+      <AppProviders
+        initialUiLanguage={initialUiLanguage}
+        initialDistractionFree={initialDistractionFree}
+        initialThemeState={initialThemeState}
+      >
+        <AppShell streakEnabled={Boolean(profile?.onboardingCompleted)}>
+          <AppShellSideEffects disabled={publicQuranDemo} />
+          {children}
+        </AppShell>
+      </AppProviders>
+    </ClerkRouteProvider>
   );
 }

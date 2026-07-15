@@ -3,9 +3,9 @@ import { LandingPageContent } from "@/components/landing/landing-page";
 
 export const revalidate = 60;
 
-const landingTitle = "Hifzer | Reconnect with the Qur'an";
+const landingTitle = "Hifzer | Daily Qur'an Reading and Hifz";
 const landingDescription =
-  "A modern Qur'an companion for memorization, trusted guidance, duas, and private reflection.";
+  "Return to your next ayah, protect what you memorized, and keep trusted Qur'an guidance, duas, and private reflection in one daily routine.";
 const landingImage = "/opengraph-image";
 
 export const metadata: Metadata = {

@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Check, Minus } from "lucide-react";
-import { PublicAuthLink } from "@/components/landing/public-auth-link";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DisclosureCard } from "@/components/ui/disclosure-card";
@@ -204,9 +204,9 @@ export function ComparisonMatrix() {
           Try the system that combines all three.
         </p>
         <Button asChild size="lg" className="gap-2">
-          <PublicAuthLink signedInHref="/dashboard" signedOutHref="/signup">
+          <Link href="/signup" prefetch={false}>
             Get started free <ArrowRight size={16} />
-          </PublicAuthLink>
+          </Link>
         </Button>
       </motion.div>
     </section>

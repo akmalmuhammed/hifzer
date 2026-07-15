@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import * as Sentry from "@sentry/nextjs";
 import { redirect } from "next/navigation";
 import { AppProviders } from "@/components/providers/app-providers";
+import { ClerkRouteProvider } from "@/components/providers/clerk-route-provider";
 import { ProfileHydrator } from "@/components/providers/profile-hydrator";
 import { DISTRACTION_FREE_COOKIE, normalizeDistractionFree } from "@/hifzer/focus/distraction-free";
 import { getProfileSnapshot } from "@/hifzer/profile/server";
@@ -37,17 +38,19 @@ export default async function OnboardingLayout({ children }: { children: React.R
   }
 
   return (
-    <AppProviders
-      initialUiLanguage={initialUiLanguage}
-      initialDistractionFree={initialDistractionFree}
-      initialThemeState={initialThemeState}
-    >
-      <div className={marketingDisplayFont.variable}>
-        <main id="main-content" className="mx-auto w-full max-w-[1120px] px-4 py-6 sm:py-10">
-          <ProfileHydrator profile={profile} />
-          {children}
-        </main>
-      </div>
-    </AppProviders>
+    <ClerkRouteProvider>
+      <AppProviders
+        initialUiLanguage={initialUiLanguage}
+        initialDistractionFree={initialDistractionFree}
+        initialThemeState={initialThemeState}
+      >
+        <div className={marketingDisplayFont.variable}>
+          <main id="main-content" className="mx-auto w-full max-w-[1120px] px-4 py-6 sm:py-10">
+            <ProfileHydrator profile={profile} />
+            {children}
+          </main>
+        </div>
+      </AppProviders>
+    </ClerkRouteProvider>
   );
 }

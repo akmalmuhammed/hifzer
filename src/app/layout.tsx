@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
-import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { InstallAppBanner } from "@/components/pwa/install-app-banner";
@@ -10,8 +9,6 @@ import {
   getDefaultHtmlAttributes,
 } from "@/components/providers/document-preferences-bootstrap";
 import { GoogleAnalytics } from "@/components/telemetry/google-analytics";
-import { clerkAuthRoutes } from "@/lib/auth-redirects";
-import { clerkEnabled } from "@/lib/clerk-config";
 import { appMonoFont, appSansFont } from "@/lib/fonts";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
@@ -80,22 +77,6 @@ export default function RootLayout({
 }: Readonly<{
   children: ReactNode;
 }>) {
-  const authEnabled = clerkEnabled();
-  const content = authEnabled ? (
-    <ClerkProvider
-      signInUrl={clerkAuthRoutes.signInUrl}
-      signUpUrl={clerkAuthRoutes.signUpUrl}
-      signInForceRedirectUrl={clerkAuthRoutes.signInForceRedirectUrl}
-      signInFallbackRedirectUrl={clerkAuthRoutes.signInFallbackRedirectUrl}
-      signUpForceRedirectUrl={clerkAuthRoutes.signUpForceRedirectUrl}
-      signUpFallbackRedirectUrl={clerkAuthRoutes.signUpFallbackRedirectUrl}
-    >
-      {children}
-    </ClerkProvider>
-  ) : (
-    children
-  );
-
   return (
     <html
       lang={defaultHtml.lang}
@@ -115,7 +96,7 @@ export default function RootLayout({
         >
           {skipToMainLabel}
         </a>
-        {content}
+        {children}
         <InstallAppBanner />
         <ServiceWorkerRegistration />
         <GoogleAnalytics />
