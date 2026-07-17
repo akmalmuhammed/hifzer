@@ -265,7 +265,7 @@ Runbooks:
 
 ### Email
 
-Resend powers reminder emails.
+Resend handles application delivery, while the configured Zoho mailbox remains the visible sender and reply address.
 
 Key env vars:
 
@@ -276,6 +276,21 @@ Key env vars:
 - `EMAIL_UNSUBSCRIBE_SIGNING_SECRET`
 - `CRON_SECRET`
 - `NEXT_PUBLIC_APP_URL`
+
+Invitation campaign workflow:
+
+```powershell
+# Resolve Clerk names/emails and review the eligible audience. Sends nothing.
+pnpm email:invitation:preview -- --limit=53
+
+# Send only after reviewing the preview output.
+pnpm email:invitation:send -- --limit=53 --confirm=latest-product-update-2026-07
+```
+
+The campaign resolves each recipient's first name from Clerk, falls back to a
+non-personalized greeting when no name exists, and excludes unverified,
+suppressed, or unsubscribed accounts. `CAMPAIGN_APP_URL` can temporarily
+override `NEXT_PUBLIC_APP_URL` when testing the protected route locally.
 
 ### Billing
 

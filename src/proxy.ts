@@ -15,6 +15,7 @@ const PROTECTED_ROUTE_PATTERNS = [
   "/dua(.*)",
   "/duas(.*)",
   "/hifz(.*)",
+  "/worship(.*)",
   "/journal(.*)",
   "/bookmarks(.*)",
   "/reader(.*)",

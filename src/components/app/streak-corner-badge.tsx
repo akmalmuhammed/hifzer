@@ -5,7 +5,6 @@ import { Flame } from "lucide-react";
 import { InstallAppButton } from "@/components/pwa/install-app-button";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { readSessionCache, writeSessionCache } from "@/lib/client-session-cache";
 import styles from "./app-shell.module.css";
 
 type StreakPayload = {
@@ -24,9 +23,6 @@ function badgeNumber(days: number): string {
   return String(Math.max(0, days));
 }
 
-const STREAK_BADGE_CACHE_KEY = "hifzer.streak.badge.v1";
-const STREAK_BADGE_CACHE_TTL_MS = 5 * 60 * 1000;
-
 export function StreakCornerBadge(props: { enabled: boolean }) {
   const [data, setData] = useState<StreakPayload | null>(null);
 
@@ -36,17 +32,6 @@ export function StreakCornerBadge(props: { enabled: boolean }) {
     }
 
     let cancelled = false;
-    let cacheTimer: number | null = null;
-
-    const cached = readSessionCache<StreakPayload>(STREAK_BADGE_CACHE_KEY, STREAK_BADGE_CACHE_TTL_MS);
-    if (cached) {
-      cacheTimer = window.setTimeout(() => {
-        if (!cancelled) {
-          setData(cached);
-        }
-      }, 0);
-    }
-
     const load = async () => {
       try {
         const res = await fetch("/api/streak/summary", { cache: "no-store" });
@@ -56,7 +41,6 @@ export function StreakCornerBadge(props: { enabled: boolean }) {
         const payload = (await res.json()) as StreakPayload;
         if (!cancelled) {
           setData(payload);
-          writeSessionCache(STREAK_BADGE_CACHE_KEY, payload);
         }
       } catch {
         // Fail open: badge simply hides when streak summary is unavailable.
@@ -69,9 +53,6 @@ export function StreakCornerBadge(props: { enabled: boolean }) {
     if (!mobileViewport) {
       return () => {
         cancelled = true;
-        if (cacheTimer != null) {
-          window.clearTimeout(cacheTimer);
-        }
       };
     }
 
@@ -85,9 +66,6 @@ export function StreakCornerBadge(props: { enabled: boolean }) {
 
     return () => {
       cancelled = true;
-      if (cacheTimer != null) {
-        window.clearTimeout(cacheTimer);
-      }
       document.removeEventListener("visibilitychange", onVisible);
       window.clearInterval(interval);
     };

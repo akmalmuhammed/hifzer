@@ -7,6 +7,7 @@ import {
   BookOpenText,
   CalendarDays,
   ChevronDown,
+  HeartHandshake,
   LifeBuoy,
   LibraryBig,
   MessageSquareQuote,
@@ -30,6 +31,7 @@ type NavKey =
   | "hifz"
   | "quran"
   | "dua"
+  | "worship"
   | "journal"
   | "glossary"
   | "assistant"
@@ -39,13 +41,14 @@ type NavKey =
 
 type NavItem = { href: string; key: NavKey; icon: LucideIcon; label?: string };
 
-type AppNavCopyKey = Exclude<NavKey, "journal" | "assistant">;
+type AppNavCopyKey = Exclude<NavKey, "journal" | "assistant" | "worship">;
 
 const PRIMARY: NavItem[] = [
   { href: "/dashboard", key: "dashboard", icon: CalendarDays },
   { href: "/quran", key: "quran", icon: BookOpenText },
   { href: "/hifz", key: "hifz", icon: PlayCircle },
   { href: "/dua", key: "dua", icon: MoonStar },
+  { href: "/worship", key: "worship", icon: HeartHandshake, label: "Worship" },
   { href: "/journal", key: "journal", icon: SquarePen, label: "Journal" },
 ];
 
@@ -81,7 +84,10 @@ function getLikelyNextRoutes(pathname: string): string[] {
     return ["/dashboard", "/dua"];
   }
   if (pathname === "/dua" || pathname.startsWith("/dua/")) {
-    return ["/dashboard", "/journal"];
+    return ["/dashboard", "/worship"];
+  }
+  if (pathname === "/worship" || pathname.startsWith("/worship/")) {
+    return ["/dashboard", "/dua"];
   }
   if (pathname === "/settings" || pathname.startsWith("/settings/")) {
     return ["/dashboard"];
@@ -133,6 +139,8 @@ function getNavLabel(item: NavItem, copy: ReturnType<typeof getAppUiCopy>): stri
       return "Journal";
     case "assistant":
       return "Ask Qur'an";
+    case "worship":
+      return "Worship";
     default:
       return copy.nav[item.key as AppNavCopyKey];
   }

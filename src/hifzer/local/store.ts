@@ -97,18 +97,82 @@ const USER_SCOPED_STORAGE_KEYS = [
   LEGACY_STORAGE_KEYS.cursorAyahId,
 ] as const;
 
+const USER_SCOPED_STORAGE_PREFIXES = [
+  "hifzer_private_journal_entries_v2:",
+] as const;
+
+const USER_SCOPED_SESSION_STORAGE_KEYS = [
+  "hifzer.streak.badge.v1",
+  "hifzer.dashboard.summary.v1",
+  "hifzer.dashboard.details.v1",
+  "hifzer.dashboard.streak.v1",
+  "hifzer.dashboard.quran.v1",
+  "hifzer.dashboard.activity.v1",
+] as const;
+
+// These keys existed before the app had a durable local owner marker. Clear them
+// when an identity is first established rather than risking one account seeing
+// another account's private draft.
+const LEGACY_UNSCOPED_SENSITIVE_STORAGE_KEYS = [
+  "hifzer_private_journal_entries_v1",
+] as const;
+
 function isBrowser(): boolean {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 }
 
-export function syncLocalStateOwner(clerkUserId: string | null | undefined) {
-  if (!isBrowser() || !clerkUserId) {
+function clearUserScopedBrowserState() {
+  if (!isBrowser()) {
     return;
   }
 
-  const previousOwner = window.localStorage.getItem(STORAGE_KEYS.localStateOwner);
+  for (const key of USER_SCOPED_STORAGE_KEYS) {
+    window.localStorage.removeItem(key);
+  }
+  for (const key of LEGACY_UNSCOPED_SENSITIVE_STORAGE_KEYS) {
+    window.localStorage.removeItem(key);
+  }
+
+  for (let index = window.localStorage.length - 1; index >= 0; index -= 1) {
+    const key = window.localStorage.key(index);
+    if (key && USER_SCOPED_STORAGE_PREFIXES.some((prefix) => key.startsWith(prefix))) {
+      window.localStorage.removeItem(key);
+    }
+  }
+
+  try {
+    for (const key of USER_SCOPED_SESSION_STORAGE_KEYS) {
+      window.sessionStorage.removeItem(key);
+    }
+  } catch {
+    // Session storage is optional; a blocked browser must not break a sign-out.
+  }
+}
+
+export function getLocalStateOwner(): string | null {
+  if (!isBrowser()) {
+    return null;
+  }
+  return window.localStorage.getItem(STORAGE_KEYS.localStateOwner);
+}
+
+export function syncLocalStateOwner(clerkUserId: string | null | undefined) {
+  if (!isBrowser()) {
+    return;
+  }
+
+  const previousOwner = getLocalStateOwner();
+  if (!clerkUserId) {
+    clearUserScopedBrowserState();
+    window.localStorage.removeItem(STORAGE_KEYS.localStateOwner);
+    return;
+  }
+
   if (previousOwner && previousOwner !== clerkUserId) {
-    for (const key of USER_SCOPED_STORAGE_KEYS) {
+    clearUserScopedBrowserState();
+  }
+  if (!previousOwner) {
+    for (const key of LEGACY_UNSCOPED_SENSITIVE_STORAGE_KEYS) {
       window.localStorage.removeItem(key);
     }
   }

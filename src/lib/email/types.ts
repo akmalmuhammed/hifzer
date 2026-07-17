@@ -6,6 +6,7 @@ export type EmailSendRequest = {
   html: string;
   text: string;
   idempotencyKey: string;
+  headers?: Record<string, string>;
 };
 
 export type EmailSendResult =

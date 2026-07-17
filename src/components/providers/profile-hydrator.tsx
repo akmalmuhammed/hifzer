@@ -19,14 +19,14 @@ export function ProfileHydrator(props: { profile: ProfileSnapshot | null }) {
   const { setMode, setTheme, setAccent } = useTheme();
 
   useEffect(() => {
+    const profile = props.profile;
+    syncLocalStateOwner(profile?.clerkUserId);
     applyFreshStartBridge();
 
-    const profile = props.profile;
     if (!profile) {
       return;
     }
 
-    syncLocalStateOwner(profile.clerkUserId);
     setHifzActiveSurahCursor(profile.activeSurahNumber, profile.cursorAyahId);
     setQuranActiveSurahCursor(profile.quranActiveSurahNumber, profile.quranCursorAyahId);
     if (profile.onboardingCompleted) {

@@ -26,6 +26,7 @@ export class ResendProvider implements EmailProvider {
         html: input.html,
         text: input.text,
         replyTo: cfg.replyTo ?? undefined,
+        headers: input.headers,
       },
       {
         idempotencyKey: input.idempotencyKey,

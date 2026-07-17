@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Compass,
+  HeartHandshake,
   MoonStar,
   PlayCircle,
   RefreshCcw,
@@ -28,7 +29,6 @@ import { DisclosureCard } from "@/components/ui/disclosure-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
 import type { OnboardingStartLane } from "@/hifzer/profile/onboarding";
-import { readSessionCache, writeSessionCache } from "@/lib/client-session-cache";
 import styles from "./dashboard.module.css";
 
 const AreaTrend = dynamic(
@@ -219,13 +219,6 @@ type DashboardActivityPayload = {
     value: number;
   }>;
 };
-
-const DASHBOARD_SUMMARY_CACHE_KEY = "hifzer.dashboard.summary.v1";
-const DASHBOARD_DETAILS_CACHE_KEY = "hifzer.dashboard.details.v1";
-const DASHBOARD_STREAK_CACHE_KEY = "hifzer.dashboard.streak.v1";
-const DASHBOARD_QURAN_CACHE_KEY = "hifzer.dashboard.quran.v1";
-const DASHBOARD_ACTIVITY_CACHE_KEY = "hifzer.dashboard.activity.v1";
-const DASHBOARD_CACHE_TTL_MS = 10 * 60 * 1000;
 
 function statusPill(status: DashboardSummary["today"]["status"]): { tone: "neutral" | "accent" | "success"; label: string } {
   if (status === "completed") {
@@ -451,26 +444,6 @@ function deriveSummaryFromOverview(overview: DashboardOverview): DashboardSummar
   };
 }
 
-function readCachedDashboardSummary() {
-  return readSessionCache<DashboardSummary>(DASHBOARD_SUMMARY_CACHE_KEY, DASHBOARD_CACHE_TTL_MS);
-}
-
-function readCachedDashboardDetails() {
-  return readSessionCache<DashboardDetails>(DASHBOARD_DETAILS_CACHE_KEY, DASHBOARD_CACHE_TTL_MS);
-}
-
-function readCachedDashboardStreak() {
-  return readSessionCache<DashboardStreak>(DASHBOARD_STREAK_CACHE_KEY, DASHBOARD_CACHE_TTL_MS);
-}
-
-function readCachedDashboardQuran() {
-  return readSessionCache<DashboardQuranDetails>(DASHBOARD_QURAN_CACHE_KEY, DASHBOARD_CACHE_TTL_MS);
-}
-
-function readCachedDashboardActivity() {
-  return readSessionCache<Array<{ date: string; value: number }>>(DASHBOARD_ACTIVITY_CACHE_KEY, DASHBOARD_CACHE_TTL_MS);
-}
-
 export function DashboardClient(props: { initialOverview?: DashboardOverview | null }) {
   const initialDetails = props.initialOverview
     ? {
@@ -484,8 +457,8 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
         stageMix14d: props.initialOverview.stageMix14d,
         reviewHealth: props.initialOverview.reviewHealth,
       }
-    : readCachedDashboardDetails();
-  const initialStreak = props.initialOverview?.streak ?? readCachedDashboardStreak();
+    : null;
+  const initialStreak = props.initialOverview?.streak ?? null;
   const initialQuran = props.initialOverview
     ? {
         completionPct: props.initialOverview.kpis.quranCompletionPct,
@@ -494,11 +467,11 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
         browseRecitedAyahs7d: props.initialOverview.quran.browseRecitedAyahs7d,
         uniqueSurahsRecited14d: props.initialOverview.quran.uniqueSurahsRecited14d,
       }
-    : readCachedDashboardQuran();
-  const initialActivity = props.initialOverview?.activityByDate ?? readCachedDashboardActivity();
+    : null;
+  const initialActivity = props.initialOverview?.activityByDate ?? null;
   const initialSummary = props.initialOverview
     ? deriveSummaryFromOverview(props.initialOverview)
-    : readCachedDashboardSummary();
+    : null;
 
   const [loading, setLoading] = useState(() => !initialSummary);
   const [loadingDetails, setLoadingDetails] = useState(() => !initialDetails);
@@ -532,7 +505,6 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
         throw new Error("Dashboard summary was empty.");
       }
       setSummary(payload.summary);
-      writeSessionCache(DASHBOARD_SUMMARY_CACHE_KEY, payload.summary);
       return payload.summary;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load dashboard.");
@@ -560,7 +532,6 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
         throw new Error("Dashboard details were empty.");
       }
       setDetails(payload.details);
-      writeSessionCache(DASHBOARD_DETAILS_CACHE_KEY, payload.details);
       return payload.details;
     } catch (err) {
       setDetailsError(err instanceof Error ? err.message : "Failed to load dashboard details.");
@@ -588,7 +559,6 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
         throw new Error("Dashboard streak was empty.");
       }
       setStreak(payload.streak);
-      writeSessionCache(DASHBOARD_STREAK_CACHE_KEY, payload.streak);
       return payload.streak;
     } catch (err) {
       setStreakError(err instanceof Error ? err.message : "Failed to load dashboard streak.");
@@ -616,7 +586,6 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
         throw new Error("Quran progress was empty.");
       }
       setQuran(payload.quran);
-      writeSessionCache(DASHBOARD_QURAN_CACHE_KEY, payload.quran);
       return payload.quran;
     } catch (err) {
       setQuranError(err instanceof Error ? err.message : "Failed to load Quran progress.");
@@ -644,7 +613,6 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
         throw new Error("Dashboard activity was empty.");
       }
       setActivity(payload.activity);
-      writeSessionCache(DASHBOARD_ACTIVITY_CACHE_KEY, payload.activity);
       return payload.activity;
     } catch (err) {
       setActivityError(err instanceof Error ? err.message : "Failed to load dashboard activity.");
@@ -666,26 +634,6 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
 
   useEffect(() => {
     if (props.initialOverview) {
-      const nextSummary = deriveSummaryFromOverview(props.initialOverview);
-      writeSessionCache(DASHBOARD_SUMMARY_CACHE_KEY, nextSummary);
-      writeSessionCache(DASHBOARD_DETAILS_CACHE_KEY, {
-        generatedAt: props.initialOverview.generatedAt,
-        profile: props.initialOverview.profile,
-        today: props.initialOverview.today,
-        kpis: { trackedAyahs: props.initialOverview.kpis.trackedAyahs },
-        gradeMix14d: props.initialOverview.gradeMix14d,
-        stageMix14d: props.initialOverview.stageMix14d,
-        reviewHealth: props.initialOverview.reviewHealth,
-      });
-      writeSessionCache(DASHBOARD_STREAK_CACHE_KEY, props.initialOverview.streak);
-      writeSessionCache(DASHBOARD_QURAN_CACHE_KEY, {
-        completionPct: props.initialOverview.kpis.quranCompletionPct,
-        currentSurahProgressPct: props.initialOverview.quran.currentSurahProgressPct,
-        completedKhatmahCount: props.initialOverview.quran.completedKhatmahCount,
-        browseRecitedAyahs7d: props.initialOverview.quran.browseRecitedAyahs7d,
-        uniqueSurahsRecited14d: props.initialOverview.quran.uniqueSurahsRecited14d,
-      });
-      writeSessionCache(DASHBOARD_ACTIVITY_CACHE_KEY, props.initialOverview.activityByDate);
       return;
     }
     if (!summary) {
@@ -962,6 +910,13 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                     title="Reflect"
                     note="Save a private note."
                     icon={SquarePen}
+                  />
+                  <QuickActionCard
+                    href="/worship"
+                    eyebrow="Daily worship"
+                    title="Keep it close"
+                    note="Prayer, fasting, and Zakat."
+                    icon={HeartHandshake}
                   />
                 </div>
                 {shouldShowGuide ? (

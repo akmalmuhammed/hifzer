@@ -1,3 +1,5 @@
+import { getLocalStateOwner } from "@/hifzer/local/store";
+
 export const JOURNAL_ENTRY_TYPES = [
   "reflection",
   "dua",
@@ -73,10 +75,16 @@ export type JournalEntry = {
   autoDeleteAt?: string | null;
 };
 
-const JOURNAL_STORAGE_KEY = "hifzer_private_journal_entries_v1";
+const JOURNAL_STORAGE_KEY_PREFIX = "hifzer_private_journal_entries_v2:";
+const LEGACY_JOURNAL_STORAGE_KEY = "hifzer_private_journal_entries_v1";
 
 function isBrowser(): boolean {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+}
+
+function journalStorageKey(): string | null {
+  const owner = getLocalStateOwner();
+  return owner ? `${JOURNAL_STORAGE_KEY_PREFIX}${owner}` : null;
 }
 
 function safeJsonParse<T>(raw: string | null): T | null {
@@ -424,14 +432,22 @@ function writeEntries(entries: JournalEntry[]) {
   if (!isBrowser()) {
     return;
   }
-  window.localStorage.setItem(JOURNAL_STORAGE_KEY, JSON.stringify(entries.sort(compareEntries)));
+  const key = journalStorageKey();
+  if (!key) {
+    return;
+  }
+  window.localStorage.setItem(key, JSON.stringify(entries.sort(compareEntries)));
 }
 
 export function clearJournalEntries() {
   if (!isBrowser()) {
     return;
   }
-  window.localStorage.removeItem(JOURNAL_STORAGE_KEY);
+  const key = journalStorageKey();
+  if (key) {
+    window.localStorage.removeItem(key);
+  }
+  window.localStorage.removeItem(LEGACY_JOURNAL_STORAGE_KEY);
 }
 
 function pruneExpired(entries: JournalEntry[], now: Date): JournalEntry[] {
@@ -451,7 +467,11 @@ export function listJournalEntries(now: Date = new Date()): JournalEntry[] {
   if (!isBrowser()) {
     return [];
   }
-  const raw = safeJsonParse<JournalEntry[]>(window.localStorage.getItem(JOURNAL_STORAGE_KEY)) ?? [];
+  const key = journalStorageKey();
+  if (!key) {
+    return [];
+  }
+  const raw = safeJsonParse<JournalEntry[]>(window.localStorage.getItem(key)) ?? [];
   const normalized = raw
     .map(normalizeEntry)
     .filter((entry) => typeof entry.id === "string" && entry.id.length > 0);

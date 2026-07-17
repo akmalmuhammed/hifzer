@@ -114,6 +114,41 @@ enum PrivateJournalDuaStatus {
   accepted_differently
 }
 
+enum PrayerName {
+  FAJR
+  DHUHR
+  ASR
+  MAGHRIB
+  ISHA
+}
+
+enum PrayerCheckInStatus {
+  ON_TIME
+  LATER
+  EXCUSED
+}
+
+enum FastingStatus {
+  FASTING
+  COMPLETED
+  NOT_FASTING
+  EXEMPT
+}
+
+enum FastingKind {
+  RAMADAN
+  MAKE_UP
+  VOLUNTARY
+  OTHER
+}
+
+enum ZakatPlanStatus {
+  DRAFT
+  READY
+  PARTIALLY_PAID
+  PAID
+}
+
 enum QuranBrowseSource {
   READER_VIEW
   AUDIO_PLAY
@@ -208,6 +243,10 @@ model UserProfile {
   quranReaderFilterPreference QuranReaderFilterPreference?
   customDuas           CustomDua[]
   duaDeckOrders        DuaDeckOrder[]
+  prayerCheckIns       PrayerCheckIn[]
+  fastingCheckIns      FastingCheckIn[]
+  zakatPlans           ZakatPlan[]
+  zakatPayments        ZakatPayment[]
   ownedTeacherCircles   TeacherCircle[]           @relation("OwnedTeacherCircles")
   teacherCircleLinks    TeacherCircleMember[]     @relation("TeacherCircleLinkedUser")
   teacherCircleUpdates  TeacherCircleWeeklyCheck[] @relation("TeacherCircleUpdatedBy")
@@ -242,6 +281,78 @@ model PrivateJournalEntry {
   @@unique([userId, clientEntryId])
   @@index([userId, updatedAt])
   @@index([userId, autoDeleteAt])
+}
+
+model PrayerCheckIn {
+  id        String               @id @default(cuid())
+  userId    String
+  localDate String
+  timezone  String
+  prayer    PrayerName
+  status    PrayerCheckInStatus
+  version   Int                  @default(1)
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, localDate, prayer])
+  @@index([userId, localDate])
+}
+
+model FastingCheckIn {
+  id        String        @id @default(cuid())
+  userId    String
+  localDate String
+  timezone  String
+  status    FastingStatus
+  kind      FastingKind?
+  version   Int           @default(1)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, localDate])
+  @@index([userId, localDate])
+}
+
+model ZakatPlan {
+  id                String          @id @default(cuid())
+  userId            String
+  periodYear        Int
+  dueDate           String?
+  status            ZakatPlanStatus @default(DRAFT)
+  secretCiphertext  String
+  encryptionVersion Int             @default(1)
+  version           Int             @default(1)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  user     UserProfile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payments ZakatPayment[]
+
+  @@unique([userId, periodYear])
+  @@index([userId, updatedAt])
+}
+
+model ZakatPayment {
+  id                String   @id @default(cuid())
+  userId            String
+  zakatPlanId       String
+  paidOn            String
+  clientMutationId  String
+  secretCiphertext  String
+  encryptionVersion Int      @default(1)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan ZakatPlan   @relation(fields: [zakatPlanId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, clientMutationId])
+  @@index([userId, paidOn])
+  @@index([zakatPlanId, paidOn])
 }
 
 model EmailDispatch {
