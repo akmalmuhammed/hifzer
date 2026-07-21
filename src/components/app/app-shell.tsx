@@ -48,7 +48,7 @@ const PRIMARY: NavItem[] = [
   { href: "/quran", key: "quran", icon: BookOpenText },
   { href: "/hifz", key: "hifz", icon: PlayCircle },
   { href: "/dua", key: "dua", icon: MoonStar },
-  { href: "/worship", key: "worship", icon: HeartHandshake, label: "Worship" },
+  { href: "/worship", key: "worship", icon: HeartHandshake, label: "Trackers" },
   { href: "/journal", key: "journal", icon: SquarePen, label: "Journal" },
 ];
 
@@ -67,6 +67,7 @@ const MOBILE_NAV: NavItem[] = [
   { href: "/quran", key: "quran", icon: BookOpenText },
   { href: "/hifz", key: "hifz", icon: PlayCircle },
   { href: "/dua", key: "dua", icon: MoonStar },
+  { href: "/worship", key: "worship", icon: HeartHandshake, label: "Trackers" },
   { href: "/settings", key: "settings", icon: Settings, label: "More" },
 ];
 
@@ -140,7 +141,7 @@ function getNavLabel(item: NavItem, copy: ReturnType<typeof getAppUiCopy>): stri
     case "assistant":
       return "Ask Qur'an";
     case "worship":
-      return "Worship";
+      return "Trackers";
     default:
       return copy.nav[item.key as AppNavCopyKey];
   }
@@ -351,7 +352,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
                 href={item.href}
                 telemetryName={`shell.mobile-nav.${item.key}`}
                 className={clsx(
-                  "flex flex-col items-center justify-center gap-1 rounded-[18px] px-2 py-2 text-[11px] font-semibold transition",
+                  "flex flex-col items-center justify-center gap-0.5 rounded-[18px] px-1 py-2 text-[10px] font-semibold transition",
                   active
                     ? "bg-[rgba(var(--kw-accent-rgb),0.12)] text-[color:var(--kw-ink)]"
                     : "text-[color:var(--kw-muted)] hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)]",
