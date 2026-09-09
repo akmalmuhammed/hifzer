@@ -5,6 +5,7 @@ import { listJournalEntriesFromQuranFoundationNotes } from "@/hifzer/quran-found
 import { isQuranFoundationError } from "@/hifzer/quran-foundation/types";
 
 export const runtime = "nodejs";
+const JOURNAL_IMPORT_BATCH_SIZE = 200;
 
 export async function POST() {
   const { userId } = await auth();
@@ -14,12 +15,26 @@ export async function POST() {
 
   try {
     const remoteEntries = await listJournalEntriesFromQuranFoundationNotes(userId);
-    const entries = await importPrivateJournalEntries(userId, remoteEntries);
+    let totalLocal = 0;
+    const batchStarts = remoteEntries.length > 0
+      ? Array.from(
+          { length: Math.ceil(remoteEntries.length / JOURNAL_IMPORT_BATCH_SIZE) },
+          (_, index) => index * JOURNAL_IMPORT_BATCH_SIZE,
+        )
+      : [0];
+    for (const batchStart of batchStarts) {
+      const imported = await importPrivateJournalEntries(
+        userId,
+        remoteEntries.slice(batchStart, batchStart + JOURNAL_IMPORT_BATCH_SIZE),
+        userId,
+      );
+      totalLocal = imported.entries.length;
+    }
     return NextResponse.json({
       ok: true,
       result: {
         totalRemote: remoteEntries.length,
-        totalLocal: entries.length,
+        totalLocal,
       },
     });
   } catch (error) {

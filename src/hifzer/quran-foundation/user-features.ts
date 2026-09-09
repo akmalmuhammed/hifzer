@@ -66,6 +66,7 @@ type LocalBookmarkCategoryWithBookmarks = Prisma.BookmarkCategoryGetPayload<{
 }>;
 
 const NOTE_CLIENT_ID_PREFIX = "qf-note:";
+const CLEARED_REMOTE_JOURNAL_NOTE_BODY = "Cleared in Hifzer.";
 const GOAL_PLAN_TYPES = [
   "QURAN_READING_PROGRAM",
   "QURAN_RANGE",
@@ -253,10 +254,18 @@ function buildRemoteNoteBody(entry: JournalEntry): string | null {
   if (!body && entry.tags.length > 0) {
     body = `Tags: ${entry.tags.join(", ")}`;
   }
-  if (body.length >= 6) {
-    return body.slice(0, 10_000);
+  if (body.length > 0) {
+    return (body.length >= 6 ? body : `Hifzer: ${body}`).slice(0, 10_000);
   }
   return null;
+}
+
+export function resolveJournalRemoteNoteBody(
+  entry: JournalEntry,
+  clientEntryId: string | null | undefined,
+): string | null {
+  return buildRemoteNoteBody(entry) ??
+    (parseRemoteNoteId(clientEntryId) ? CLEARED_REMOTE_JOURNAL_NOTE_BODY : null);
 }
 
 function isDuplicateCollectionBookmarkError(error: unknown): boolean {
@@ -859,7 +868,7 @@ export async function syncJournalEntryNoteToQuranFoundation(input: {
     return null;
   }
 
-  const body = buildRemoteNoteBody(input.entry);
+  const body = resolveJournalRemoteNoteBody(input.entry, input.clientEntryId);
   if (!body) {
     return null;
   }
@@ -970,6 +979,7 @@ export async function listJournalEntriesFromQuranFoundationNotes(clerkUserId: st
 
     return {
       id: `${NOTE_CLIENT_ID_PREFIX}${note.id}`,
+      clientEntryId: `${NOTE_CLIENT_ID_PREFIX}${note.id}`,
       type: "reflection",
       title: "",
       content: note.body,

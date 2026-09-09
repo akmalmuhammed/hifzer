@@ -9,6 +9,7 @@ import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 
 type ImportPayload = {
   entries?: unknown;
+  ownerId?: unknown;
 };
 
 function handleError(error: unknown) {
@@ -39,8 +40,12 @@ export async function POST(req: Request) {
   }
 
   try {
-    const entries = await importPrivateJournalEntries(userId, payload.entries as JournalEntry[]);
-    return NextResponse.json({ ok: true, entries });
+    const result = await importPrivateJournalEntries(
+      userId,
+      payload.entries as JournalEntry[],
+      typeof payload.ownerId === "string" ? payload.ownerId : null,
+    );
+    return NextResponse.json({ ok: true, ...result });
   } catch (error) {
     return handleError(error);
   }

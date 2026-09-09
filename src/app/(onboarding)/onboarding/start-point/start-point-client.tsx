@@ -150,7 +150,7 @@ export function OnboardingStartPointClient(props: {
             <Pill tone="accent">Selected start</Pill>
             <p className="mt-3 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
               <span className="mr-2 text-[color:var(--kw-faint)]">Surah {selected.surahNumber}</span>
-              <span dir="rtl">{selected.nameArabic}</span>
+              <span dir="rtl" lang="ar">{selected.nameArabic}</span>
             </p>
             <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
               {selected.nameTransliteration} - {selected.nameEnglish} - {selected.revelationType}
@@ -223,7 +223,7 @@ export function OnboardingStartPointClient(props: {
                       Surah {s.surahNumber} - {s.ayahCount} ayahs
                     </p>
                     <p className="mt-2 text-lg font-semibold text-[color:var(--kw-ink)]">
-                      <span dir="rtl">{s.nameArabic}</span>
+                      <span dir="rtl" lang="ar">{s.nameArabic}</span>
                     </p>
                     <p className="mt-1 truncate text-sm text-[color:var(--kw-muted)]">
                       {s.nameTransliteration} - {s.nameEnglish}

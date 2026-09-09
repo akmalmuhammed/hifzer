@@ -1,8 +1,8 @@
 # Mobile UI Audit Report
 
-Generated: 2026-05-18T15:01:37.755Z
+Generated: 2026-09-05T15:53:23.356Z
 
-Base URL: `https://www.hifzer.com`
+Base URL: `http://localhost:3000`
 
 ## Route Matrix
 
@@ -10,43 +10,43 @@ Base URL: `https://www.hifzer.com`
 | --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- |
 | `/` | public | 0px | 0px | hidden | hidden | manifest | manifest | `/` | `/` |
 | `/welcome` | public | 0px | 0px | hidden | hidden | manifest | manifest | `/` | `/` |
-| `/compare` | public | 0px | 0px | hidden | hidden | manifest | manifest+sw | `/compare` | `/compare` |
-| `/changelog` | public | 0px | 0px | hidden | hidden | manifest | manifest+sw | `/changelog` | `/changelog` |
-| `/quran-preview` | public | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/quran-preview` | `/quran-preview` |
-| `/legal` | public | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/legal` | `/legal` |
-| `/legal/privacy` | public | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/legal/privacy` | `/legal/privacy` |
-| `/legal/terms` | public | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/legal/terms` | `/legal/terms` |
-| `/login` | auth | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login` | `/login` |
-| `/signup` | auth | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/signup` | `/signup` |
-| `/forgot-password` | auth | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login` | `/login` |
-| `/hifz` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fhifz` | `/login?redirect_url=%2Fhifz` |
-| `/session` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fsession` | `/login?redirect_url=%2Fsession` |
-| `/quran` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fquran` | `/login?redirect_url=%2Fquran` |
-| `/quran/bookmarks` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fquran%2Fbookmarks` | `/login?redirect_url=%2Fquran%2Fbookmarks` |
-| `/quran/glossary` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fquran%2Fglossary` | `/login?redirect_url=%2Fquran%2Fglossary` |
-| `/quran/juz/1` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fquran%2Fjuz%2F1` | `/login?redirect_url=%2Fquran%2Fjuz%2F1` |
-| `/quran/read` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fquran%2Fread` | `/login?redirect_url=%2Fquran%2Fread` |
-| `/quran/surah/1` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fquran%2Fsurah%2F1` | `/login?redirect_url=%2Fquran%2Fsurah%2F1` |
-| `/dashboard` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fdashboard` | `/login?redirect_url=%2Fdashboard` |
-| `/practice` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fpractice` | `/login?redirect_url=%2Fpractice` |
-| `/milestones` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fmilestones` | `/login?redirect_url=%2Fmilestones` |
-| `/notifications` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fnotifications` | `/login?redirect_url=%2Fnotifications` |
-| `/settings` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fsettings` | `/login?redirect_url=%2Fsettings` |
-| `/settings/account` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fsettings%2Faccount` | `/login?redirect_url=%2Fsettings%2Faccount` |
-| `/settings/display` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fsettings%2Fdisplay` | `/login?redirect_url=%2Fsettings%2Fdisplay` |
-| `/settings/language` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fsettings%2Flanguage` | `/login?redirect_url=%2Fsettings%2Flanguage` |
-| `/settings/plan` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fsettings%2Fplan` | `/login?redirect_url=%2Fsettings%2Fplan` |
-| `/settings/quran-foundation` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fsettings%2Fquran-foundation` | `/login?redirect_url=%2Fsettings%2Fquran-foundation` |
-| `/settings/reciter` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fsettings%2Freciter` | `/login?redirect_url=%2Fsettings%2Freciter` |
-| `/settings/reminders` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fsettings%2Freminders` | `/login?redirect_url=%2Fsettings%2Freminders` |
-| `/support` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fsupport` | `/login?redirect_url=%2Fsupport` |
-| `/roadmap` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Froadmap` | `/login?redirect_url=%2Froadmap` |
-| `/fluency` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Ffluency` | `/login?redirect_url=%2Ffluency` |
-| `/fluency/lesson/1` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Ffluency%2Flesson%2F1` | `/login?redirect_url=%2Ffluency%2Flesson%2F1` |
-| `/fluency/retest` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Ffluency%2Fretest` | `/login?redirect_url=%2Ffluency%2Fretest` |
-| `/billing/manage` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fbilling%2Fmanage` | `/login?redirect_url=%2Fbilling%2Fmanage` |
-| `/billing/success` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fbilling%2Fsuccess` | `/login?redirect_url=%2Fbilling%2Fsuccess` |
-| `/billing/upgrade` | app | 0px | 0px | hidden | hidden | manifest+sw | manifest+sw | `/login?redirect_url=%2Fbilling%2Fupgrade` | `/login?redirect_url=%2Fbilling%2Fupgrade` |
+| `/compare` | public | 0px | 0px | hidden | hidden | manifest | manifest | `/compare` | `/compare` |
+| `/changelog` | public | 0px | 0px | hidden | hidden | manifest | manifest | `/changelog` | `/changelog` |
+| `/quran-preview` | public | 0px | 0px | hidden | hidden | manifest | manifest | `/quran-preview` | `/quran-preview` |
+| `/legal` | public | 0px | 0px | hidden | hidden | manifest | manifest | `/legal` | `/legal` |
+| `/legal/privacy` | public | 0px | 0px | hidden | hidden | manifest | manifest | `/legal/privacy` | `/legal/privacy` |
+| `/legal/terms` | public | 0px | 0px | hidden | hidden | manifest | manifest | `/legal/terms` | `/legal/terms` |
+| `/login` | auth | 0px | 0px | hidden | hidden | manifest | manifest | `/login` | `/login` |
+| `/signup` | auth | 0px | 0px | hidden | hidden | manifest | manifest | `/signup` | `/signup` |
+| `/forgot-password` | auth | 0px | 0px | hidden | hidden | manifest | manifest | `/forgot-password` | `/forgot-password` |
+| `/hifz` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/hifz` | `/hifz` |
+| `/session` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/hifz` | `/hifz` |
+| `/quran` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/quran` | `/quran` |
+| `/quran/bookmarks` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/quran/bookmarks` | `/quran/bookmarks` |
+| `/quran/glossary` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/quran/glossary` | `/quran/glossary` |
+| `/quran/juz/1` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/quran/juz/1` | `/quran/juz/1` |
+| `/quran/read` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/quran/read` | `/quran/read` |
+| `/quran/surah/1` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/quran/surah/1` | `/quran/surah/1` |
+| `/dashboard` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/dashboard` | `/dashboard` |
+| `/practice` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/login` | `/login` |
+| `/milestones` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/login` | `/login` |
+| `/notifications` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/login` | `/login` |
+| `/settings` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/settings` | `/settings` |
+| `/settings/account` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/settings/account` | `/settings/account` |
+| `/settings/display` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/settings/display` | `/settings/display` |
+| `/settings/language` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/settings/language` | `/settings/language` |
+| `/settings/plan` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/settings/plan` | `/settings/plan` |
+| `/settings/quran-foundation` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/settings/quran-foundation` | `/settings/quran-foundation` |
+| `/settings/reciter` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/settings/reciter` | `/settings/reciter` |
+| `/settings/reminders` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/login` | `/login` |
+| `/support` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/support` | `/support` |
+| `/roadmap` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/roadmap` | `/roadmap` |
+| `/fluency` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/login` | `/login` |
+| `/fluency/lesson/1` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/login` | `/login` |
+| `/fluency/retest` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/login` | `/login` |
+| `/billing/manage` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/billing/manage` | `/billing/manage` |
+| `/billing/success` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/billing/thank-you` | `/billing/thank-you` |
+| `/billing/upgrade` | app | 0px | 0px | hidden | hidden | manifest | manifest | `/billing/upgrade` | `/billing/upgrade` |
 
 ## Offenders
 

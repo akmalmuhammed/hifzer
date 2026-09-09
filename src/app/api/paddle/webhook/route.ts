@@ -5,6 +5,8 @@ import { NextResponse } from "next/server";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { db, dbConfigured } from "@/lib/db";
 import { paddleClient, paddleConfigured, paddleWebhookSecret } from "@/lib/paddle.server";
+import { classifyPremiumTransaction, entitlementStatusForAdjustment } from "@/hifzer/billing/entitlement";
+import { invalidateDashboardCaches } from "@/hifzer/dashboard/cache";
 
 export const runtime = "nodejs";
 
@@ -97,20 +99,78 @@ async function handleSubscriptionEvent(event: EventEntity) {
     updateData.paddleSubscriptionId = data.id;
   }
 
+  const clerkUserId = readClerkUserId(data.customData);
   await applyProfileUpdate({
-    clerkUserId: readClerkUserId(data.customData),
+    clerkUserId,
     customerId: data.customerId ?? null,
     data: updateData,
   });
+
+  const prisma = db();
+  const profile = clerkUserId
+    ? await prisma.userProfile.findUnique({ where: { clerkUserId } })
+    : data.customerId
+      ? await prisma.userProfile.findUnique({ where: { paddleCustomerId: data.customerId } })
+      : null;
+  if (profile) {
+    const hasLifetime = await prisma.billingEntitlement.count({
+      where: { userId: profile.id, status: "ACTIVE" },
+    });
+    if (hasLifetime > 0 && updateData.plan === "FREE") {
+      await prisma.userProfile.update({ where: { id: profile.id }, data: { plan: "PAID" } });
+    }
+    invalidateDashboardCaches(profile.clerkUserId);
+  }
 }
 
 async function handleTransactionCompleted(event: EventEntity) {
   const data = event.data as {
+    id?: string;
     customerId?: string | null;
     subscriptionId?: string | null;
     customData?: Record<string, unknown> | null;
     billingPeriod?: { endsAt?: string } | null;
   };
+
+  const entitlement = classifyPremiumTransaction(data);
+  if (entitlement) {
+    const prisma = db();
+    const profile = entitlement.clerkUserId
+      ? await getOrCreateUserProfile(entitlement.clerkUserId)
+      : data.customerId
+        ? await prisma.userProfile.findUnique({ where: { paddleCustomerId: data.customerId } })
+        : null;
+
+    if (profile) {
+      await prisma.$transaction(async (tx) => {
+        const durableEntitlement = await tx.billingEntitlement.upsert({
+          where: { providerTransactionId: entitlement.transactionId },
+          create: {
+            userId: profile.id,
+            providerTransactionId: entitlement.transactionId,
+            kind: "PREMIUM_LIFETIME",
+            status: "ACTIVE",
+          },
+          update: {},
+        });
+        await tx.userProfile.update({
+          where: { id: profile.id },
+          data: {
+            ...(durableEntitlement.status === "ACTIVE" ? { plan: "PAID" as const } : {}),
+            ...(data.customerId ? { paddleCustomerId: data.customerId } : {}),
+          },
+        });
+      });
+      invalidateDashboardCaches(profile.clerkUserId);
+      return;
+    }
+    Sentry.captureMessage("Paddle premium transaction could not be matched to a Hifzer profile.", {
+      level: "warning",
+      tags: { route: "/api/paddle/webhook", code: "premium_profile_unmatched" },
+      extra: { transactionId: entitlement.transactionId },
+    });
+    return;
+  }
 
   const updateData: Prisma.UserProfileUpdateManyMutationInput = {};
   if (data.customerId) {
@@ -133,6 +193,45 @@ async function handleTransactionCompleted(event: EventEntity) {
     customerId: data.customerId ?? null,
     data: updateData,
   });
+}
+
+async function handleAdjustmentUpdated(event: EventEntity) {
+  const data = event.data as {
+    action?: string;
+    status?: string;
+    type?: string;
+    transactionId?: string;
+  };
+  if (!data.transactionId) return;
+
+  const nextStatus = entitlementStatusForAdjustment(data);
+  if (!nextStatus) return;
+
+  const prisma = db();
+  const entitlement = await prisma.billingEntitlement.findUnique({
+    where: { providerTransactionId: data.transactionId },
+    include: { user: true },
+  });
+  if (!entitlement) return;
+
+  await prisma.billingEntitlement.update({
+    where: { id: entitlement.id },
+    data: {
+      status: nextStatus,
+      revokedAt: nextStatus === "REVOKED" ? new Date() : null,
+    },
+  });
+
+  const hasActiveLifetime = await prisma.billingEntitlement.count({
+    where: { userId: entitlement.userId, status: "ACTIVE" },
+  });
+  const hasActiveSubscription = entitlement.user.subscriptionStatus != null &&
+    entitlement.user.subscriptionStatus !== "CANCELED";
+  await prisma.userProfile.update({
+    where: { id: entitlement.userId },
+    data: { plan: hasActiveLifetime > 0 || hasActiveSubscription ? "PAID" : "FREE" },
+  });
+  invalidateDashboardCaches(entitlement.user.clerkUserId);
 }
 
 export async function POST(req: Request) {
@@ -174,6 +273,11 @@ export async function POST(req: Request) {
 
   if (event.eventType === EventName.TransactionCompleted) {
     await handleTransactionCompleted(event);
+    return NextResponse.json({ ok: true });
+  }
+
+  if (event.eventType === EventName.AdjustmentUpdated) {
+    await handleAdjustmentUpdated(event);
     return NextResponse.json({ ok: true });
   }
 

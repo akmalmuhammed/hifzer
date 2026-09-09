@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import clsx from "clsx";
-import { Forward, Pause, Play, Repeat2, Volume2, Zap } from "lucide-react";
+import Link from "next/link";
+import { Forward, Pause, Play, RefreshCw, Repeat2, Volume2, Zap } from "lucide-react";
 import { audioUrl } from "@/hifzer/audio/config";
 import {
   type AudioPlaybackMode,
@@ -16,7 +17,8 @@ const SPEEDS = [0.75, 1, 1.25] as const;
 type RemoteAudioPayload = {
   audio?: {
     status: "available" | "not_configured" | "degraded" | "not_found";
-    detail: string;
+    userMessage: string;
+    diagnosticCode: string;
     verseKey: string;
     recitationId: number | null;
     recitationLabel: string | null;
@@ -192,7 +194,7 @@ function AyahAudioPlayerInner(props: {
       const payload = (await response.json().catch(() => null)) as RemoteAudioPayload | null;
       const remoteAudio = payload?.audio;
       if (!response.ok || !remoteAudio?.url) {
-        setSourceDetail(remoteAudio?.detail ?? "Audio is unavailable for this ayah.");
+        setSourceDetail(remoteAudio?.userMessage ?? "Audio is temporarily unavailable. You can keep reading or try again.");
         pendingResumeRef.current = false;
         if (props.localSrc && sourceKindRef.current !== "local") {
           return switchToLocalSource("Quran.com audio was unavailable, so Hifzer switched back to local audio.");
@@ -203,7 +205,7 @@ function AyahAudioPlayerInner(props: {
       }
       setActiveSrc(remoteAudio.url);
       setSourceKind("quran_foundation");
-      setSourceDetail(remoteAudio.detail);
+      setSourceDetail(remoteAudio.userMessage);
       setLoadError(false);
       return remoteAudio.url;
     } catch {
@@ -467,6 +469,21 @@ function AyahAudioPlayerInner(props: {
     audio.pause();
   }
 
+  async function retryAudio() {
+    remoteAttemptedRef.current = false;
+    pendingResumeRef.current = false;
+    setLoadError(false);
+    setSourceDetail("Trying audio again...");
+    const source = await ensureSourceReady();
+    if (!source) {
+      return;
+    }
+    const audio = audioRef.current;
+    if (audio) {
+      syncAudioSource(audio, source);
+    }
+  }
+
   function seekToTime(nextTime: number) {
     const audio = audioRef.current;
     if (!audio || !Number.isFinite(duration) || duration <= 0) {
@@ -512,14 +529,14 @@ function AyahAudioPlayerInner(props: {
     >
       <audio ref={audioRef} src={activeSrc ?? undefined} preload="none" />
 
-      <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:justify-between">
-        <div className="flex min-w-0 flex-1 items-center gap-2">
+      <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+        <div className="flex min-w-0 items-start gap-2">
           <button
             type="button"
             onClick={() => void onTogglePlayback()}
             disabled={disabled}
             className={clsx(
-              "grid h-8 w-8 place-items-center rounded-2xl border shadow-[var(--kw-shadow-soft)] transition sm:h-9 sm:w-9",
+              "grid h-11 w-11 shrink-0 place-items-center rounded-2xl border shadow-[var(--kw-shadow-soft)] transition",
               disabled
                 ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]"
                 : "border-[rgba(43,75,255,0.22)] bg-[rgba(43,75,255,0.10)] text-[rgba(31,54,217,1)] hover:bg-[rgba(43,75,255,0.14)]",
@@ -540,24 +557,24 @@ function AyahAudioPlayerInner(props: {
             {playing ? <Pause size={16} /> : <Play size={16} />}
           </button>
 
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="flex items-baseline gap-2">
               <p className="truncate text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
                 Audio
               </p>
               {loadError ? (
-                <span className="truncate text-xs text-[color:var(--kw-muted)]">Unavailable</span>
+                <span className="text-xs text-[color:var(--kw-muted)]">Unavailable</span>
               ) : resolvingFallback ? (
-                <span className="truncate text-xs text-[color:var(--kw-muted)]">Loading</span>
+                <span className="text-xs text-[color:var(--kw-muted)]">Loading</span>
               ) : activeSrc ? (
                 <span className="text-xs text-[color:var(--kw-muted)]">
                   {formatSeconds(currentTime)} / {formatSeconds(duration)}
                 </span>
               ) : (
-                <span className="truncate text-xs text-[color:var(--kw-muted)]">Ready on demand</span>
+                <span className="text-xs text-[color:var(--kw-muted)]">Ready on demand</span>
               )}
             </div>
-            <div className="relative mt-1 w-28 sm:w-44">
+            <div className="relative mt-1 w-full min-w-24 max-w-72">
               <div className="h-1.5 overflow-hidden rounded-full bg-black/[0.06]">
                 <div
                   className="h-full rounded-full bg-[rgba(31,54,217,0.75)] transition-[width]"
@@ -588,9 +605,9 @@ function AyahAudioPlayerInner(props: {
               />
             </div>
             {sourceDetail ? (
-              <div className="mt-1.5 flex items-center gap-1 text-[11px] leading-5 text-[color:var(--kw-muted)]">
+              <div className="mt-1.5 flex items-start gap-1 text-[11px] leading-5 text-[color:var(--kw-muted)]" role="status" aria-live="polite">
                 <Volume2 size={12} className="shrink-0" />
-                <span className="truncate">
+                <span className="line-clamp-2 min-w-0">
                   {sourceKind === "quran_foundation" ? "Quran.com" : "Hifzer local"} · {sourceDetail}
                 </span>
               </div>
@@ -598,13 +615,13 @@ function AyahAudioPlayerInner(props: {
           </div>
         </div>
 
-        <div className="flex w-full flex-wrap items-center justify-end gap-1.5 sm:w-auto sm:gap-2">
+        <div className="grid w-full grid-cols-2 gap-2 min-[360px]:flex min-[360px]:flex-wrap min-[360px]:items-center min-[360px]:justify-end sm:w-auto">
           <button
             type="button"
             disabled={disabled}
             onClick={() => setRepeatCount((value) => (value >= 10 ? 1 : value + 1))}
             className={clsx(
-              "inline-flex items-center gap-1.5 rounded-2xl border px-2 py-1.5 text-[11px] font-semibold shadow-[var(--kw-shadow-soft)] transition sm:gap-2 sm:px-2.5 sm:py-2 sm:text-xs",
+              "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-2xl border px-2 py-2 text-[11px] font-semibold shadow-[var(--kw-shadow-soft)] transition sm:gap-2 sm:px-2.5 sm:text-xs",
               disabled
                 ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]"
                 : "border-[color:var(--kw-border-2)] bg-white/80 text-[color:var(--kw-ink)] hover:bg-white",
@@ -621,7 +638,7 @@ function AyahAudioPlayerInner(props: {
             disabled={disabled}
             onClick={() => setSpeedIndex((value) => (value + 1) % SPEEDS.length)}
             className={clsx(
-              "inline-flex items-center gap-1.5 rounded-2xl border px-2 py-1.5 text-[11px] font-semibold shadow-[var(--kw-shadow-soft)] transition sm:gap-2 sm:px-2.5 sm:py-2 sm:text-xs",
+              "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-2xl border px-2 py-2 text-[11px] font-semibold shadow-[var(--kw-shadow-soft)] transition sm:gap-2 sm:px-2.5 sm:text-xs",
               disabled
                 ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]"
                 : "border-[color:var(--kw-border-2)] bg-white/80 text-[color:var(--kw-ink)] hover:bg-white",
@@ -639,7 +656,7 @@ function AyahAudioPlayerInner(props: {
               disabled={disabled}
               onClick={toggleAutoPlay}
               className={clsx(
-                "inline-flex items-center gap-1.5 rounded-2xl border px-2 py-1.5 text-[11px] font-semibold shadow-[var(--kw-shadow-soft)] transition sm:gap-2 sm:px-2.5 sm:py-2 sm:text-xs",
+                "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-2xl border px-2 py-2 text-[11px] font-semibold shadow-[var(--kw-shadow-soft)] transition sm:gap-2 sm:px-2.5 sm:text-xs",
                 disabled
                   ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]"
                   : autoPlayEnabled
@@ -654,9 +671,29 @@ function AyahAudioPlayerInner(props: {
             </button>
           ) : null}
 
-          {props.trailingControl ? <div className="shrink-0">{props.trailingControl}</div> : null}
+          {props.trailingControl ? <div className="flex shrink-0 items-center justify-end gap-2">{props.trailingControl}</div> : null}
         </div>
       </div>
+
+      {loadError ? (
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[color:var(--kw-border-2)] pt-3">
+          <button
+            type="button"
+            onClick={() => void retryAudio()}
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-3 py-2 text-xs font-semibold text-[color:var(--kw-ink)]"
+          >
+            <RefreshCw size={14} aria-hidden="true" />
+            Try audio again
+          </button>
+          <Link
+            href="/settings/reciter"
+            className="inline-flex min-h-11 items-center rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-3 py-2 text-xs font-semibold text-[color:var(--kw-ink)]"
+          >
+            Choose another reciter
+          </Link>
+          <span className="text-xs text-[color:var(--kw-muted)]">Text reading remains available.</span>
+        </div>
+      ) : null}
     </div>
   );
 }

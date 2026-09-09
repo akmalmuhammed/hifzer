@@ -10,6 +10,10 @@ import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 
 type SavePayload = {
   id?: unknown;
+  ownerId?: unknown;
+  expectedVersion?: unknown;
+  clientMutationId?: unknown;
+  mutationType?: unknown;
   type?: unknown;
   title?: unknown;
   content?: unknown;
@@ -27,6 +31,13 @@ function asOptionalString(input: unknown): string | null {
   return typeof input === "string" ? input : null;
 }
 
+function asOptionalStringPreservingOmission(input: unknown): string | null | undefined {
+  if (input === undefined || typeof input === "string") {
+    return input;
+  }
+  return input === null ? null : undefined;
+}
+
 function asOptionalBoolean(input: unknown): boolean | undefined {
   if (typeof input === "boolean") {
     return input;
@@ -42,6 +53,14 @@ function asOptionalBoolean(input: unknown): boolean | undefined {
   return undefined;
 }
 
+function asOptionalInteger(input: unknown): number | undefined {
+  if (input == null || input === "") {
+    return undefined;
+  }
+  const value = Number(input);
+  return Number.isSafeInteger(value) ? value : Number.NaN;
+}
+
 function asStringArray(input: unknown): string[] | null {
   if (!Array.isArray(input)) {
     return null;
@@ -49,21 +68,30 @@ function asStringArray(input: unknown): string[] | null {
   return input.filter((item): item is string => typeof item === "string");
 }
 
-function asBlocks(input: unknown): JournalBlock[] | null {
+function asBlocksPreservingOmission(input: unknown): JournalBlock[] | null | undefined {
+  if (input === undefined) {
+    return undefined;
+  }
   if (!Array.isArray(input)) {
     return null;
   }
   return input as JournalBlock[];
 }
 
-function asLinkedAyah(input: unknown): JournalLinkedAyah | null {
+function asLinkedAyahPreservingOmission(input: unknown): JournalLinkedAyah | null | undefined {
+  if (input === undefined) {
+    return undefined;
+  }
   if (!input || typeof input !== "object") {
     return null;
   }
   return input as JournalLinkedAyah;
 }
 
-function asLinkedDua(input: unknown): JournalLinkedDua | null {
+function asLinkedDuaPreservingOmission(input: unknown): JournalLinkedDua | null | undefined {
+  if (input === undefined) {
+    return undefined;
+  }
   if (!input || typeof input !== "object") {
     return null;
   }
@@ -72,10 +100,28 @@ function asLinkedDua(input: unknown): JournalLinkedDua | null {
 
 function handleError(error: unknown) {
   if (isJournalStorageError(error)) {
-    return NextResponse.json({ error: error.message, code: error.code }, { status: error.status });
+    return NextResponse.json(
+      {
+        error: error.message,
+        code: error.code,
+        ...(error.authoritativeEntry !== undefined
+          ? { authoritativeEntry: error.authoritativeEntry }
+          : {}),
+      },
+      { status: error.status },
+    );
   }
   if (error instanceof JournalStorageError) {
-    return NextResponse.json({ error: error.message, code: error.code }, { status: error.status });
+    return NextResponse.json(
+      {
+        error: error.message,
+        code: error.code,
+        ...(error.authoritativeEntry !== undefined
+          ? { authoritativeEntry: error.authoritativeEntry }
+          : {}),
+      },
+      { status: error.status },
+    );
   }
   return NextResponse.json({ error: "Internal server error." }, { status: 500 });
 }
@@ -111,17 +157,21 @@ export async function POST(req: Request) {
   try {
     const entry = await savePrivateJournalEntry(userId, {
       id: asOptionalString(payload.id),
+      ownerId: asOptionalString(payload.ownerId),
+      expectedVersion: asOptionalInteger(payload.expectedVersion),
+      clientMutationId: asOptionalString(payload.clientMutationId),
+      mutationType: asOptionalString(payload.mutationType),
       type: asOptionalString(payload.type),
-      title: asOptionalString(payload.title),
-      content: asOptionalString(payload.content),
-      blocks: asBlocks(payload.blocks),
+      title: asOptionalStringPreservingOmission(payload.title),
+      content: asOptionalStringPreservingOmission(payload.content),
+      blocks: asBlocksPreservingOmission(payload.blocks),
       tags: asStringArray(payload.tags),
       pinned: asOptionalBoolean(payload.pinned),
       createdAt: asOptionalString(payload.createdAt),
-      linkedAyah: asLinkedAyah(payload.linkedAyah),
-      linkedDua: asLinkedDua(payload.linkedDua),
-      duaStatus: asOptionalString(payload.duaStatus),
-      autoDeleteAt: asOptionalString(payload.autoDeleteAt),
+      linkedAyah: asLinkedAyahPreservingOmission(payload.linkedAyah),
+      linkedDua: asLinkedDuaPreservingOmission(payload.linkedDua),
+      duaStatus: asOptionalStringPreservingOmission(payload.duaStatus),
+      autoDeleteAt: asOptionalStringPreservingOmission(payload.autoDeleteAt),
     });
     return NextResponse.json({ ok: true, entry });
   } catch (error) {

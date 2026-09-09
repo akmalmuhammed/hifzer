@@ -4,8 +4,6 @@ import { NextResponse } from "next/server";
 type Payload = {
   errorId?: unknown;
   digest?: unknown;
-  message?: unknown;
-  stack?: unknown;
   source?: unknown;
   path?: unknown;
 };
@@ -20,15 +18,12 @@ export async function POST(req: Request) {
 
   const errorId = typeof payload.errorId === "string" ? payload.errorId : null;
   const digest = typeof payload.digest === "string" ? payload.digest : null;
-  const message = typeof payload.message === "string" ? payload.message : "Unknown client error";
-  const stack = typeof payload.stack === "string" ? payload.stack : null;
-  const source = typeof payload.source === "string" ? payload.source : "client-error";
-  const path = typeof payload.path === "string" ? payload.path : null;
+  const source = typeof payload.source === "string" && /^[a-z-]{1,40}$/.test(payload.source)
+    ? payload.source
+    : "client-error";
+  const path = typeof payload.path === "string" ? payload.path.split(/[?#]/, 1)[0].slice(0, 120) : null;
 
-  const error = new Error(message);
-  if (stack) {
-    error.stack = stack;
-  }
+  const error = new Error("Client boundary reported an application error.");
 
   Sentry.captureException(error, {
     tags: {

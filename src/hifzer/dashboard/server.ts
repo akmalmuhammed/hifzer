@@ -2,6 +2,7 @@ import "server-only";
 
 import type { AttemptStage, SrsGrade, SrsMode } from "@prisma/client";
 import { unstable_cache } from "next/cache";
+import { dashboardCacheTag } from "./cache";
 import { addIsoDaysUtc } from "@/hifzer/derived/dates";
 import { computeDebtRatioPct, computeReviewDebtMinutes } from "@/hifzer/engine/debt";
 import { isoDateInTimeZone } from "@/hifzer/engine/date";
@@ -1088,7 +1089,7 @@ export function getCachedDashboardOverview(clerkUserId: string) {
     [`dashboard-overview:${clerkUserId}`],
     {
       revalidate: DASHBOARD_OVERVIEW_CACHE_TTL_SECONDS,
-      tags: [`dashboard-overview:${clerkUserId}`],
+      tags: [dashboardCacheTag("overview", clerkUserId)],
     },
   )();
 }
@@ -1099,7 +1100,7 @@ export function getCachedDashboardSummary(clerkUserId: string) {
     [`dashboard-summary:${clerkUserId}`],
     {
       revalidate: DASHBOARD_OVERVIEW_CACHE_TTL_SECONDS,
-      tags: [`dashboard-summary:${clerkUserId}`],
+      tags: [dashboardCacheTag("summary", clerkUserId)],
     },
   )();
 }
@@ -1110,7 +1111,7 @@ export function getCachedDashboardDetails(clerkUserId: string) {
     [`dashboard-details:${clerkUserId}`],
     {
       revalidate: DASHBOARD_OVERVIEW_CACHE_TTL_SECONDS,
-      tags: [`dashboard-details:${clerkUserId}`],
+      tags: [dashboardCacheTag("details", clerkUserId)],
     },
   )();
 }
@@ -1121,7 +1122,7 @@ export function getCachedDashboardStreakDetails(clerkUserId: string) {
     [`dashboard-streak:${clerkUserId}`],
     {
       revalidate: DASHBOARD_OVERVIEW_CACHE_TTL_SECONDS,
-      tags: [`dashboard-streak:${clerkUserId}`],
+      tags: [dashboardCacheTag("streak", clerkUserId)],
     },
   )();
 }
@@ -1132,7 +1133,7 @@ export function getCachedDashboardQuranDetails(clerkUserId: string) {
     [`dashboard-quran:${clerkUserId}`],
     {
       revalidate: DASHBOARD_OVERVIEW_CACHE_TTL_SECONDS,
-      tags: [`dashboard-quran:${clerkUserId}`],
+      tags: [dashboardCacheTag("quran", clerkUserId)],
     },
   )();
 }
@@ -1143,7 +1144,7 @@ export function getCachedDashboardActivity(clerkUserId: string) {
     [`dashboard-activity:${clerkUserId}`],
     {
       revalidate: DASHBOARD_OVERVIEW_CACHE_TTL_SECONDS,
-      tags: [`dashboard-activity:${clerkUserId}`],
+      tags: [dashboardCacheTag("activity", clerkUserId)],
     },
   )();
 }

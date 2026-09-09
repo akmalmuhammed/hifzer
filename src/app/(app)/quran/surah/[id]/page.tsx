@@ -63,7 +63,7 @@ export default async function SurahPage(props: { params: Promise<{ id: string }>
       <div className="mt-6">
         <Pill tone="neutral">Surah {info.surahNumber}</Pill>
         <h1 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
-          <span dir="rtl">{info.nameArabic}</span>
+          <span dir="rtl" lang="ar">{info.nameArabic}</span>
           <span className="mt-2 block text-lg font-semibold tracking-tight text-[color:var(--kw-ink-2)]">
             {info.nameTransliteration} - {info.nameEnglish}
           </span>
@@ -100,7 +100,7 @@ export default async function SurahPage(props: { params: Promise<{ id: string }>
               </div>
             </div>
 
-            <div dir="rtl" className="mt-4 text-right text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
+            <div dir="rtl" lang="ar" className="mt-4 text-right text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
               {a.textUthmani}
             </div>
             <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">

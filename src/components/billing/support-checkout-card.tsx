@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
 import { usePaddle } from "@/components/billing/paddle-provider";
+import { trackProductEvent } from "@/lib/telemetry/client";
 
 const PRESET_OPTIONS = [
   {
@@ -200,6 +201,7 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
               }
 
               setLoading(true);
+              trackProductEvent("checkout.started", { mode: "premium_lifetime", outcome: "opened" });
               try {
                 const res = await fetch("/api/paddle/checkout", {
                   method: "POST",
@@ -208,6 +210,7 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
                 });
                 const payload = (await res.json()) as CheckoutPayload & { error?: string };
                 if (!res.ok) {
+                  trackProductEvent("checkout.outcome", { mode: "premium_lifetime", outcome: "failed" });
                   throw new Error(payload.error || "Failed to create checkout.");
                 }
 

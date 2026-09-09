@@ -2,6 +2,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { appPublicUrl, paddleClient, paddleConfigured, paddleSupportCurrency } from "@/lib/paddle.server";
+import * as Sentry from "@sentry/nextjs";
 
 export const runtime = "nodejs";
 
@@ -65,6 +66,7 @@ export async function POST(req: Request) {
       },
       customData: {
         clerk_user_id: userId,
+        purchase_kind: "premium_lifetime",
         support_amount: normalizedAmount.display,
       },
       items: [
@@ -92,8 +94,8 @@ export async function POST(req: Request) {
       customerEmail: email,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to create Paddle transaction.";
-    return NextResponse.json({ error: message }, { status: 502 });
+    Sentry.captureException(error, { tags: { route: "/api/paddle/checkout", method: "POST" } });
+    return NextResponse.json({ error: "Checkout is temporarily unavailable. Please try again." }, { status: 502 });
   }
 }
 

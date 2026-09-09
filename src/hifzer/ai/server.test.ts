@@ -108,7 +108,23 @@ describe("ai/server", () => {
     expect(result).toEqual({
       ok: false,
       status: "timeout",
-      detail: "AI explanation is taking longer than expected. Please try again.",
+      detail: "AI explanation is taking longer than expected. You can try again or keep reading.",
+    });
+  });
+
+  it("does not pass upstream diagnostic details to the client", async () => {
+    process.env.HIFZER_AI_GATEWAY_URL = "https://gateway.example";
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({
+      ok: false,
+      status: "error",
+      detail: "GROQ_API_KEY missing; upstream HTTP 500",
+    }), { status: 502, headers: { "content-type": "application/json" } })));
+
+    const result = await requestAyahExplanation(REQUEST_FIXTURE);
+    expect(result).toEqual({
+      ok: false,
+      status: "error",
+      detail: "AI explanation is unavailable right now. You can still read the ayah and open trusted sources.",
     });
   });
 

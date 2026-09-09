@@ -18,6 +18,7 @@
     "audit:hifz:90d:akmal": "vitest run src/hifzer/testing/live-hifz-audit.manual.test.ts",
     "test:e2e": "playwright test",
     "test:e2e:routing": "playwright test e2e/routing.public.spec.ts e2e/routing.auth.spec.ts e2e/routing.onboarding.spec.ts e2e/routing.legacy.spec.ts",
+    "test:e2e:high-impact": "playwright test e2e/high-impact.spec.ts",
     "test:live:auth": "node scripts/live-auth-smoke.mjs",
     "audit:clicks": "node scripts/click-routing-audit.mjs",
     "audit:mobile:overflow": "node scripts/mobile-overflow-audit.mjs",

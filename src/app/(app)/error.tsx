@@ -22,13 +22,13 @@ export default function AppError(props: { error: Error & { digest?: string }; re
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
-              Hifzer error boundary
+              Recovery
             </p>
             <h1 className="mt-3 font-[family-name:var(--font-kw-display)] text-3xl tracking-tight text-[color:var(--kw-ink)]">
               Something went wrong.
             </h1>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-              Try a reset. If it persists, refresh the page.
+              Try this view again. If your session expired, sign in again; otherwise you can keep reading while the service recovers.
             </p>
           </div>
           <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[rgba(234,88,12,0.28)] bg-[rgba(234,88,12,0.12)] text-[color:var(--kw-ember-600)]">
@@ -38,20 +38,17 @@ export default function AppError(props: { error: Error & { digest?: string }; re
 
         <div className="mt-6 flex flex-wrap gap-2">
           <Button onClick={() => props.reset()} className="gap-2">
-            Reset view <ArrowRight size={16} />
+            Try view again <ArrowRight size={16} />
           </Button>
-          <Link href="/">
+          <Link href="/login">
             <Button variant="secondary" className="gap-2">
-              Back to landing <ArrowRight size={16} />
+              Sign in again <ArrowRight size={16} />
             </Button>
           </Link>
+          <Link href="/quran/read?view=compact&anon=1">
+            <Button variant="secondary">Open reader preview</Button>
+          </Link>
         </div>
-
-        {props.error?.message ? (
-          <pre className="mt-6 overflow-auto rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 p-3 text-xs text-[color:var(--kw-muted)]">
-            {props.error.message}
-          </pre>
-        ) : null}
       </Card>
     </div>
   );

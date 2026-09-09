@@ -13,20 +13,13 @@ function buildGatewayUrl(baseUrl: string, pathname: string): string {
   return new URL(pathname, baseUrl).toString();
 }
 
-function parseGatewayError(payload: unknown, fallback: string): string {
-  if (typeof payload === "object" && payload !== null && "detail" in payload && typeof payload.detail === "string") {
-    return payload.detail;
-  }
-  return fallback;
-}
-
 export async function requestAyahExplanation(
   input: AyahExplanationGatewayRequest,
 ): Promise<AyahExplanationGatewayResponse> {
   return requestGateway("/v1/quran/explain-ayah", input, {
-    notConfigured: "AI explanation is not configured on this deployment yet.",
-    unavailable: "AI explanation is unavailable right now.",
-    timeout: "AI explanation is taking longer than expected. Please try again.",
+    notConfigured: "AI explanation is not available here yet. You can still read the ayah and open trusted sources.",
+    unavailable: "AI explanation is unavailable right now. You can still read the ayah and open trusted sources.",
+    timeout: "AI explanation is taking longer than expected. You can try again or keep reading.",
   });
 }
 
@@ -34,9 +27,9 @@ export async function requestQuranAssistantAnswer(
   input: QuranAssistantGatewayRequest,
 ): Promise<QuranAssistantAskGatewayResponse> {
   return requestGateway("/v1/quran/ask", input, {
-    notConfigured: "Ask Qur'an is not configured on this deployment yet.",
-    unavailable: "Ask Qur'an is unavailable right now.",
-    timeout: "Ask Qur'an is taking longer than expected. Please try again.",
+    notConfigured: "Ask Qur'an is not available here yet. Search and reading still work.",
+    unavailable: "Ask Qur'an is unavailable right now. Search and reading still work.",
+    timeout: "Ask Qur'an is taking longer than expected. You can try again or use Qur'an search.",
   });
 }
 
@@ -44,9 +37,9 @@ export async function requestQuranAssistant(
   input: QuranAssistantGatewayRequest,
 ): Promise<QuranAssistantGatewayResponse> {
   return requestGateway("/v1/quran/assistant", input, {
-    notConfigured: "Ask Qur'an is not configured on this deployment yet.",
-    unavailable: "Ask Qur'an is unavailable right now.",
-    timeout: "Ask Qur'an is taking longer than expected. Please try again.",
+    notConfigured: "Ask Qur'an is not available here yet. Search and reading still work.",
+    unavailable: "Ask Qur'an is unavailable right now. Search and reading still work.",
+    timeout: "Ask Qur'an is taking longer than expected. You can try again or use Qur'an search.",
   });
 }
 
@@ -86,10 +79,15 @@ async function requestGateway<TRequest, TResponse extends { ok: boolean; status?
     const payload = (await response.json().catch(() => null)) as TResponse | null;
     if (!response.ok) {
       const failure = payload && !payload.ok ? payload : null;
+      const status = failure?.status ?? (response.status === 503 ? "not_configured" : response.status === 504 ? "timeout" : "error");
       return {
         ok: false,
-        status: failure?.status ?? (response.status === 503 ? "not_configured" : "error"),
-        detail: parseGatewayError(failure, messages.unavailable),
+        status,
+        detail: status === "not_configured"
+          ? messages.notConfigured
+          : status === "timeout"
+            ? messages.timeout
+            : messages.unavailable,
       } as TResponse;
     }
 
@@ -97,7 +95,11 @@ async function requestGateway<TRequest, TResponse extends { ok: boolean; status?
       return {
         ok: false,
         status: payload?.status ?? "error",
-        detail: payload?.detail ?? messages.unavailable,
+        detail: payload?.status === "not_configured"
+          ? messages.notConfigured
+          : payload?.status === "timeout"
+            ? messages.timeout
+            : messages.unavailable,
       } as TResponse;
     }
 

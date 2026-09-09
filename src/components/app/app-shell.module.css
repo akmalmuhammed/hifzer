@@ -56,7 +56,8 @@
 .main {
   min-width: 0;
   flex: 1;
-  padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(var(--kw-mobile-nav-block-size) + 1.5rem + env(safe-area-inset-bottom, 0px));
+  scroll-padding-block-end: calc(var(--kw-mobile-nav-block-size) + env(safe-area-inset-bottom, 0px));
 }
 
 @media (min-width: 768px) {
@@ -80,4 +81,120 @@
 
 .mobileNav {
   bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 768px) {
+  .journalFrame {
+    min-height: 100dvh;
+    width: 100%;
+    max-width: none;
+    gap: 0;
+    padding: 0;
+  }
+
+  .journalSidebar {
+    width: 108px;
+    border-inline-end: 1px solid var(--kw-border-2);
+    background: color-mix(in srgb, var(--kw-surface-strong) 80%, transparent);
+    box-shadow: 12px 0 42px rgba(11, 18, 32, 0.025);
+    backdrop-filter: blur(18px);
+  }
+
+  .journalSidebarSticky {
+    position: sticky;
+    top: 0;
+    display: flex;
+    height: 100dvh;
+    min-height: 0;
+    box-sizing: border-box;
+    flex-direction: column;
+    padding: 24px 14px 18px;
+  }
+
+  .journalBrand {
+    min-height: 78px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .journalBrandCopy {
+    text-align: center;
+  }
+
+  .journalRailBody {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    padding-top: clamp(1.5rem, 4vh, 2.75rem);
+  }
+
+  .journalRailNav {
+    display: grid;
+    min-height: 0;
+    gap: clamp(0.3rem, 0.9vh, 0.55rem);
+    align-content: start;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .journalRailNav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .journalRailFooter {
+    margin-top: auto;
+    padding-top: 12px;
+  }
+
+  .journalShell .railNavLink {
+    min-height: 62px;
+    width: 64px;
+    justify-content: center;
+    margin-inline: auto;
+    border-color: transparent;
+    border-radius: 18px;
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  .journalShell .railNavLink[data-active="true"] {
+    border-color: rgba(var(--kw-accent-rgb), 0.08);
+    background: rgba(var(--kw-accent-rgb), 0.1);
+  }
+
+  .journalShell .railNavLink:hover {
+    background: var(--kw-hover-soft);
+  }
+
+  .journalShell .railNavLink[data-active="true"]:hover {
+    background: rgba(var(--kw-accent-rgb), 0.14);
+  }
+
+  .journalShell .railNavLink .navIcon {
+    height: 46px;
+    width: 46px;
+    border-color: transparent;
+    background: transparent;
+  }
+
+  .journalShell .railNavLink[data-active="true"] .navIcon {
+    color: rgba(var(--kw-accent-rgb), 1);
+  }
+
+  .journalMain {
+    min-height: 100dvh;
+    padding-bottom: 0;
+  }
+
+  .journalMainInner {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+:global(html[data-journal-editor="open"]) .mobileNav {
+  display: none;
 }

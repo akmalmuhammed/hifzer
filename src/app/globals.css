@@ -120,6 +120,17 @@
   --kw-app-nav-icon-box: 38px;
   --kw-app-nav-font-size: 0.92rem;
   --kw-app-section-label-size: 0.66rem;
+  --kw-mobile-nav-block-size: 5.75rem;
+}
+
+@media (max-width: 767px) {
+  html {
+    scroll-padding-block-end: calc(var(--kw-mobile-nav-block-size) + env(safe-area-inset-bottom, 0px));
+  }
+
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus {
+    scroll-margin-block-end: calc(var(--kw-mobile-nav-block-size) + env(safe-area-inset-bottom, 0px) + 1rem);
+  }
 }
 
 html[data-display-tier="wide"] {

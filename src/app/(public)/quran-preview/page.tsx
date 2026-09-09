@@ -55,7 +55,7 @@ export default function QuranPreviewPage() {
                   Surah {surah.surahNumber} - {surah.ayahCount} ayahs
                 </p>
                 <p className="mt-2 text-lg font-semibold text-[color:var(--kw-ink)]">
-                  <span dir="rtl">{surah.nameArabic}</span>
+                  <span dir="rtl" lang="ar">{surah.nameArabic}</span>
                 </p>
                 <p className="mt-1 truncate text-sm text-[color:var(--kw-muted)]">
                   {surah.nameTransliteration} - {surah.nameEnglish}

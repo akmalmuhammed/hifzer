@@ -54,27 +54,40 @@ export function OnboardingAssessmentClient(props: { localStorageUserId: string |
   const [draftHydrated, setDraftHydrated] = useState(false);
 
   useEffect(() => {
-    syncLocalStateOwner(props.localStorageUserId);
-    const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? "UTC";
-    const stored = getOnboardingAssessmentDraft();
-    const nextDraft: AssessmentDraft = stored
-      ? {
-          ...stored,
-          timezone: stored.timezone === TIMEZONE_PLACEHOLDER ? browserTimezone : stored.timezone,
-          quranTranslationId: isSupportedQuranTranslationId(stored.quranTranslationId)
-            ? stored.quranTranslationId
-            : "en.sahih",
-        }
-      : {
-          ...DEFAULT_DRAFT,
-          timezone: browserTimezone,
-        };
+    let cancelled = false;
+    let raf: number | null = null;
+    void (async () => {
+      const ownerReady = await syncLocalStateOwner(props.localStorageUserId);
+      if (cancelled || !ownerReady) {
+        return;
+      }
 
-    const raf = window.requestAnimationFrame(() => {
-      setDraft(nextDraft);
-      setDraftHydrated(true);
-    });
-    return () => window.cancelAnimationFrame(raf);
+      const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? "UTC";
+      const stored = getOnboardingAssessmentDraft();
+      const nextDraft: AssessmentDraft = stored
+        ? {
+            ...stored,
+            timezone: stored.timezone === TIMEZONE_PLACEHOLDER ? browserTimezone : stored.timezone,
+            quranTranslationId: isSupportedQuranTranslationId(stored.quranTranslationId)
+              ? stored.quranTranslationId
+              : "en.sahih",
+          }
+        : {
+            ...DEFAULT_DRAFT,
+            timezone: browserTimezone,
+          };
+
+      raf = window.requestAnimationFrame(() => {
+        setDraft(nextDraft);
+        setDraftHydrated(true);
+      });
+    })();
+    return () => {
+      cancelled = true;
+      if (raf !== null) {
+        window.cancelAnimationFrame(raf);
+      }
+    };
   }, [props.localStorageUserId]);
 
   useEffect(() => {

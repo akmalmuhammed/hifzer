@@ -9,10 +9,28 @@ import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 
 function handleError(error: unknown) {
   if (isJournalStorageError(error)) {
-    return NextResponse.json({ error: error.message, code: error.code }, { status: error.status });
+    return NextResponse.json(
+      {
+        error: error.message,
+        code: error.code,
+        ...(error.authoritativeEntry !== undefined
+          ? { authoritativeEntry: error.authoritativeEntry }
+          : {}),
+      },
+      { status: error.status },
+    );
   }
   if (error instanceof JournalStorageError) {
-    return NextResponse.json({ error: error.message, code: error.code }, { status: error.status });
+    return NextResponse.json(
+      {
+        error: error.message,
+        code: error.code,
+        ...(error.authoritativeEntry !== undefined
+          ? { authoritativeEntry: error.authoritativeEntry }
+          : {}),
+      },
+      { status: error.status },
+    );
   }
   return NextResponse.json({ error: "Internal server error." }, { status: 500 });
 }
@@ -48,7 +66,16 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
   }
 
   try {
-    await deletePrivateJournalEntry(userId, id);
+    const searchParams = new URL(req.url).searchParams;
+    const expectedVersionParam = searchParams.get("expectedVersion");
+    const expectedVersion = expectedVersionParam == null || expectedVersionParam === ""
+      ? undefined
+      : Number(expectedVersionParam);
+    await deletePrivateJournalEntry(userId, id, {
+      ownerId: searchParams.get("ownerId"),
+      clientMutationId: searchParams.get("clientMutationId"),
+      expectedVersion,
+    });
     return NextResponse.json({ ok: true });
   } catch (error) {
     return handleError(error);

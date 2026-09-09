@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import clsx from "clsx";
 import {
   BookOpenText,
@@ -22,6 +22,7 @@ import { HifzerMark } from "@/components/brand/hifzer-mark";
 import { UiLanguageSwitcher } from "@/components/app/ui-language-switcher";
 import { StreakCornerBadge } from "@/components/app/streak-corner-badge";
 import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
+import { isUiLanguageRtl, uiLanguageToHtmlLang } from "@/hifzer/i18n/ui-language";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { useUiLanguage } from "@/components/providers/ui-language-provider";
 import styles from "./app-shell.module.css";
@@ -69,6 +70,11 @@ const MOBILE_NAV: NavItem[] = [
   { href: "/dua", key: "dua", icon: MoonStar },
   { href: "/worship", key: "worship", icon: HeartHandshake, label: "Trackers" },
   { href: "/settings", key: "settings", icon: Settings, label: "More" },
+];
+
+const JOURNAL_RAIL_NAV: NavItem[] = [
+  ...PRIMARY,
+  { href: "/assistant", key: "assistant", icon: MessageSquareQuote, label: "Ask Qur'an" },
 ];
 
 function getLikelyNextRoutes(pathname: string): string[] {
@@ -147,8 +153,13 @@ function getNavLabel(item: NavItem, copy: ReturnType<typeof getAppUiCopy>): stri
   }
 }
 
-function NavLink(props: { item: NavItem; pathname: string; copy: ReturnType<typeof getAppUiCopy> }) {
-  const { item, pathname, copy } = props;
+function NavLink(props: {
+  item: NavItem;
+  pathname: string;
+  copy: ReturnType<typeof getAppUiCopy>;
+  compact?: boolean;
+}) {
+  const { item, pathname, copy, compact = false } = props;
   const active = isActive(pathname, item.href);
   const Icon = item.icon;
   const label = getNavLabel(item, copy);
@@ -157,8 +168,14 @@ function NavLink(props: { item: NavItem; pathname: string; copy: ReturnType<type
       key={item.href}
       href={item.href}
       telemetryName={`shell.nav.${item.key}`}
+      aria-current={active ? "page" : undefined}
+      aria-label={compact ? label : undefined}
+      title={compact ? label : undefined}
+      data-active={active ? "true" : "false"}
+      data-compact={compact ? "true" : "false"}
       className={clsx(
         styles.navLink,
+        compact && styles.railNavLink,
         "flex items-center gap-3 rounded-[18px] border font-semibold shadow-[var(--kw-shadow-soft)] transition",
         active
           ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] text-[color:var(--kw-ink)]"
@@ -174,7 +191,7 @@ function NavLink(props: { item: NavItem; pathname: string; copy: ReturnType<type
       >
         <Icon size={17} />
       </span>
-      <span className={clsx(styles.navText, "truncate")}>{label}</span>
+      <span className={clsx(styles.navText, compact && "sr-only", "truncate")}>{label}</span>
     </TrackedLink>
   );
 }
@@ -184,9 +201,12 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
   const router = useRouter();
   const [insightsOpen, setInsightsOpen] = useState(true);
   const [platformOpen, setPlatformOpen] = useState(true);
+  const insightsId = useId();
+  const platformId = useId();
   const { language } = useUiLanguage();
   const copy = getAppUiCopy(language);
   const quranShell = pathname === "/quran" || pathname.startsWith("/quran/");
+  const journalShell = pathname === "/journal" || pathname.startsWith("/journal/");
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -253,91 +273,143 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
   }, []);
 
   return (
-    <div className={clsx("kw-app-shell min-h-dvh overflow-x-clip", quranShell && "kw-quran-shell")}>
-      <div className={styles.frame}>
-        <aside className={clsx(styles.sidebar, "hidden shrink-0 md:block")}>
-          <div className={clsx(styles.sidebarSticky, "space-y-4")}>
-            <TrackedLink href="/" className={clsx(styles.brand, "flex items-center")} telemetryName="shell.logo">
+    <div
+      className={clsx(
+        "kw-app-shell min-h-dvh overflow-x-clip",
+        quranShell && "kw-quran-shell",
+        journalShell && styles.journalShell,
+      )}
+    >
+      <div className={clsx(styles.frame, journalShell && styles.journalFrame)}>
+        <aside
+          lang={uiLanguageToHtmlLang(language)}
+          dir={isUiLanguageRtl(language) ? "rtl" : "ltr"}
+          className={clsx(
+            styles.sidebar,
+            journalShell && styles.journalSidebar,
+            "hidden shrink-0 md:block",
+          )}
+        >
+          <div
+            className={clsx(
+              styles.sidebarSticky,
+              journalShell ? styles.journalSidebarSticky : "space-y-4",
+            )}
+          >
+            <TrackedLink
+              href="/"
+              className={clsx(styles.brand, journalShell && styles.journalBrand, "flex items-center")}
+              telemetryName="shell.logo"
+            >
               <span className={clsx(styles.brandMark, "grid place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[color:var(--kw-surface-soft)] text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] backdrop-blur-md")}>
                 <HifzerMark />
               </span>
-              <div className="leading-tight">
+              <div className={clsx("leading-tight", journalShell && styles.journalBrandCopy)}>
                 <p className="text-sm font-semibold tracking-tight text-[color:var(--kw-ink)]">Hifzer</p>
-                <p className="text-xs text-[color:var(--kw-muted)]">{copy.brandTagline}</p>
+                {!journalShell ? <p className="text-xs text-[color:var(--kw-muted)]">{copy.brandTagline}</p> : null}
               </div>
             </TrackedLink>
 
-            <nav className="space-y-1">
-              {PRIMARY.map((item) => (
-                <NavLink key={item.href} item={item} pathname={pathname} copy={copy} />
-              ))}
-            </nav>
-
-            <div className="space-y-1">
-              <button
-                type="button"
-                onClick={() => setInsightsOpen((v) => !v)}
-                className={clsx(styles.sectionToggle, "flex w-full items-center justify-between rounded-[14px] px-3 py-1.5 font-semibold uppercase tracking-widest text-[color:var(--kw-faint)] transition hover:text-[color:var(--kw-muted)]")}
-              >
-                <span>{copy.sectionInsights}</span>
-                <ChevronDown
-                  size={14}
-                  className={clsx("transition-transform", insightsOpen && "rotate-180")}
-                />
-              </button>
-              {insightsOpen ? (
-                <div className="space-y-1">
-                  {INSIGHTS.map((item) => (
+            {journalShell ? (
+              <div className={styles.journalRailBody}>
+                <nav className={styles.journalRailNav} aria-label="Primary navigation">
+                  {JOURNAL_RAIL_NAV.map((item) => (
+                    <NavLink key={item.href} item={item} pathname={pathname} copy={copy} compact />
+                  ))}
+                </nav>
+                <nav className={styles.journalRailFooter} aria-label="Settings">
+                  <NavLink
+                    item={{ href: "/settings", key: "settings", icon: Settings }}
+                    pathname={pathname}
+                    copy={copy}
+                    compact
+                  />
+                </nav>
+              </div>
+            ) : (
+              <>
+                <nav className="space-y-1">
+                  {PRIMARY.map((item) => (
                     <NavLink key={item.href} item={item} pathname={pathname} copy={copy} />
                   ))}
-                </div>
-              ) : null}
-            </div>
+                </nav>
 
-            <div className="space-y-1">
-              <button
-                type="button"
-                onClick={() => setPlatformOpen((v) => !v)}
-                className={clsx(styles.sectionToggle, "flex w-full items-center justify-between rounded-[14px] px-3 py-1.5 font-semibold uppercase tracking-widest text-[color:var(--kw-faint)] transition hover:text-[color:var(--kw-muted)]")}
-              >
-                <span>{copy.sectionProduct}</span>
-                <ChevronDown
-                  size={14}
-                  className={clsx("transition-transform", platformOpen && "rotate-180")}
-                />
-              </button>
-              {platformOpen ? (
                 <div className="space-y-1">
-                  {PLATFORM.map((item) => (
-                    <NavLink key={item.href} item={item} pathname={pathname} copy={copy} />
-                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setInsightsOpen((v) => !v)}
+                    aria-expanded={insightsOpen}
+                    aria-controls={insightsId}
+                    className={clsx(styles.sectionToggle, "flex w-full items-center justify-between rounded-[14px] px-3 py-1.5 font-semibold uppercase tracking-widest text-[color:var(--kw-faint)] transition hover:text-[color:var(--kw-muted)]")}
+                  >
+                    <span>{copy.sectionInsights}</span>
+                    <ChevronDown
+                      size={14}
+                      className={clsx("transition-transform", insightsOpen && "rotate-180")}
+                    />
+                  </button>
+                  {insightsOpen ? (
+                    <div id={insightsId} className="space-y-1">
+                      {INSIGHTS.map((item) => (
+                        <NavLink key={item.href} item={item} pathname={pathname} copy={copy} />
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
-              ) : null}
-            </div>
 
-            <nav className="space-y-1">
-              <NavLink
-                item={{ href: "/settings", key: "settings", icon: Settings }}
-                pathname={pathname}
-                copy={copy}
-              />
-            </nav>
+                <div className="space-y-1">
+                  <button
+                    type="button"
+                    onClick={() => setPlatformOpen((v) => !v)}
+                    aria-expanded={platformOpen}
+                    aria-controls={platformId}
+                    className={clsx(styles.sectionToggle, "flex w-full items-center justify-between rounded-[14px] px-3 py-1.5 font-semibold uppercase tracking-widest text-[color:var(--kw-faint)] transition hover:text-[color:var(--kw-muted)]")}
+                  >
+                    <span>{copy.sectionProduct}</span>
+                    <ChevronDown
+                      size={14}
+                      className={clsx("transition-transform", platformOpen && "rotate-180")}
+                    />
+                  </button>
+                  {platformOpen ? (
+                    <div id={platformId} className="space-y-1">
+                      {PLATFORM.map((item) => (
+                        <NavLink key={item.href} item={item} pathname={pathname} copy={copy} />
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
 
-            <div className={clsx(styles.languageCard, "rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)]")}>
-              <UiLanguageSwitcher compact />
-            </div>
+                <nav className="space-y-1">
+                  <NavLink
+                    item={{ href: "/settings", key: "settings", icon: Settings }}
+                    pathname={pathname}
+                    copy={copy}
+                  />
+                </nav>
+
+                <div className={clsx(styles.languageCard, "rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)]")}>
+                  <UiLanguageSwitcher compact />
+                </div>
+              </>
+            )}
           </div>
         </aside>
 
-        <main id="main-content" className={styles.main}>
-          <StreakCornerBadge enabled={Boolean(props.streakEnabled)} />
-          <div className={styles.mainInner}>
+        <main id="main-content" tabIndex={-1} className={clsx(styles.main, journalShell && styles.journalMain)}>
+          {!journalShell ? <StreakCornerBadge enabled={Boolean(props.streakEnabled)} /> : null}
+          <div className={clsx(styles.mainInner, journalShell && styles.journalMainInner)}>
             {props.children}
           </div>
         </main>
       </div>
 
-      <nav className={clsx(styles.mobileNav, "fixed left-1/2 z-40 w-[min(520px,calc(100vw-1.5rem))] -translate-x-1/2 rounded-[26px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-2 py-2 shadow-[var(--kw-shadow)] backdrop-blur md:hidden")}>
+      <nav
+        aria-label="Primary navigation"
+        lang={uiLanguageToHtmlLang(language)}
+        dir={isUiLanguageRtl(language) ? "rtl" : "ltr"}
+        className={clsx(styles.mobileNav, "fixed left-1/2 z-40 w-[min(520px,calc(100vw-1.5rem))] -translate-x-1/2 rounded-[26px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-2 py-2 shadow-[var(--kw-shadow)] backdrop-blur md:hidden")}
+      >
         <div
           className="grid gap-1"
           style={{ gridTemplateColumns: `repeat(${MOBILE_NAV.length}, minmax(0, 1fr))` }}
@@ -351,6 +423,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
                 key={item.href}
                 href={item.href}
                 telemetryName={`shell.mobile-nav.${item.key}`}
+                aria-current={active ? "page" : undefined}
                 className={clsx(
                   "flex flex-col items-center justify-center gap-0.5 rounded-[18px] px-1 py-2 text-[10px] font-semibold transition",
                   active

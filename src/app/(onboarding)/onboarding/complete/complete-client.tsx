@@ -17,6 +17,7 @@ import {
 } from "@/hifzer/local/store";
 import type { OnboardingStartLane } from "@/hifzer/profile/onboarding";
 import type { QuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/types";
+import { trackProductEvent } from "@/lib/telemetry/client";
 
 export function OnboardingCompleteClient(props: {
   initialQuranFoundationStatus: QuranFoundationConnectionStatus | null;
@@ -112,6 +113,10 @@ export function OnboardingCompleteClient(props: {
 
                     setOnboardingCompleted();
                     setDashboardFirstRunGuidePending();
+                    trackProductEvent("onboarding.completed", {
+                      mode: onboardingStartLane ?? "default",
+                      outcome: "saved",
+                    });
                     pushToast({ title: "Onboarding complete", message: "Welcome to Hifzer.", tone: "success" });
                     router.push("/dashboard");
                   }}

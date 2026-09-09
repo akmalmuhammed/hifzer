@@ -174,6 +174,7 @@ Core persisted areas include:
 - journal entries
 - custom duas and deck order
 - billing/subscription state
+- durable one-time premium entitlements with Paddle transaction idempotency
 
 Useful commands:
 

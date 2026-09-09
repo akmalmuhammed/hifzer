@@ -341,6 +341,7 @@ export function DuaExperienceClient({
   const [stepSearch, setStepSearch] = useState("");
   const [activeStepFilter, setActiveStepFilter] = useState("All");
   const [loadedBrowserPrefs, setLoadedBrowserPrefs] = useState(false);
+  const [confirmingReset, setConfirmingReset] = useState(false);
   const deferredStepSearch = useDeferredValue(stepSearch);
 
   const modules = useMemo(
@@ -649,7 +650,8 @@ export function DuaExperienceClient({
       return;
     }
     setModuleProgress(currentModule.id, () => buildDefaultModuleProgress(currentModule));
-    setFeedback(null);
+    setConfirmingReset(false);
+    setFeedback(`Progress for ${currentModule.title} was reset on this device.`);
     setFormError(null);
   }
 
@@ -1212,9 +1214,23 @@ export function DuaExperienceClient({
                 </Link>
               </Button>
             ) : null}
-            <Button variant="secondary" className="gap-2" onClick={resetCurrentModule}>
-              Reset progress <RefreshCcw size={16} />
-            </Button>
+            {confirmingReset ? (
+              <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Confirm progress reset">
+                <span className="max-w-64 text-sm text-muted-foreground">
+                  This clears every visited step and repetition count for this module on this device.
+                </span>
+                <Button variant="danger" className="min-h-11" onClick={resetCurrentModule}>
+                  Confirm reset
+                </Button>
+                <Button variant="ghost" className="min-h-11" onClick={() => setConfirmingReset(false)}>
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <Button variant="secondary" className="min-h-11 gap-2" onClick={() => setConfirmingReset(true)}>
+                Reset progress <RefreshCcw size={16} />
+              </Button>
+            )}
           </div>
         </div>
 
@@ -1305,7 +1321,11 @@ export function DuaExperienceClient({
                 <span className={styles.stepNumber}>{index + 1}</span>
                 <span className={styles.stepCopy}>
                   <span className={styles.stepEyebrow}>{step.eyebrow}</span>
-                  {step.spotlight ? <span className={styles.stepArabic}>{step.spotlight.arabic}</span> : null}
+                  {step.spotlight ? (
+                    <span lang="ar" dir="rtl" className={styles.stepArabic}>
+                      {step.spotlight.arabic}
+                    </span>
+                  ) : null}
                   <span className={styles.stepTitle}>{step.title}</span>
                   {step.spotlight ? <span className={styles.stepMeaning}>{step.spotlight.meaning}</span> : null}
                 </span>
@@ -1334,7 +1354,7 @@ export function DuaExperienceClient({
           {currentStep.spotlight ? (
             <div className={styles.nameCard}>
               <div className={styles.nameCopy}>
-                <p dir="rtl" className={styles.nameArabic}>
+                <p lang="ar" dir="rtl" className={styles.nameArabic}>
                   {currentStep.spotlight.arabic}
                 </p>
                 <div>
@@ -1356,7 +1376,7 @@ export function DuaExperienceClient({
               </div>
 
               {currentStep.dua.arabic ? (
-                <p dir="rtl" className={styles.duaArabic}>
+                <p lang="ar" dir="rtl" className={styles.duaArabic}>
                   {currentStep.dua.arabic}
                 </p>
               ) : null}

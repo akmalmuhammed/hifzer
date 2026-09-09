@@ -19,8 +19,6 @@ export default function GlobalError(props: { error: Error & { digest?: string };
       body: JSON.stringify({
         errorId,
         digest: props.error?.digest ?? null,
-        message: props.error?.message ?? "Unknown error",
-        stack: props.error?.stack ?? null,
         source: "global-error-boundary",
         path: window.location?.pathname ?? null,
       }),

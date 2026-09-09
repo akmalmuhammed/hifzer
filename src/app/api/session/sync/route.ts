@@ -7,6 +7,7 @@ import {
   parseSessionEventList,
 } from "@/hifzer/engine/session-guard";
 import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
+import { invalidateDashboardCaches } from "@/hifzer/dashboard/cache";
 
 type LegacyPayload = {
   localDate?: unknown;
@@ -241,6 +242,9 @@ export async function POST(req: Request) {
   }
 
   const successCount = results.filter((r) => r.ok).length;
+  if (successCount > 0) {
+    invalidateDashboardCaches(userId);
+  }
   return NextResponse.json({
     ok: successCount === results.length,
     successCount,

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CheckCircle2, HeartHandshake, Mail, MoveRight } from "lucide-react";
-import { BillingSuccessRedirect } from "../success/success-redirect";
+import { EntitlementActivationStatus } from "@/components/billing/entitlement-activation-status";
 import { PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -15,12 +15,10 @@ const RECEIPT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@hifzer.c
 export default function BillingThankYouPage() {
   return (
     <div className="space-y-6">
-      <BillingSuccessRedirect />
-
       <PageHeader
         eyebrow="Billing"
         title="Thank you for supporting Hifzer."
-        subtitle="Your payment was received successfully. You will be returned to the dashboard in a few seconds."
+        subtitle="Your payment was received. Keep this page open while Hifzer confirms premium access."
       />
 
       <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
@@ -38,6 +36,7 @@ export default function BillingThankYouPage() {
                 Paddle should send your receipt and payment confirmation to the email used during checkout. Your
                 purchase also helps support ongoing Hifzer development.
               </p>
+              <EntitlementActivationStatus />
 
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 <Button asChild>

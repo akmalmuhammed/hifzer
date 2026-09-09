@@ -8,6 +8,7 @@ import {
   useRef,
   type MutableRefObject,
 } from "react";
+import { trackProductEvent } from "@/lib/telemetry/client";
 
 function flushTrackedAyahs(
   pendingAyahIdsRef: MutableRefObject<Set<number>>,
@@ -31,7 +32,14 @@ function flushTrackedAyahs(
       latestSurahNumber: latestPayload?.surahNumber,
       latestAyahNumber: latestPayload?.ayahNumber,
     }),
+  }).then((response) => {
+    if (!response.ok) throw new Error("progress_save_failed");
+    trackProductEvent("quran.progress_saved", {
+      outcome: "saved",
+      countBucket: ayahIds.length === 1 ? "1" : ayahIds.length <= 5 ? "2-5" : "6+",
+    });
   }).catch(() => {
+    trackProductEvent("quran.progress_saved", { outcome: "retrying" });
     for (const ayahId of ayahIds) {
       pendingAyahIdsRef.current.add(ayahId);
     }

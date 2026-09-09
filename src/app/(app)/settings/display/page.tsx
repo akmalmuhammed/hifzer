@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Check, Moon, Sun } from "lucide-react";
 import { SettingsDetailHeader } from "@/components/app/settings-detail-header";
 import { useTheme, type AccentPreset, type ThemePreset } from "@/components/providers/theme-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { SaveStatus, type SaveStatusState } from "@/components/ui/save-status";
 
 function OptionRow(props: {
   title: string;
@@ -128,15 +130,21 @@ function ThemeCard(props: {
 export default function DisplaySettingsPage() {
   const { mode, theme, accent, toggleMode, setTheme, setAccent } = useTheme();
   const mountedRef = useRef(false);
+  const revisionRef = useRef(0);
+  const abortRef = useRef<AbortController | null>(null);
+  const [saveState, setSaveState] = useState<SaveStatusState>({ kind: "not-saved" });
+  const [sessionExpired, setSessionExpired] = useState(false);
 
-  useEffect(() => {
-    if (!mountedRef.current) {
-      mountedRef.current = true;
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      fetch("/api/profile/display", {
+  const saveLatest = useCallback(async () => {
+    const revision = revisionRef.current + 1;
+    revisionRef.current = revision;
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setSessionExpired(false);
+    setSaveState({ kind: "saving" });
+    try {
+      const response = await fetch("/api/profile/display", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -144,13 +152,38 @@ export default function DisplaySettingsPage() {
           themePreset: theme,
           accentPreset: accent,
         }),
-      }).catch(() => {
-        // Keep the local preference even if persistence fails.
+        signal: controller.signal,
       });
-    }, 250);
+      if (revision !== revisionRef.current) {
+        return;
+      }
+      if (!response.ok) {
+        setSessionExpired(response.status === 401);
+        setSaveState({ kind: "error", destination: "account" });
+        return;
+      }
+      setSaveState({ kind: "saved", destination: "account" });
+    } catch {
+      if (controller.signal.aborted || revision !== revisionRef.current) {
+        return;
+      }
+      setSaveState({ kind: "error", destination: "account" });
+    }
+  }, [accent, mode, theme]);
+
+  useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      return;
+    }
+
+    setSaveState({ kind: "dirty" });
+    const timer = window.setTimeout(() => void saveLatest(), 250);
 
     return () => window.clearTimeout(timer);
-  }, [accent, mode, theme]);
+  }, [accent, mode, saveLatest, theme]);
+
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   return (
     <div className="space-y-6">
@@ -158,6 +191,19 @@ export default function DisplaySettingsPage() {
         title="Display"
         subtitle="Theme and color."
       />
+
+      <div className="flex flex-wrap items-start gap-2">
+        <SaveStatus state={saveState} />
+        {saveState.kind === "error" ? (
+          sessionExpired ? (
+            <Button asChild variant="secondary">
+              <Link href="/login?redirect_url=%2Fsettings%2Fdisplay">Sign in again</Link>
+            </Button>
+          ) : (
+            <Button variant="secondary" onClick={() => void saveLatest()}>Retry account save</Button>
+          )
+        ) : null}
+      </div>
 
       <Card>
         <OptionRow

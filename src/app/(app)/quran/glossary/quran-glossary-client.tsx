@@ -270,7 +270,7 @@ export function QuranGlossaryClient() {
                       </Link>
                     </div>
 
-                    <p dir="rtl" className="mt-3 text-right text-xl leading-[2] text-[color:var(--kw-ink)]">
+                    <p dir="rtl" lang="ar" className="mt-3 text-right text-xl leading-[2] text-[color:var(--kw-ink)]">
                       {result.textUthmani}
                     </p>
                     <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">

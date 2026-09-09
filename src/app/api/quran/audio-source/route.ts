@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getQuranFoundationAyahAudioSource } from "@/hifzer/quran-foundation/content";
 import { getAyahById } from "@/hifzer/quran/lookup.server";
+import { toPublicAudioStatus } from "@/hifzer/audio/public-status";
 
 export const runtime = "nodejs";
 
@@ -34,10 +35,17 @@ export async function GET(req: Request) {
     surahNumber: ayah.surahNumber,
     reciterId,
   });
+  const publicStatus = toPublicAudioStatus(audio.status);
 
   return NextResponse.json({
     ok: audio.status === "available",
     provider: "quran_foundation",
-    audio,
+    audio: {
+      ...publicStatus,
+      verseKey: audio.verseKey,
+      recitationId: audio.recitationId,
+      recitationLabel: audio.recitationLabel,
+      url: audio.url,
+    },
   });
 }

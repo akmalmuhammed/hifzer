@@ -114,7 +114,7 @@ export default async function PracticePage() {
                   <p className="mt-2 text-sm text-[color:var(--kw-muted)]">{pair.reason}</p>
                   <p className="mt-2 text-xs text-[color:var(--kw-faint)]">{pair.contrastHint}</p>
                   {(pair.leftSnippet || pair.rightSnippet) ? (
-                    <p dir="rtl" className="mt-2 text-xs text-[color:var(--kw-faint)]">
+                    <p lang="ar" dir="rtl" className="mt-2 text-xs text-[color:var(--kw-faint)]">
                       {pair.leftSnippet ?? "..."}
                       {"  /  "}
                       {pair.rightSnippet ?? "..."}

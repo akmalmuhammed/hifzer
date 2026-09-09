@@ -26,6 +26,8 @@ import {
 } from "@/hifzer/local/store";
 import { QURAN_TRANSLATION_OPTIONS } from "@/hifzer/quran/translation-prefs";
 import { SURAH_INDEX } from "@/hifzer/quran/data/surah-index";
+import { mapPublicHttpError } from "@/hifzer/errors/public-error";
+import { trackProductEvent } from "@/lib/telemetry/client";
 
 type Step =
   | {
@@ -407,6 +409,7 @@ export function SessionClient(props: { userId?: string | null }) {
   const { pushToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [authRequired, setAuthRequired] = useState(false);
   const [run, setRun] = useState<SessionStartPayload | null>(null);
   const [stepIndex, setStepIndex] = useState(0);
   const [stepStartedAt, setStepStartedAt] = useState(Date.now());
@@ -471,6 +474,7 @@ export function SessionClient(props: { userId?: string | null }) {
         return !result?.ok && !result?.permanent;
       });
       replacePendingSessionSyncPayloads(kept);
+      trackProductEvent("hifz.session_sync", { outcome: kept.length === 0 ? "synced" : "partial" });
     } catch {
       // keep pending payloads for next reconnect
     }
@@ -492,6 +496,7 @@ export function SessionClient(props: { userId?: string | null }) {
   const loadRun = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setAuthRequired(false);
     try {
       void flushPendingSync();
       const res = await fetch("/api/session/start", { method: "POST" });
@@ -502,7 +507,9 @@ export function SessionClient(props: { userId?: string | null }) {
         return;
       }
       if (!res.ok) {
-        throw new Error(payload?.error || "Failed to start Hifz.");
+        const publicError = mapPublicHttpError(res.status, "hifz");
+        setAuthRequired(publicError.needsSignIn);
+        throw new Error(publicError.message);
       }
       if (!payload?.sessionId || !Array.isArray(payload.steps)) {
         throw new Error("Hifz session data was incomplete.");
@@ -642,6 +649,7 @@ export function SessionClient(props: { userId?: string | null }) {
       const body = (await res.json().catch(() => null)) as { error?: string; permanent?: boolean } | null;
       if (!res.ok) {
         if (body?.permanent) {
+          trackProductEvent("hifz.session_completed", { outcome: "rejected" });
           pushToast({
             tone: "warning",
             title: "Hifz save rejected",
@@ -651,9 +659,11 @@ export function SessionClient(props: { userId?: string | null }) {
         }
         throw new Error(body?.error || "Complete failed.");
       }
+      trackProductEvent("hifz.session_completed", { outcome: "synced" });
       pushToast({ tone: "success", title: "Hifz saved", message: "Progress synced." });
     } catch {
       pushPendingSessionSyncPayload(payload);
+      trackProductEvent("hifz.session_completed", { outcome: "buffered" });
       pushToast({
         tone: "warning",
         title: "Saved offline",
@@ -1046,11 +1056,20 @@ export function SessionClient(props: { userId?: string | null }) {
             title="Hifz unavailable"
             message={error ?? "Could not start Hifz."}
             icon={<CornerDownLeft size={18} />}
-            action={
+            action={authRequired ? (
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button asChild>
+                  <Link href="/login?redirect_url=%2Fhifz">Sign in again <ArrowRight size={16} /></Link>
+                </Button>
+                <Button asChild variant="secondary">
+                  <Link href="/quran/read?view=compact&anon=1">Open reader preview</Link>
+                </Button>
+              </div>
+            ) : (
               <Button className="gap-2" onClick={() => void loadRun()}>
-                Retry <RotateCcw size={16} />
+                Try again <RotateCcw size={16} />
               </Button>
-            }
+            )}
           />
         </Card>
       </div>
@@ -1418,7 +1437,7 @@ export function SessionClient(props: { userId?: string | null }) {
                 </p>
                 {showText ? (
                   <div className="mt-3 space-y-4">
-                    <div dir="rtl" className="text-right font-[family-name:var(--font-kw-quran)] text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
+                    <div dir="rtl" lang="ar" className="text-right font-[family-name:var(--font-kw-quran)] text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
                       {ayahText ?? "Ayah text unavailable"}
                     </div>
                     {showPhonetic || showTranslation ? (

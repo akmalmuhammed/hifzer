@@ -25,6 +25,15 @@ enum SubscriptionStatus {
   CANCELED
 }
 
+enum BillingEntitlementKind {
+  PREMIUM_LIFETIME
+}
+
+enum BillingEntitlementStatus {
+  ACTIVE
+  REVOKED
+}
+
 enum SrsMode {
   NORMAL
   CONSOLIDATION
@@ -114,6 +123,12 @@ enum PrivateJournalDuaStatus {
   accepted_differently
 }
 
+enum PrivateJournalMutationType {
+  CREATE
+  UPDATE
+  DELETE
+}
+
 enum PrayerName {
   FAJR
   DHUHR
@@ -182,117 +197,158 @@ enum CircleOralCheckStatus {
 }
 
 model UserProfile {
-  id                    String   @id @default(cuid())
-  clerkUserId           String   @unique
-  timezone              String
+  id          String @id @default(cuid())
+  clerkUserId String @unique
+  timezone    String
 
   onboardingCompletedAt DateTime?
-  onboardingStep        String   @default("welcome")
+  onboardingStep        String    @default("welcome")
   onboardingStartLane   String?
 
   dailyMinutes          Int
   practiceDays          Int[]
   reminderTimeLocal     String
-  emailRemindersEnabled Boolean @default(true)
+  emailRemindersEnabled Boolean   @default(true)
   emailUnsubscribedAt   DateTime?
   emailSuppressedAt     DateTime?
-  planBias              PlanBias @default(BALANCED)
+  planBias              PlanBias  @default(BALANCED)
 
-  activeSurahNumber     Int
-  cursorAyahId          Int
-  quranActiveSurahNumber Int @default(1)
-  quranCursorAyahId     Int @default(1)
-  quranTranslationId    String @default("en.sahih")
-  quranShowDetails      Boolean @default(true)
-  mode                  SrsMode  @default(NORMAL)
-  hasTeacher            Boolean @default(false)
+  activeSurahNumber      Int
+  cursorAyahId           Int
+  quranActiveSurahNumber Int     @default(1)
+  quranCursorAyahId      Int     @default(1)
+  quranTranslationId     String  @default("en.sahih")
+  quranShowDetails       Boolean @default(true)
+  mode                   SrsMode @default(NORMAL)
+  hasTeacher             Boolean @default(false)
 
-  avgReviewSeconds      Float @default(45)
-  avgNewSeconds         Float @default(90)
-  avgLinkSeconds        Float @default(35)
+  avgReviewSeconds Float @default(45)
+  avgNewSeconds    Float @default(90)
+  avgLinkSeconds   Float @default(35)
 
-  reviewFloorPct        Int @default(70)
-  consolidationThresholdPct Int @default(25)
-  catchUpThresholdPct   Int @default(45)
-  rebalanceUntil        DateTime?
+  reviewFloorPct            Int       @default(70)
+  consolidationThresholdPct Int       @default(25)
+  catchUpThresholdPct       Int       @default(45)
+  rebalanceUntil            DateTime?
 
-  plan                  SubscriptionPlan   @default(FREE)
-  paddleCustomerId      String?            @unique
-  paddleSubscriptionId  String?            @unique
-  subscriptionStatus    SubscriptionStatus?
-  currentPeriodEnd      DateTime?
+  plan                 SubscriptionPlan    @default(FREE)
+  paddleCustomerId     String?             @unique
+  paddleSubscriptionId String?             @unique
+  subscriptionStatus   SubscriptionStatus?
+  currentPeriodEnd     DateTime?
 
-  darkMode              Boolean @default(false)
-  themePreset           String  @default("standard")
-  accentPreset          String  @default("teal")
-  reciterId             String  @default("default")
+  darkMode     Boolean @default(false)
+  themePreset  String  @default("standard")
+  accentPreset String  @default("teal")
+  reciterId    String  @default("default")
 
-  sessions              Session[]
-  attempts              AyahAttempt[]
-  reviews               AyahReview[]
-  weakTransitions       WeakTransition[]
-  reviewEvents          ReviewEvent[]
-  gateRuns              QualityGateRun[]
-  emailDispatches       EmailDispatch[]
-  bookmarkCategories    BookmarkCategory[]
-  bookmarks             Bookmark[]
-  bookmarkEvents        BookmarkEvent[]
-  quranFoundationAccount QuranFoundationAccount?
-  privateJournalEntries PrivateJournalEntry[]
-  quranBrowseEvents     QuranBrowseEvent[]
+  sessions                    Session[]
+  attempts                    AyahAttempt[]
+  reviews                     AyahReview[]
+  weakTransitions             WeakTransition[]
+  reviewEvents                ReviewEvent[]
+  gateRuns                    QualityGateRun[]
+  emailDispatches             EmailDispatch[]
+  bookmarkCategories          BookmarkCategory[]
+  bookmarks                   Bookmark[]
+  bookmarkEvents              BookmarkEvent[]
+  quranFoundationAccount      QuranFoundationAccount?
+  privateJournalEntries       PrivateJournalEntry[]
+  privateJournalMutations     PrivateJournalMutation[]
+  quranBrowseEvents           QuranBrowseEvent[]
   quranReaderFilterPreference QuranReaderFilterPreference?
-  customDuas           CustomDua[]
-  duaDeckOrders        DuaDeckOrder[]
-  prayerCheckIns       PrayerCheckIn[]
-  fastingCheckIns      FastingCheckIn[]
-  zakatPlans           ZakatPlan[]
-  zakatPayments        ZakatPayment[]
-  ownedTeacherCircles   TeacherCircle[]           @relation("OwnedTeacherCircles")
-  teacherCircleLinks    TeacherCircleMember[]     @relation("TeacherCircleLinkedUser")
-  teacherCircleUpdates  TeacherCircleWeeklyCheck[] @relation("TeacherCircleUpdatedBy")
+  customDuas                  CustomDua[]
+  duaDeckOrders               DuaDeckOrder[]
+  prayerCheckIns              PrayerCheckIn[]
+  fastingCheckIns             FastingCheckIn[]
+  zakatPlans                  ZakatPlan[]
+  zakatPayments               ZakatPayment[]
+  ownedTeacherCircles         TeacherCircle[]              @relation("OwnedTeacherCircles")
+  teacherCircleLinks          TeacherCircleMember[]        @relation("TeacherCircleLinkedUser")
+  teacherCircleUpdates        TeacherCircleWeeklyCheck[]   @relation("TeacherCircleUpdatedBy")
+  billingEntitlements         BillingEntitlement[]
 
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model PrivateJournalEntry {
-  id                          String                   @id @default(cuid())
-  userId                      String
-  clientEntryId               String?
-  type                        PrivateJournalEntryType
-  title                       String?
-  content                     String
-  blocksJson                  Json?
-  tags                        String[]                 @default([])
-  pinned                      Boolean                  @default(false)
-  linkedAyahId                Int?
-  linkedSurahNumber           Int?
-  linkedAyahNumber            Int?
-  linkedSurahNameArabic       String?
-  linkedSurahNameTransliteration String?
-  linkedDuaJson               Json?
-  duaStatus                   PrivateJournalDuaStatus?
-  autoDeleteAt                DateTime?
-  createdAt                   DateTime                 @default(now())
-  updatedAt                   DateTime                 @updatedAt
+model BillingEntitlement {
+  id                    String                   @id @default(cuid())
+  userId                String
+  provider              String                   @default("paddle")
+  providerTransactionId String                   @unique
+  kind                  BillingEntitlementKind   @default(PREMIUM_LIFETIME)
+  status                BillingEntitlementStatus @default(ACTIVE)
+  grantedAt             DateTime                 @default(now())
+  revokedAt             DateTime?
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
 
   user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId, status])
+}
+
+model PrivateJournalEntry {
+  id                             String                   @id @default(cuid())
+  userId                         String
+  originEntryId                  String?
+  clientEntryId                  String?
+  type                           PrivateJournalEntryType
+  title                          String?
+  content                        String
+  blocksJson                     Json?
+  tags                           String[]                 @default([])
+  pinned                         Boolean                  @default(false)
+  linkedAyahId                   Int?
+  linkedSurahNumber              Int?
+  linkedAyahNumber               Int?
+  linkedSurahNameArabic          String?
+  linkedSurahNameTransliteration String?
+  linkedDuaJson                  Json?
+  duaStatus                      PrivateJournalDuaStatus?
+  autoDeleteAt                   DateTime?
+  version                        Int                      @default(1)
+  createdAt                      DateTime                 @default(now())
+  updatedAt                      DateTime                 @updatedAt
+
+  user      UserProfile              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mutations PrivateJournalMutation[]
+
+  @@unique([userId, originEntryId])
   @@unique([userId, clientEntryId])
   @@index([userId, updatedAt])
   @@index([userId, autoDeleteAt])
 }
 
+model PrivateJournalMutation {
+  id               String                     @id @default(cuid())
+  userId           String
+  journalEntryId   String?
+  targetEntryKey   String?
+  mutationType     PrivateJournalMutationType
+  clientMutationId String
+  resultVersion    Int?
+  createdAt        DateTime                   @default(now())
+
+  user         UserProfile          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  journalEntry PrivateJournalEntry? @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, clientMutationId])
+  @@index([journalEntryId, createdAt])
+  @@index([userId, createdAt])
+}
+
 model PrayerCheckIn {
-  id        String               @id @default(cuid())
+  id        String              @id @default(cuid())
   userId    String
   localDate String
   timezone  String
   prayer    PrayerName
   status    PrayerCheckInStatus
-  version   Int                  @default(1)
-  createdAt DateTime             @default(now())
-  updatedAt DateTime             @updatedAt
+  version   Int                 @default(1)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
 
   user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -329,7 +385,7 @@ model ZakatPlan {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
-  user     UserProfile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     UserProfile    @relation(fields: [userId], references: [id], onDelete: Cascade)
   payments ZakatPayment[]
 
   @@unique([userId, periodYear])
@@ -368,7 +424,7 @@ model EmailDispatch {
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
 
-  user              UserProfile         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, templateKey, localDate])
   @@index([localDate, status])
@@ -376,43 +432,43 @@ model EmailDispatch {
 }
 
 model BookmarkCategory {
-  id         String      @id @default(cuid())
+  id         String    @id @default(cuid())
   userId     String
   name       String
-  sortOrder  Int         @default(0)
+  sortOrder  Int       @default(0)
   archivedAt DateTime?
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
-  user       UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bookmarks  Bookmark[]
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookmarks Bookmark[]
 
   @@index([userId, updatedAt])
   @@index([userId, archivedAt])
 }
 
 model Bookmark {
-  id         String            @id @default(cuid())
-  userId     String
-  ayahId     Int
-  surahNumber Int
-  ayahNumber Int
-  name       String
-  note       String?
-  categoryId String?
-  isPinned   Boolean           @default(false)
-  version    Int               @default(1)
-  deletedAt  DateTime?
-  quranFoundationBookmarkId String?
-  quranFoundationSyncState String?
+  id                          String    @id @default(cuid())
+  userId                      String
+  ayahId                      Int
+  surahNumber                 Int
+  ayahNumber                  Int
+  name                        String
+  note                        String?
+  categoryId                  String?
+  isPinned                    Boolean   @default(false)
+  version                     Int       @default(1)
+  deletedAt                   DateTime?
+  quranFoundationBookmarkId   String?
+  quranFoundationSyncState    String?
   quranFoundationLastSyncedAt DateTime?
-  quranFoundationSyncError String?
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
+  quranFoundationSyncError    String?
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
 
-  user       UserProfile       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category   BookmarkCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  events     BookmarkEvent[]
+  user     UserProfile       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category BookmarkCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  events   BookmarkEvent[]
 
   @@index([userId, updatedAt])
   @@index([userId, deletedAt])
@@ -422,21 +478,21 @@ model Bookmark {
 }
 
 model QuranFoundationAccount {
-  id                    String      @id @default(cuid())
-  userId                String      @unique
-  quranFoundationUserId String?
-  displayName           String?
-  email                 String?
-  accessTokenCiphertext String
+  id                     String    @id @default(cuid())
+  userId                 String    @unique
+  quranFoundationUserId  String?
+  displayName            String?
+  email                  String?
+  accessTokenCiphertext  String
   refreshTokenCiphertext String?
-  scopes                String[]    @default([])
-  status                String      @default("connected")
-  accessTokenExpiresAt  DateTime?
-  lastMutationAt        String?
-  lastSyncedAt          DateTime?
-  lastError             String?
-  createdAt             DateTime    @default(now())
-  updatedAt             DateTime    @updatedAt
+  scopes                 String[]  @default([])
+  status                 String    @default("connected")
+  accessTokenExpiresAt   DateTime?
+  lastMutationAt         String?
+  lastSyncedAt           DateTime?
+  lastError              String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 
   user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -454,8 +510,8 @@ model BookmarkEvent {
   occurredAt       DateTime             @default(now())
   createdAt        DateTime             @default(now())
 
-  user             UserProfile          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bookmark         Bookmark?            @relation(fields: [bookmarkId], references: [id], onDelete: SetNull)
+  user     UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookmark Bookmark?   @relation(fields: [bookmarkId], references: [id], onDelete: SetNull)
 
   @@unique([userId, clientMutationId])
   @@index([userId, occurredAt])
@@ -463,36 +519,36 @@ model BookmarkEvent {
 }
 
 model Session {
-  id              String        @id @default(cuid())
-  userId          String
-  status          SessionStatus @default(OPEN)
-  startedAt       DateTime      @default(now())
-  endedAt         DateTime?
-  localDate       String
-  mode            SrsMode @default(NORMAL)
-  reviewDebtMinutesAtStart Int @default(0)
-  warmupPassed    Boolean?
-  warmupRetryUsed Boolean @default(false)
-  weeklyGateRequired Boolean @default(false)
-  weeklyGatePassed Boolean?
-  newUnlocked     Boolean @default(true)
+  id                       String        @id @default(cuid())
+  userId                   String
+  status                   SessionStatus @default(OPEN)
+  startedAt                DateTime      @default(now())
+  endedAt                  DateTime?
+  localDate                String
+  mode                     SrsMode       @default(NORMAL)
+  reviewDebtMinutesAtStart Int           @default(0)
+  warmupPassed             Boolean?
+  warmupRetryUsed          Boolean       @default(false)
+  weeklyGateRequired       Boolean       @default(false)
+  weeklyGatePassed         Boolean?
+  newUnlocked              Boolean       @default(true)
 
-  warmupAyahIds   Int[]
-  reviewAyahIds   Int[]
-  newStartAyahId  Int?
-  newEndAyahId    Int?
-  planJson        Json?
+  warmupAyahIds  Int[]
+  reviewAyahIds  Int[]
+  newStartAyahId Int?
+  newEndAyahId   Int?
+  planJson       Json?
 
-  user            UserProfile   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  attempts        AyahAttempt[]
-  reviewEvents    ReviewEvent[]
+  user         UserProfile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attempts     AyahAttempt[]
+  reviewEvents ReviewEvent[]
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  @@unique([userId, startedAt])
   @@index([userId, startedAt])
   @@index([userId, localDate])
-  @@unique([userId, startedAt])
 }
 
 model AyahAttempt {
@@ -504,33 +560,33 @@ model AyahAttempt {
   grade     SrsGrade
   createdAt DateTime     @default(now())
 
-  user      UserProfile  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  session   Session      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session Session     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([userId, ayahId, createdAt])
   @@index([sessionId, createdAt])
 }
 
 model AyahReview {
-  id           String    @id @default(cuid())
-  userId       String
-  ayahId       Int
-  band         MemorizationBand @default(ENCODING)
-  checkpointIndex Int @default(0)
-  nextIntervalMinutes Int @default(1440)
-  lastDurationSec Int?
+  id                  String           @id @default(cuid())
+  userId              String
+  ayahId              Int
+  band                MemorizationBand @default(ENCODING)
+  checkpointIndex     Int              @default(0)
+  nextIntervalMinutes Int              @default(1440)
+  lastDurationSec     Int?
 
-  station      Int       @default(1)
-  intervalDays Int       @default(1)
-  easeFactor   Float     @default(2.5)
-  repetitions  Int       @default(0)
-  lapses       Int       @default(0)
+  station      Int   @default(1)
+  intervalDays Int   @default(1)
+  easeFactor   Float @default(2.5)
+  repetitions  Int   @default(0)
+  lapses       Int   @default(0)
 
   nextReviewAt DateTime
   lastReviewAt DateTime?
   lastGrade    SrsGrade?
 
-  user         UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, ayahId])
   @@index([userId, nextReviewAt])
@@ -538,43 +594,43 @@ model AyahReview {
 }
 
 model WeakTransition {
-  id            String   @id @default(cuid())
-  userId        String
-  fromAyahId    Int
-  toAyahId      Int
+  id         String @id @default(cuid())
+  userId     String
+  fromAyahId Int
+  toAyahId   Int
 
-  attemptCount  Int      @default(0)
-  failCount     Int      @default(0)
-  successCount  Int      @default(0)
+  attemptCount      Int   @default(0)
+  failCount         Int   @default(0)
+  successCount      Int   @default(0)
   successRateCached Float @default(0)
 
   lastOccurredAt DateTime
   nextRepairAt   DateTime?
   lastGrade      SrsGrade?
-  resolvedAt    DateTime?
+  resolvedAt     DateTime?
 
-  user          UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, fromAyahId, toAyahId])
   @@index([userId, nextRepairAt])
 }
 
 model ReviewEvent {
-  id          String      @id @default(cuid())
+  id          String       @id @default(cuid())
   userId      String
   sessionId   String
   surahNumber Int
   ayahId      Int
   stage       AttemptStage
-  phase       ReviewPhase @default(STANDARD)
+  phase       ReviewPhase  @default(STANDARD)
   grade       SrsGrade?
-  durationSec Int         @default(0)
+  durationSec Int          @default(0)
   fromAyahId  Int?
   toAyahId    Int?
-  createdAt   DateTime    @default(now())
+  createdAt   DateTime     @default(now())
 
-  user        UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
-  session     Session     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session Session     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
   @@index([userId, ayahId, createdAt])
@@ -593,23 +649,23 @@ model QualityGateRun {
   detailsJson Json?
   createdAt   DateTime    @default(now())
 
-  user        UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, gateType, createdAt])
   @@index([userId, windowEnd])
 }
 
 model QuranBrowseEvent {
-  id         String            @id @default(cuid())
-  userId     String
-  ayahId     Int
+  id          String            @id @default(cuid())
+  userId      String
+  ayahId      Int
   surahNumber Int
-  localDate  String
-  source     QuranBrowseSource
-  firstSeenAt DateTime         @default(now())
-  lastSeenAt DateTime          @default(now())
+  localDate   String
+  source      QuranBrowseSource
+  firstSeenAt DateTime          @default(now())
+  lastSeenAt  DateTime          @default(now())
 
-  user       UserProfile       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, localDate, ayahId, source])
   @@index([userId, lastSeenAt])
@@ -618,84 +674,84 @@ model QuranBrowseEvent {
 }
 
 model QuranReaderFilterPreference {
-  id              String      @id @default(cuid())
-  userId          String      @unique
-  view            String      @default("list")
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  view            String   @default("list")
   surahNumber     Int?
   ayahId          Int?
-  showPhonetic    Boolean     @default(true)
-  showTranslation Boolean     @default(true)
-  showTafsir      Boolean     @default(false)
+  showPhonetic    Boolean  @default(true)
+  showTranslation Boolean  @default(true)
+  showTafsir      Boolean  @default(false)
   tafsirId        Int?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  user            UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, updatedAt])
 }
 
 model CustomDua {
-  id              String      @id @default(cuid())
+  id              String   @id @default(cuid())
   userId          String
-  moduleId        String      @default("laylat-al-qadr")
+  moduleId        String   @default("laylat-al-qadr")
   title           String
   arabic          String?
   transliteration String?
   translation     String
   note            String?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  user            UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, moduleId, updatedAt])
   @@index([userId, moduleId, createdAt])
 }
 
 model DuaDeckOrder {
-  id        String      @id @default(cuid())
+  id        String   @id @default(cuid())
   userId    String
-  moduleId  String      @default("laylat-al-qadr")
+  moduleId  String   @default("laylat-al-qadr")
   itemKey   String
-  sortOrder Int         @default(0)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, moduleId, itemKey])
   @@index([userId, moduleId, sortOrder, updatedAt])
 }
 
 model TeacherCircle {
-  id          String      @id @default(cuid())
+  id          String     @id @default(cuid())
   ownerUserId String
   name        String
   kind        CircleKind
   description String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
-  owner       UserProfile @relation("OwnedTeacherCircles", fields: [ownerUserId], references: [id], onDelete: Cascade)
-  members     TeacherCircleMember[]
+  owner        UserProfile                @relation("OwnedTeacherCircles", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  members      TeacherCircleMember[]
   weeklyChecks TeacherCircleWeeklyCheck[]
 
   @@index([ownerUserId, updatedAt])
 }
 
 model TeacherCircleMember {
-  id           String            @id @default(cuid())
+  id           String           @id @default(cuid())
   circleId     String
   linkedUserId String?
   displayName  String
   role         CircleMemberRole
   notes        String?
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 
-  circle       TeacherCircle     @relation(fields: [circleId], references: [id], onDelete: Cascade)
-  linkedUser   UserProfile?      @relation("TeacherCircleLinkedUser", fields: [linkedUserId], references: [id], onDelete: SetNull)
+  circle       TeacherCircle              @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  linkedUser   UserProfile?               @relation("TeacherCircleLinkedUser", fields: [linkedUserId], references: [id], onDelete: SetNull)
   weeklyChecks TeacherCircleWeeklyCheck[]
 
   @@unique([circleId, displayName])
@@ -704,24 +760,24 @@ model TeacherCircleMember {
 }
 
 model TeacherCircleWeeklyCheck {
-  id               String                 @id @default(cuid())
-  circleId         String
-  memberId         String
+  id                 String                 @id @default(cuid())
+  circleId           String
+  memberId           String
   weekStartLocalDate String
-  targetLabel      String
-  targetStartAyahId Int?
-  targetEndAyahId  Int?
-  attendanceStatus CircleAttendanceStatus @default(PENDING)
-  oralCheckStatus  CircleOralCheckStatus  @default(PENDING)
-  teacherComment   String?
-  parentComment    String?
-  updatedByUserId  String
-  createdAt        DateTime               @default(now())
-  updatedAt        DateTime               @updatedAt
+  targetLabel        String
+  targetStartAyahId  Int?
+  targetEndAyahId    Int?
+  attendanceStatus   CircleAttendanceStatus @default(PENDING)
+  oralCheckStatus    CircleOralCheckStatus  @default(PENDING)
+  teacherComment     String?
+  parentComment      String?
+  updatedByUserId    String
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
 
-  circle           TeacherCircle          @relation(fields: [circleId], references: [id], onDelete: Cascade)
-  member           TeacherCircleMember    @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  updatedBy        UserProfile            @relation("TeacherCircleUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: Cascade)
+  circle    TeacherCircle       @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  member    TeacherCircleMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  updatedBy UserProfile         @relation("TeacherCircleUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: Cascade)
 
   @@unique([memberId, weekStartLocalDate])
   @@index([circleId, weekStartLocalDate])

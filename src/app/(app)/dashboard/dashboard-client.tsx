@@ -23,11 +23,14 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
+import { NextActionCard } from "@/components/app/next-action-card";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DisclosureCard } from "@/components/ui/disclosure-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
+import { resolveNextAction } from "@/hifzer/continuity/next-action";
+import { mapPublicHttpError } from "@/hifzer/errors/public-error";
 import type { OnboardingStartLane } from "@/hifzer/profile/onboarding";
 import styles from "./dashboard.module.css";
 
@@ -479,6 +482,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
   const [loadingQuran, setLoadingQuran] = useState(() => !initialQuran);
   const [loadingActivity, setLoadingActivity] = useState(() => !initialActivity);
   const [error, setError] = useState<string | null>(null);
+  const [authRequired, setAuthRequired] = useState(false);
   const [detailsError, setDetailsError] = useState<string | null>(null);
   const [streakError, setStreakError] = useState<string | null>(null);
   const [quranError, setQuranError] = useState<string | null>(null);
@@ -495,11 +499,14 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
       setLoading(true);
     }
     setError(null);
+    setAuthRequired(false);
     try {
       const res = await fetch("/api/dashboard/overview?view=summary", { cache: "no-store" });
       const payload = (await res.json().catch(() => null)) as (DashboardSummaryPayload & { error?: string }) | null;
       if (!res.ok) {
-        throw new Error(payload?.error || "Failed to load dashboard.");
+        const publicError = mapPublicHttpError(res.status, "dashboard");
+        setAuthRequired(publicError.needsSignIn);
+        throw new Error(publicError.message);
       }
       if (!payload?.summary) {
         throw new Error("Dashboard summary was empty.");
@@ -815,6 +822,13 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
   }, [details]);
 
   const status = summary ? statusPill(summary.today.status) : null;
+  const nextAction = useMemo(() => summary ? resolveNextAction({
+    openHifzSessions: summary.today.openSessions,
+    dueHifzReviews: summary.reviewHealth.dueNow,
+    quranCursorAyahId: summary.quran.cursorAyahId,
+    quranCursorRef: summary.quran.cursorRef,
+    currentSurahName: summary.quran.currentSurahName,
+  }) : null, [summary]);
   const shouldShowGuide = Boolean(
     details &&
     summary &&
@@ -834,15 +848,21 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
           <EmptyState
             title="We could not load your day yet"
             message={
-              error === "Unauthorized"
-                ? "Your session needs a refresh before Hifzer can show today's plan."
+              authRequired
+                ? "Your sign-in has expired. Sign in again to continue; your saved reading place remains safe."
                 : "Your reading place is still safe. Try again, or open the Qur'an while we reconnect."
             }
             action={(
               <div className="flex flex-wrap justify-center gap-2">
-                <Button variant="secondary" className="gap-2" onClick={() => void refreshDashboard()}>
-                  Try again <RefreshCcw size={16} />
-                </Button>
+                {authRequired ? (
+                  <Button asChild>
+                    <Link href="/login?redirect_url=%2Fdashboard">Sign in again <ArrowRight size={16} /></Link>
+                  </Button>
+                ) : (
+                  <Button variant="secondary" className="gap-2" onClick={() => void refreshDashboard()}>
+                    Try again <RefreshCcw size={16} />
+                  </Button>
+                )}
                 <Link href="/quran">
                   <Button className="gap-2">
                     Open Qur&apos;an <BookOpenText size={16} />
@@ -865,6 +885,8 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             <DashboardFirstRunGuide overview={details} initialLane={details.profile.onboardingStartLane} />
           ) : null}
 
+          {nextAction ? <NextActionCard action={nextAction} /> : null}
+
           <section className={`kw-fade-in ${styles.commandDeck} px-4 py-4 sm:px-5 sm:py-5`}>
             <div className={styles.pulseOrb} />
             <div className={styles.driftOrb} />
@@ -875,21 +897,21 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                   {summary.reviewHealth.dueNow > 0 ? <Pill tone="warn">{summary.reviewHealth.dueNow} due</Pill> : null}
                 </div>
 
-                <p className={styles.todayKicker}>Today</p>
-                <h2 className={styles.todayTitle}>Continue from {summary.quran.cursorRef}</h2>
+                <p className={styles.todayKicker}>Choose another</p>
+                <h2 className={styles.todayTitle}>Other paths for today</h2>
                 <p className={styles.todayBody}>
-                  You are in {summary.quran.currentSurahName}. Read a little, review what is due, or leave a reflection when something lands.
+                  The recommendation above is a starting point, not a restriction. Reading, Hifz, dua, and reflection remain one step away.
                 </p>
 
                 <div className={styles.todayButtons}>
                   <Link href="/quran/read?view=compact">
                     <Button className="gap-2">
-                      Continue reading <ArrowRight size={16} />
+                      Open Qur&apos;an <ArrowRight size={16} />
                     </Button>
                   </Link>
                   <Link href="/hifz">
                     <Button variant="secondary" className="gap-2">
-                      {summary.reviewHealth.dueNow > 0 ? "Review Hifz" : "Open Hifz"} <PlayCircle size={16} />
+                      Open Hifz <PlayCircle size={16} />
                     </Button>
                   </Link>
                 </div>

@@ -23,8 +23,6 @@ export default function RootSegmentError(props: { error: Error & { digest?: stri
       body: JSON.stringify({
         errorId,
         digest: props.error?.digest ?? null,
-        message: props.error?.message ?? "Unknown error",
-        stack: props.error?.stack ?? null,
         source: "root-error-boundary",
         path: window.location?.pathname ?? null,
       }),

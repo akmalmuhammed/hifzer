@@ -229,6 +229,9 @@ async function main() {
       for (const item of ROUTES) {
         const url = `${BASE_URL}${item.route}`;
         await page.goto(url, { waitUntil: "domcontentloaded", timeout: 120000 });
+        if (item.route === "/billing/success") {
+          await page.waitForURL((current) => current.pathname === "/billing/thank-you", { timeout: 120000 });
+        }
         await page.waitForTimeout(400);
 
         const metrics = await page.evaluate(() => {

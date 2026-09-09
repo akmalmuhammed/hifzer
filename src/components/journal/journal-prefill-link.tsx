@@ -28,8 +28,8 @@ export function JournalPrefillLink(props: {
       href={href}
       className={clsx(
         props.variant === "icon"
-          ? "inline-flex h-9 w-9 items-center justify-center rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] transition hover:bg-[color:var(--kw-hover-strong)]"
-          : "inline-flex items-center gap-2 rounded-full border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] transition hover:bg-white",
+          ? "inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] transition hover:bg-[color:var(--kw-hover-strong)]"
+          : "inline-flex min-h-11 items-center gap-2 rounded-full border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] transition hover:bg-white",
         props.className,
       )}
       aria-label={props.ariaLabel ?? label}

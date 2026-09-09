@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   },
 };
 
-const LAST_UPDATED = "February 16, 2026";
+const LAST_UPDATED = "September 5, 2026";
 
 export default function LegalPrivacyPage() {
   return (
@@ -44,7 +44,35 @@ export default function LegalPrivacyPage() {
         </Card>
 
         <Card>
-          <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">3. Billing processors</h2>
+          <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">3. Private journal and device storage</h2>
+          <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+            Signed-out journal entries stay in this browser&apos;s local storage. Signed-in entries are stored in your
+            Hifzer account and queued locally while offline. Browser storage is not end-to-end encrypted and can be
+            read by someone with access to your unlocked browser profile. Journal text is excluded from product analytics.
+          </p>
+        </Card>
+
+        <Card>
+          <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">4. Connected services</h2>
+          <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+            If you connect Quran.com, Hifzer may sync reading position, activity, and bookmarks using the permissions
+            you grant. Private journal reflections are sent to Quran.com notes only when you choose the explicit
+            journal export action in Settings. Imports and exports create separate copies.
+          </p>
+        </Card>
+
+        <Card>
+          <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">5. Analytics and error reporting</h2>
+          <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+            Product analytics use allowlisted event names and coarse dimensions such as route, device class, action
+            type, and outcome. Journal text, free-form answers, email addresses, account IDs, tokens, URL queries,
+            and stack traces are not included in product analytics. Error reporting may collect technical diagnostics
+            needed to investigate failures.
+          </p>
+        </Card>
+
+        <Card>
+          <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">6. Billing processors</h2>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
             Optional support checkout is processed by third-party payment providers (currently Paddle).
             We do not store full payment card details on Hifzer servers.
@@ -52,7 +80,7 @@ export default function LegalPrivacyPage() {
         </Card>
 
         <Card>
-          <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">4. Audio and uploads</h2>
+          <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">7. Audio and uploads</h2>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
             Audio assets used for playback are stored in object storage (Cloudflare R2). Playback
             requests may generate access logs at infrastructure providers.
@@ -60,7 +88,7 @@ export default function LegalPrivacyPage() {
         </Card>
 
         <Card>
-          <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">5. Retention</h2>
+          <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">8. Retention</h2>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
             We retain account and progress data for as long as your account is active or as needed to
             provide the service, comply with legal obligations, and resolve disputes.
@@ -68,7 +96,7 @@ export default function LegalPrivacyPage() {
         </Card>
 
         <Card>
-          <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">6. Your choices</h2>
+          <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">9. Your choices</h2>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
             You can update profile preferences in Settings and request account deletion by contacting
             support. Refund handling is described in our{" "}
@@ -80,7 +108,7 @@ export default function LegalPrivacyPage() {
         </Card>
 
         <Card>
-          <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">7. Contact</h2>
+          <h2 className="text-base font-semibold text-[color:var(--kw-ink)]">10. Contact</h2>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
             Privacy requests:{" "}
             <a href="mailto:support@hifzer.com" className="font-semibold text-[rgba(31,54,217,1)] hover:underline">

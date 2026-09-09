@@ -5,13 +5,10 @@ import { useEffect, useRef } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { trackGaEvent } from "@/lib/ga/client";
+import { trackProductEvent } from "@/lib/telemetry/client";
 
 const STORAGE_KEYS = {
   lastClickHref: "hifzer_last_click_href_v1",
-  lastClickFrom: "hifzer_last_click_from_v1",
-  lastClickAt: "hifzer_last_click_at_v1",
-  previousPath: "hifzer_previous_path_v1",
 } as const;
 
 function safeGetSessionItem(key: string): string | null {
@@ -57,12 +54,9 @@ export default function NotFoundPage() {
     }
     sentRef.current = true;
 
-    const currentPath = `${window.location.pathname}${window.location.search || ""}`;
+    const currentPath = window.location.pathname;
     const referrer = document.referrer || null;
     const lastClickHref = safeGetSessionItem(STORAGE_KEYS.lastClickHref);
-    const lastClickFrom = safeGetSessionItem(STORAGE_KEYS.lastClickFrom);
-    const lastClickAt = safeGetSessionItem(STORAGE_KEYS.lastClickAt);
-    const previousPath = safeGetSessionItem(STORAGE_KEYS.previousPath);
     const cause = causeType({ currentPath, lastClickHref, referrer });
     const navType = navigationType();
     const sameOriginReferrer = (() => {
@@ -77,24 +71,16 @@ export default function NotFoundPage() {
     })();
 
     const payload = {
-      page_path: window.location.pathname,
-      page_query: window.location.search || "",
-      page_location: window.location.href,
-      referrer: referrer ?? "(none)",
-      cause_type: cause,
-      last_click_href: lastClickHref ?? "(none)",
-      last_click_from: lastClickFrom ?? "(none)",
-      last_click_at: lastClickAt ?? "(none)",
-      previous_path: previousPath ?? "(none)",
-      navigation_type: navType,
-      same_origin_referrer: sameOriginReferrer,
+      errorCode: cause,
+      mode: navType,
+      outcome: sameOriginReferrer ? "same_origin" : "other",
     };
 
-    trackGaEvent("page_not_found", payload);
+    trackProductEvent("page_not_found", payload);
     Sentry.captureMessage(`404 page_not_found:${currentPath}`, {
       level: "warning",
       tags: { cause_type: cause, navigation_type: navType },
-      extra: payload,
+      extra: { path: currentPath, sameOriginReferrer },
     });
   }, []);
 

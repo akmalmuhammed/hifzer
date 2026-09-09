@@ -51,11 +51,13 @@ export default async function JournalPage() {
 
   return (
     <JournalClient
+      key={userId ?? "device"}
       surahs={surahs}
       duaOptions={[]}
       initialEntries={initialEntries}
       syncEnabled={syncEnabled}
       initialSyncError={initialSyncError}
+      storageOwnerId={userId}
       translationDir={translationDir}
       translationAlignClass={translationAlignClass}
     />

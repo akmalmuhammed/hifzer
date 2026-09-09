@@ -95,7 +95,7 @@ export default async function JuzPage(props: { params: Promise<{ id: string }> }
               </div>
             </div>
 
-            <div dir="rtl" className="mt-4 text-right text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
+            <div dir="rtl" lang="ar" className="mt-4 text-right text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
               {a.textUthmani}
             </div>
             <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">

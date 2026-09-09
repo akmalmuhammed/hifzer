@@ -84,7 +84,7 @@ function AssistantResult() {
                 Matched ayah
               </span>
             </div>
-            <p dir="rtl" className={styles.matchArabic}>
+            <p dir="rtl" lang="ar" className={styles.matchArabic}>
               {match.arabicText}
             </p>
             {match.translation ? (
@@ -162,7 +162,7 @@ export function GroundedGuidanceDemo() {
           <span className={styles.verseKey}>{LANDING_GUIDANCE_DEMO.currentAyah.verseKey}</span>
           <span className={styles.translationLabel}>{LANDING_GUIDANCE_DEMO.currentAyah.translation.label}</span>
         </div>
-        <p dir="rtl" className={styles.arabicLine}>
+        <p dir="rtl" lang="ar" className={styles.arabicLine}>
           {LANDING_GUIDANCE_DEMO.currentAyah.arabicText}
         </p>
         <p className={styles.translation}>{LANDING_GUIDANCE_DEMO.currentAyah.translation.text}</p>

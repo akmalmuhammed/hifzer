@@ -255,7 +255,7 @@ export function CompactReaderClient({
   const arabicFontSize = `clamp(${(1.8 * arabicScale).toFixed(2)}rem, ${(5 * arabicScale).toFixed(2)}vw, ${(2.7 * arabicScale).toFixed(2)}rem)`;
 
   const btnBase =
-    "rounded-xl border px-3 py-2 text-sm font-semibold";
+    "inline-flex min-h-11 items-center justify-center rounded-xl border px-3 py-2 text-sm font-semibold";
   const btnActive =
     `${btnBase} border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]`;
   const btnDisabled =
@@ -318,15 +318,15 @@ export function CompactReaderClient({
               </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
-                Pinch, Ctrl + wheel, or use A-/A+
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[color:var(--kw-border-2)] pt-3">
+              <span id="reader-text-size-label" className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
+                Text size
               </span>
-              <div className="flex items-center gap-2">
-                <button type="button" onClick={() => resizeArabic(-0.08)} className={btnSecondary}>
-                  A-
+              <div className="flex items-center gap-2" role="group" aria-labelledby="reader-text-size-label">
+                <button type="button" onClick={() => resizeArabic(-0.08)} className={btnSecondary} aria-label="Decrease Arabic text size">
+                  A−
                 </button>
-                <button type="button" onClick={() => resizeArabic(0.08)} className={btnSecondary}>
+                <button type="button" onClick={() => resizeArabic(0.08)} className={btnSecondary} aria-label="Increase Arabic text size">
                   A+
                 </button>
               </div>
@@ -347,6 +347,7 @@ export function CompactReaderClient({
         )}
         <div
           dir="rtl"
+          lang="ar"
           className={focusMode ? "mt-8 text-right text-[color:var(--kw-ink)]" : "mt-3 text-right text-[color:var(--kw-ink)]"}
           style={{ fontSize: arabicFontSize, lineHeight: 2.05, touchAction: "manipulation" }}
           onTouchStart={onArabicTouchStart}
@@ -393,7 +394,7 @@ export function CompactReaderClient({
 
         {!focusMode ? <AyahAiExplanationPanel key={current.id} ayahId={current.id} compact /> : null}
         {!focusMode ? (
-          <div className="mt-6 flex items-center gap-2">
+          <div className="mt-6 flex flex-wrap items-center gap-2">
             {prevAyah ? (
               <button type="button" onClick={handlePrev} className={btnSecondary}>
                 {ui.previous}

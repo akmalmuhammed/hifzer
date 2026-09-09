@@ -14,6 +14,7 @@ export type AyahWordNote = {
 export type AyahExplanationSource = {
   label: string;
   kind: AyahExplanationSourceKind;
+  url?: string | null;
 };
 
 export type AyahExplanation = {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, type FormEvent, type KeyboardEvent } from "react";
-import { Loader2, MessageSquareQuote, RefreshCw, Search, Sparkles } from "lucide-react";
+import { ExternalLink, Flag, Loader2, MessageSquareQuote, RefreshCw, Search, Sparkles } from "lucide-react";
 import { useOnlineStatus } from "@/components/pwa/use-online-status";
 import { Card } from "@/components/ui/card";
 import { Pill } from "@/components/ui/pill";
@@ -102,6 +102,9 @@ export function QuranAiAssistantPanel(props: { ayahId?: number | null; compact?:
         <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">
           Search by meaning, topic, or surah and get grounded ayahs with translation, tafsir summary, and sources.
         </p>
+        <p className="mt-2 text-xs leading-6 text-[color:var(--kw-faint)]">
+          AI can make mistakes and is not a religious ruling. Verify the linked ayahs and consult a qualified scholar for personal guidance.
+        </p>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
@@ -168,6 +171,13 @@ export function QuranAiAssistantPanel(props: { ayahId?: number | null; compact?:
       {errorDetail ? (
         <div className="mt-4 rounded-[18px] border border-[rgba(180,83,9,0.18)] bg-[rgba(245,158,11,0.08)] px-4 py-3">
           <p className="text-sm leading-7 text-[color:var(--kw-muted)]">{errorDetail}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button type="button" onClick={() => void submitAssistantQuery()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-2 text-xs font-semibold text-[color:var(--kw-ink)]">
+              <RefreshCw size={13} aria-hidden="true" /> Try again
+            </button>
+            <Link href="/quran" className="inline-flex min-h-11 items-center rounded-xl px-3 text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">Open the Qur&apos;an</Link>
+            <Link href="/legal/sources" className="inline-flex min-h-11 items-center rounded-xl px-3 text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">Trusted sources</Link>
+          </div>
         </div>
       ) : null}
 
@@ -204,9 +214,17 @@ export function QuranAiAssistantPanel(props: { ayahId?: number | null; compact?:
                         <Search size={12} />
                         Open
                       </Link>
+                      <a
+                        href={`https://quran.com/${match.verseKey.replace(":", "/")}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex min-h-11 items-center gap-1 text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline"
+                      >
+                        Source <ExternalLink size={12} aria-hidden="true" />
+                      </a>
                     </div>
                   </div>
-                  <p dir="rtl" className="mt-3 text-right text-xl leading-[2] text-[color:var(--kw-ink)]">
+                  <p dir="rtl" lang="ar" className="mt-3 text-right text-xl leading-[2] text-[color:var(--kw-ink)]">
                     {match.arabicText}
                   </p>
                   {match.translation ? (
@@ -243,6 +261,9 @@ export function QuranAiAssistantPanel(props: { ayahId?: number | null; compact?:
               ))}
             </div>
           ) : null}
+          <Link href="/support?topic=ai-report" className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-xs font-semibold text-[color:var(--kw-muted)] hover:text-[color:var(--kw-ink)]">
+            <Flag size={13} aria-hidden="true" /> Report this answer
+          </Link>
         </div>
       ) : null}
     </Card>

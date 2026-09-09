@@ -40,8 +40,14 @@ function applyUiLanguageToDocument(language: UiLanguage) {
   if (typeof document === "undefined") {
     return;
   }
-  document.documentElement.lang = uiLanguageToHtmlLang(language);
-  document.documentElement.dir = isUiLanguageRtl(language) ? "rtl" : "ltr";
+  // Most route bodies are still English even when the shell and translation
+  // controls use another language. Keep the document contract truthful until
+  // complete route catalogs exist, and expose the chosen shell language as
+  // data for scoped components instead of mislabelling the whole document.
+  document.documentElement.lang = "en";
+  document.documentElement.dir = "ltr";
+  document.documentElement.dataset.uiLanguage = uiLanguageToHtmlLang(language);
+  document.documentElement.dataset.uiDirection = isUiLanguageRtl(language) ? "rtl" : "ltr";
 }
 
 function dispatchUiLanguageChange() {

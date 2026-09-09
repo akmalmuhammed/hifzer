@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { ArrowRight, BookMarked, BookOpen, Compass, MoonStar } from "lucide-react";
 import { DistractionFreeToggle } from "@/components/app/distraction-free-toggle";
+import { NextActionCard } from "@/components/app/next-action-card";
 import { SurahProgressSection } from "@/components/progress/surah-progress-section";
 import { DisclosureCard } from "@/components/ui/disclosure-card";
 import { Pill } from "@/components/ui/pill";
+import { buildQuranResumeAction } from "@/hifzer/continuity/next-action";
 import { listQuranSurahProgress } from "@/hifzer/progress/surah-progress.server";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
 import { getAyahById, listJuzs, listSurahs } from "@/hifzer/quran/lookup.server";
@@ -59,6 +61,11 @@ export default async function QuranIndexPage() {
   }
   const trackedHref = `/quran/read?${trackedParams.toString()}`;
   const anonymousHref = `${trackedHref}&anon=1`;
+  const nextAction = buildQuranResumeAction({
+    quranCursorAyahId: lastAyah?.id ?? 1,
+    quranCursorRef: `${lastAyah?.surahNumber ?? 1}:${lastAyah?.ayahNumber ?? 1}`,
+    currentSurahName: surahs.find((surah) => surah.surahNumber === (lastAyah?.surahNumber ?? 1))?.nameTransliteration ?? "Al-Fatihah",
+  });
   const toolLinkClass =
     "inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] transition hover:bg-white";
 
@@ -68,27 +75,23 @@ export default async function QuranIndexPage() {
         <Pill tone="neutral">Qur&apos;an</Pill>
         <DistractionFreeToggle />
       </div>
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-        <Link
-          href={trackedHref}
-          className="kw-subtle-emphasis inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2.5 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
-        >
-          Continue reading <ArrowRight size={14} />
-        </Link>
+      <div className="mt-6 flex justify-end">
         <span className="grid h-12 w-12 place-items-center rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
           <BookOpen size={18} />
         </span>
       </div>
 
       <div className="mt-8">
-        <QuranCompletionProgress
-          completionPct={readCoverage.completionPct}
-          completedAyahCount={readCoverage.uniqueReadAyahCount}
-          totalAyahs={totalAyahs}
-          currentSurahNumber={lastAyah?.surahNumber ?? 1}
-          currentAyahNumber={lastAyah?.ayahNumber ?? 1}
-          completedKhatmahCount={readCoverage.completionKhatmahCount}
-          resumeHref={trackedHref}
+        <NextActionCard
+          action={{ ...nextAction, href: trackedHref }}
+          secondary={(
+            <Link
+              href={anonymousHref}
+              className="inline-flex min-h-11 items-center rounded-xl border border-[color:var(--kw-border-2)] bg-white/75 px-4 py-2 text-sm font-semibold text-[color:var(--kw-ink)] transition hover:bg-white"
+            >
+              Read privately on this device
+            </Link>
+          )}
         />
       </div>
 
@@ -99,6 +102,28 @@ export default async function QuranIndexPage() {
           continueHref={trackedHref}
           anonymousHref={anonymousHref}
         />
+      </div>
+
+      <div className="mt-8">
+        <DisclosureCard
+          summary={(
+            <div>
+              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Reading progress and private history</p>
+              <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
+                See aggregate coverage after choosing your next reading action.
+              </p>
+            </div>
+          )}
+        >
+          <QuranCompletionProgress
+            completionPct={readCoverage.completionPct}
+            completedAyahCount={readCoverage.uniqueReadAyahCount}
+            totalAyahs={totalAyahs}
+            currentSurahNumber={lastAyah?.surahNumber ?? 1}
+            currentAyahNumber={lastAyah?.ayahNumber ?? 1}
+            completedKhatmahCount={readCoverage.completionKhatmahCount}
+          />
+        </DisclosureCard>
       </div>
 
       {quranFoundationStatus ? (

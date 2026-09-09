@@ -7,6 +7,7 @@ import {
   parseSessionEventList,
 } from "@/hifzer/engine/session-guard";
 import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
+import { invalidateDashboardCaches } from "@/hifzer/dashboard/cache";
 
 type Payload = {
   sessionId?: unknown;
@@ -70,6 +71,7 @@ export async function POST(req: Request) {
       localDate,
       events,
     });
+    invalidateDashboardCaches(userId);
     return NextResponse.json(result);
   } catch (error) {
     if (isSessionGuardError(error)) {

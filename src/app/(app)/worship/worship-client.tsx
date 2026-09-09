@@ -28,6 +28,7 @@ import type {
   ZakatPlanStatus,
 } from "@/hifzer/worship/types";
 import styles from "./worship.module.css";
+import { mapPublicHttpError, PublicRequestError } from "@/hifzer/errors/public-error";
 
 const PRAYERS: Array<{ key: PrayerName; label: string }> = [
   { key: "FAJR", label: "Fajr" },
@@ -75,14 +76,16 @@ function formatMoney(amountMinor: string, currency: string): string {
 }
 
 function updateError(error: unknown): string {
-  return error instanceof Error ? error.message : "Your private update could not be saved.";
+  return error instanceof PublicRequestError
+    ? error.publicState.message
+    : "Your private update could not be saved. Your previous saved check-ins are unchanged.";
 }
 
 async function requestSnapshot(path: string, init?: RequestInit): Promise<WorshipSnapshot> {
   const response = await fetch(path, { cache: "no-store", ...init });
   const payload = (await response.json().catch(() => null)) as { snapshot?: WorshipSnapshot; error?: string } | null;
   if (!response.ok || !payload?.snapshot) {
-    throw new Error(payload?.error ?? "Your private update could not be saved.");
+    throw new PublicRequestError(mapPublicHttpError(response.status, "worship"));
   }
   return payload.snapshot;
 }
@@ -91,6 +94,7 @@ export function WorshipClient() {
   const [snapshot, setSnapshot] = useState<WorshipSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [authRequired, setAuthRequired] = useState(false);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [zakatAmount, setZakatAmount] = useState("");
   const [zakatCurrency, setZakatCurrency] = useState("QAR");
@@ -102,10 +106,12 @@ export function WorshipClient() {
   async function load() {
     setLoading(true);
     setError(null);
+    setAuthRequired(false);
     try {
       const next = await requestSnapshot("/api/worship");
       setSnapshot(next);
     } catch (nextError) {
+      setAuthRequired(nextError instanceof PublicRequestError && nextError.publicState.needsSignIn);
       setError(updateError(nextError));
     } finally {
       setLoading(false);
@@ -223,7 +229,14 @@ export function WorshipClient() {
         <PageHeader eyebrow="Daily worship" title="A quiet place to keep your practice close." />
         <Card className="space-y-4">
           <p className="text-sm leading-7 text-[color:var(--kw-muted)]">{error ?? "Private worship data is unavailable."}</p>
-          <Button variant="secondary" onClick={() => void load()} className="gap-2"><RefreshCcw /> Try again</Button>
+          {authRequired ? (
+            <div className="flex flex-wrap gap-2">
+              <Button asChild><Link href="/login?redirect_url=%2Fworship">Sign in again</Link></Button>
+              <Button asChild variant="secondary"><Link href="/quran/read?view=compact&anon=1">Open reader preview</Link></Button>
+            </div>
+          ) : (
+            <Button variant="secondary" onClick={() => void load()} className="gap-2"><RefreshCcw /> Try again</Button>
+          )}
         </Card>
       </div>
     );

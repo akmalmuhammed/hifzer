@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { recordBrowseAyahRecitation } from "@/hifzer/streak/server";
+import { invalidateDashboardCaches } from "@/hifzer/dashboard/cache";
 
 type Payload = {
   ayahId?: unknown;
@@ -34,6 +35,7 @@ export async function POST(req: Request) {
 
   try {
     const result = await recordBrowseAyahRecitation(userId, Math.floor(ayahId));
+    invalidateDashboardCaches(userId);
     return NextResponse.json(result);
   } catch (error) {
     Sentry.captureException(error, {

@@ -5,6 +5,7 @@ import {
   normalizeOnboardingStartLane,
   type OnboardingStartLane,
 } from "@/hifzer/profile/onboarding";
+import { withJournalOwnerStorageLock } from "@/hifzer/journal/storage-lock";
 
 export const STORAGE_KEYS = {
   localStateOwner: "hifzer_local_state_owner_v1",
@@ -74,6 +75,11 @@ export type StoredSession = {
   stepIndex: number;
 };
 
+export type LocalStateOwnerResolution =
+  | { status: "unresolved" }
+  | { status: "signed-out" }
+  | { status: "signed-in"; clerkUserId: string };
+
 const MAX_STORED_ATTEMPTS = 2000;
 const MAX_PENDING_BOOKMARK_MUTATIONS = 200;
 const USER_SCOPED_STORAGE_KEYS = [
@@ -99,6 +105,7 @@ const USER_SCOPED_STORAGE_KEYS = [
 
 const USER_SCOPED_STORAGE_PREFIXES = [
   "hifzer_private_journal_entries_v2:",
+  "hifzer_private_journal_pending_mutations_v1:",
 ] as const;
 
 const USER_SCOPED_SESSION_STORAGE_KEYS = [
@@ -117,67 +124,215 @@ const LEGACY_UNSCOPED_SENSITIVE_STORAGE_KEYS = [
   "hifzer_private_journal_entries_v1",
 ] as const;
 
-function isBrowser(): boolean {
-  return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+function getBrowserLocalStorage(): Storage | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  try {
+    return window.localStorage ?? null;
+  } catch {
+    return null;
+  }
 }
 
-function clearUserScopedBrowserState() {
-  if (!isBrowser()) {
-    return;
+function getBrowserSessionStorage(): Storage | null {
+  if (typeof window === "undefined") {
+    return null;
   }
+  try {
+    return window.sessionStorage ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function isBrowser(): boolean {
+  return getBrowserLocalStorage() !== null;
+}
+
+function removeStorageItem(storage: Storage, key: string): boolean {
+  try {
+    storage.removeItem(key);
+    return storage.getItem(key) === null;
+  } catch {
+    return false;
+  }
+}
+
+function setStorageItem(storage: Storage, key: string, value: string): boolean {
+  try {
+    storage.setItem(key, value);
+    return storage.getItem(key) === value;
+  } catch {
+    return false;
+  }
+}
+
+function clearUserScopedBrowserState(owner: string, localStorage: Storage): boolean {
+  let cleanupSucceeded = true;
 
   for (const key of USER_SCOPED_STORAGE_KEYS) {
-    window.localStorage.removeItem(key);
+    if (!removeStorageItem(localStorage, key)) {
+      cleanupSucceeded = false;
+    }
   }
   for (const key of LEGACY_UNSCOPED_SENSITIVE_STORAGE_KEYS) {
-    window.localStorage.removeItem(key);
-  }
-
-  for (let index = window.localStorage.length - 1; index >= 0; index -= 1) {
-    const key = window.localStorage.key(index);
-    if (key && USER_SCOPED_STORAGE_PREFIXES.some((prefix) => key.startsWith(prefix))) {
-      window.localStorage.removeItem(key);
+    if (!removeStorageItem(localStorage, key)) {
+      cleanupSucceeded = false;
     }
   }
 
-  try {
+  for (const prefix of USER_SCOPED_STORAGE_PREFIXES) {
+    if (!removeStorageItem(localStorage, `${prefix}${owner}`)) {
+      cleanupSucceeded = false;
+    }
+  }
+
+  const sessionStorage = getBrowserSessionStorage();
+  if (!sessionStorage) {
+    cleanupSucceeded = false;
+  } else {
     for (const key of USER_SCOPED_SESSION_STORAGE_KEYS) {
-      window.sessionStorage.removeItem(key);
+      if (!removeStorageItem(sessionStorage, key)) {
+        cleanupSucceeded = false;
+      }
     }
+  }
+
+  return cleanupSucceeded;
+}
+
+function readLocalStateOwner(localStorage: Storage):
+  | { ok: true; owner: string | null }
+  | { ok: false } {
+  try {
+    return {
+      ok: true,
+      owner: localStorage.getItem(STORAGE_KEYS.localStateOwner),
+    };
   } catch {
-    // Session storage is optional; a blocked browser must not break a sign-out.
+    return { ok: false };
   }
 }
 
 export function getLocalStateOwner(): string | null {
-  if (!isBrowser()) {
+  const localStorage = getBrowserLocalStorage();
+  if (!localStorage) {
     return null;
   }
-  return window.localStorage.getItem(STORAGE_KEYS.localStateOwner);
+  const result = readLocalStateOwner(localStorage);
+  return result.ok ? result.owner : null;
 }
 
-export function syncLocalStateOwner(clerkUserId: string | null | undefined) {
-  if (!isBrowser()) {
-    return;
-  }
-
-  const previousOwner = getLocalStateOwner();
-  if (!clerkUserId) {
-    clearUserScopedBrowserState();
-    window.localStorage.removeItem(STORAGE_KEYS.localStateOwner);
-    return;
-  }
-
-  if (previousOwner && previousOwner !== clerkUserId) {
-    clearUserScopedBrowserState();
-  }
-  if (!previousOwner) {
-    for (const key of LEGACY_UNSCOPED_SENSITIVE_STORAGE_KEYS) {
-      window.localStorage.removeItem(key);
+/**
+ * Reconciles browser state only after identity has been resolved.
+ *
+ * String inputs remain supported for callers that already have a confirmed
+ * Clerk user ID. Legacy null/undefined inputs are deliberately treated as
+ * unresolved; callers must use the explicit signed-out resolution before
+ * user-scoped data can be cleared.
+ */
+export async function syncLocalStateOwner(
+  resolution: LocalStateOwnerResolution | string | null | undefined,
+): Promise<boolean> {
+  try {
+    const localStorage = getBrowserLocalStorage();
+    if (!localStorage) {
+      return false;
     }
-  }
-  if (previousOwner !== clerkUserId) {
-    window.localStorage.setItem(STORAGE_KEYS.localStateOwner, clerkUserId);
+
+    const identity: LocalStateOwnerResolution = typeof resolution === "string"
+      ? resolution
+        ? { status: "signed-in", clerkUserId: resolution }
+        : { status: "unresolved" }
+      : resolution ?? { status: "unresolved" };
+
+    if (identity.status === "unresolved") {
+      return false;
+    }
+
+    const ownerResult = readLocalStateOwner(localStorage);
+    if (!ownerResult.ok) {
+      return false;
+    }
+    const previousOwner = ownerResult.owner;
+
+    if (identity.status === "signed-out") {
+      // A signed-out response without an established owner is the stable
+      // anonymous/device state, not an account transition. Keep its local data.
+      if (!previousOwner) {
+        return true;
+      }
+    }
+
+    const clerkUserId = identity.status === "signed-in"
+      ? identity.clerkUserId.trim()
+      : null;
+    if (identity.status === "signed-in" && !clerkUserId) {
+      return false;
+    }
+
+    // Existing owner state is protected by that owner's journal lock. On a
+    // first sign-in there is no departing owner, so use the arriving owner's
+    // lock to serialize legacy cleanup and marker creation with explicit
+    // account-target journal writes.
+    const lockOwner = previousOwner ?? clerkUserId;
+    if (!lockOwner) {
+      return false;
+    }
+    const locked = await withJournalOwnerStorageLock(lockOwner, () => {
+      // The owner may have changed while this request waited behind an active
+      // journal write. Never apply a stale sign-out/account-switch cleanup to
+      // the newer owner. An identical transition completed by another tab is
+      // already reconciled and can safely succeed.
+      const freshOwnerResult = readLocalStateOwner(localStorage);
+      if (!freshOwnerResult.ok) {
+        return false;
+      }
+      const freshOwner = freshOwnerResult.owner;
+      if (freshOwner !== previousOwner) {
+        return identity.status === "signed-out"
+          ? freshOwner === null
+          : freshOwner === clerkUserId;
+      }
+
+      if (identity.status === "signed-out") {
+        if (!clearUserScopedBrowserState(previousOwner as string, localStorage)) {
+          return false;
+        }
+        return removeStorageItem(localStorage, STORAGE_KEYS.localStateOwner);
+      }
+
+      if (!clerkUserId) {
+        return false;
+      }
+
+      if (previousOwner && previousOwner !== clerkUserId) {
+        if (!clearUserScopedBrowserState(previousOwner, localStorage)) {
+          return false;
+        }
+      }
+      if (!previousOwner) {
+        const legacyCleanupSucceeded = LEGACY_UNSCOPED_SENSITIVE_STORAGE_KEYS.every(
+          (key) => removeStorageItem(localStorage, key),
+        );
+        if (!legacyCleanupSucceeded) {
+          return false;
+        }
+      }
+      if (previousOwner !== clerkUserId && !setStorageItem(
+        localStorage,
+        STORAGE_KEYS.localStateOwner,
+        clerkUserId,
+      )) {
+        return false;
+      }
+      return true;
+    });
+    return locked.ok ? locked.value : false;
+  } catch {
+    // Identity hydration must not take down the app when browser storage is blocked.
+    return false;
   }
 }
 

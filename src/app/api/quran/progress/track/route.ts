@@ -5,6 +5,7 @@ import { getOrCreateUserProfile, saveQuranStartPoint } from "@/hifzer/profile/se
 import { syncQuranReadingContinuityToQuranFoundation } from "@/hifzer/quran-foundation/user-features";
 import { recordQuranBrowseAyahSet } from "@/hifzer/quran/read-progress.server";
 import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
+import { invalidateDashboardCaches } from "@/hifzer/dashboard/cache";
 
 type Payload = {
   ayahIds?: unknown;
@@ -116,6 +117,8 @@ export async function POST(req: Request) {
         timezone: profile.timezone,
       }).catch(() => null);
     }
+
+    invalidateDashboardCaches(userId);
 
     return NextResponse.json({
       ok: true,

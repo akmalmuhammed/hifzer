@@ -1,4 +1,5 @@
 import { getLocalStateOwner } from "@/hifzer/local/store";
+import { withJournalOwnerStorageLock } from "./storage-lock";
 
 export const JOURNAL_ENTRY_TYPES = [
   "reflection",
@@ -61,6 +62,12 @@ export type JournalBlock = JournalTextBlock | JournalAyahBlock | JournalDuaBlock
 
 export type JournalEntry = {
   id: string;
+  /** Stable browser/source id returned by the account API for import/replay acknowledgement. */
+  originEntryId?: string | null;
+  /** Quran Foundation's remote note id; it is distinct from the browser origin id. */
+  clientEntryId?: string | null;
+  /** Legacy inputs may omit this; every normalized/read snapshot defaults it to 1. */
+  version?: number;
   type: JournalEntryType;
   title?: string;
   content: string;
@@ -76,15 +83,129 @@ export type JournalEntry = {
 };
 
 const JOURNAL_STORAGE_KEY_PREFIX = "hifzer_private_journal_entries_v2:";
-const LEGACY_JOURNAL_STORAGE_KEY = "hifzer_private_journal_entries_v1";
+// This key is intentionally outside the owner-scoped prefix. Anonymous/device
+// notes must neither be read as account fallback notes nor be removed by an
+// account-owner transition.
+const DEVICE_JOURNAL_STORAGE_KEY = "hifzer_private_journal_device_entries_v1";
+const DEVICE_JOURNAL_STORAGE_LOCK_OWNER = "__device__";
+
+export type JournalLocalStorageScope = "account" | "device";
+export type JournalLocalStorageTarget =
+  | { scope: "device" }
+  | { scope: "account"; ownerId: string };
+export type JournalAccountLocalStorageTarget = Extract<
+  JournalLocalStorageTarget,
+  { scope: "account" }
+>;
+export type JournalLocalWriteFailureReason =
+  | "storage-unavailable"
+  | "read-failed"
+  | "write-failed"
+  | "verification-failed"
+  | "locking-unavailable"
+  | "locking-failed"
+  | "owner-mismatch"
+  | "owner-check-failed"
+  | "version-conflict";
+
+export type JournalLocalWriteResult =
+  | {
+      ok: true;
+      scope: JournalLocalStorageScope;
+      entry: JournalEntry;
+      entries: JournalEntry[];
+    }
+  | {
+      ok: false;
+      scope: JournalLocalStorageScope;
+      reason: JournalLocalWriteFailureReason;
+      entries: JournalEntry[];
+    };
+
+export type JournalLocalDeleteResult =
+  | {
+      ok: true;
+      scope: JournalLocalStorageScope;
+      entries: JournalEntry[];
+    }
+  | {
+      ok: false;
+      scope: JournalLocalStorageScope;
+      reason: JournalLocalWriteFailureReason;
+      entries: JournalEntry[];
+    };
+
+type JournalStorageLocation = {
+  key: string;
+  scope: JournalLocalStorageScope;
+  ownerId?: string;
+};
+
+type JournalLocalReadResult =
+  | {
+      ok: true;
+      entries: JournalEntry[];
+    }
+  | {
+      ok: false;
+      reason: "read-failed";
+    };
+
+type JournalEntriesWriteResult =
+  | {
+      ok: true;
+      entries: JournalEntry[];
+    }
+  | {
+      ok: false;
+      reason: "write-failed" | "verification-failed";
+    };
+
+export type JournalImportCleanupResult =
+  | {
+      ok: true;
+      removedEntryIds: string[];
+      retainedEntryIds: string[];
+    }
+  | {
+      ok: false;
+      reason:
+        | "storage-unavailable"
+        | "read-failed"
+        | "write-failed"
+        | "verification-failed"
+        | "locking-unavailable"
+        | "locking-failed"
+        | "owner-mismatch"
+        | "owner-check-failed";
+      removedEntryIds: string[];
+      retainedEntryIds: string[];
+    };
 
 function isBrowser(): boolean {
-  return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+  try {
+    return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+  } catch {
+    return false;
+  }
 }
 
-function journalStorageKey(): string | null {
-  const owner = getLocalStateOwner();
-  return owner ? `${JOURNAL_STORAGE_KEY_PREFIX}${owner}` : null;
+function journalStorageLocation(target?: JournalLocalStorageTarget): JournalStorageLocation {
+  if (target?.scope === "device") {
+    return { key: DEVICE_JOURNAL_STORAGE_KEY, scope: "device" };
+  }
+  if (target?.scope === "account") {
+    const ownerId = target.ownerId.trim();
+    if (!ownerId) {
+      throw new Error("An account journal target requires an owner ID.");
+    }
+    return { key: `${JOURNAL_STORAGE_KEY_PREFIX}${ownerId}`, scope: "account", ownerId };
+  }
+
+  const owner = getLocalStateOwner()?.trim() || null;
+  return owner
+    ? { key: `${JOURNAL_STORAGE_KEY_PREFIX}${owner}`, scope: "account", ownerId: owner }
+    : { key: DEVICE_JOURNAL_STORAGE_KEY, scope: "device" };
 }
 
 function safeJsonParse<T>(raw: string | null): T | null {
@@ -257,29 +378,33 @@ export function buildLegacyJournalBlocks(input: {
   const linkedDua = normalizeLinkedDua(input.linkedDua ?? null);
 
   if (textContent.trim().length > 0) {
-    blocks.push(createTextBlock(textContent));
+    blocks.push({
+      id: `legacy_block_${blocks.length}`,
+      kind: "text",
+      content: textContent,
+    });
   }
 
   if (linkedAyah) {
-    blocks.push(
-      createAyahBlock({
-        title: `${linkedAyah.surahNameTransliteration} ${linkedAyah.surahNumber}:${linkedAyah.ayahNumber}`,
-        ayah: {
-          ...linkedAyah,
-          textUthmani: null,
-          translation: null,
-        },
-      }),
-    );
+    blocks.push({
+      id: `legacy_block_${blocks.length}`,
+      kind: "ayah",
+      title: `${linkedAyah.surahNameTransliteration} ${linkedAyah.surahNumber}:${linkedAyah.ayahNumber}`,
+      ayah: {
+        ...linkedAyah,
+        textUthmani: null,
+        translation: null,
+      },
+    });
   }
 
   if (linkedDua) {
-    blocks.push(
-      createDuaBlock({
-        title: linkedDua.title,
-        dua: linkedDua,
-      }),
-    );
+    blocks.push({
+      id: `legacy_block_${blocks.length}`,
+      kind: "dua",
+      title: linkedDua.title,
+      dua: linkedDua,
+    });
   }
 
   return blocks;
@@ -305,7 +430,7 @@ export function normalizeJournalBlocks(
     .map((block, index) => normalizeBlock(block, index))
     .filter((block): block is JournalBlock => block !== null);
 
-  if (normalized.length === 0) {
+  if (normalized.length === 0 && blocks.length > 0) {
     return buildLegacyJournalBlocks({
       content: fallback?.content ?? "",
       linkedAyah: fallback?.linkedAyah ?? null,
@@ -392,7 +517,17 @@ export function findPrimaryLinkedDua(blocks: JournalBlock[]): JournalLinkedDua |
   return null;
 }
 
-function normalizeEntry(entry: JournalEntry): JournalEntry {
+export type NormalizedJournalEntry = JournalEntry & { version: number };
+
+export function normalizeJournalEntry(entry: JournalEntry): NormalizedJournalEntry {
+  const originEntryId =
+    typeof entry.originEntryId === "string" && entry.originEntryId.trim()
+      ? entry.originEntryId.trim()
+      : null;
+  const clientEntryId =
+    typeof entry.clientEntryId === "string" && entry.clientEntryId.trim()
+      ? entry.clientEntryId.trim()
+      : null;
   const linkedAyah = normalizeLinkedAyah(entry.linkedAyah ?? null);
   const linkedDua = normalizeLinkedDua(entry.linkedDua ?? null);
   const blocks = normalizeJournalBlocks(entry.blocks ?? null, {
@@ -405,6 +540,12 @@ function normalizeEntry(entry: JournalEntry): JournalEntry {
 
   return {
     id: entry.id,
+    ...(originEntryId ? { originEntryId } : {}),
+    ...(clientEntryId ? { clientEntryId } : {}),
+    version:
+      Number.isSafeInteger(entry.version) && Number(entry.version) >= 1
+        ? Number(entry.version)
+        : 1,
     type: JOURNAL_ENTRY_TYPES.includes(entry.type) ? entry.type : "free",
     title: typeof entry.title === "string" ? entry.title.trim() : "",
     content:
@@ -428,26 +569,327 @@ function normalizeEntry(entry: JournalEntry): JournalEntry {
   };
 }
 
-function writeEntries(entries: JournalEntry[]) {
-  if (!isBrowser()) {
-    return;
+function readEntriesAtLocation(
+  location: JournalStorageLocation,
+  now: Date,
+): JournalLocalReadResult {
+  try {
+    const storedEntries = window.localStorage.getItem(location.key);
+    if (storedEntries === null) {
+      return { ok: true, entries: [] };
+    }
+    const raw = safeJsonParse<JournalEntry[]>(storedEntries);
+    if (!Array.isArray(raw)) {
+      return { ok: false, reason: "read-failed" };
+    }
+    const normalized = raw
+      .map(normalizeJournalEntry)
+      .filter((entry) => typeof entry.id === "string" && entry.id.length > 0);
+    return {
+      ok: true,
+      entries: pruneExpired(normalized, now).sort(compareEntries),
+    };
+  } catch {
+    return { ok: false, reason: "read-failed" };
   }
-  const key = journalStorageKey();
-  if (!key) {
-    return;
-  }
-  window.localStorage.setItem(key, JSON.stringify(entries.sort(compareEntries)));
 }
 
-export function clearJournalEntries() {
+function writeEntries(
+  entries: JournalEntry[],
+  location: JournalStorageLocation = journalStorageLocation(),
+): JournalEntriesWriteResult {
+  let serializedEntries: string;
+  try {
+    const normalizedEntries = entries.map(normalizeJournalEntry).sort(compareEntries);
+    serializedEntries = JSON.stringify(normalizedEntries);
+  } catch {
+    return { ok: false, reason: "write-failed" };
+  }
+
+  try {
+    window.localStorage.setItem(location.key, serializedEntries);
+  } catch {
+    return { ok: false, reason: "write-failed" };
+  }
+
+  let storedEntries: string | null;
+  try {
+    storedEntries = window.localStorage.getItem(location.key);
+  } catch {
+    return { ok: false, reason: "verification-failed" };
+  }
+
+  if (storedEntries !== serializedEntries) {
+    return { ok: false, reason: "verification-failed" };
+  }
+
+  const verifiedEntries = safeJsonParse<JournalEntry[]>(storedEntries);
+  if (!Array.isArray(verifiedEntries)) {
+    return { ok: false, reason: "verification-failed" };
+  }
+
+  try {
+    return {
+      ok: true,
+      entries: verifiedEntries.map(normalizeJournalEntry).sort(compareEntries),
+    };
+  } catch {
+    return { ok: false, reason: "verification-failed" };
+  }
+}
+
+function clearJournalEntriesUnlocked(target?: JournalLocalStorageTarget): boolean {
   if (!isBrowser()) {
-    return;
+    return false;
   }
-  const key = journalStorageKey();
-  if (key) {
-    window.localStorage.removeItem(key);
+
+  let location: JournalStorageLocation;
+  try {
+    location = journalStorageLocation(target);
+  } catch {
+    return false;
   }
-  window.localStorage.removeItem(LEGACY_JOURNAL_STORAGE_KEY);
+
+  // The unscoped legacy key may contain recovery data for a different or
+  // unknown owner. It is removed only by the selective import cleanup after
+  // explicit server acknowledgement, never by a broad scoped clear.
+  const keys = [location.key];
+  try {
+    for (const key of keys) {
+      window.localStorage.removeItem(key);
+    }
+    return keys.every((key) => window.localStorage.getItem(key) === null);
+  } catch {
+    return false;
+  }
+}
+
+export async function clearJournalEntries(target?: JournalLocalStorageTarget): Promise<boolean> {
+  if (!isBrowser()) {
+    return false;
+  }
+  let location: JournalStorageLocation;
+  try {
+    location = journalStorageLocation(target);
+  } catch {
+    return false;
+  }
+  if (location.scope === "device") {
+    const locked = await withJournalOwnerStorageLock(
+      DEVICE_JOURNAL_STORAGE_LOCK_OWNER,
+      () => clearJournalEntriesUnlocked({ scope: "device" }),
+    );
+    return locked.ok ? locked.value : false;
+  }
+  const ownerId = location.ownerId;
+  if (!ownerId) {
+    return false;
+  }
+  const lockedTarget: JournalAccountLocalStorageTarget = { scope: "account", ownerId };
+  const locked = await withJournalOwnerStorageLock(
+    ownerId,
+    () => clearJournalEntriesUnlocked(lockedTarget),
+    { requireActiveOwner: true },
+  );
+  return locked.ok ? locked.value : false;
+}
+
+function journalEntryPayloadFingerprint(entry: JournalEntry): string {
+  return JSON.stringify(normalizeJournalEntry(entry));
+}
+
+/**
+ * Removes only server-acknowledged import sources whose current normalized
+ * local payload is still the exact snapshot that was submitted. The fresh
+ * read and verified writes run synchronously inside the same per-owner Web
+ * Lock used by the account journal queue, so another current app tab cannot
+ * interleave a journal storage mutation between them.
+ */
+export async function removeAcknowledgedJournalImportSources(
+  target: JournalAccountLocalStorageTarget,
+  submittedEntries: readonly JournalEntry[],
+  acknowledgedSourceEntryIds: readonly string[],
+): Promise<JournalImportCleanupResult> {
+  if (!isBrowser()) {
+    return {
+      ok: false,
+      reason: "storage-unavailable",
+      removedEntryIds: [],
+      retainedEntryIds: acknowledgedSourceEntryIds.slice(),
+    };
+  }
+
+  let location: JournalStorageLocation;
+  try {
+    location = journalStorageLocation(target);
+  } catch {
+    return {
+      ok: false,
+      reason: "read-failed",
+      removedEntryIds: [],
+      retainedEntryIds: acknowledgedSourceEntryIds.slice(),
+    };
+  }
+
+  const submittedFingerprints = new Map<string, string>();
+  try {
+    for (const entry of submittedEntries) {
+      if (typeof entry.id !== "string" || !entry.id.trim()) {
+        continue;
+      }
+      submittedFingerprints.set(entry.id, journalEntryPayloadFingerprint(entry));
+    }
+  } catch {
+    return {
+      ok: false,
+      reason: "read-failed",
+      removedEntryIds: [],
+      retainedEntryIds: acknowledgedSourceEntryIds.slice(),
+    };
+  }
+
+  const acknowledgedIds = new Set(
+    acknowledgedSourceEntryIds.filter((entryId) => submittedFingerprints.has(entryId)),
+  );
+  const locked = await withJournalOwnerStorageLock<JournalImportCleanupResult>(target.ownerId, (): JournalImportCleanupResult => {
+    // Do not rewrite the old unscoped v1 key. Tabs running an older deployed
+    // build never acquire this lock, so no read/compare/write sequence can
+    // safely remove part of that key without risking a concurrent old-client
+    // write. It remains a recovery copy.
+    const locations: JournalStorageLocation[] = [location];
+    const reads: Array<{
+      location: JournalStorageLocation;
+      entries: Array<{ raw: unknown; normalized: JournalEntry | null }>;
+    }> = [];
+
+    for (const currentLocation of locations) {
+      let storedEntries: string | null;
+      try {
+        storedEntries = window.localStorage.getItem(currentLocation.key);
+      } catch {
+        return {
+          ok: false,
+          reason: "read-failed" as const,
+          removedEntryIds: [],
+          retainedEntryIds: [...acknowledgedIds],
+        };
+      }
+      if (storedEntries === null) {
+        reads.push({ location: currentLocation, entries: [] });
+        continue;
+      }
+      const rawEntries = safeJsonParse<unknown[]>(storedEntries);
+      if (!Array.isArray(rawEntries)) {
+        return {
+          ok: false,
+          reason: "read-failed" as const,
+          removedEntryIds: [],
+          retainedEntryIds: [...acknowledgedIds],
+        };
+      }
+      try {
+        reads.push({
+          location: currentLocation,
+          entries: rawEntries.map((raw) => {
+            try {
+              const normalized = normalizeJournalEntry(raw as JournalEntry);
+              return {
+                raw,
+                normalized:
+                  typeof normalized.id === "string" && normalized.id.trim()
+                    ? normalized
+                    : null,
+              };
+            } catch {
+              return { raw, normalized: null };
+            }
+          }),
+        });
+      } catch {
+        return {
+          ok: false,
+          reason: "read-failed" as const,
+          removedEntryIds: [],
+          retainedEntryIds: [...acknowledgedIds],
+        };
+      }
+    }
+
+    const removedEntryIds = new Set<string>();
+    const retainedEntryIds = new Set<string>();
+    for (const read of reads) {
+      const nextEntries = read.entries.filter(({ normalized: entry }) => {
+        if (!entry) {
+          return true;
+        }
+        if (!acknowledgedIds.has(entry.id)) {
+          return true;
+        }
+        const submittedFingerprint = submittedFingerprints.get(entry.id);
+        if (
+          !submittedFingerprint ||
+          journalEntryPayloadFingerprint(entry) !== submittedFingerprint
+        ) {
+          retainedEntryIds.add(entry.id);
+          return true;
+        }
+        removedEntryIds.add(entry.id);
+        return false;
+      });
+
+      if (nextEntries.length === read.entries.length) {
+        continue;
+      }
+      let serializedEntries: string;
+      try {
+        serializedEntries = JSON.stringify(nextEntries.map(({ raw }) => raw));
+        window.localStorage.setItem(read.location.key, serializedEntries);
+      } catch {
+        return {
+          ok: false,
+          reason: "write-failed" as const,
+          removedEntryIds: [...removedEntryIds],
+          retainedEntryIds: [...new Set([...acknowledgedIds, ...retainedEntryIds])]
+            .filter((entryId) => !removedEntryIds.has(entryId)),
+        };
+      }
+      try {
+        if (window.localStorage.getItem(read.location.key) !== serializedEntries) {
+          return {
+            ok: false,
+            reason: "verification-failed" as const,
+            removedEntryIds: [...removedEntryIds],
+            retainedEntryIds: [...new Set([...acknowledgedIds, ...retainedEntryIds])]
+              .filter((entryId) => !removedEntryIds.has(entryId)),
+          };
+        }
+      } catch {
+        return {
+          ok: false,
+          reason: "verification-failed" as const,
+          removedEntryIds: [...removedEntryIds],
+          retainedEntryIds: [...new Set([...acknowledgedIds, ...retainedEntryIds])]
+            .filter((entryId) => !removedEntryIds.has(entryId)),
+        };
+      }
+    }
+
+    return {
+      ok: true,
+      removedEntryIds: [...removedEntryIds],
+      retainedEntryIds: [...retainedEntryIds],
+    };
+  }, { requireActiveOwner: true });
+
+  if (!locked.ok) {
+    return {
+      ok: false,
+      reason: locked.reason,
+      removedEntryIds: [],
+      retainedEntryIds: [...acknowledgedIds],
+    };
+  }
+  return locked.value;
 }
 
 function pruneExpired(entries: JournalEntry[], now: Date): JournalEntry[] {
@@ -463,50 +905,301 @@ function pruneExpired(entries: JournalEntry[], now: Date): JournalEntry[] {
   });
 }
 
-export function listJournalEntries(now: Date = new Date()): JournalEntry[] {
+export function listJournalEntries(
+  now: Date = new Date(),
+  target?: JournalLocalStorageTarget,
+): JournalEntry[] {
   if (!isBrowser()) {
     return [];
   }
-  const key = journalStorageKey();
-  if (!key) {
+
+  let location: JournalStorageLocation;
+  try {
+    location = journalStorageLocation(target);
+  } catch {
     return [];
   }
-  const raw = safeJsonParse<JournalEntry[]>(window.localStorage.getItem(key)) ?? [];
-  const normalized = raw
-    .map(normalizeEntry)
-    .filter((entry) => typeof entry.id === "string" && entry.id.length > 0);
-  const pruned = pruneExpired(normalized, now).sort(compareEntries);
-  if (pruned.length !== normalized.length) {
-    writeEntries(pruned);
+
+  const result = readEntriesAtLocation(location, now);
+  if (!result.ok) {
+    return [];
   }
-  return pruned;
+  return result.entries;
 }
 
-export function upsertJournalEntry(entry: JournalEntry, now: Date = new Date()): JournalEntry[] {
+function upsertJournalEntryUnlocked(
+  entry: JournalEntry,
+  now: Date = new Date(),
+  target?: JournalLocalStorageTarget,
+  expectedVersion?: number | null,
+): JournalLocalWriteResult {
   if (!isBrowser()) {
-    return [];
+    return {
+      ok: false,
+      scope: "device",
+      reason: "storage-unavailable",
+      entries: [],
+    };
   }
 
-  const current = listJournalEntries(now).filter((item) => item.id !== entry.id);
-  const normalized = normalizeEntry({
+  let location: JournalStorageLocation;
+  try {
+    location = journalStorageLocation(target);
+  } catch {
+    return {
+      ok: false,
+      scope: "device",
+      reason: "read-failed",
+      entries: [],
+    };
+  }
+
+  const readResult = readEntriesAtLocation(location, now);
+  if (!readResult.ok) {
+    return {
+      ok: false,
+      scope: location.scope,
+      reason: readResult.reason,
+      entries: [],
+    };
+  }
+
+  const existing = readResult.entries.find((item) => item.id === entry.id) ?? null;
+  if (
+    (expectedVersion === null && existing) ||
+    (typeof expectedVersion === "number" && existing?.version !== expectedVersion)
+  ) {
+    return {
+      ok: false,
+      scope: location.scope,
+      reason: "version-conflict",
+      entries: readResult.entries,
+    };
+  }
+
+  const current = readResult.entries.filter((item) => item.id !== entry.id);
+  const normalized = normalizeJournalEntry({
     ...entry,
+    version:
+      typeof expectedVersion === "number"
+        ? expectedVersion + 1
+        : expectedVersion === null
+          ? 1
+          : entry.version,
     title: entry.title?.trim() ?? "",
     createdAt: entry.createdAt || now.toISOString(),
     updatedAt: now.toISOString(),
   });
 
   current.push(normalized);
-  writeEntries(current);
-  return current.sort(compareEntries);
+  const writeResult = writeEntries(current, location);
+  if (!writeResult.ok) {
+    return {
+      ok: false,
+      scope: location.scope,
+      reason: writeResult.reason,
+      entries: readResult.entries,
+    };
+  }
+
+  const verifiedEntry = writeResult.entries.find((item) => item.id === normalized.id);
+  if (!verifiedEntry) {
+    return {
+      ok: false,
+      scope: location.scope,
+      reason: "verification-failed",
+      entries: readResult.entries,
+    };
+  }
+
+  return {
+    ok: true,
+    scope: location.scope,
+    entry: verifiedEntry,
+    entries: writeResult.entries,
+  };
 }
 
-export function deleteJournalEntry(entryId: string, now: Date = new Date()): JournalEntry[] {
+export async function upsertJournalEntry(
+  entry: JournalEntry,
+  now: Date = new Date(),
+  target?: JournalLocalStorageTarget,
+  expectedVersion: number | null | undefined =
+    Number.isSafeInteger(entry.version) && Number(entry.version) >= 1
+      ? Number(entry.version) === 1
+        ? null
+        : Number(entry.version) - 1
+      : undefined,
+): Promise<JournalLocalWriteResult> {
   if (!isBrowser()) {
-    return [];
+    return upsertJournalEntryUnlocked(entry, now, target, expectedVersion);
   }
-  const next = listJournalEntries(now).filter((entry) => entry.id !== entryId);
-  writeEntries(next);
-  return next;
+  let location: JournalStorageLocation;
+  try {
+    location = journalStorageLocation(target);
+  } catch {
+    return upsertJournalEntryUnlocked(entry, now, target, expectedVersion);
+  }
+  if (location.scope === "device") {
+    const locked = await withJournalOwnerStorageLock(
+      DEVICE_JOURNAL_STORAGE_LOCK_OWNER,
+      () => upsertJournalEntryUnlocked(entry, now, { scope: "device" }, expectedVersion),
+    );
+    if (!locked.ok) {
+      return {
+        ok: false,
+        scope: "device",
+        reason: locked.reason,
+        entries: [],
+      };
+    }
+    return locked.value;
+  }
+  const ownerId = location.ownerId;
+  if (!ownerId) {
+    return {
+      ok: false,
+      scope: "account",
+      reason: "locking-unavailable",
+      entries: [],
+    };
+  }
+  const lockedTarget: JournalAccountLocalStorageTarget = { scope: "account", ownerId };
+  const locked = await withJournalOwnerStorageLock(
+    ownerId,
+    () => upsertJournalEntryUnlocked(entry, now, lockedTarget, expectedVersion),
+    { requireActiveOwner: true },
+  );
+  if (!locked.ok) {
+    return {
+      ok: false,
+      scope: "account",
+      reason: locked.reason,
+      entries: [],
+    };
+  }
+  return locked.value;
+}
+
+function deleteJournalEntryUnlocked(
+  entryId: string,
+  now: Date = new Date(),
+  target?: JournalLocalStorageTarget,
+  expectedVersion?: number,
+): JournalLocalDeleteResult {
+  if (!isBrowser()) {
+    return {
+      ok: false,
+      scope: "device",
+      reason: "storage-unavailable",
+      entries: [],
+    };
+  }
+
+  let location: JournalStorageLocation;
+  try {
+    location = journalStorageLocation(target);
+  } catch {
+    return {
+      ok: false,
+      scope: "device",
+      reason: "read-failed",
+      entries: [],
+    };
+  }
+
+  const readResult = readEntriesAtLocation(location, now);
+  if (!readResult.ok) {
+    return {
+      ok: false,
+      scope: location.scope,
+      reason: readResult.reason,
+      entries: [],
+    };
+  }
+
+  const existing = readResult.entries.find((entry) => entry.id === entryId) ?? null;
+  if (expectedVersion !== undefined && existing?.version !== expectedVersion) {
+    return {
+      ok: false,
+      scope: location.scope,
+      reason: "version-conflict",
+      entries: readResult.entries,
+    };
+  }
+
+  const next = readResult.entries.filter((entry) => entry.id !== entryId);
+  const writeResult = writeEntries(next, location);
+  if (!writeResult.ok || writeResult.entries.some((entry) => entry.id === entryId)) {
+    return {
+      ok: false,
+      scope: location.scope,
+      reason: writeResult.ok ? "verification-failed" : writeResult.reason,
+      entries: readResult.entries,
+    };
+  }
+
+  return {
+    ok: true,
+    scope: location.scope,
+    entries: writeResult.entries,
+  };
+}
+
+export async function deleteJournalEntry(
+  entryId: string,
+  now: Date = new Date(),
+  target?: JournalLocalStorageTarget,
+  expectedVersion?: number,
+): Promise<JournalLocalDeleteResult> {
+  if (!isBrowser()) {
+    return deleteJournalEntryUnlocked(entryId, now, target, expectedVersion);
+  }
+  let location: JournalStorageLocation;
+  try {
+    location = journalStorageLocation(target);
+  } catch {
+    return deleteJournalEntryUnlocked(entryId, now, target, expectedVersion);
+  }
+  if (location.scope === "device") {
+    const locked = await withJournalOwnerStorageLock(
+      DEVICE_JOURNAL_STORAGE_LOCK_OWNER,
+      () => deleteJournalEntryUnlocked(entryId, now, { scope: "device" }, expectedVersion),
+    );
+    if (!locked.ok) {
+      return {
+        ok: false,
+        scope: "device",
+        reason: locked.reason,
+        entries: [],
+      };
+    }
+    return locked.value;
+  }
+  const ownerId = location.ownerId;
+  if (!ownerId) {
+    return {
+      ok: false,
+      scope: "account",
+      reason: "locking-unavailable",
+      entries: [],
+    };
+  }
+  const lockedTarget: JournalAccountLocalStorageTarget = { scope: "account", ownerId };
+  const locked = await withJournalOwnerStorageLock(
+    ownerId,
+    () => deleteJournalEntryUnlocked(entryId, now, lockedTarget, expectedVersion),
+    { requireActiveOwner: true },
+  );
+  if (!locked.ok) {
+    return {
+      ok: false,
+      scope: "account",
+      reason: locked.reason,
+      entries: [],
+    };
+  }
+  return locked.value;
 }
 
 export function normalizeJournalTags(tags: string[]): string[] {

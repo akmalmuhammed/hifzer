@@ -33,8 +33,11 @@ export function ProgressBar(props: {
         props.className,
       )}
       style={{ height: h }}
-      role="img"
-      aria-label={props.ariaLabel ?? `Progress ${Math.round(v * 100)}%`}
+      role="progressbar"
+      aria-label={props.ariaLabel ?? "Progress"}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(v * 100)}
     >
       <div
         className="h-full rounded-full"

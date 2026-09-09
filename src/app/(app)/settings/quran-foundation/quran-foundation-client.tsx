@@ -212,8 +212,9 @@ export function QuranFoundationSettingsClient(props: {
               Keep your Qur&apos;an memory connected between Hifzer and Quran.com.
             </p>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
-              Your reader can use trusted translations, tafsir, and reciter audio. When Quran.com is connected,
-              saved ayahs, folders, notes, goals, streaks, and reading place can stay closer to your account.
+              Your reader can use trusted translations, tafsir, and reciter audio. Reading place and bookmarks
+              can sync while you use them. Private journal reflections are never sent unless you press the
+              dedicated journal export button below.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -387,7 +388,9 @@ export function QuranFoundationSettingsClient(props: {
             <div>
               <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Manage what stays in sync</p>
               <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
-                Most syncing happens while you read, bookmark, and reflect. Use these actions only when you want to move existing items between Hifzer and Quran.com.
+                Reading activity and bookmarks can sync during normal use. Journal reflections cross this
+                boundary only through the explicit import and export actions below; deleting a reflection in one
+                service does not silently delete its copy in the other.
               </p>
             </div>
 
@@ -425,6 +428,7 @@ export function QuranFoundationSettingsClient(props: {
                 <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">Send your latest Hifzer memory back to Quran.com</p>
                 <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
                   Use this when you want your Hifzer bookmarks, folders, or reflections saved into your Quran.com account.
+                  The journal action sends reflection text and linked verse context to Quran.com notes only after you press it.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Button

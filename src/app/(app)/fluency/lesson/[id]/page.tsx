@@ -133,7 +133,7 @@ export default async function FluencyLessonPage(props: { params: Promise<{ id: s
                         <Pill tone="neutral">Hard {ayah.hardCount}</Pill>
                       </div>
                       {ayah.snippet ? (
-                        <p dir="rtl" className="mt-3 text-sm text-[color:var(--kw-faint)]">{ayah.snippet}</p>
+                        <p lang="ar" dir="rtl" className="mt-3 text-sm text-[color:var(--kw-faint)]">{ayah.snippet}</p>
                       ) : null}
                     </div>
                     <Link
@@ -173,7 +173,7 @@ export default async function FluencyLessonPage(props: { params: Promise<{ id: s
                     <Pill tone="neutral">Success {transition.successRatePct}%</Pill>
                   </div>
                   {transition.fromSnippet || transition.toSnippet ? (
-                    <p dir="rtl" className="mt-3 text-xs text-[color:var(--kw-faint)]">
+                    <p lang="ar" dir="rtl" className="mt-3 text-xs text-[color:var(--kw-faint)]">
                       {transition.fromSnippet ?? "..."}
                       {"  ->  "}
                       {transition.toSnippet ?? "..."}

@@ -2,12 +2,13 @@
 
 import clsx from "clsx";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { ArrowUpRight, BookMarked, BookmarkPlus, MessageSquareText, X } from "lucide-react";
 import { queueAndFlushBookmarkMutation, readCachedBookmarkState, loadBookmarksFromApi, newBookmarkMutationId } from "@/hifzer/bookmarks/client";
 import { getPendingBookmarkSyncMutations } from "@/hifzer/local/store";
 import { Button } from "@/components/ui/button";
 import type { QuranFoundationConnectionStatus } from "@/hifzer/quran-foundation/types";
+import { trackProductEvent } from "@/lib/telemetry/client";
 
 type Props = {
   ayahId: number;
@@ -20,6 +21,12 @@ type Props = {
 
 export function ReaderBookmarkControl(props: Props) {
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const closeRef = useRef<HTMLButtonElement | null>(null);
+  const panelId = useId();
+  const panelTitleId = useId();
+  const anonymousHelpId = useId();
   const inline = props.variant === "inline";
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(`Surah ${props.surahNumber}:${props.ayahNumber}`);
@@ -91,6 +98,8 @@ export function ReaderBookmarkControl(props: Props) {
     if (!open) {
       return;
     }
+    const trigger = triggerRef.current;
+    closeRef.current?.focus();
     function onPointerDown(event: PointerEvent) {
       const target = event.target as Node | null;
       if (!target) {
@@ -103,6 +112,25 @@ export function ReaderBookmarkControl(props: Props) {
     function onEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
         setOpen(false);
+        return;
+      }
+      if (event.key !== "Tab" || !panelRef.current) {
+        return;
+      }
+      const focusable = Array.from(panelRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ));
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) {
+        return;
+      }
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
       }
     }
     document.addEventListener("pointerdown", onPointerDown);
@@ -110,6 +138,7 @@ export function ReaderBookmarkControl(props: Props) {
     return () => {
       document.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("keydown", onEscape);
+      trigger?.focus();
     };
   }, [open]);
 
@@ -134,11 +163,17 @@ export function ReaderBookmarkControl(props: Props) {
         },
       });
       setPendingCount(result.remaining);
+      trackProductEvent("bookmark.save_outcome", {
+        outcome: result.remaining > 0 ? "queued" : "saved",
+      });
       setFeedback(result.remaining > 0 ? "Saved locally. Sync pending." : "Bookmark saved.");
       await refreshCategories();
       if (result.remaining === 0) {
         setOpen(false);
       }
+    } catch {
+      setFeedback("Bookmark could not be saved. Your note is still in the form—try again.");
+      trackProductEvent("bookmark.save_outcome", { outcome: "failed" });
     } finally {
       setSaving(false);
     }
@@ -147,19 +182,25 @@ export function ReaderBookmarkControl(props: Props) {
   return (
     <div ref={rootRef} className={clsx("relative", props.className)}>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => {
           if (props.anonymous) {
+            setFeedback("Sign in to save a bookmark. Reading remains available without an account.");
             return;
           }
           setOpen((prev) => !prev);
           setFeedback(null);
         }}
-        disabled={props.anonymous}
+        aria-disabled={props.anonymous}
+        aria-expanded={props.anonymous ? undefined : open}
+        aria-controls={props.anonymous ? undefined : panelId}
+        aria-haspopup={props.anonymous ? undefined : "dialog"}
+        aria-describedby={props.anonymous ? anonymousHelpId : undefined}
         className={clsx(
           inline
-            ? "relative inline-flex h-9 w-9 items-center justify-center rounded-2xl border shadow-[var(--kw-shadow-soft)] transition"
-            : "group relative grid h-9 w-9 place-items-center rounded-2xl border shadow-[var(--kw-shadow-soft)] transition",
+            ? "relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border shadow-[var(--kw-shadow-soft)] transition"
+            : "group relative grid h-11 w-11 place-items-center rounded-2xl border shadow-[var(--kw-shadow-soft)] transition",
           props.anonymous
             ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] text-[color:var(--kw-faint)]"
             : inline
@@ -178,8 +219,14 @@ export function ReaderBookmarkControl(props: Props) {
       </button>
 
       {props.anonymous ? (
-        <p className="pointer-events-none absolute right-0 top-12 w-56 text-right text-xs text-[color:var(--kw-faint)]">
-          Switch off anonymous mode to save bookmarks.
+        <p id={anonymousHelpId} className="sr-only">
+          Sign in to save bookmarks. Reading remains available without an account.
+        </p>
+      ) : null}
+
+      {props.anonymous && feedback ? (
+        <p role="status" aria-live="polite" className="mt-2 max-w-64 text-xs leading-5 text-[color:var(--kw-muted)]">
+          {feedback}
         </p>
       ) : null}
 
@@ -191,17 +238,25 @@ export function ReaderBookmarkControl(props: Props) {
             onClick={() => setOpen(false)}
             className="fixed inset-0 z-30 bg-black/35 backdrop-blur-[1px] sm:hidden"
           />
-          <div className="kw-glass-strong fixed inset-x-3 bottom-3 z-40 flex max-h-[calc(100dvh-1.5rem)] w-auto flex-col overflow-hidden rounded-[var(--kw-radius-xl)] sm:absolute sm:inset-auto sm:right-0 sm:top-12 sm:z-30 sm:w-[min(92vw,360px)] sm:max-h-[min(80vh,620px)]">
+          <div
+            ref={panelRef}
+            id={panelId}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={panelTitleId}
+            className="kw-glass-strong fixed inset-x-3 bottom-3 z-40 flex max-h-[calc(100dvh-1.5rem)] w-auto flex-col overflow-hidden rounded-[var(--kw-radius-xl)] sm:absolute sm:inset-auto sm:right-0 sm:top-14 sm:z-30 sm:w-[min(92vw,360px)] sm:max-h-[min(80vh,620px)]"
+          >
           <div className="flex items-center justify-between border-b border-[color:var(--kw-border-2)] px-4 py-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">Bookmark ayah</p>
+              <p id={panelTitleId} className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">Bookmark ayah</p>
               <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
                 {props.surahNumber}:{props.ayahNumber}
               </p>
             </div>
             <button
+              ref={closeRef}
               type="button"
-              className="grid h-9 w-9 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] text-[color:var(--kw-muted)] transition hover:bg-[color:var(--kw-hover-strong)] hover:text-[color:var(--kw-ink)]"
+              className="grid h-11 w-11 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] text-[color:var(--kw-muted)] transition hover:bg-[color:var(--kw-hover-strong)] hover:text-[color:var(--kw-ink)]"
               onClick={() => setOpen(false)}
               aria-label="Close bookmark panel"
             >
@@ -216,7 +271,7 @@ export function ReaderBookmarkControl(props: Props) {
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 maxLength={120}
-                className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] placeholder:text-[color:var(--kw-faint)]"
+                className="mt-1 h-11 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] placeholder:text-[color:var(--kw-faint)]"
               />
             </label>
 
@@ -240,7 +295,7 @@ export function ReaderBookmarkControl(props: Props) {
               <select
                 value={categoryId}
                 onChange={(event) => setCategoryId(event.target.value)}
-                className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)]"
+                className="mt-1 h-11 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)]"
               >
                 <option value="">No category</option>
                 {categories.map((category) => (
@@ -263,7 +318,7 @@ export function ReaderBookmarkControl(props: Props) {
             </div>
 
             {feedback ? (
-              <p className="text-xs text-[color:var(--kw-muted)]">{feedback}</p>
+              <p role="status" aria-live="polite" className="text-xs text-[color:var(--kw-muted)]">{feedback}</p>
             ) : null}
             {connectionStatus ? (
               <p className="text-xs text-[color:var(--kw-faint)]">

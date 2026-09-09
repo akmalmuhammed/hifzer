@@ -82,5 +82,18 @@ export async function POST(req: Request) {
     });
   }
 
-  return NextResponse.json(payload);
+  return NextResponse.json({
+    ...payload,
+    explanation: {
+      ...payload.explanation,
+      sources: payload.explanation.sources.map((source) => ({
+        ...source,
+        url: source.kind === "quran"
+          ? `https://quran.com/${verseKey.replace(":", "/")}`
+          : source.kind === "translation"
+            ? translationOption?.sourceUrl ?? "/legal/sources"
+            : "/legal/sources",
+      })),
+    },
+  });
 }

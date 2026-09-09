@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { BookOpenText, Loader2, RefreshCw, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { BookOpenText, ExternalLink, Flag, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { JournalPrefillLink } from "@/components/journal/journal-prefill-link";
 import { useOnlineStatus } from "@/components/pwa/use-online-status";
 import { Card } from "@/components/ui/card";
@@ -62,7 +63,11 @@ export function AyahAiExplanationPanel(props: { ayahId: number; compact?: boolea
     <Card className={props.compact ? "mt-3" : "mt-4"}>
       <div className="flex flex-wrap items-center gap-2">
         <Pill tone="accent">AI beta</Pill>
+        <Pill tone="neutral">Optional guidance</Pill>
       </div>
+      <p className="mt-3 text-xs leading-6 text-[color:var(--kw-muted)]">
+        AI can make mistakes and does not replace a qualified teacher or scholar. Check the linked Qur&apos;an and source material before relying on an answer.
+      </p>
 
       {state.phase === "idle" ? (
         <div className="mt-4">
@@ -95,6 +100,14 @@ export function AyahAiExplanationPanel(props: { ayahId: number; compact?: boolea
             <RefreshCw size={13} />
             Try again
           </button>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Link href={`/quran/read?view=compact&cursor=${props.ayahId}`} className="inline-flex min-h-11 items-center rounded-xl px-3 text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">
+              Keep reading this ayah
+            </Link>
+            <Link href="/legal/sources" className="inline-flex min-h-11 items-center rounded-xl px-3 text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">
+              Open trusted sources
+            </Link>
+          </div>
         </div>
       ) : null}
 
@@ -143,6 +156,26 @@ export function AyahAiExplanationPanel(props: { ayahId: number; compact?: boolea
             </div>
           ) : null}
 
+          {ready.explanation.sources.length ? (
+            <div className="space-y-2">
+              {sectionHeading("Sources")}
+              <div className="flex flex-wrap gap-2">
+                {ready.explanation.sources.map((source) => (
+                  <a
+                    key={`${source.kind}-${source.label}`}
+                    href={source.url ?? "/legal/sources"}
+                    target={source.url?.startsWith("http") ? "_blank" : undefined}
+                    rel={source.url?.startsWith("http") ? "noreferrer" : undefined}
+                    className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-[color:var(--kw-border-2)] bg-white/75 px-3 py-2 text-xs font-semibold text-[color:var(--kw-ink)]"
+                  >
+                    {source.label}
+                    <ExternalLink size={12} aria-hidden="true" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           <button
             type="button"
             onClick={loadExplanation}
@@ -160,6 +193,14 @@ export function AyahAiExplanationPanel(props: { ayahId: number; compact?: boolea
               ariaLabel="Save this AI reflection to your journal"
             />
           ) : null}
+
+          <Link
+            href={`/support?topic=ai-report&ayah=${props.ayahId}`}
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-xs font-semibold text-[color:var(--kw-muted)] hover:text-[color:var(--kw-ink)]"
+          >
+            <Flag size={13} aria-hidden="true" />
+            Report this answer
+          </Link>
         </div>
       ) : null}
     </Card>
