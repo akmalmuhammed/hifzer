@@ -1216,7 +1216,7 @@ export function DuaExperienceClient({
             ) : null}
             {confirmingReset ? (
               <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Confirm progress reset">
-                <span className="max-w-64 text-sm text-muted-foreground">
+                <span className="max-w-64 text-sm text-[color:var(--kw-muted)]">
                   This clears every visited step and repetition count for this module on this device.
                 </span>
                 <Button variant="danger" className="min-h-11" onClick={resetCurrentModule}>
@@ -1338,7 +1338,7 @@ export function DuaExperienceClient({
       <section className={styles.focusStage}>
         <Card className={styles.stageCard}>
           <div className={styles.stageHeader}>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-2">
               <Pill tone={kindTone(currentStep.kind)}>{kindLabel(currentStep.kind)}</Pill>
               {currentStep.spotlight ? <Pill tone="success">{currentStep.spotlight.anchorType}</Pill> : null}
             </div>

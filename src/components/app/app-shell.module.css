@@ -22,18 +22,20 @@
 }
 
 .brand {
-  gap: clamp(0.55rem, 0.8vw, 0.8rem);
+  gap: 0.7rem;
+  padding-inline: 0.5rem;
+  padding-block: 0.35rem 0.6rem;
 }
 
 .brandMark {
-  height: clamp(2.2rem, 2.45vw, 2.55rem);
-  width: clamp(2.2rem, 2.45vw, 2.55rem);
+  height: 2rem;
+  width: 2rem;
 }
 
 .navLink {
   min-height: var(--kw-app-nav-height);
-  padding-inline: clamp(0.85rem, 0.95vw, 1rem);
-  padding-block: clamp(0.65rem, 0.85vw, 0.8rem);
+  padding-inline: 0.6rem;
+  padding-block: 0.3rem;
 }
 
 .navIcon {
@@ -50,7 +52,7 @@
 }
 
 .languageCard {
-  padding: clamp(0.45rem, 0.8vw, 0.6rem);
+  padding: 0.25rem 0;
 }
 
 .main {
@@ -95,9 +97,9 @@
   .journalSidebar {
     width: 108px;
     border-inline-end: 1px solid var(--kw-border-2);
-    background: color-mix(in srgb, var(--kw-surface-strong) 80%, transparent);
-    box-shadow: 12px 0 42px rgba(11, 18, 32, 0.025);
-    backdrop-filter: blur(18px);
+    background: var(--kw-material);
+    -webkit-backdrop-filter: var(--kw-material-filter);
+    backdrop-filter: var(--kw-material-filter);
   }
 
   .journalSidebarSticky {
@@ -154,15 +156,13 @@
     justify-content: center;
     margin-inline: auto;
     border-color: transparent;
-    border-radius: 18px;
+    border-radius: 14px;
     background: transparent;
     padding: 0;
-    box-shadow: none;
   }
 
   .journalShell .railNavLink[data-active="true"] {
-    border-color: rgba(var(--kw-accent-rgb), 0.08);
-    background: rgba(var(--kw-accent-rgb), 0.1);
+    background: var(--kw-fill-strong);
   }
 
   .journalShell .railNavLink:hover {
@@ -170,7 +170,7 @@
   }
 
   .journalShell .railNavLink[data-active="true"]:hover {
-    background: rgba(var(--kw-accent-rgb), 0.14);
+    background: var(--kw-fill-strong);
   }
 
   .journalShell .railNavLink .navIcon {

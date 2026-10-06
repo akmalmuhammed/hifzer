@@ -144,15 +144,15 @@ export function OnboardingStartPointClient(props: {
         },
       ]}
     >
-      <Card>
-        <div className="flex flex-wrap items-end justify-between gap-4">
+      <Card className="p-6! shadow-none! sm:p-7!">
+        <div className="flex flex-wrap items-end justify-between gap-5">
           <div>
             <Pill tone="accent">Selected start</Pill>
-            <p className="mt-3 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+            <p className="mt-3 text-[1.6rem] font-semibold leading-[1.3] tracking-[-0.022em] text-[color:var(--kw-ink)]">
               <span className="mr-2 text-[color:var(--kw-faint)]">Surah {selected.surahNumber}</span>
               <span dir="rtl" lang="ar">{selected.nameArabic}</span>
             </p>
-            <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
+            <p className="mt-1 text-[0.94rem] text-[color:var(--kw-muted)]">
               {selected.nameTransliteration} - {selected.nameEnglish} - {selected.revelationType}
             </p>
           </div>
@@ -160,7 +160,7 @@ export function OnboardingStartPointClient(props: {
           <div className="w-full max-w-sm">
             <label
               htmlFor="onboarding-start-ayah"
-              className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]"
+              className="text-[0.94rem] font-semibold text-[color:var(--kw-ink)]"
             >
               Starting ayah
             </label>
@@ -173,17 +173,17 @@ export function OnboardingStartPointClient(props: {
                 value={clampedAyah}
                 onChange={(e) => setAyahNumber(Number(e.target.value))}
               />
-              <span className="text-sm font-semibold text-[color:var(--kw-muted)]">
+              <span className="shrink-0 whitespace-nowrap text-[0.94rem] font-medium tabular-nums text-[color:var(--kw-muted)]">
                 / {selected.ayahCount}
               </span>
             </div>
-            <p className="mt-2 text-xs text-[color:var(--kw-faint)]">
+            <p className="mt-2 text-[0.84rem] text-[color:var(--kw-faint)]">
               Your reading will resume from this exact ayah.
             </p>
           </div>
         </div>
 
-        <div className="mt-6 rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3">
+        <div className="mt-7 rounded-[12px] bg-[color:var(--kw-fill-strong)] px-3.5 py-0.5">
           <label className="sr-only" htmlFor="onboarding-surah-search">
             Search surahs
           </label>
@@ -194,12 +194,12 @@ export function OnboardingStartPointClient(props: {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search surah by number or name..."
-              className="h-10 w-full bg-transparent text-sm outline-none placeholder:text-[color:var(--kw-faint)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
+              className="h-10 w-full rounded-[8px] bg-transparent text-[0.94rem] text-[color:var(--kw-ink)] outline-none placeholder:text-[color:var(--kw-faint)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
             />
           </div>
         </div>
 
-        <div className="mt-4 grid max-h-[46vh] gap-3 overflow-auto pr-1 md:grid-cols-2">
+        <div className="mt-3 grid max-h-[46vh] gap-1 overflow-auto pr-1">
           {filtered.map((s) => {
             const active = s.surahNumber === selectedSurah;
             return (
@@ -211,21 +211,21 @@ export function OnboardingStartPointClient(props: {
                   setAyahNumber(1);
                 }}
                 className={[
-                  "rounded-[22px] border px-4 py-3 text-left shadow-[var(--kw-shadow-soft)] transition",
+                  "rounded-[14px] px-4 py-3 text-left transition-colors duration-200",
                   active
-                    ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.08)]"
-                    : "border-[color:var(--kw-border-2)] bg-white/70 hover:bg-white",
+                    ? "bg-[rgba(var(--kw-accent-rgb),0.1)]"
+                    : "bg-transparent hover:bg-[color:var(--kw-fill)]",
                 ].join(" ")}
               >
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+                    <p className="text-[0.84rem] font-medium tabular-nums text-[color:var(--kw-faint)]">
                       Surah {s.surahNumber} - {s.ayahCount} ayahs
                     </p>
-                    <p className="mt-2 text-lg font-semibold text-[color:var(--kw-ink)]">
+                    <p className="mt-1 text-[1.25rem] font-semibold leading-[1.4] text-[color:var(--kw-ink)]">
                       <span dir="rtl" lang="ar">{s.nameArabic}</span>
                     </p>
-                    <p className="mt-1 truncate text-sm text-[color:var(--kw-muted)]">
+                    <p className="mt-0.5 truncate text-[0.94rem] text-[color:var(--kw-muted)]">
                       {s.nameTransliteration} - {s.nameEnglish}
                     </p>
                   </div>
@@ -236,11 +236,11 @@ export function OnboardingStartPointClient(props: {
           })}
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs text-[color:var(--kw-faint)]">
+        <div className="mt-7 flex flex-wrap items-center justify-between gap-4 border-t border-[color:var(--kw-border-2)] pt-6">
+          <p className="text-[0.84rem] text-[color:var(--kw-faint)]">
             You can change this later from the dashboard once onboarding is complete.
           </p>
-          <Button onClick={saveAndNext} className="gap-2" loading={saving}>
+          <Button onClick={saveAndNext} className="min-w-[11rem] gap-2" loading={saving}>
             Finish setup <ArrowRight size={16} />
           </Button>
         </div>

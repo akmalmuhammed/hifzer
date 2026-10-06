@@ -35,17 +35,17 @@ export function ChangelogClient() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <div className="pb-12 pt-10 md:pb-16 md:pt-14">
+    <div className="mx-auto w-full max-w-[1160px] px-[1.4rem] pb-24 pt-14 text-center md:pb-32 md:pt-24">
       <Pill tone="neutral">Changelog</Pill>
-      <h1 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
+      <h1 className="mx-auto mt-5 max-w-[56rem] text-balance font-[family-name:var(--font-kw-display)] text-[clamp(2.6rem,5.8vw,4.5rem)] font-semibold leading-[1.05] tracking-[-0.035em] text-[color:var(--kw-ink)]">
         What changed.
-        <span className="block text-[rgba(var(--kw-accent-rgb),1)]">And why it matters.</span>
+        <span className="block text-[color:var(--kw-faint)]">And why it matters.</span>
       </h1>
-      <p className="mt-4 max-w-xl text-sm leading-7 text-[color:var(--kw-muted)]">
+      <p className="mx-auto mt-5 max-w-xl text-[clamp(1.1rem,1.6vw,1.3rem)] leading-[1.42] tracking-[-0.014em] text-[color:var(--kw-muted)]">
         A lightweight log of visible prototype milestones.
       </p>
 
-      <div className="mt-10 space-y-4">
+      <div className="mx-auto mt-14 max-w-[52rem] space-y-4 text-left">
         {ENTRIES.map((entry, index) => (
           <motion.div
             key={`${entry.date}-${entry.title}`}
@@ -54,14 +54,14 @@ export function ChangelogClient() {
             viewport={{ once: true, amount: 0.25 }}
             transition={{ duration: reduceMotion ? 0 : 0.45, delay: index * 0.04 }}
           >
-            <Card>
+            <Card className="rounded-[28px]! border-0! p-7! shadow-none! md:p-9!">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+                  <p className="text-[0.84rem] font-semibold tabular-nums text-[color:var(--kw-faint)]">
                     {entry.date}
                   </p>
-                  <p className="mt-2 text-lg font-semibold text-[color:var(--kw-ink)]">{entry.title}</p>
-                  <p className="mt-2 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
+                  <p className="mt-2 text-[1.4rem] font-semibold leading-[1.15] tracking-[-0.022em] text-[color:var(--kw-ink)]">{entry.title}</p>
+                  <p className="mt-2.5 max-w-2xl text-[1.02rem] leading-[1.55] text-[color:var(--kw-muted)]">
                     {entry.body}
                   </p>
                 </div>

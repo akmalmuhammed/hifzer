@@ -150,12 +150,12 @@ export function SaveStatus({
   return (
     <div
       className={clsx(
-        "flex max-w-[58ch] items-start gap-2.5 rounded-2xl border px-3 py-2.5 text-[0.82rem] leading-6 text-[color:var(--kw-muted)]",
-        tone === "error" && "border-[rgba(234,88,12,0.26)] bg-[rgba(234,88,12,0.08)]",
+        "flex max-w-[58ch] items-start gap-2.5 rounded-[14px] px-3.5 py-2.5 text-[0.82rem] leading-6 text-[color:var(--kw-muted)]",
+        tone === "error" && "bg-[color:var(--kw-pill-danger-bg)]",
         tone === "success" &&
-          "border-[color:var(--kw-pill-success-border)] bg-[color:var(--kw-pill-success-bg)]",
-        tone === "warning" && "border-[rgba(202,138,4,0.28)] bg-[rgba(202,138,4,0.08)]",
-        tone === "neutral" && "border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)]",
+          "bg-[color:var(--kw-pill-success-bg)]",
+        tone === "warning" && "bg-[color:var(--kw-pill-warn-bg)]",
+        tone === "neutral" && "bg-[color:var(--kw-fill)]",
         className,
       )}
       role={state.kind === "error" || state.kind === "conflict" ? "alert" : "status"}
@@ -166,8 +166,8 @@ export function SaveStatus({
         aria-hidden="true"
         className={clsx(
           "mt-1 h-4 w-4 shrink-0",
-          state.kind === "error" && "text-[color:var(--kw-ember-600)]",
-          (state.kind === "conflict" || state.kind === "queued" || state.kind === "review") && "text-amber-700",
+          state.kind === "error" && "text-[color:var(--kw-rose-600)]",
+          (state.kind === "conflict" || state.kind === "queued" || state.kind === "review") && "text-[color:var(--kw-ember-600)]",
           state.kind === "saved" && "text-[color:var(--kw-pill-success-fg)]",
         )}
       />
@@ -175,8 +175,8 @@ export function SaveStatus({
         <p
           className={clsx(
             "font-semibold text-[color:var(--kw-ink)]",
-            state.kind === "error" && "text-[color:var(--kw-ember-600)]",
-            (state.kind === "conflict" || state.kind === "queued" || state.kind === "review") && "text-amber-800",
+            state.kind === "error" && "text-[color:var(--kw-rose-600)]",
+            (state.kind === "conflict" || state.kind === "queued" || state.kind === "review") && "text-[color:var(--kw-ember-600)]",
           )}
         >
           {copy.title}

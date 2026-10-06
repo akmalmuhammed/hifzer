@@ -67,7 +67,7 @@ export default async function QuranIndexPage() {
     currentSurahName: surahs.find((surah) => surah.surahNumber === (lastAyah?.surahNumber ?? 1))?.nameTransliteration ?? "Al-Fatihah",
   });
   const toolLinkClass =
-    "inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] transition hover:bg-white";
+    "inline-flex min-h-10 items-center gap-2 rounded-full border border-transparent bg-[color:var(--kw-fill-strong)] px-4 py-2 text-sm font-medium text-[color:var(--kw-ink)] transition-colors duration-200 hover:bg-[color:var(--kw-hover-strong)]";
 
   return (
     <div className="pb-12 pt-10 md:pb-16 md:pt-14">
@@ -76,7 +76,7 @@ export default async function QuranIndexPage() {
         <DistractionFreeToggle />
       </div>
       <div className="mt-6 flex justify-end">
-        <span className="grid h-12 w-12 place-items-center rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
+        <span className="grid h-12 w-12 place-items-center rounded-full bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink-2)]">
           <BookOpen size={18} />
         </span>
       </div>
@@ -87,7 +87,7 @@ export default async function QuranIndexPage() {
           secondary={(
             <Link
               href={anonymousHref}
-              className="inline-flex min-h-11 items-center rounded-xl border border-[color:var(--kw-border-2)] bg-white/75 px-4 py-2 text-sm font-semibold text-[color:var(--kw-ink)] transition hover:bg-white"
+              className="inline-flex min-h-11 items-center rounded-full border border-transparent bg-[color:var(--kw-fill-strong)] px-4 py-2 text-sm font-medium text-[color:var(--kw-ink)] transition hover:bg-[color:var(--kw-hover-strong)]"
             >
               Read privately on this device
             </Link>
@@ -181,10 +181,10 @@ export default async function QuranIndexPage() {
             </div>
 
             <div className="grid gap-4 lg:grid-cols-2">
-              <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
+              <div className="rounded-[18px] bg-[color:var(--kw-fill)] p-5">
                 <div className="flex items-center gap-2">
                   <Compass size={16} className="text-[color:var(--kw-faint)]" />
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Quick jump</p>
+                  <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">Quick jump</p>
                 </div>
                 <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Start reading from any surah.</p>
                 <form className="mt-4 flex flex-wrap items-center gap-2" method="get" action="/quran/read">
@@ -196,7 +196,7 @@ export default async function QuranIndexPage() {
                     id="quran-jump-surah"
                     name="surah"
                     defaultValue={String(lastAyah?.surahNumber ?? 1)}
-                    className="h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)] sm:min-w-[220px] sm:w-auto"
+                    className="h-10 w-full rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] sm:min-w-[220px] sm:w-auto transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
                   >
                     {surahs.map((surah) => (
                       <option key={surah.surahNumber} value={surah.surahNumber}>
@@ -206,17 +206,17 @@ export default async function QuranIndexPage() {
                   </select>
                   <button
                     type="submit"
-                    className="h-10 w-full rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] sm:w-auto"
+                    className="h-10 w-full rounded-full border border-transparent bg-[rgba(var(--kw-accent-rgb),0.12)] px-5 text-sm font-medium text-[rgba(var(--kw-accent-rgb),1)] transition-colors duration-200 hover:bg-[rgba(var(--kw-accent-rgb),0.18)] sm:w-auto"
                   >
                     Open surah
                   </button>
                 </form>
               </div>
 
-              <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
+              <div className="rounded-[18px] bg-[color:var(--kw-fill)] p-5">
                 <div className="flex items-center gap-2">
                   <Compass size={16} className="text-[color:var(--kw-faint)]" />
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Jump by juz</p>
+                  <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">Jump by juz</p>
                 </div>
                 <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Start reading from any juz.</p>
                 <form className="mt-4 flex flex-wrap items-center gap-2" method="get" action="/quran/read">
@@ -228,7 +228,7 @@ export default async function QuranIndexPage() {
                     id="quran-jump-juz"
                     name="cursor"
                     defaultValue={String(juzs[0]?.startAyahId ?? 1)}
-                    className="h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)] sm:min-w-[220px] sm:w-auto"
+                    className="h-10 w-full rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] sm:min-w-[220px] sm:w-auto transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
                   >
                     {juzs.map((juz) => (
                       <option key={juz.juzNumber} value={juz.startAyahId}>
@@ -238,7 +238,7 @@ export default async function QuranIndexPage() {
                   </select>
                   <button
                     type="submit"
-                    className="h-10 w-full rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] sm:w-auto"
+                    className="h-10 w-full rounded-full border border-transparent bg-[rgba(var(--kw-accent-rgb),0.12)] px-5 text-sm font-medium text-[rgba(var(--kw-accent-rgb),1)] transition-colors duration-200 hover:bg-[rgba(var(--kw-accent-rgb),0.18)] sm:w-auto"
                   >
                     Open juz
                   </button>
@@ -246,7 +246,7 @@ export default async function QuranIndexPage() {
               </div>
             </div>
 
-            <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
+            <div className="rounded-[18px] bg-[color:var(--kw-fill)] p-5">
               <QuranProgressBackfill
                 defaultSurahNumber={lastAyah?.surahNumber ?? 1}
                 surahs={surahs.map((surah) => ({

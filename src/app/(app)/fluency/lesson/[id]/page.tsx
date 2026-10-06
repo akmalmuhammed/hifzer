@@ -85,7 +85,7 @@ export default async function FluencyLessonPage(props: { params: Promise<{ id: s
         <Card>
           <div className="flex items-center gap-2">
             <Headphones size={16} className="text-[color:var(--kw-faint)]" />
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Three-step loop</p>
+            <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Three-step loop</p>
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {[
@@ -93,7 +93,7 @@ export default async function FluencyLessonPage(props: { params: Promise<{ id: s
               "Repeat aloud using the same reciter and same pace.",
               "Read the passage yourself without the audio immediately after.",
             ].map((step) => (
-              <div key={step} className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4 text-sm leading-7 text-[color:var(--kw-muted)]">
+              <div key={step} className="rounded-[16px] bg-[color:var(--kw-fill)] px-4 py-4 text-sm leading-7 text-[color:var(--kw-muted)]">
                 {step}
               </div>
             ))}
@@ -101,13 +101,13 @@ export default async function FluencyLessonPage(props: { params: Promise<{ id: s
           <div className="mt-5 flex flex-wrap gap-2">
             <Link
               href="/quran/read?view=compact"
-              className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+              className="inline-flex items-center gap-2 min-h-10 rounded-full bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2 text-sm font-medium transition-colors duration-200 hover:bg-[rgba(var(--kw-accent-rgb),0.18)] text-[rgba(var(--kw-accent-rgb),1)]"
             >
               Open compact reader <ArrowRight size={14} />
             </Link>
             <Link
               href="/settings/reciter"
-              className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
+              className="inline-flex items-center gap-2 min-h-10 rounded-full bg-[color:var(--kw-fill-strong)] px-4 py-2 text-sm font-medium text-[color:var(--kw-ink)] transition-colors duration-200 hover:bg-[color:var(--kw-hover-strong)]"
             >
               Change reciter
             </Link>
@@ -119,12 +119,12 @@ export default async function FluencyLessonPage(props: { params: Promise<{ id: s
         <Card>
           <div className="flex items-center gap-2">
             <Mic size={16} className="text-[color:var(--kw-faint)]" />
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Target passages</p>
+            <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Target passages</p>
           </div>
           {insights?.challengeAyahs.length ? (
             <div className="mt-4 space-y-3">
               {insights.challengeAyahs.map((ayah) => (
-                <div key={ayah.ayahId} className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4">
+                <div key={ayah.ayahId} className="rounded-[16px] bg-[color:var(--kw-fill)] px-4 py-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
@@ -133,12 +133,12 @@ export default async function FluencyLessonPage(props: { params: Promise<{ id: s
                         <Pill tone="neutral">Hard {ayah.hardCount}</Pill>
                       </div>
                       {ayah.snippet ? (
-                        <p lang="ar" dir="rtl" className="mt-3 text-sm text-[color:var(--kw-faint)]">{ayah.snippet}</p>
+                        <p lang="ar" dir="rtl" className="mt-3 font-[family-name:var(--font-kw-quran)] text-[1.15rem] leading-[2] text-[color:var(--kw-faint)]">{ayah.snippet}</p>
                       ) : null}
                     </div>
                     <Link
                       href={`/quran/read?view=compact&surah=${ayah.surahNumber}&cursor=${ayah.ayahId}`}
-                      className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+                      className="inline-flex items-center gap-2 min-h-10 rounded-full bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2 text-sm font-medium transition-colors duration-200 hover:bg-[rgba(var(--kw-accent-rgb),0.18)] text-[rgba(var(--kw-accent-rgb),1)]"
                     >
                       Open ayah <ArrowRight size={14} />
                     </Link>
@@ -162,18 +162,18 @@ export default async function FluencyLessonPage(props: { params: Promise<{ id: s
         <Card>
           <div className="flex items-center gap-2">
             <Link2 size={16} className="text-[color:var(--kw-faint)]" />
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Seam drills</p>
+            <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Seam drills</p>
           </div>
           {insights?.weakTransitions.length ? (
             <div className="mt-4 space-y-3">
               {insights.weakTransitions.map((transition) => (
-                <div key={transition.id} className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4">
+                <div key={transition.id} className="rounded-[16px] bg-[color:var(--kw-fill)] px-4 py-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <Pill tone="warn">{transition.fromRef} -&gt; {transition.toRef}</Pill>
                     <Pill tone="neutral">Success {transition.successRatePct}%</Pill>
                   </div>
                   {transition.fromSnippet || transition.toSnippet ? (
-                    <p lang="ar" dir="rtl" className="mt-3 text-xs text-[color:var(--kw-faint)]">
+                    <p lang="ar" dir="rtl" className="mt-3 font-[family-name:var(--font-kw-quran)] text-[1.15rem] leading-[2] text-[color:var(--kw-faint)]">
                       {transition.fromSnippet ?? "..."}
                       {"  ->  "}
                       {transition.toSnippet ?? "..."}
@@ -205,13 +205,13 @@ export default async function FluencyLessonPage(props: { params: Promise<{ id: s
           <div className="flex flex-wrap gap-2">
             <Link
               href="/fluency/retest"
-              className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
+              className="inline-flex items-center gap-2 min-h-10 rounded-full bg-[color:var(--kw-fill-strong)] px-4 py-2 text-sm font-medium text-[color:var(--kw-ink)] transition-colors duration-200 hover:bg-[color:var(--kw-hover-strong)]"
             >
               Retest
             </Link>
             <Link
               href="/practice"
-              className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+              className="inline-flex items-center gap-2 min-h-10 rounded-full bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2 text-sm font-medium transition-colors duration-200 hover:bg-[rgba(var(--kw-accent-rgb),0.18)] text-[rgba(var(--kw-accent-rgb),1)]"
             >
               Practice <ArrowRight size={14} />
             </Link>

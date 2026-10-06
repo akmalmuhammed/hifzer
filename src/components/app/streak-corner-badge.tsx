@@ -88,7 +88,7 @@ export function StreakCornerBadge(props: { enabled: boolean }) {
       <InstallAppButton className="max-w-full md:hidden" />
 
       {showThemeToggle || showStreakBadge ? (
-        <div className="flex min-h-12 max-w-full items-center overflow-hidden rounded-full border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)]/96 px-1.25 py-1.25 text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] backdrop-blur">
+        <div className="flex min-h-12 max-w-full items-center overflow-hidden rounded-full border border-[color:var(--kw-border-2)] bg-[color:var(--kw-card)] px-1.25 py-1.25 text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)]">
           {showThemeToggle ? (
             <ThemeToggle className="h-10 w-10 rounded-full border-0 bg-transparent shadow-none hover:bg-[color:var(--kw-hover-soft)]" />
           ) : null}
@@ -106,15 +106,15 @@ export function StreakCornerBadge(props: { enabled: boolean }) {
               telemetryName="shell.streak.badge"
               aria-label={label}
               title={label}
-              className="max-w-full rounded-full px-3 py-2 text-[color:var(--kw-ink)] transition hover:bg-[color:var(--kw-hover-soft)]"
+              className="max-w-full rounded-full px-3 py-2 text-[color:var(--kw-ink)] transition-colors duration-200 hover:bg-[color:var(--kw-hover-soft)]"
             >
               <span className="flex items-center gap-2">
-                <span className="grid h-6 w-6 place-items-center rounded-full bg-[rgba(245,158,11,0.14)] text-[rgb(194,65,12)]">
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-[color:var(--kw-pill-warn-bg)] text-[color:var(--kw-ember-500)]">
                   <Flame size={14} />
                 </span>
-                <span className="text-[0.95rem] font-semibold leading-none">{badgeNumber(days)}</span>
+                <span className="text-[0.95rem] font-semibold leading-none tabular-nums">{badgeNumber(days)}</span>
                 {data?.streak.graceInUseToday ? (
-                  <span className="rounded-full border border-[rgba(234,88,12,0.24)] bg-[rgba(234,88,12,0.10)] px-1.5 py-0.5 text-[10px] font-semibold text-[color:var(--kw-ember-600)]">
+                  <span className="rounded-full bg-[color:var(--kw-pill-warn-bg)] px-1.5 py-0.5 text-[0.7rem] font-semibold text-[color:var(--kw-ember-600)]">
                     G
                   </span>
                 ) : null}

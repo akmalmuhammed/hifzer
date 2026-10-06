@@ -10,7 +10,7 @@ function toneColor(tone: Tone): string {
     return "var(--kw-chart-3)";
   }
   if (tone === "neutral") {
-    return "rgba(11,18,32,0.35)";
+    return "var(--kw-faint)";
   }
   return "var(--kw-chart-1)";
 }
@@ -42,7 +42,7 @@ export function DonutProgress(props: {
         cx={size / 2}
         cy={size / 2}
         r={r}
-        stroke="rgba(11,18,32,0.10)"
+        stroke="var(--kw-track)"
         strokeWidth={stroke}
         fill="transparent"
       />

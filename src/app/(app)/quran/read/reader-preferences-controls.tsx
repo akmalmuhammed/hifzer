@@ -89,7 +89,7 @@ export function ReaderPreferencesControls(props: ReaderPreferencesControlsProps)
                 });
             });
           }}
-          className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
+          className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
         >
           {QURAN_TRANSLATION_OPTIONS.map((option) => (
             <option key={option.id} value={option.id}>
@@ -98,8 +98,8 @@ export function ReaderPreferencesControls(props: ReaderPreferencesControlsProps)
           ))}
         </select>
         {languageWarning ? (
-          <span className="mt-1 block rounded-xl border border-[rgba(234,88,12,0.3)] bg-[rgba(234,88,12,0.08)] px-3 py-2 text-xs leading-5 text-[color:var(--kw-muted)]">
-            <span className="block font-semibold text-[rgba(234,88,12,0.95)]">
+          <span className="mt-1 block rounded-xl bg-[color:var(--kw-pill-warn-bg)] px-3 py-2 text-xs leading-5 text-[color:var(--kw-muted)]">
+            <span className="block font-semibold text-[color:var(--kw-ember-600)]">
               {languageWarning.startsWith("Persistence unavailable:") ? props.ui.persistenceUnavailable : props.ui.saveIssue}
             </span>
             <span className="block">{languageWarning}</span>
@@ -109,7 +109,7 @@ export function ReaderPreferencesControls(props: ReaderPreferencesControlsProps)
 
       <div className="text-sm text-[color:var(--kw-muted)]">
         {props.ui.defaultDetails}
-        <div className="mt-1 flex h-10 items-center justify-between rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3">
+        <div className="mt-1 flex h-10 items-center justify-between rounded-xl bg-[color:var(--kw-fill)] pl-3 pr-1.5">
           <span className="text-sm text-[color:var(--kw-ink)]">{showDetails ? props.ui.visible : props.ui.hidden}</span>
           <button
             type="button"
@@ -137,10 +137,10 @@ export function ReaderPreferencesControls(props: ReaderPreferencesControlsProps)
                   });
               });
             }}
-            className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-200 ${
               showDetails
-                ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] text-[rgba(var(--kw-accent-rgb),1)]"
-                : "border-[color:var(--kw-border-2)] bg-white text-[color:var(--kw-ink)]"
+                ? "border-transparent bg-[rgba(var(--kw-accent-rgb),0.10)] text-[rgba(var(--kw-accent-rgb),1)]"
+                : "border-transparent bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)]"
             }`}
           >
             {showDetails ? props.ui.hideDetails : props.ui.showDetails}

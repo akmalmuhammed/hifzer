@@ -30,29 +30,29 @@ export default function RootSegmentError(props: { error: Error & { digest?: stri
   }, [props.error, errorId]);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12">
-      <Card>
-        <div className="flex items-start justify-between gap-3">
+    <div className="mx-auto max-w-[36rem] px-4 py-20 text-center">
+      <Card className="p-8! shadow-none!">
+        <div className="flex flex-col-reverse items-center gap-5">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+            <p className="text-[0.84rem] font-semibold text-[color:var(--kw-faint)]">
               Hifzer error boundary
             </p>
-            <h1 className="mt-3 font-[family-name:var(--font-kw-display)] text-3xl tracking-tight text-[color:var(--kw-ink)]">
+            <h1 className="mt-2 font-[family-name:var(--font-kw-display)] text-[2rem] font-semibold leading-[1.1] tracking-[-0.028em] text-[color:var(--kw-ink)]">
               Something went wrong.
             </h1>
-            <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+            <p className="mt-3 text-[1.02rem] leading-[1.5] text-[color:var(--kw-muted)]">
               Try a reset. If it persists, refresh the page and share the error ID below.
             </p>
-            <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
+            <p className="mt-4 text-[0.84rem] font-medium text-[color:var(--kw-faint)]">
               Error ID: <span className="text-[color:var(--kw-ink)]">{errorId}</span>
             </p>
           </div>
-          <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[rgba(234,88,12,0.28)] bg-[rgba(234,88,12,0.12)] text-[color:var(--kw-ember-600)]">
+          <span className="grid h-14 w-14 place-items-center rounded-full bg-[color:var(--kw-pill-warn-bg)] text-[color:var(--kw-ember-600)] [&_svg]:h-6 [&_svg]:w-6">
             <AlertTriangle size={18} />
           </span>
         </div>
 
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div className="mt-7 flex flex-wrap justify-center gap-2.5">
           <Button onClick={() => props.reset()} className="gap-2">
             Reset view <ArrowRight size={16} />
           </Button>

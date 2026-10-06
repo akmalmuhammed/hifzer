@@ -12,11 +12,11 @@ export function PageHeader(props: {
     <div className={clsx("flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between", props.className)}>
       <div className="min-w-0">
         {props.eyebrow ? (
-          <div className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+          <div className="text-[0.82rem] font-semibold text-[color:var(--kw-faint)]">
             {props.eyebrow}
           </div>
         ) : null}
-        <h1 className="kw-page-title mt-2 text-balance break-words text-[color:var(--kw-ink)]">
+        <h1 className="kw-page-title mt-1 text-balance break-words text-[color:var(--kw-ink)]">
           {props.title}
         </h1>
         {props.subtitle ? (

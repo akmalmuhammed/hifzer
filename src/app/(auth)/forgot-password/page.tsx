@@ -23,21 +23,21 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7 text-center">
       <Pill tone="neutral">Auth</Pill>
-      <h1 className="text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)]">
+      <h1 className="text-balance font-[family-name:var(--font-kw-display)] text-[clamp(2.2rem,6vw,3rem)] font-semibold leading-[1.07] tracking-[-0.03em] text-[color:var(--kw-ink)]">
         Reset your password.
       </h1>
 
-      <Card>
-        <div className="flex items-start justify-between gap-4">
+      <Card className="p-7! shadow-none!">
+        <div className="flex flex-col-reverse items-center gap-5">
           <div>
-            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Auth not configured</p>
-            <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+            <p className="text-[1.15rem] font-semibold tracking-[-0.018em] text-[color:var(--kw-ink)]">Auth not configured</p>
+            <p className="mt-2 text-[0.98rem] leading-[1.5] text-[color:var(--kw-muted)]">
               Password reset is available when Clerk auth is configured.
               Set the required Clerk environment variables to enable it.
             </p>
-            <div className="mt-6 flex flex-wrap gap-2">
+            <div className="mt-6 flex flex-wrap justify-center gap-2.5">
               <Link href="/login">
                 <Button variant="secondary" className="gap-2">
                   Back to login <ArrowRight size={16} />
@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
               </Link>
             </div>
           </div>
-          <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
+          <span className="grid h-14 w-14 place-items-center rounded-full bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-muted)] [&_svg]:h-6 [&_svg]:w-6">
             <Mail size={18} />
           </span>
         </div>

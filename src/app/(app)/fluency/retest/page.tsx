@@ -60,17 +60,17 @@ export default async function FluencyRetestPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <Pill tone={tone}>{readiness}</Pill>
-          <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{retentionScore}%</p>
+          <p className="mt-3 text-[2.25rem] font-semibold leading-[1.05] tracking-[-0.03em] tabular-nums text-[color:var(--kw-ink)]">{retentionScore}%</p>
           <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Recent retention-quality signal.</p>
         </Card>
         <Card>
           <Pill tone="warn">Challenge ayahs</Pill>
-          <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{challengeCount}</p>
+          <p className="mt-3 text-[2.25rem] font-semibold leading-[1.05] tracking-[-0.03em] tabular-nums text-[color:var(--kw-ink)]">{challengeCount}</p>
           <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Ayahs still repeatedly triggering AGAIN/HARD friction.</p>
         </Card>
         <Card>
           <Pill tone="accent">Weak seams</Pill>
-          <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{weakTransitions}</p>
+          <p className="mt-3 text-[2.25rem] font-semibold leading-[1.05] tracking-[-0.03em] tabular-nums text-[color:var(--kw-ink)]">{weakTransitions}</p>
           <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Open ayah-to-ayah joins that still sound unstable.</p>
         </Card>
       </div>
@@ -80,7 +80,7 @@ export default async function FluencyRetestPage() {
           <div>
             <div className="flex items-center gap-2">
               <RotateCcw size={16} className="text-[color:var(--kw-faint)]" />
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Recommended retest path</p>
+              <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Recommended retest path</p>
             </div>
             <div className="mt-4 space-y-3 text-sm leading-7 text-[color:var(--kw-muted)]">
               <p>If the flow still breaks, return to `listen-repeat` first.</p>
@@ -91,19 +91,19 @@ export default async function FluencyRetestPage() {
           <div className="flex flex-wrap gap-2">
             <Link
               href="/fluency/lesson/listen-repeat"
-              className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
+              className="inline-flex items-center gap-2 min-h-10 rounded-full bg-[color:var(--kw-fill-strong)] px-4 py-2 text-sm font-medium text-[color:var(--kw-ink)] transition-colors duration-200 hover:bg-[color:var(--kw-hover-strong)]"
             >
               Listen-repeat
             </Link>
             <Link
               href="/fluency/lesson/hesitation"
-              className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
+              className="inline-flex items-center gap-2 min-h-10 rounded-full bg-[color:var(--kw-fill-strong)] px-4 py-2 text-sm font-medium text-[color:var(--kw-ink)] transition-colors duration-200 hover:bg-[color:var(--kw-hover-strong)]"
             >
               Hesitation
             </Link>
             <Link
               href="/fluency/lesson/transitions"
-              className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
+              className="inline-flex items-center gap-2 min-h-10 rounded-full bg-[color:var(--kw-fill-strong)] px-4 py-2 text-sm font-medium text-[color:var(--kw-ink)] transition-colors duration-200 hover:bg-[color:var(--kw-hover-strong)]"
             >
               Transitions
             </Link>
@@ -122,13 +122,13 @@ export default async function FluencyRetestPage() {
           <div className="flex flex-wrap gap-2">
             <Link
               href="/practice"
-              className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+              className="inline-flex items-center gap-2 min-h-10 rounded-full bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2 text-sm font-medium transition-colors duration-200 hover:bg-[rgba(var(--kw-accent-rgb),0.18)] text-[rgba(var(--kw-accent-rgb),1)]"
             >
               Open practice <ArrowRight size={14} />
             </Link>
             <Link
               href="/hifz"
-              className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
+              className="inline-flex items-center gap-2 min-h-10 rounded-full bg-[color:var(--kw-fill-strong)] px-4 py-2 text-sm font-medium text-[color:var(--kw-ink)] transition-colors duration-200 hover:bg-[color:var(--kw-hover-strong)]"
             >
               Return to Hifz
             </Link>

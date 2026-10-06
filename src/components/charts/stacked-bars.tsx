@@ -28,7 +28,7 @@ export function StackedBars(props: {
       role="img"
       aria-label={props.ariaLabel ?? "Stacked bar chart"}
     >
-      <rect x="0" y="0" width="100" height={height} rx={height / 2} fill="rgba(11,18,32,0.08)" />
+      <rect x="0" y="0" width="100" height={height} rx={height / 2} fill="var(--kw-track)" />
       {safeSegments.map((s, idx) => {
         const w = widths[idx] ?? 0;
         const x = positions[idx] ?? 0;

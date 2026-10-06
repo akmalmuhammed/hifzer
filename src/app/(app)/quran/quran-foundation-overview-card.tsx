@@ -18,7 +18,7 @@ type Payload = {
 };
 
 const TOOL_LINK_CLASS =
-  "inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] transition hover:bg-white";
+  "inline-flex items-center gap-2 rounded-full border border-transparent bg-[color:var(--kw-fill-strong)] px-4 py-2 text-sm font-medium text-[color:var(--kw-ink)] transition hover:bg-[color:var(--kw-hover-strong)]";
 
 function ConnectedQuranSummary(props: {
   status: QuranFoundationConnectionStatus;
@@ -52,8 +52,8 @@ function ConnectedQuranSummary(props: {
       </div>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Resume point</p>
+        <div className="rounded-[14px] bg-[color:var(--kw-fill)] p-4">
+          <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">Resume point</p>
           <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
             {props.overview?.readingSession
               ? `Surah ${props.overview.readingSession.surahNumber}:${props.overview.readingSession.ayahNumber}`
@@ -62,8 +62,8 @@ function ConnectedQuranSummary(props: {
                 : "Will sync as you read"}
           </p>
         </div>
-        <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Quran.com streak</p>
+        <div className="rounded-[14px] bg-[color:var(--kw-fill)] p-4">
+          <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">Quran.com streak</p>
           <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
             {props.overview?.streak
               ? `${props.overview.streak.currentDays} days`
@@ -72,16 +72,16 @@ function ConnectedQuranSummary(props: {
                 : "No streak data yet"}
           </p>
         </div>
-        <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Today&apos;s goal</p>
+        <div className="rounded-[14px] bg-[color:var(--kw-fill)] p-4">
+          <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">Today&apos;s goal</p>
           <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
             {props.overview?.goalPlan?.remaining ??
               props.overview?.goalPlan?.title ??
               (props.loading ? "Loading..." : "No goal found")}
           </p>
         </div>
-        <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Synced extras</p>
+        <div className="rounded-[14px] bg-[color:var(--kw-fill)] p-4">
+          <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">Synced extras</p>
           <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
             {props.loading
               ? "Loading..."

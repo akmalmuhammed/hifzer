@@ -113,7 +113,7 @@ export function QuranProgressBackfill(props: Props) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Pill tone="accent">Mark past reading</Pill>
-          <span className="inline-flex items-center gap-1 rounded-full border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.08)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[rgba(var(--kw-accent-rgb),1)]">
+          <span className="inline-flex items-center gap-1 rounded-full border border-transparent bg-[rgba(var(--kw-accent-rgb),0.08)] px-2.5 py-1 text-[0.8rem] font-medium text-[rgba(var(--kw-accent-rgb),1)]">
             <Import size={12} />
             Outside Hifzer
           </span>
@@ -137,7 +137,7 @@ export function QuranProgressBackfill(props: Props) {
               setFromAyah(1);
               setToAyah(Math.min(10, target?.ayahCount ?? 1));
             }}
-            className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
+            className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
           >
             {props.surahs.map((surah) => (
               <option key={surah.surahNumber} value={surah.surahNumber}>
@@ -155,7 +155,7 @@ export function QuranProgressBackfill(props: Props) {
             max={selected?.ayahCount ?? 1}
             value={safeFrom}
             onChange={(e) => setFromAyah(Number(e.target.value))}
-            className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
+            className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
           />
         </label>
 
@@ -167,7 +167,7 @@ export function QuranProgressBackfill(props: Props) {
             max={selected?.ayahCount ?? 1}
             value={safeTo}
             onChange={(e) => setToAyah(Number(e.target.value))}
-            className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
+            className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
           />
         </label>
 
@@ -176,10 +176,10 @@ export function QuranProgressBackfill(props: Props) {
             type="button"
             disabled={saving || Boolean(rangeError)}
             onClick={markRangeCompleted}
-            className={`h-10 w-full rounded-xl border px-4 text-sm font-semibold transition ${
+            className={`h-10 w-full rounded-full border px-4 text-sm font-medium transition ${
               saving || rangeError
-                ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]"
-                : "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)] hover:bg-[rgba(var(--kw-accent-rgb),0.16)]"
+                ? "cursor-not-allowed border-transparent bg-[color:var(--kw-fill)] text-[color:var(--kw-faint)]"
+                : "border-transparent bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)] hover:bg-[rgba(var(--kw-accent-rgb),0.16)]"
             }`}
           >
             {saving ? "Saving..." : "Save reading"}

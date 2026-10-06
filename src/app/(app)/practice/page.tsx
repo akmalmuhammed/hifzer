@@ -35,21 +35,21 @@ export default async function PracticePage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <Pill tone="accent">Rescue session</Pill>
-          <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+          <p className="mt-3 text-[2.25rem] font-semibold leading-[1.05] tracking-[-0.03em] tabular-nums text-[color:var(--kw-ink)]">
             {intelligence?.rescueSession.estimatedMinutes ?? 0}m
           </p>
           <p className="mt-2 text-sm text-[color:var(--kw-muted)]">A focused fix-today session built from recent struggle ayahs, weak seams, and review pressure.</p>
         </Card>
         <Card>
           <Pill tone="warn">Struggle ayahs</Pill>
-          <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+          <p className="mt-3 text-[2.25rem] font-semibold leading-[1.05] tracking-[-0.03em] tabular-nums text-[color:var(--kw-ink)]">
             {intelligence?.metrics.fragileAyahs ?? 0}
           </p>
           <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Ayahs that repeatedly produced `AGAIN` or `HARD` signals and should not be trusted under pressure yet.</p>
         </Card>
         <Card>
           <Pill tone="accent">Weak seams</Pill>
-          <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+          <p className="mt-3 text-[2.25rem] font-semibold leading-[1.05] tracking-[-0.03em] tabular-nums text-[color:var(--kw-ink)]">
             {intelligence?.metrics.weakSeams ?? 0}
           </p>
           <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Open transition repairs that deserve seam-only drilling, separate from your main Hifz flow.</p>
@@ -60,13 +60,13 @@ export default async function PracticePage() {
         <Card>
           <div className="flex items-center gap-2">
             <RotateCcw size={16} className="text-[color:var(--kw-faint)]" />
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Rescue session generator</p>
+            <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Rescue session generator</p>
           </div>
-          <p className="mt-3 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">Fix today&apos;s damage in one compact pass.</p>
+          <p className="mt-3 text-[1.2rem] font-semibold leading-[1.2] tracking-[-0.02em] text-[color:var(--kw-ink)]">Fix today&apos;s damage in one compact pass.</p>
           {intelligence?.rescueSession.blocks.length ? (
             <div className="mt-4 space-y-3">
               {intelligence.rescueSession.blocks.map((block) => (
-                <div key={block.title} className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4">
+                <div key={block.title} className="rounded-[16px] bg-[color:var(--kw-fill)] px-4 py-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <Pill tone={block.kind === "scheduled_review" ? "neutral" : "warn"}>{block.minutes} min</Pill>
@@ -99,13 +99,13 @@ export default async function PracticePage() {
         <Card>
           <div className="flex items-center gap-2">
             <Radar size={16} className="text-[color:var(--kw-faint)]" />
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Mushabihat radar</p>
+            <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Mushabihat radar</p>
           </div>
-          <p className="mt-3 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">Detect similar ayahs before they start swapping places in memory.</p>
+          <p className="mt-3 text-[1.2rem] font-semibold leading-[1.2] tracking-[-0.02em] text-[color:var(--kw-ink)]">Detect similar ayahs before they start swapping places in memory.</p>
           {intelligence?.mushabihat.length ? (
             <div className="mt-3 space-y-2">
               {intelligence.mushabihat.map((pair) => (
-                <div key={`${pair.leftAyahId}-${pair.rightAyahId}`} className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-3">
+                <div key={`${pair.leftAyahId}-${pair.rightAyahId}`} className="rounded-[16px] bg-[color:var(--kw-fill)] px-3 py-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <Pill tone="warn">{pair.similarityPct}% similar</Pill>
                     <Pill tone="neutral">{pair.leftRef}</Pill>
@@ -114,7 +114,7 @@ export default async function PracticePage() {
                   <p className="mt-2 text-sm text-[color:var(--kw-muted)]">{pair.reason}</p>
                   <p className="mt-2 text-xs text-[color:var(--kw-faint)]">{pair.contrastHint}</p>
                   {(pair.leftSnippet || pair.rightSnippet) ? (
-                    <p lang="ar" dir="rtl" className="mt-2 text-xs text-[color:var(--kw-faint)]">
+                    <p lang="ar" dir="rtl" className="mt-2 font-[family-name:var(--font-kw-quran)] text-[1.15rem] leading-[2] text-[color:var(--kw-faint)]">
                       {pair.leftSnippet ?? "..."}
                       {"  /  "}
                       {pair.rightSnippet ?? "..."}
@@ -147,16 +147,16 @@ export default async function PracticePage() {
         <Card>
           <div className="flex items-center gap-2">
             <Link2 size={16} className="text-[color:var(--kw-faint)]" />
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Seam trainer</p>
+            <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Seam trainer</p>
           </div>
-          <p className="mt-3 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">Smooth the seam, not just the ayah.</p>
+          <p className="mt-3 text-[1.2rem] font-semibold leading-[1.2] tracking-[-0.02em] text-[color:var(--kw-ink)]">Smooth the seam, not just the ayah.</p>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
             Loop only the ayah-to-ayah join first, then return to full-passage flow once the seam stops breaking.
           </p>
           {intelligence?.seamTrainer.length ? (
             <div className="mt-3 space-y-2">
               {intelligence.seamTrainer.map((transition) => (
-                <div key={transition.id} className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-3">
+                <div key={transition.id} className="rounded-[16px] bg-[color:var(--kw-fill)] px-3 py-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <Pill tone="warn">{transition.loopCount} loops</Pill>
                     <Pill tone="neutral">{transition.fromRef} -&gt; {transition.toRef}</Pill>
@@ -177,13 +177,13 @@ export default async function PracticePage() {
         <Card>
           <div className="flex items-center gap-2">
             <HeartHandshake size={16} className="text-[color:var(--kw-faint)]" />
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Meaning-linked memorization</p>
+            <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Meaning-linked memorization</p>
           </div>
-          <p className="mt-3 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">Anchor new memorization in meaning before the blind step.</p>
+          <p className="mt-3 text-[1.2rem] font-semibold leading-[1.2] tracking-[-0.02em] text-[color:var(--kw-ink)]">Anchor new memorization in meaning before the blind step.</p>
           {intelligence?.meaningFrames.length ? (
             <div className="mt-3 space-y-3">
               {intelligence.meaningFrames.map((frame) => (
-                <div key={`${frame.startRef}-${frame.endRef}`} className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4">
+                <div key={`${frame.startRef}-${frame.endRef}`} className="rounded-[16px] bg-[color:var(--kw-fill)] px-4 py-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <Pill tone="accent">{frame.startRef} - {frame.endRef}</Pill>
                     {frame.focusWords.map((word) => (
@@ -193,7 +193,7 @@ export default async function PracticePage() {
                   <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">{frame.cueTitle}</p>
                   <div className="mt-3 space-y-2">
                     {frame.ayahs.slice(0, 4).map((ayah) => (
-                      <div key={ayah.ayahId} className="rounded-2xl border border-[color:var(--kw-border-2)] bg-white px-3 py-3">
+                      <div key={ayah.ayahId} className="rounded-[12px] bg-[color:var(--kw-card)] px-3 py-3">
                         <div className="flex flex-wrap items-center gap-2">
                           <Pill tone="neutral">{ayah.ref}</Pill>
                           <Link href={`/quran/read?view=compact&surah=${Number(ayah.ref.split(":")[0])}&cursor=${ayah.ayahId}`} className="text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
@@ -229,7 +229,7 @@ export default async function PracticePage() {
           </div>
           <Link
             href={overview?.reviewHealth.dueNow ? "/hifz?focus=review" : "/hifz"}
-            className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+            className="inline-flex items-center gap-2 min-h-10 rounded-full bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2 text-sm font-medium transition-colors duration-200 hover:bg-[rgba(var(--kw-accent-rgb),0.18)] text-[rgba(var(--kw-accent-rgb),1)]"
           >
             {overview?.reviewHealth.dueNow ? "Open review" : "Open Hifz"} <ArrowRight size={14} />
           </Link>

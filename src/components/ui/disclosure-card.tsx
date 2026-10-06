@@ -26,7 +26,7 @@ export function DisclosureCard({
         <summary className={clsx("list-none cursor-pointer", summaryClassName)}>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">{summary}</div>
-            <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[16px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] text-[color:var(--kw-faint)] transition group-open:rotate-180">
+            <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-muted)] transition duration-200 group-open:rotate-180">
               <ChevronDown size={16} />
             </span>
           </div>

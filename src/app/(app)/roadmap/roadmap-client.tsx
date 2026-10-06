@@ -127,7 +127,7 @@ export function RoadmapClient() {
         )}
       />
 
-      <section className={`kw-fade-in ${styles.hero} px-5 py-5 sm:px-6`}>
+      <section className={`kw-fade-in ${styles.hero} px-5 py-6 sm:px-8 sm:py-8`}>
         <div className={styles.orbA} />
         <div className={styles.orbB} />
         <div className="relative grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-end">
@@ -136,7 +136,7 @@ export function RoadmapClient() {
               <Pill tone="accent">Public roadmap</Pill>
               <Pill tone="neutral">Shipped carefully</Pill>
             </div>
-            <h2 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-3xl tracking-tight text-[color:var(--kw-ink)] sm:text-4xl">
+            <h2 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-3xl font-semibold leading-[1.08] tracking-[-0.03em] text-[color:var(--kw-ink)] sm:text-4xl">
               Building the next layer of Hifzer without losing the calm that makes it usable every day.
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
@@ -146,24 +146,24 @@ export function RoadmapClient() {
           </div>
 
           <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
-            <div className={`${styles.valueCard} flex items-center gap-3 px-3 py-3`}>
-              <ShieldCheck size={16} className="text-[color:var(--kw-ink-2)]" />
+            <div className={`${styles.valueCard} flex items-center gap-3 px-4 py-3`}>
+              <ShieldCheck size={16} className="shrink-0 text-[rgba(var(--kw-accent-rgb),1)]" />
               <div>
-                <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Quality</p>
+                <p className="text-[0.8rem] font-medium text-[color:var(--kw-faint)]">Quality</p>
                 <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{inProgressCount} active priorities</p>
               </div>
             </div>
-            <div className={`${styles.valueCard} flex items-center gap-3 px-3 py-3`}>
-              <Cpu size={16} className="text-[color:var(--kw-ink-2)]" />
+            <div className={`${styles.valueCard} flex items-center gap-3 px-4 py-3`}>
+              <Cpu size={16} className="shrink-0 text-[rgba(var(--kw-accent-rgb),1)]" />
               <div>
-                <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Next</p>
+                <p className="text-[0.8rem] font-medium text-[color:var(--kw-faint)]">Next</p>
                 <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{plannedCount} planned moves</p>
               </div>
             </div>
-            <div className={`${styles.valueCard} flex items-center gap-3 px-3 py-3`}>
-              <Rocket size={16} className="text-[color:var(--kw-ink-2)]" />
+            <div className={`${styles.valueCard} flex items-center gap-3 px-4 py-3`}>
+              <Rocket size={16} className="shrink-0 text-[rgba(var(--kw-accent-rgb),1)]" />
               <div>
-                <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Direction</p>
+                <p className="text-[0.8rem] font-medium text-[color:var(--kw-faint)]">Direction</p>
                 <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Reading, Hifz, mobile reach</p>
               </div>
             </div>
@@ -178,14 +178,14 @@ export function RoadmapClient() {
             className="kw-fade-in"
             style={{ animationDelay: `${laneIndex * 50}ms` }}
           >
-            <Card className={`${styles.lane} px-4 py-4`}>
+            <Card className={`${styles.lane} px-5 py-5 sm:px-6 sm:py-6`}>
               <div className={styles.laneHeader}>
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Pill tone={laneIndex === 0 ? "accent" : "neutral"}>{lane.label}</Pill>
                     <span className={styles.laneCount}>{lane.milestones.length} priorities</span>
                   </div>
-                  <p className="mt-3 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">{lane.horizon}</p>
+                  <p className="mt-3 text-[1.3rem] font-semibold leading-[1.15] tracking-[-0.022em] text-[color:var(--kw-ink)]">{lane.horizon}</p>
                   <p className="mt-1 text-sm font-medium text-[color:var(--kw-ink-2)]">{lane.focus}</p>
                 </div>
               </div>
@@ -200,10 +200,10 @@ export function RoadmapClient() {
                         <span className={styles.milestoneIndex}>0{milestoneIndex + 1}</span>
                         <Pill tone={pill.tone}>{pill.label}</Pill>
                       </div>
-                      <p className="mt-3 text-base font-semibold leading-7 tracking-tight text-[color:var(--kw-ink)]">
+                      <p className="mt-3 text-base font-semibold leading-6 tracking-[-0.015em] text-[color:var(--kw-ink)]">
                         {milestone.title}
                       </p>
-                      <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">{milestone.detail}</p>
+                      <p className="mt-1.5 text-sm leading-6 text-[color:var(--kw-muted)]">{milestone.detail}</p>
                       <div className={styles.milestoneFoot}>
                         <span className={styles.milestoneDot} />
                         <span>{lane.label === "Now" ? "Being tightened in the current cycle" : "Queued for a later shipping pass"}</span>

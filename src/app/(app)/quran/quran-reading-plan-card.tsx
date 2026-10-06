@@ -109,8 +109,8 @@ export function QuranReadingPlanCard(props: ReadingPlanCardProps) {
   }
 
   return (
-    <Card className="relative overflow-hidden">
-      <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[rgba(var(--kw-accent-rgb),0.12)] blur-2xl" />
+    <Card className="relative">
+      <div className="hidden" />
       <div className="relative">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -125,14 +125,14 @@ export function QuranReadingPlanCard(props: ReadingPlanCardProps) {
               Pick your pace once, then keep the same calm daily loop: read, listen, and continue from where you stopped.
             </p>
           </div>
-          <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/75 text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
+          <span className="grid h-11 w-11 place-items-center rounded-full bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink-2)]">
             <BookOpenText size={18} />
           </span>
         </div>
 
         <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.9fr)]">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Completion track</p>
+            <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">Completion track</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {TRACK_OPTIONS.map((option) => (
                 <button
@@ -140,10 +140,10 @@ export function QuranReadingPlanCard(props: ReadingPlanCardProps) {
                   type="button"
                   onClick={() => setTrackId(option.id)}
                   className={[
-                    "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
+                    "min-h-9 rounded-full border px-3.5 py-1.5 text-[0.86rem] font-medium transition-colors duration-200",
                     trackId === option.id
-                      ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-                      : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)] hover:bg-white",
+                      ? "border-transparent bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+                      : "border-transparent bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-strong)]",
                   ].join(" ")}
                 >
                   {option.label}
@@ -151,7 +151,7 @@ export function QuranReadingPlanCard(props: ReadingPlanCardProps) {
               ))}
             </div>
 
-            <p className="mt-5 text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Daily time budget</p>
+            <p className="mt-5 text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">Daily time budget</p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               {DAILY_MINUTES_OPTIONS.map((option) => (
                 <button
@@ -159,10 +159,10 @@ export function QuranReadingPlanCard(props: ReadingPlanCardProps) {
                   type="button"
                   onClick={() => setMinutes(option)}
                   className={[
-                    "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
+                    "min-h-9 rounded-full border px-3.5 py-1.5 text-[0.86rem] font-medium transition-colors duration-200",
                     minutes === option
-                      ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-                      : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)] hover:bg-white",
+                      ? "border-transparent bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+                      : "border-transparent bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-strong)]",
                   ].join(" ")}
                 >
                   {option} min
@@ -172,10 +172,10 @@ export function QuranReadingPlanCard(props: ReadingPlanCardProps) {
                 type="button"
                 onClick={() => setMinutes(-1)}
                 className={[
-                  "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
+                  "min-h-9 rounded-full border px-3.5 py-1.5 text-[0.86rem] font-medium transition-colors duration-200",
                   minutes === -1
-                    ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-                    : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)] hover:bg-white",
+                    ? "border-transparent bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+                    : "border-transparent bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-strong)]",
                 ].join(" ")}
               >
                 Custom
@@ -194,12 +194,12 @@ export function QuranReadingPlanCard(props: ReadingPlanCardProps) {
             </div>
           </div>
 
-          <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/75 p-4 shadow-[var(--kw-shadow-soft)]">
+          <div className="rounded-[18px] bg-[color:var(--kw-fill)] p-5">
             <div className="flex items-center gap-2">
               <Clock3 size={16} className="text-[color:var(--kw-faint)]" />
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Today&apos;s target</p>
+              <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">Today&apos;s target</p>
             </div>
-            <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+            <p className="mt-3 text-3xl font-semibold tracking-tight tabular-nums text-[color:var(--kw-ink)]">
               {computed.ayahsPerDay} ayahs / day
             </p>
             <p className="mt-2 text-sm text-[color:var(--kw-muted)]">

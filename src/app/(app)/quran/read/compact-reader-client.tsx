@@ -255,13 +255,13 @@ export function CompactReaderClient({
   const arabicFontSize = `clamp(${(1.8 * arabicScale).toFixed(2)}rem, ${(5 * arabicScale).toFixed(2)}vw, ${(2.7 * arabicScale).toFixed(2)}rem)`;
 
   const btnBase =
-    "inline-flex min-h-11 items-center justify-center rounded-xl border px-3 py-2 text-sm font-semibold";
+    "inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border px-5 py-2 text-sm font-medium transition-colors duration-200";
   const btnActive =
-    `${btnBase} border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]`;
+    `${btnBase} border-transparent bg-[rgba(var(--kw-accent-rgb),1)] text-white hover:bg-[rgba(var(--kw-accent-rgb),0.88)]`;
   const btnDisabled =
-    `${btnBase} border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]`;
+    `${btnBase} border-transparent bg-[color:var(--kw-fill)] text-[color:var(--kw-faint)]`;
   const btnSecondary =
-    `${btnBase} border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]`;
+    `${btnBase} border-transparent bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-strong)]`;
   const showAnyDetails = !focusMode && (showPhonetic || showTranslation || showTafsir);
 
   return (
@@ -275,16 +275,16 @@ export function CompactReaderClient({
           ayahId={current.id}
         />
       )}
-      <Card className={focusMode ? "py-5 sm:px-6" : "py-3"}>
+      <Card className={focusMode ? "py-8 sm:px-10" : "py-5 sm:px-8 sm:py-6"}>
         {!focusMode ? (
           <>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1 text-xs font-semibold text-[color:var(--kw-muted)]">
+                <span className="rounded-full bg-[color:var(--kw-fill)] px-2.5 py-1 text-xs font-medium tabular-nums text-[color:var(--kw-faint)]">
                   {current.surahNumber}:{current.ayahNumber}
                 </span>
-                <span className="text-xs text-[color:var(--kw-faint)]">#{current.id}</span>
-                <span className="text-xs text-[color:var(--kw-faint)]">
+                <span className="text-xs tabular-nums text-[color:var(--kw-faint)]">#{current.id}</span>
+                <span className="text-xs tabular-nums text-[color:var(--kw-faint)]">
                   {globalIndex + 1} / {totalInSet}
                 </span>
               </div>
@@ -318,8 +318,8 @@ export function CompactReaderClient({
               </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[color:var(--kw-border-2)] pt-3">
-              <span id="reader-text-size-label" className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[color:var(--kw-border-2)] pt-4">
+              <span id="reader-text-size-label" className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">
                 Text size
               </span>
               <div className="flex items-center gap-2" role="group" aria-labelledby="reader-text-size-label">
@@ -348,7 +348,7 @@ export function CompactReaderClient({
         <div
           dir="rtl"
           lang="ar"
-          className={focusMode ? "mt-8 text-right text-[color:var(--kw-ink)]" : "mt-3 text-right text-[color:var(--kw-ink)]"}
+          className={focusMode ? "mt-10 text-right font-[family-name:var(--font-kw-quran)] text-[color:var(--kw-ink)]" : "mt-8 pb-2 text-right font-[family-name:var(--font-kw-quran)] text-[color:var(--kw-ink)]"}
           style={{ fontSize: arabicFontSize, lineHeight: 2.05, touchAction: "manipulation" }}
           onTouchStart={onArabicTouchStart}
           onTouchMove={onArabicTouchMove}
@@ -361,7 +361,7 @@ export function CompactReaderClient({
         </div>
 
         {showAnyDetails ? (
-          <div className="mt-3 space-y-2">
+          <div className="mt-5 space-y-4">
             {showPhonetic ? (
               <SupportTextPanel kind="transliteration">
                 {current.phonetic ?? ui.phoneticUnavailable}
@@ -394,7 +394,7 @@ export function CompactReaderClient({
 
         {!focusMode ? <AyahAiExplanationPanel key={current.id} ayahId={current.id} compact /> : null}
         {!focusMode ? (
-          <div className="mt-6 flex flex-wrap items-center gap-2">
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-2 border-t border-[color:var(--kw-border-2)] pt-5">
             {prevAyah ? (
               <button type="button" onClick={handlePrev} className={btnSecondary}>
                 {ui.previous}

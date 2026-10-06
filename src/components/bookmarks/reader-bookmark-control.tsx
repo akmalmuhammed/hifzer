@@ -199,20 +199,20 @@ export function ReaderBookmarkControl(props: Props) {
         aria-describedby={props.anonymous ? anonymousHelpId : undefined}
         className={clsx(
           inline
-            ? "relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border shadow-[var(--kw-shadow-soft)] transition"
-            : "group relative grid h-11 w-11 place-items-center rounded-2xl border shadow-[var(--kw-shadow-soft)] transition",
+            ? "relative inline-flex h-11 w-11 items-center justify-center rounded-full border transition-colors duration-200"
+            : "group relative grid h-11 w-11 place-items-center rounded-full border transition-colors duration-200",
           props.anonymous
-            ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] text-[color:var(--kw-faint)]"
+            ? "cursor-not-allowed border-transparent bg-[color:var(--kw-fill)] text-[color:var(--kw-faint)]"
             : inline
-              ? "border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-strong)]"
-              : "border-[rgba(43,75,255,0.22)] bg-[rgba(43,75,255,0.10)] text-[rgba(31,54,217,1)] hover:bg-[rgba(43,75,255,0.14)]",
+              ? "border-transparent bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-strong)]"
+              : "border-transparent bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)] hover:bg-[rgba(var(--kw-accent-rgb),0.18)]",
         )}
         aria-label={props.anonymous ? "Bookmarks unavailable in anonymous mode" : "Save bookmark"}
         title={props.anonymous ? "Bookmarks unavailable in anonymous mode" : "Save bookmark"}
       >
         {open ? <BookMarked size={16} /> : <BookmarkPlus size={16} />}
         {pendingCount > 0 ? (
-          <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full border border-[color:var(--kw-surface-strong)] bg-[rgba(31,54,217,1)] px-1 text-[10px] font-bold leading-none text-white">
+          <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full border border-[color:var(--kw-card)] bg-[rgba(var(--kw-accent-rgb),1)] px-1 text-[10px] font-medium leading-none text-white">
             {pendingCount > 9 ? "9+" : pendingCount}
           </span>
         ) : null}
@@ -236,7 +236,7 @@ export function ReaderBookmarkControl(props: Props) {
             type="button"
             aria-label="Dismiss bookmark panel"
             onClick={() => setOpen(false)}
-            className="fixed inset-0 z-30 bg-black/35 backdrop-blur-[1px] sm:hidden"
+            className="fixed inset-0 z-30 bg-black/35 sm:hidden"
           />
           <div
             ref={panelRef}
@@ -244,11 +244,11 @@ export function ReaderBookmarkControl(props: Props) {
             role="dialog"
             aria-modal="true"
             aria-labelledby={panelTitleId}
-            className="kw-glass-strong fixed inset-x-3 bottom-3 z-40 flex max-h-[calc(100dvh-1.5rem)] w-auto flex-col overflow-hidden rounded-[var(--kw-radius-xl)] sm:absolute sm:inset-auto sm:right-0 sm:top-14 sm:z-30 sm:w-[min(92vw,360px)] sm:max-h-[min(80vh,620px)]"
+            className="kw-glass-strong !shadow-[var(--kw-shadow-float)] fixed inset-x-3 bottom-3 z-40 flex max-h-[calc(100dvh-1.5rem)] w-auto flex-col overflow-hidden rounded-[var(--kw-radius-xl)] sm:absolute sm:inset-auto sm:right-0 sm:top-14 sm:z-30 sm:w-[min(92vw,360px)] sm:max-h-[min(80vh,620px)]"
           >
           <div className="flex items-center justify-between border-b border-[color:var(--kw-border-2)] px-4 py-3">
             <div>
-              <p id={panelTitleId} className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">Bookmark ayah</p>
+              <p id={panelTitleId} className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">Bookmark ayah</p>
               <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">
                 {props.surahNumber}:{props.ayahNumber}
               </p>
@@ -256,7 +256,7 @@ export function ReaderBookmarkControl(props: Props) {
             <button
               ref={closeRef}
               type="button"
-              className="grid h-11 w-11 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] text-[color:var(--kw-muted)] transition hover:bg-[color:var(--kw-hover-strong)] hover:text-[color:var(--kw-ink)]"
+              className="grid h-11 w-11 place-items-center rounded-full bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-muted)] transition-colors duration-200 hover:bg-[color:var(--kw-hover-strong)] hover:text-[color:var(--kw-ink)]"
               onClick={() => setOpen(false)}
               aria-label="Close bookmark panel"
             >
@@ -265,17 +265,17 @@ export function ReaderBookmarkControl(props: Props) {
           </div>
 
             <div className="space-y-3 overflow-y-auto px-4 py-3">
-            <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--kw-faint)]">
+            <label className="block text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">
               Name
               <input
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 maxLength={120}
-                className="mt-1 h-11 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] placeholder:text-[color:var(--kw-faint)]"
+                className="mt-1 h-11 w-full rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm font-normal text-[color:var(--kw-ink)] placeholder:text-[color:var(--kw-faint)] transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
               />
             </label>
 
-            <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--kw-faint)]">
+            <label className="block text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">
               Personal note
               <div className="relative mt-1">
                 <textarea
@@ -284,18 +284,18 @@ export function ReaderBookmarkControl(props: Props) {
                   maxLength={2000}
                   rows={3}
                   placeholder="Add a private reminder for this ayah..."
-                  className="w-full rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-3 py-2 pr-9 text-sm text-[color:var(--kw-ink)] placeholder:text-[color:var(--kw-faint)]"
+                  className="w-full rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 py-2 pr-9 text-sm font-normal text-[color:var(--kw-ink)] placeholder:text-[color:var(--kw-faint)] transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
                 />
                 <MessageSquareText size={14} className="pointer-events-none absolute right-3 top-3 text-[color:var(--kw-faint)]" />
               </div>
             </label>
 
-            <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--kw-faint)]">
+            <label className="block text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">
               Category
               <select
                 value={categoryId}
                 onChange={(event) => setCategoryId(event.target.value)}
-                className="mt-1 h-11 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)]"
+                className="mt-1 h-11 w-full rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm font-normal text-[color:var(--kw-ink)] transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
               >
                 <option value="">No category</option>
                 {categories.map((category) => (

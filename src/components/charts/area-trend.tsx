@@ -18,7 +18,7 @@ function toneColor(tone: Tone): string {
     return "var(--kw-chart-3)";
   }
   if (tone === "neutral") {
-    return "rgba(11,18,32,0.35)";
+    return "var(--kw-faint)";
   }
   return "var(--kw-chart-1)";
 }
@@ -91,8 +91,8 @@ export function AreaTrend(props: {
       >
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2={height} gradientUnits="userSpaceOnUse">
-            <stop stopColor={color} stopOpacity="0.32" />
-            <stop offset="1" stopColor={color} stopOpacity="0.04" />
+            <stop stopColor={color} stopOpacity="0.2" />
+            <stop offset="1" stopColor={color} stopOpacity="0" />
           </linearGradient>
         </defs>
 
@@ -102,7 +102,7 @@ export function AreaTrend(props: {
         {/* subtle baseline */}
         <path
           d={`M ${padding} ${height - padding} L ${width - padding} ${height - padding}`}
-          stroke="rgba(11,18,32,0.10)"
+          stroke="var(--kw-border)"
           strokeWidth="1"
         />
 
@@ -113,17 +113,17 @@ export function AreaTrend(props: {
               x2={hoveredPt.x}
               y1={padding}
               y2={height - padding}
-              stroke="rgba(11,18,32,0.12)"
+              stroke="var(--kw-border)"
               strokeWidth="1"
             />
-            <circle cx={hoveredPt.x} cy={hoveredPt.y} r="5" fill="white" stroke={color} strokeWidth="2" />
+            <circle cx={hoveredPt.x} cy={hoveredPt.y} r="5" fill="var(--kw-card-solid)" stroke={color} strokeWidth="2" />
           </>
         ) : null}
       </svg>
 
       {hovered && hoveredPt ? (
         <div
-          className="pointer-events-none absolute -translate-x-1/2 rounded-2xl border border-[color:var(--kw-border-2)] bg-white/85 px-3 py-2 text-xs shadow-[var(--kw-shadow-soft)] backdrop-blur"
+          className="pointer-events-none absolute -translate-x-1/2 rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-material)] px-3 py-2 text-xs tabular-nums shadow-[var(--kw-shadow)] backdrop-blur-xl"
           style={{
             left: `${(hoveredPt.x / width) * 100}%`,
             top: "8px",

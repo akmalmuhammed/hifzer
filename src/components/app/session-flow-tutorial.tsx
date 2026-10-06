@@ -86,10 +86,10 @@ export function SessionFlowTutorial(props: SessionFlowTutorialProps) {
 
   return (
     <Card
-      className="border-[rgba(var(--kw-accent-rgb),0.24)]"
+      className="border-[color:var(--kw-border-2)]"
       style={{
         background:
-          "linear-gradient(145deg, rgba(var(--kw-accent-rgb), 0.08), rgba(255, 255, 255, 0.12)), var(--kw-panel-gradient-soft)",
+          "var(--kw-card)",
       }}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -118,10 +118,10 @@ export function SessionFlowTutorial(props: SessionFlowTutorialProps) {
               type="button"
               onClick={() => setStepIndex(index)}
               className={[
-                "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
+                "min-h-9 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors duration-200",
                 active
-                  ? "border-[rgba(var(--kw-accent-rgb),0.32)] bg-[rgba(var(--kw-accent-rgb),0.18)] text-[color:var(--kw-ink)]"
-                  : "border-[color:var(--kw-border)] bg-[color:var(--kw-surface-soft)] text-[color:var(--kw-muted)] hover:bg-[color:var(--kw-surface)]",
+                  ? "bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+                  : "bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink-2)] hover:bg-[color:var(--kw-hover-strong)]",
               ].join(" ")}
             >
               {index + 1}. {item.title}
@@ -131,8 +131,8 @@ export function SessionFlowTutorial(props: SessionFlowTutorialProps) {
       </div>
 
       <div
-        className="mt-3 rounded-2xl border border-[color:var(--kw-border)] p-4"
-        style={{ background: "var(--kw-panel-gradient-soft)" }}
+        className="mt-3 rounded-[16px] p-4"
+        style={{ background: "var(--kw-fill)" }}
       >
         <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{step.title}</p>
         <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
@@ -152,7 +152,7 @@ export function SessionFlowTutorial(props: SessionFlowTutorialProps) {
         >
           Back
         </Button>
-        <p className="text-xs font-semibold text-[color:var(--kw-faint)]">
+        <p className="text-xs font-medium tabular-nums text-[color:var(--kw-faint)]">
           Step {stepIndex + 1} / {STEPS.length}
         </p>
         <Button

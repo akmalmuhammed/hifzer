@@ -40,7 +40,7 @@ export function UiLanguageSwitcher(props: UiLanguageSwitcherProps) {
             router.refresh();
           }}
           className={clsx(
-            "h-9 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-2 text-sm text-[color:var(--kw-ink)]",
+            "h-9 w-full rounded-[12px] border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-2 text-sm text-[color:var(--kw-ink)] transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]",
             props.showIcon && "pl-9",
             props.selectClassName,
           )}

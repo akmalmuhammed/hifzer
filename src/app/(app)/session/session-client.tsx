@@ -955,7 +955,7 @@ export function SessionClient(props: { userId?: string | null }) {
           type="button"
           variant="secondary"
           onClick={saveAndQuit}
-          className="w-full gap-2 border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] hover:bg-[rgba(var(--kw-accent-rgb),0.14)] sm:w-auto"
+          className="w-full gap-2 bg-[rgba(var(--kw-accent-rgb),0.1)]! text-[rgba(var(--kw-accent-rgb),1)]! hover:bg-[rgba(var(--kw-accent-rgb),0.16)]! sm:w-auto"
         >
           <PauseCircle size={16} />
           Save &amp; quit
@@ -967,7 +967,7 @@ export function SessionClient(props: { userId?: string | null }) {
           variant="secondary"
           onClick={revealTemporarily}
           className={clsx(
-            "w-full gap-2 border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] hover:bg-[rgba(var(--kw-accent-rgb),0.14)] sm:w-auto",
+            "w-full gap-2 bg-[rgba(var(--kw-accent-rgb),0.1)]! hover:bg-[rgba(var(--kw-accent-rgb),0.16)]! sm:w-auto",
             showText && revealUntilMs ? "text-[rgba(var(--kw-accent-rgb),1)]" : "text-[color:var(--kw-ink)]",
           )}
         >
@@ -1020,27 +1020,27 @@ export function SessionClient(props: { userId?: string | null }) {
     return (
       <div className="space-y-6">
         <div className="space-y-2">
-          <div className="h-4 w-20 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
-          <div className="h-8 w-48 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
-          <div className="h-4 w-64 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+          <div className="h-4 w-20 animate-pulse rounded-[10px] bg-[color:var(--kw-skeleton)]" />
+          <div className="h-8 w-48 animate-pulse rounded-[10px] bg-[color:var(--kw-skeleton)]" />
+          <div className="h-4 w-64 animate-pulse rounded-[10px] bg-[color:var(--kw-skeleton)]" />
         </div>
-        <div className="rounded-[22px] border border-[color:var(--kw-border)] p-5 space-y-4">
+        <div className="rounded-[var(--kw-radius-xl)] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-card)] p-5 space-y-4">
           <div className="flex items-center gap-2">
-            <div className="h-6 w-28 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
-            <div className="h-6 w-20 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+            <div className="h-6 w-28 animate-pulse rounded-[10px] bg-[color:var(--kw-skeleton)]" />
+            <div className="h-6 w-20 animate-pulse rounded-[10px] bg-[color:var(--kw-skeleton)]" />
           </div>
-          <div className="rounded-[18px] border border-[color:var(--kw-border)] p-4 space-y-3">
-            <div className="h-3 w-24 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
-            <div className="h-8 w-full animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
-            <div className="h-8 w-3/4 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
-            <div className="h-4 w-full animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+          <div className="rounded-[16px] bg-[color:var(--kw-fill)] p-4 space-y-3">
+            <div className="h-3 w-24 animate-pulse rounded-[10px] bg-[color:var(--kw-skeleton)]" />
+            <div className="h-8 w-full animate-pulse rounded-[10px] bg-[color:var(--kw-skeleton)]" />
+            <div className="h-8 w-3/4 animate-pulse rounded-[10px] bg-[color:var(--kw-skeleton)]" />
+            <div className="h-4 w-full animate-pulse rounded-[10px] bg-[color:var(--kw-skeleton)]" />
           </div>
-          <div className="h-10 w-40 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+          <div className="h-10 w-40 animate-pulse rounded-[10px] bg-[color:var(--kw-skeleton)]" />
           <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="h-14 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
-            <div className="h-14 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
-            <div className="h-14 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
-            <div className="h-14 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]" />
+            <div className="h-14 animate-pulse rounded-full bg-[color:var(--kw-skeleton)]" />
+            <div className="h-14 animate-pulse rounded-full bg-[color:var(--kw-skeleton)]" />
+            <div className="h-14 animate-pulse rounded-full bg-[color:var(--kw-skeleton)]" />
+            <div className="h-14 animate-pulse rounded-full bg-[color:var(--kw-skeleton)]" />
           </div>
         </div>
       </div>
@@ -1082,11 +1082,11 @@ export function SessionClient(props: { userId?: string | null }) {
         <PageHeader eyebrow="Practice" title="Warm-up check" subtitle="Let's review how the warm-up went." right={rightActions} />
         <Card>
           <div className="flex flex-col items-center text-center space-y-5 py-6">
-            <span className="grid h-16 w-16 place-items-center rounded-full border border-[rgba(234,88,12,0.26)] bg-[rgba(234,88,12,0.10)] text-[rgba(234,88,12,0.85)]">
+            <span className="grid h-16 w-16 place-items-center rounded-full bg-[color:var(--kw-pill-warn-bg)] text-[color:var(--kw-ember-600)]">
               <RotateCcw size={28} />
             </span>
             <div className="space-y-1.5 max-w-sm">
-              <h2 className="text-lg font-semibold text-[color:var(--kw-ink)]">Your warm-up showed some gaps</h2>
+              <h2 className="text-[1.35rem] font-semibold leading-[1.15] tracking-[-0.022em] text-[color:var(--kw-ink)]">Your warm-up showed some gaps</h2>
               <p className="text-sm leading-relaxed text-[color:var(--kw-muted)]">
                 Recalling yesterday&apos;s material is important for long-term retention. A second pass helps
                 reinforce fragile connections before moving on.
@@ -1131,10 +1131,10 @@ export function SessionClient(props: { userId?: string | null }) {
     const timeLabel = elapsedMin > 0 ? `${elapsedMin} min ${elapsedSec} sec` : `${elapsedSec} sec`;
 
     const gradeColors: Record<string, string> = {
-      AGAIN: "border-[rgba(239,68,68,0.30)] bg-[rgba(239,68,68,0.10)] text-[rgba(239,68,68,0.90)]",
-      HARD: "border-[rgba(234,88,12,0.30)] bg-[rgba(234,88,12,0.10)] text-[rgba(234,88,12,0.90)]",
-      GOOD: "border-[rgba(22,163,74,0.30)] bg-[rgba(22,163,74,0.10)] text-[rgba(22,163,74,0.90)]",
-      EASY: "border-[rgba(37,99,235,0.30)] bg-[rgba(37,99,235,0.10)] text-[rgba(37,99,235,0.90)]",
+      AGAIN: "bg-[color:var(--kw-pill-danger-bg)] text-[color:var(--kw-rose-600)]",
+      HARD: "bg-[color:var(--kw-pill-warn-bg)] text-[color:var(--kw-ember-600)]",
+      GOOD: "bg-[color:var(--kw-pill-success-bg)] text-[color:var(--kw-lime-600)]",
+      EASY: "bg-[color:var(--kw-pill-accent-bg)] text-[color:var(--kw-cobalt-700)]",
     };
 
     return (
@@ -1144,46 +1144,46 @@ export function SessionClient(props: { userId?: string | null }) {
           <div className="flex flex-col items-center text-center space-y-6 py-4">
             {/* Success icon with glow */}
             <div className="relative">
-              <span className="absolute inset-0 rounded-full bg-[rgba(22,163,74,0.18)] blur-xl" />
-              <span className="relative grid h-20 w-20 place-items-center rounded-full border border-[rgba(22,163,74,0.26)] bg-[rgba(22,163,74,0.10)] text-[color:var(--kw-lime-600)] shadow-[0_0_30px_rgba(22,163,74,0.15)]">
+              <span className="hidden" />
+              <span className="relative grid h-20 w-20 place-items-center rounded-full bg-[color:var(--kw-pill-success-bg)] text-[color:var(--kw-lime-600)]">
                 <CheckCircle2 size={36} />
               </span>
             </div>
 
             {/* Title and encouragement */}
             <div className="space-y-1">
-              <h2 className="text-xl font-semibold text-[color:var(--kw-ink)]">Hifz complete</h2>
+              <h2 className="text-[1.75rem] font-semibold leading-[1.1] tracking-[-0.025em] text-[color:var(--kw-ink)]">Hifz complete</h2>
               <p className="text-sm text-[color:var(--kw-muted)]">{encouragement}</p>
             </div>
 
             {/* Stats row */}
-            <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
-              <div className="flex flex-col items-center rounded-[18px] border border-[color:var(--kw-border)] bg-white/70 px-4 py-3 shadow-[var(--kw-shadow-soft)]">
-                <span className="text-lg font-semibold text-[color:var(--kw-ink)]">{timeLabel}</span>
-                <span className="text-xs text-[color:var(--kw-muted)]">Time spent</span>
+            <div className="flex flex-wrap items-stretch justify-center gap-3 text-sm">
+              <div className="flex min-w-[9rem] flex-col items-center rounded-[16px] bg-[color:var(--kw-fill)] px-5 py-4">
+                <span className="text-[1.35rem] font-semibold tracking-[-0.02em] tabular-nums text-[color:var(--kw-ink)]">{timeLabel}</span>
+                <span className="mt-0.5 text-[0.82rem] text-[color:var(--kw-faint)]">Time spent</span>
               </div>
-              <div className="flex flex-col items-center rounded-[18px] border border-[color:var(--kw-border)] bg-white/70 px-4 py-3 shadow-[var(--kw-shadow-soft)]">
-                <span className="text-lg font-semibold text-[color:var(--kw-ink)]">{events.length} / {filteredSteps.length}</span>
-                <span className="text-xs text-[color:var(--kw-muted)]">Steps completed</span>
+              <div className="flex min-w-[9rem] flex-col items-center rounded-[16px] bg-[color:var(--kw-fill)] px-5 py-4">
+                <span className="text-[1.35rem] font-semibold tracking-[-0.02em] tabular-nums text-[color:var(--kw-ink)]">{events.length} / {filteredSteps.length}</span>
+                <span className="mt-0.5 text-[0.82rem] text-[color:var(--kw-faint)]">Steps completed</span>
               </div>
             </div>
 
             {/* Grade breakdown pills */}
             {totalGraded > 0 ? (
               <div className="space-y-2 w-full max-w-md">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Grade breakdown</p>
+                <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Grade breakdown</p>
                 <div className="flex flex-wrap items-center justify-center gap-2">
                   {(["AGAIN", "HARD", "GOOD", "EASY"] as const).map((g) =>
                     gradeCounts[g] > 0 ? (
                       <span
                         key={g}
                         className={clsx(
-                          "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold",
+                          "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium",
                           gradeColors[g],
                         )}
                       >
                         {g}
-                        <span className="rounded-full bg-white/50 px-1.5 py-0.5 text-[10px] font-bold leading-none">
+                        <span className="text-xs font-semibold leading-none tabular-nums">
                           {gradeCounts[g]}
                         </span>
                       </span>
@@ -1319,14 +1319,14 @@ export function SessionClient(props: { userId?: string | null }) {
             )}
           </div>
 
-          <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/65 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Practice flow</p>
+          <div className="rounded-[16px] bg-[color:var(--kw-fill)] p-4">
+            <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Practice flow</p>
             <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
               Expose, guided recall, blind recall, link practice, then grade. Expand helpers only when you need support.
             </p>
           </div>
 
-          <div className="rounded-[20px] border border-[rgba(var(--kw-accent-rgb),0.16)] bg-[rgba(var(--kw-accent-rgb),0.08)] p-4">
+          <div className="rounded-[16px] bg-[rgba(var(--kw-accent-rgb),0.08)] p-4">
             <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Need to step away?</p>
             <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
               Use <span className="font-semibold text-[color:var(--kw-ink)]">Save &amp; quit</span> anytime. We keep your
@@ -1334,7 +1334,7 @@ export function SessionClient(props: { userId?: string | null }) {
             </p>
           </div>
 
-          <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/65 p-4">
+          <div className="rounded-[16px] bg-[color:var(--kw-fill)] p-4">
             <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Select Hifz surah</p>
             <p className="mt-1 text-sm text-[color:var(--kw-muted)]">
               We resume from your last paused ayah when progress exists. New surahs begin from ayah 1.
@@ -1361,7 +1361,7 @@ export function SessionClient(props: { userId?: string | null }) {
           </div>
 
           {shouldShowWeeklyGateIntro ? (
-            <div className="rounded-[20px] border border-[rgba(234,88,12,0.28)] bg-[rgba(234,88,12,0.10)] p-4">
+            <div className="rounded-[16px] bg-[color:var(--kw-pill-warn-bg)] p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Weekly memory check</p>
@@ -1377,7 +1377,7 @@ export function SessionClient(props: { userId?: string | null }) {
           ) : null}
 
           {coachTip ? (
-            <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] p-4">
+            <div className="rounded-[16px] bg-[color:var(--kw-fill)] p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{coachTip.title}</p>
@@ -1393,7 +1393,7 @@ export function SessionClient(props: { userId?: string | null }) {
       </DisclosureCard>
 
       <Card>
-        <div className="space-y-4">
+        <div className="space-y-6 sm:px-2 sm:py-2">
           <div className="flex flex-wrap items-center gap-2">
             <Pill tone="neutral">{stepTitle(currentStep)}</Pill>
             {currentStep.kind === "AYAH" && currentStep.stage === "NEW" ? (
@@ -1415,29 +1415,29 @@ export function SessionClient(props: { userId?: string | null }) {
           </div>
 
           {currentStep.kind === "LINK" ? (
-            <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+            <div className="rounded-[18px] bg-[color:var(--kw-fill)] px-5 py-5">
+              <p className="text-[0.86rem] font-medium text-[rgba(var(--kw-accent-rgb),1)]">
                 Link practice
               </p>
-              <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+              <p className="mt-2 text-[1.05rem] leading-7 text-[color:var(--kw-ink)]">
                 Recite the seam: {verseRefLabel(currentStep.fromAyahId)}
                 {" -> "}
                 {verseRefLabel(currentStep.toAyahId)}
               </p>
-              <div className="mt-4 inline-flex items-center gap-2 rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]">
+              <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-[color:var(--kw-fill-strong)] px-4 py-2 text-sm font-medium text-[color:var(--kw-ink)]">
                 <Link2 size={16} />
                 Ayah {verseRefLabel(currentStep.fromAyahId)} + Ayah {verseRefLabel(currentStep.toAyahId)}
               </div>
             </div>
           ) : (
-            <div className="space-y-3">
-              <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+            <div className="space-y-5">
+              <div>
+                <p className="text-[0.86rem] font-medium tabular-nums text-[rgba(var(--kw-accent-rgb),1)]">
                   {ref ? `Surah ${ref.surahNumber}:${ref.ayahNumber}` : `Ayah ${currentStep.ayahId}`}
                 </p>
                 {showText ? (
-                  <div className="mt-3 space-y-4">
-                    <div dir="rtl" lang="ar" className="text-right font-[family-name:var(--font-kw-quran)] text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
+                  <div className="mt-4 space-y-6">
+                    <div dir="rtl" lang="ar" className="text-right font-[family-name:var(--font-kw-quran)] text-[clamp(1.9rem,4.2vw,2.75rem)] leading-[2] text-[color:var(--kw-ink)]">
                       {ayahText ?? "Ayah text unavailable"}
                     </div>
                     {showPhonetic || showTranslation ? (
@@ -1464,9 +1464,9 @@ export function SessionClient(props: { userId?: string | null }) {
                     )}
                   </div>
                 ) : (
-                  <div className="mt-3 rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-3 py-3">
-                    <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Text hidden for recall integrity.</p>
-                    <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
+                  <div className="mt-4 rounded-[18px] bg-[color:var(--kw-fill)] px-5 py-8 text-center">
+                    <p className="text-[1.05rem] font-semibold tracking-[-0.015em] text-[color:var(--kw-ink)]">Text hidden for recall integrity.</p>
+                    <p className="mt-1.5 text-sm text-[color:var(--kw-muted)]">
                       Recite from memory first.
                       {currentStepRequiresHiddenText
                         ? " Use Reveal only if stuck."
@@ -1475,7 +1475,7 @@ export function SessionClient(props: { userId?: string | null }) {
                   </div>
                 )}
                 {showText && revealUntilMs ? (
-                  <p className="mt-2 text-xs font-semibold text-[color:var(--kw-faint)]">
+                  <p className="mt-3 text-[0.82rem] font-medium text-[color:var(--kw-ember-600)]">
                     Assisted reveal active.
                   </p>
                 ) : null}
@@ -1489,28 +1489,28 @@ export function SessionClient(props: { userId?: string | null }) {
             </div>
           )}
 
-          <div className="space-y-2">
+          <div className="space-y-3 border-t border-[color:var(--kw-border-2)] pt-5">
             {isGraded(currentStep) ? (
               <>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+                <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">
                   Choose a grade to continue (no extra next button).
                 </p>
-                <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4 [&>button:first-child]:bg-[color:var(--kw-pill-danger-bg)] [&>button:first-child]:text-[color:var(--kw-rose-600)] [&>button:nth-child(3)]:bg-[rgba(var(--kw-accent-rgb),1)] [&>button:nth-child(3)]:text-white">
                   {GRADE_ACTIONS.map(({ grade, hint }, idx) => (
                     <button
                       key={grade}
                       type="button"
                       onClick={() => void advance(grade)}
                       className={clsx(
-                        "flex items-center justify-between gap-3 rounded-[18px] border px-3 py-2 text-left shadow-[var(--kw-shadow-soft)] transition hover:bg-white",
-                        "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]",
+                        "flex min-h-[3.5rem] items-center justify-between gap-3 rounded-full px-5 py-2 text-left transition-[opacity,transform] duration-200 hover:opacity-80 active:scale-[0.98]",
+                        "bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)]",
                       )}
                     >
                       <span>
-                        <span className="block text-sm font-semibold">{grade}</span>
-                        <span className="block text-xs text-[color:var(--kw-muted)]">{hint}</span>
+                        <span className="block text-[0.94rem] font-semibold tracking-[-0.01em]">{grade}</span>
+                        <span className="block text-xs opacity-70">{hint}</span>
                       </span>
-                      <span className="rounded-full border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-2 py-1 text-xs font-semibold text-[color:var(--kw-faint)]">
+                      <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-current text-xs font-medium tabular-nums opacity-50">
                         {idx + 1}
                       </span>
                     </button>

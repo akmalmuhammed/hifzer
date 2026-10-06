@@ -57,7 +57,7 @@ export function QuranFoundationFilterAction(props: { status: QuranFoundationConn
 
           window.location.href = "/settings/quran-foundation";
         }}
-        className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
+        className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
       >
         <option value="">Choose an option</option>
         {props.status.state === "connected" || props.status.state === "degraded" ? (

@@ -1,21 +1,9 @@
 .shell {
   position: relative;
-  overflow: hidden;
-  border-radius: 28px;
-  border: 1px solid rgba(var(--kw-accent-rgb), 0.18);
-  background:
-    radial-gradient(700px 280px at 8% 10%, rgba(var(--kw-accent-rgb), 0.12), transparent 62%),
-    radial-gradient(600px 240px at 95% 15%, rgba(10, 138, 119, 0.1), transparent 65%),
-    var(--kw-card-strong);
-  padding: 18px;
-}
-
-.shell::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.22), transparent 35%);
+  border-radius: var(--kw-radius-xl);
+  border: 1px solid var(--kw-border-2);
+  background: var(--kw-card);
+  padding: clamp(1.25rem, 2vw, 1.75rem);
 }
 
 .searchBar {
@@ -23,91 +11,80 @@
   display: flex;
   min-height: 50px;
   align-items: center;
-  border-radius: 16px;
-  border: 1px solid rgba(var(--kw-accent-rgb), 0.22);
-  background: var(--kw-panel-gradient-strong);
-  padding: 0 12px;
-  box-shadow:
-    0 12px 28px rgba(11, 18, 32, 0.08),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  border: 1px solid transparent;
+  background: var(--kw-fill-strong);
+  padding: 0 14px;
+  transition:
+    border-color 200ms var(--kw-ease),
+    background-color 200ms var(--kw-ease);
+}
+
+.searchBar:focus-within {
+  border-color: rgba(var(--kw-accent-rgb), 0.55);
+  box-shadow: 0 0 0 4px rgba(var(--kw-accent-rgb), 0.16);
+}
+
+/* The bar itself shows focus, so the inner field drops the global ring. */
+.searchBar input:focus-visible {
+  outline: none;
 }
 
 .scopeToggle {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 2px;
   border-radius: 9999px;
   padding: 3px;
-  border: 1px solid rgba(var(--kw-accent-rgb), 0.2);
-  background: rgba(var(--kw-accent-rgb), 0.08);
+  background: var(--kw-fill-strong);
 }
 
 .scopeButton {
+  min-height: 36px;
   border-radius: 9999px;
-  border: 1px solid transparent;
+  border: 0;
   background: transparent;
-  color: var(--kw-muted);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  padding: 6px 10px;
+  color: var(--kw-ink-2);
+  font-size: 0.86rem;
+  font-weight: 500;
+  padding: 6px 14px;
   transition:
-    color 180ms ease,
-    background-color 180ms ease,
-    border-color 180ms ease;
+    color 200ms var(--kw-ease),
+    background-color 200ms var(--kw-ease),
+    box-shadow 200ms var(--kw-ease);
 }
 
 .scopeButtonActive {
-  border-color: rgba(var(--kw-accent-rgb), 0.25);
-  background: rgba(var(--kw-accent-rgb), 0.16);
-  color: rgba(var(--kw-accent-rgb), 1);
+  background: var(--kw-card);
+  color: var(--kw-ink);
+  font-weight: 600;
+  box-shadow: var(--kw-shadow-soft);
 }
 
 .topicChip {
   border-radius: 9999px;
-  border: 1px solid rgba(var(--kw-accent-rgb), 0.22);
-  background: rgba(var(--kw-accent-rgb), 0.08);
+  border: 0;
+  background: rgba(var(--kw-accent-rgb), 0.1);
   color: rgba(var(--kw-accent-rgb), 1);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  padding: 6px 12px;
-  transition:
-    transform 180ms ease,
-    background-color 180ms ease;
+  font-size: 0.86rem;
+  font-weight: 500;
+  padding: 7px 14px;
+  transition: background-color 200ms var(--kw-ease);
 }
 
 .topicChip:hover {
-  transform: translateY(-1px);
-  background: rgba(var(--kw-accent-rgb), 0.14);
+  background: rgba(var(--kw-accent-rgb), 0.16);
 }
 
+/* Results read as one grouped list: hairlines between rows, no boxes. */
 .resultCard {
   position: relative;
-  overflow: hidden;
-  border-radius: 18px;
-  border: 1px solid rgba(var(--kw-accent-rgb), 0.14);
-  background: var(--kw-panel-gradient);
-  padding: 13px 14px;
-  box-shadow: 0 12px 26px rgba(11, 18, 32, 0.06);
-  transition:
-    transform 220ms ease,
-    border-color 220ms ease,
-    background-color 220ms ease;
+  border-top: 1px solid var(--kw-border-2);
+  padding: 18px 2px;
 }
 
-.resultCard:hover {
-  transform: translateY(-1px);
-  border-color: rgba(var(--kw-accent-rgb), 0.24);
-  background: rgba(255, 255, 255, 0.76);
-}
-
-.resultCard::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.18), transparent 38%);
+.resultCard:first-child {
+  border-top: 0;
 }
 
 .matchMark {
@@ -118,28 +95,15 @@
 }
 
 .emptyState {
-  border-radius: 18px;
-  border: 1px dashed rgba(var(--kw-accent-rgb), 0.24);
-  background: rgba(var(--kw-accent-rgb), 0.06);
-  padding: 14px;
+  border-radius: 16px;
+  background: var(--kw-fill);
+  padding: 16px 18px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .topicChip,
-  .resultCard {
+  .searchBar,
+  .scopeButton,
+  .topicChip {
     transition: none !important;
   }
-}
-
-html[data-mode="dark"] .searchBar {
-  background: var(--kw-panel-gradient-strong);
-}
-
-html[data-mode="dark"] .resultCard {
-  background: var(--kw-panel-gradient);
-  border-color: rgba(var(--kw-accent-rgb), 0.24);
-}
-
-html[data-mode="dark"] .emptyState {
-  background: rgba(var(--kw-accent-rgb), 0.14);
 }

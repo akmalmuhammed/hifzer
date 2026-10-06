@@ -247,7 +247,7 @@ function formatLocalDate(isoDate: string): string {
 
 function activityColor(value: number, max: number): string {
   if (value <= 0) {
-    return "rgba(10,138,119,0.07)";
+    return "var(--kw-fill)";
   }
   const pct = value / Math.max(1, max);
   if (pct < 0.2) {
@@ -313,7 +313,7 @@ function GuideSkeleton() {
         {Array.from({ length: 3 }).map((_, index) => (
           <div
             key={index}
-            className="h-20 animate-pulse rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-skeleton)]"
+            className="h-20 animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]"
           />
         ))}
       </div>
@@ -324,7 +324,7 @@ function GuideSkeleton() {
 function ChartBlockSkeleton(props: { height: number }) {
   return (
     <div
-      className="animate-pulse rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-skeleton)]"
+      className="animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)]"
       style={{ height: `${props.height}px` }}
     />
   );
@@ -398,10 +398,10 @@ function SectionHeader(props: {
           <Icon size={17} />
         </span>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">
+          <p className="text-[0.82rem] font-semibold text-[color:var(--kw-faint)]">
             {props.eyebrow}
           </p>
-          <p className="mt-1 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
+          <p className="mt-0.5 text-[1.18rem] font-semibold leading-[1.15] tracking-[-0.02em] text-[color:var(--kw-ink)]">
             {props.title}
           </p>
           {props.description ? (
@@ -775,7 +775,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
 
   const recitationQuality = useMemo(() => {
     if (!details) {
-      return { qualityPct: 0, stabilityPct: 0, gradeArc: "conic-gradient(#e2e8f0 0 100%)", stageArc: "conic-gradient(#e2e8f0 0 100%)" };
+      return { qualityPct: 0, stabilityPct: 0, gradeArc: "conic-gradient(var(--kw-track) 0 100%)", stageArc: "conic-gradient(var(--kw-track) 0 100%)" };
     }
     const totalGrades = details.gradeMix14d.AGAIN + details.gradeMix14d.HARD + details.gradeMix14d.GOOD + details.gradeMix14d.EASY;
     const qualityPct = totalGrades > 0
@@ -798,19 +798,19 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
     const weeklyPct = stageTotal > 0 ? (details.stageMix14d.WEEKLY_TEST / stageTotal) : 0;
 
     const gradeArc = `conic-gradient(
-      rgba(225,29,72,0.95) 0 ${(againPct * 100).toFixed(2)}%,
-      rgba(234,88,12,0.95) ${(againPct * 100).toFixed(2)}% ${((againPct + hardPct) * 100).toFixed(2)}%,
-      rgba(16,185,129,0.95) ${((againPct + hardPct) * 100).toFixed(2)}% ${((againPct + hardPct + goodPct) * 100).toFixed(2)}%,
-      rgba(var(--kw-accent-rgb),0.95) ${((againPct + hardPct + goodPct) * 100).toFixed(2)}% ${((againPct + hardPct + goodPct + easyPct) * 100).toFixed(2)}%,
-      rgba(11,18,32,0.08) ${((againPct + hardPct + goodPct + easyPct) * 100).toFixed(2)}% 100%
+      var(--kw-rose-600) 0 ${(againPct * 100).toFixed(2)}%,
+      var(--kw-ember-500) ${(againPct * 100).toFixed(2)}% ${((againPct + hardPct) * 100).toFixed(2)}%,
+      var(--kw-lime-600) ${((againPct + hardPct) * 100).toFixed(2)}% ${((againPct + hardPct + goodPct) * 100).toFixed(2)}%,
+      rgba(var(--kw-accent-rgb),1) ${((againPct + hardPct + goodPct) * 100).toFixed(2)}% ${((againPct + hardPct + goodPct + easyPct) * 100).toFixed(2)}%,
+      var(--kw-track) ${((againPct + hardPct + goodPct + easyPct) * 100).toFixed(2)}% 100%
     )`;
 
     const stageArc = `conic-gradient(
-      rgba(var(--kw-accent-rgb),0.92) 0 ${(warmReviewPct * 100).toFixed(2)}%,
-      rgba(56,189,248,0.92) ${(warmReviewPct * 100).toFixed(2)}% ${((warmReviewPct + newPct) * 100).toFixed(2)}%,
-      rgba(251,146,60,0.92) ${((warmReviewPct + newPct) * 100).toFixed(2)}% ${((warmReviewPct + newPct + linkPct) * 100).toFixed(2)}%,
-      rgba(99,102,241,0.92) ${((warmReviewPct + newPct + linkPct) * 100).toFixed(2)}% ${((warmReviewPct + newPct + linkPct + weeklyPct) * 100).toFixed(2)}%,
-      rgba(11,18,32,0.08) ${((warmReviewPct + newPct + linkPct + weeklyPct) * 100).toFixed(2)}% 100%
+      rgba(var(--kw-accent-rgb),1) 0 ${(warmReviewPct * 100).toFixed(2)}%,
+      var(--kw-sky-600) ${(warmReviewPct * 100).toFixed(2)}% ${((warmReviewPct + newPct) * 100).toFixed(2)}%,
+      var(--kw-ember-500) ${((warmReviewPct + newPct) * 100).toFixed(2)}% ${((warmReviewPct + newPct + linkPct) * 100).toFixed(2)}%,
+      var(--kw-teal-600) ${((warmReviewPct + newPct + linkPct) * 100).toFixed(2)}% ${((warmReviewPct + newPct + linkPct + weeklyPct) * 100).toFixed(2)}%,
+      var(--kw-track) ${((warmReviewPct + newPct + linkPct + weeklyPct) * 100).toFixed(2)}% 100%
     )`;
 
     return {
@@ -887,7 +887,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
 
           {nextAction ? <NextActionCard action={nextAction} /> : null}
 
-          <section className={`kw-fade-in ${styles.commandDeck} px-4 py-4 sm:px-5 sm:py-5`}>
+          <section className={`kw-fade-in ${styles.commandDeck} p-5 sm:p-7`}>
             <div className={styles.pulseOrb} />
             <div className={styles.driftOrb} />
             <div className={`relative ${styles.todayGrid}`}>
@@ -980,8 +980,8 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
           <DisclosureCard
             summary={(
               <div>
-                <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Progress and details</p>
-                <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
+                <p className="text-[1.12rem] font-semibold tracking-[-0.02em] text-[color:var(--kw-ink)]">Progress and details</p>
+                <p className="mt-1 max-w-3xl text-sm leading-6 text-[color:var(--kw-muted)]">
                   A quiet look at recent reading, review, and return patterns.
                 </p>
               </div>
@@ -1017,7 +1017,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
             <div className="space-y-5">
               <div className="grid gap-5 xl:grid-cols-2">
                 <div className="kw-fade-in h-full" style={{ animationDelay: "200ms" }}>
-                  <Card className="h-full">
+                  <Card className="h-full rounded-[18px]! shadow-none!">
                     <SectionHeader
                       eyebrow="Practice"
                       title="Last 14 days"
@@ -1028,25 +1028,25 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                     <div className="mt-4">
                       <AreaTrend points={trendMinutes} tone="accent" valueSuffix="m" />
                     </div>
-                    <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                      <div className={`${styles.kpiTile} px-3 py-2`}>
-                        <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Tracked ayahs</p>
-                        <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{details.kpis.trackedAyahs}</p>
+                    <div className="mt-5 grid gap-x-4 gap-y-3 sm:grid-cols-3">
+                      <div className={`${styles.kpiTile} pt-3`}>
+                        <p className="text-[0.8rem] font-medium text-[color:var(--kw-faint)]">Tracked ayahs</p>
+                        <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>{details.kpis.trackedAyahs}</p>
                       </div>
-                      <div className={`${styles.kpiTile} px-3 py-2`}>
-                        <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Transitions to smooth</p>
-                        <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{details.reviewHealth.weakTransitions}</p>
+                      <div className={`${styles.kpiTile} pt-3`}>
+                        <p className="text-[0.8rem] font-medium text-[color:var(--kw-faint)]">Transitions to smooth</p>
+                        <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>{details.reviewHealth.weakTransitions}</p>
                       </div>
-                      <div className={`${styles.kpiTile} px-3 py-2`}>
-                        <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Practice days</p>
-                        <p className={`${styles.numericValue} mt-1 text-lg text-[color:var(--kw-ink)]`}>{details.profile.practiceDaysPerWeek}/7</p>
+                      <div className={`${styles.kpiTile} pt-3`}>
+                        <p className="text-[0.8rem] font-medium text-[color:var(--kw-faint)]">Practice days</p>
+                        <p className={`${styles.numericValue} mt-1 text-2xl text-[color:var(--kw-ink)]`}>{details.profile.practiceDaysPerWeek}/7</p>
                       </div>
                     </div>
                   </Card>
                 </div>
 
                 <div className="kw-fade-in h-full" style={{ animationDelay: "240ms" }}>
-                  <Card className="h-full">
+                  <Card className="h-full rounded-[18px]! shadow-none!">
                     <SectionHeader
                       eyebrow="Recall"
                       title="How recent sessions felt"
@@ -1081,28 +1081,28 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                       <Pill tone="accent">Easy {details.gradeMix14d.EASY}</Pill>
                     </div>
 
-                    <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                      <div className={`${styles.kpiTile} px-3 py-2`}>
-                        <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Needs work</p>
-                        <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
+                    <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3">
+                      <div className={`${styles.kpiTile} pt-3`}>
+                        <p className="text-[0.8rem] font-medium text-[color:var(--kw-faint)]">Needs work</p>
+                        <p className={`${styles.numericValue} mt-1 text-xl text-[color:var(--kw-ink)]`}>
                           {details.gradeMix14d.AGAIN} / {details.gradeMix14d.HARD}
                         </p>
                       </div>
-                      <div className={`${styles.kpiTile} px-3 py-2`}>
-                        <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Clean answers</p>
-                        <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
+                      <div className={`${styles.kpiTile} pt-3`}>
+                        <p className="text-[0.8rem] font-medium text-[color:var(--kw-faint)]">Clean answers</p>
+                        <p className={`${styles.numericValue} mt-1 text-xl text-[color:var(--kw-ink)]`}>
                           {details.gradeMix14d.GOOD} / {details.gradeMix14d.EASY}
                         </p>
                       </div>
-                      <div className={`${styles.kpiTile} px-3 py-2`}>
-                        <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">Review work</p>
-                        <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
+                      <div className={`${styles.kpiTile} pt-3`}>
+                        <p className="text-[0.8rem] font-medium text-[color:var(--kw-faint)]">Review work</p>
+                        <p className={`${styles.numericValue} mt-1 text-xl text-[color:var(--kw-ink)]`}>
                           {details.stageMix14d.WARMUP + details.stageMix14d.REVIEW}
                         </p>
                       </div>
-                      <div className={`${styles.kpiTile} px-3 py-2`}>
-                        <p className="text-[10px] uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">New work</p>
-                        <p className={`${styles.numericValue} mt-1 text-base text-[color:var(--kw-ink)]`}>
+                      <div className={`${styles.kpiTile} pt-3`}>
+                        <p className="text-[0.8rem] font-medium text-[color:var(--kw-faint)]">New work</p>
+                        <p className={`${styles.numericValue} mt-1 text-xl text-[color:var(--kw-ink)]`}>
                           {details.stageMix14d.NEW + details.stageMix14d.LINK + details.stageMix14d.LINK_REPAIR}
                         </p>
                       </div>
@@ -1113,7 +1113,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
 
               <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
                 <div className="kw-fade-in h-full" style={{ animationDelay: "280ms" }}>
-                  <Card className="h-full">
+                  <Card className="h-full rounded-[18px]! shadow-none!">
                     <SectionHeader
                       eyebrow="Qur&apos;an"
                       title={`${summary.quran.currentSurahName} | ${summary.quran.cursorRef}`}
@@ -1124,16 +1124,16 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
 
                     {quran ? (
                       <div className="mt-4 grid gap-4 sm:grid-cols-[120px_minmax(0,1fr)]">
-                        <div className="flex items-center justify-center rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] p-3">
+                        <div className="flex items-center justify-center rounded-[18px] bg-[color:var(--kw-fill)] p-3">
                           <DonutProgress value={quran.completionPct / 100} size={96} stroke={8} tone="brand" />
                         </div>
                         <div className="space-y-2">
                           <p className="text-sm text-[color:var(--kw-muted)]">
                             Completion {quran.completionPct.toFixed(1)}% | Surah progress {quran.currentSurahProgressPct}%
                           </p>
-                          <div className="h-2 rounded-full bg-black/[0.06]">
+                          <div className="h-2 rounded-full bg-[color:var(--kw-track)]">
                             <div
-                              className="h-2 rounded-full bg-[rgba(var(--kw-accent-rgb),0.82)]"
+                              className="h-2 rounded-full bg-[rgba(var(--kw-accent-rgb),1)]"
                               style={{ width: `${Math.max(1, quran.completionPct)}%` }}
                             />
                           </div>
@@ -1176,7 +1176,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                 </div>
 
                 <div className="kw-fade-in h-full" style={{ animationDelay: "320ms" }}>
-                  <Card className="h-full">
+                  <Card className="h-full rounded-[18px]! shadow-none!">
                     <SectionHeader
                       eyebrow="Consistency"
                       title="Activity calendar"
@@ -1214,7 +1214,7 @@ export function DashboardClient(props: { initialOverview?: DashboardOverview | n
                           <ChevronLeft size={14} />
                           Prev
                         </Button>
-                        <p className="text-sm font-semibold text-[color:var(--kw-ink)]">
+                        <p className="text-[0.94rem] font-semibold tabular-nums text-[color:var(--kw-ink)]">
                           {selectedMonthStart.toLocaleDateString(undefined, { month: "long", year: "numeric", timeZone: "UTC" })}
                         </p>
                         <Button

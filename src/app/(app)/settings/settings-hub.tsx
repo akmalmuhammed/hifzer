@@ -143,7 +143,7 @@ export function SettingsHub(props: SettingsHubProps) {
       />
 
       <div
-        className="flex gap-2 overflow-x-auto pb-1"
+        className="flex w-full gap-1 overflow-x-auto rounded-full bg-[color:var(--kw-fill-strong)] p-1 sm:inline-flex sm:w-auto"
         role="tablist"
         aria-label="Settings groups"
       >
@@ -160,17 +160,17 @@ export function SettingsHub(props: SettingsHubProps) {
               aria-controls={`settings-panel-${key}`}
               onClick={() => setActiveTab(key)}
               className={[
-                "min-w-[190px] rounded-[20px] border px-4 py-3 text-left transition",
+                "min-h-11 flex-1 rounded-full px-4 py-2 text-left transition-colors duration-200 sm:min-w-[132px] sm:flex-none",
                 active
-                  ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] shadow-[0_16px_30px_rgba(11,18,32,0.08)]"
-                  : "border-[color:var(--kw-border-2)] kw-surface-gradient hover:bg-white",
+                  ? "bg-[color:var(--kw-card)] shadow-[var(--kw-shadow-soft)]"
+                  : "bg-transparent hover:bg-[color:var(--kw-hover-soft)]",
               ].join(" ")}
             >
-              <div className="flex items-center justify-between gap-3">
-                <Pill tone={active ? meta.tone : "neutral"}>{meta.label}</Pill>
-                <span className="text-xs font-semibold text-[color:var(--kw-faint)]">{count}</span>
+              <div className="flex items-center justify-center gap-2">
+                <Pill tone={active ? meta.tone : "neutral"} className="whitespace-nowrap border-0! bg-transparent! px-0! py-0! text-[0.92rem]! text-[color:var(--kw-ink)]!">{meta.label}</Pill>
+                <span className="text-xs font-medium tabular-nums text-[color:var(--kw-faint)]">{count}</span>
               </div>
-              <p className="mt-3 text-sm leading-6 text-[color:var(--kw-muted)]">{meta.desc}</p>
+              <p className="sr-only">{meta.desc}</p>
             </button>
           );
         })}
@@ -182,26 +182,26 @@ export function SettingsHub(props: SettingsHubProps) {
         aria-labelledby={`settings-tab-${activeTab}`}
         className="space-y-4"
       >
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <Pill tone={activeMeta.tone}>{activeMeta.label}</Pill>
-          <Pill tone="neutral">{activeItems.length} pages</Pill>
+        <div className="flex flex-wrap items-baseline justify-between gap-4 px-4">
+          <Pill tone={activeMeta.tone} className="border-0! bg-transparent! px-0! py-0! text-[0.86rem]! font-medium! text-[color:var(--kw-faint)]!">{activeMeta.label}</Pill>
+          <Pill tone="neutral" className="border-0! bg-transparent! px-0! py-0! text-[0.86rem]! font-normal! tabular-nums text-[color:var(--kw-faint)]!">{activeItems.length} pages</Pill>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="overflow-hidden rounded-[var(--kw-radius-xl)] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-card)] [&>a+a>div]:border-t!">
           {activeItems.map((item) => {
             const Icon = item.icon;
             return (
-              <Link key={item.href} href={item.href}>
-                <Card className="group h-full transition kw-surface-gradient hover:bg-white/60">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <Pill tone={item.tone}>{item.eyebrow}</Pill>
-                      <p className="mt-3 text-base font-semibold tracking-tight text-[color:var(--kw-ink)]">
+              <Link key={item.href} href={item.href} className="block">
+                <Card className="group flex min-h-[4.25rem] items-center gap-3 rounded-none! border-0! border-[color:var(--kw-border-2)]! bg-transparent! py-3! shadow-none! transition-colors duration-200 after:h-2 after:w-2 after:shrink-0 after:rotate-45 after:border-r-2 after:border-t-2 after:border-[color:var(--kw-faint)] after:opacity-60 after:content-[''] hover:bg-[color:var(--kw-hover-soft)]!">
+                  <div className="flex min-w-0 flex-1 flex-row-reverse items-center justify-end gap-3.5">
+                    <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3">
+                      <Pill tone={item.tone} className="col-start-2 row-span-2 row-start-1 border-0! bg-transparent! px-0! py-0! text-[0.92rem]! font-normal! text-[color:var(--kw-faint)]!">{item.eyebrow}</Pill>
+                      <p className="col-start-1 row-start-1 text-[1rem] font-medium tracking-[-0.01em] text-[color:var(--kw-ink)]">
                         {item.title}
                       </p>
-                      <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">{item.desc}</p>
+                      <p className="col-start-1 row-start-2 truncate text-sm leading-6 text-[color:var(--kw-faint)]">{item.desc}</p>
                     </div>
-                    <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] kw-surface-gradient text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-[rgba(var(--kw-accent-rgb),1)] text-white">
                       <Icon size={18} />
                     </span>
                   </div>

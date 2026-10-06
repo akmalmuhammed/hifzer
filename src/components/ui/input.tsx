@@ -26,9 +26,9 @@ const fieldErrorClasses =
   "text-sm font-medium leading-6 text-[color:var(--kw-rose-600)]";
 
 const inputBaseClasses = [
-  "w-full rounded-2xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)]",
+  "w-full rounded-[12px] border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)]",
   "text-[color:var(--kw-ink)] placeholder:text-[color:var(--kw-faint)]",
-  "shadow-[var(--kw-shadow-soft)] backdrop-blur transition",
+  "transition-[border-color,box-shadow] duration-200",
   "focus:bg-[color:var(--kw-surface-strong)] focus:border-[rgba(var(--kw-accent-rgb),0.55)]",
   "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]",
 ].join(" ");
@@ -152,7 +152,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       data-invalid={invalid ? "true" : undefined}
       className={clsx(
         inputBaseClasses,
-        "h-11 px-3 text-sm",
+        "h-11 px-3.5 text-[0.94rem]",
         invalid &&
           "border-[rgba(225,29,72,0.42)] bg-[rgba(225,29,72,0.06)] focus:border-[rgba(225,29,72,0.6)] focus-visible:ring-[rgba(225,29,72,0.18)]",
         className,
@@ -211,7 +211,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
       data-invalid={invalid ? "true" : undefined}
       className={clsx(
         inputBaseClasses,
-        "min-h-[120px] resize-none px-3 py-2 text-sm",
+        "min-h-[120px] resize-none px-3.5 py-2.5 text-[0.94rem]",
         invalid &&
           "border-[rgba(225,29,72,0.42)] bg-[rgba(225,29,72,0.06)] focus:border-[rgba(225,29,72,0.6)] focus-visible:ring-[rgba(225,29,72,0.18)]",
         className,

@@ -58,10 +58,10 @@ export default async function BillingManagePage() {
       <Card>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+            <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">
               Current billing state
             </p>
-            <p className="mt-2 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+            <p className="mt-2 text-[1.75rem] font-semibold leading-[1.1] tracking-[-0.025em] text-[color:var(--kw-ink)]">
               {hasPortal ? "Paddle linked" : "No checkout linked yet"}
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -71,12 +71,12 @@ export default async function BillingManagePage() {
               <Pill tone="neutral">Latest billing period end: {formatDate(currentPeriodEnd)}</Pill>
             </div>
           </div>
-          <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)]">
+          <span className="grid h-11 w-11 place-items-center rounded-[12px] bg-[color:var(--kw-fill)] text-[color:var(--kw-ink-2)]">
             <CalendarClock size={18} />
           </span>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-2">
+        <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-[color:var(--kw-border-2)] pt-5">
           <ManagePortalButton disabled={!hasPortal} />
           <Link href="/billing/upgrade">
             <Button variant="ghost">
@@ -93,7 +93,7 @@ export default async function BillingManagePage() {
 
       <Card>
         <div className="flex items-start gap-3">
-          <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink-2)]">
+          <span className="grid h-10 w-10 place-items-center rounded-[12px] bg-[color:var(--kw-fill)] text-[color:var(--kw-ink-2)]">
             <SlidersHorizontal size={18} />
           </span>
           <div>

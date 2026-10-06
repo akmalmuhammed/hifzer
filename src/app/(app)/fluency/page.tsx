@@ -35,21 +35,21 @@ export default async function FluencyPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <Pill tone="accent">Browse recitation</Pill>
-          <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+          <p className="mt-3 text-[2.25rem] font-semibold leading-[1.05] tracking-[-0.03em] tabular-nums text-[color:var(--kw-ink)]">
             {overview?.quran.browseRecitedAyahs7d ?? 0}
           </p>
           <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Ayahs listened to or recited through the Qur&apos;an reader this week.</p>
         </Card>
         <Card>
           <Pill tone="warn">Struggle events</Pill>
-          <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+          <p className="mt-3 text-[2.25rem] font-semibold leading-[1.05] tracking-[-0.03em] tabular-nums text-[color:var(--kw-ink)]">
             {insights?.struggleEvents30d ?? 0}
           </p>
           <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Recent `AGAIN` and `HARD` signals that point to unstable flow.</p>
         </Card>
         <Card>
           <Pill tone="neutral">Weak transitions</Pill>
-          <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+          <p className="mt-3 text-[2.25rem] font-semibold leading-[1.05] tracking-[-0.03em] tabular-nums text-[color:var(--kw-ink)]">
             {insights?.openWeakTransitions ?? 0}
           </p>
           <p className="mt-2 text-sm text-[color:var(--kw-muted)]">Places where the seam between ayahs is weaker than the ayah itself.</p>
@@ -60,9 +60,9 @@ export default async function FluencyPage() {
         <Card>
           <div className="flex items-center gap-2">
             <Headphones size={16} className="text-[color:var(--kw-faint)]" />
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Listening-led loop</p>
+            <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Listening-led loop</p>
           </div>
-          <p className="mt-3 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
+          <p className="mt-3 text-[1.2rem] font-semibold leading-[1.2] tracking-[-0.02em] text-[color:var(--kw-ink)]">
             Hear, repeat, then read back without rushing.
           </p>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
@@ -76,12 +76,12 @@ export default async function FluencyPage() {
         <Card>
           <div className="flex items-center gap-2">
             <Mic size={16} className="text-[color:var(--kw-faint)]" />
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Hesitation cleanup</p>
+            <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Hesitation cleanup</p>
           </div>
           {insights?.challengeAyahs.length ? (
             <div className="mt-3 space-y-3">
               {insights.challengeAyahs.slice(0, 3).map((ayah) => (
-                <div key={ayah.ayahId} className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-3">
+                <div key={ayah.ayahId} className="rounded-[16px] bg-[color:var(--kw-fill)] px-3 py-3">
                   <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{ayah.surahNumber}:{ayah.ayahNumber}</p>
                   <p className="mt-1 text-xs text-[color:var(--kw-muted)]">
                     Again {ayah.againCount} | Hard {ayah.hardCount}
@@ -109,9 +109,9 @@ export default async function FluencyPage() {
         <Card>
           <div className="flex items-center gap-2">
             <Link2 size={16} className="text-[color:var(--kw-faint)]" />
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Transition smoothing</p>
+            <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Transition smoothing</p>
           </div>
-          <p className="mt-3 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
+          <p className="mt-3 text-[1.2rem] font-semibold leading-[1.2] tracking-[-0.02em] text-[color:var(--kw-ink)]">
             Many reciters know the ayah but lose the join.
           </p>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
@@ -120,7 +120,7 @@ export default async function FluencyPage() {
           {insights?.weakTransitions.length ? (
             <div className="mt-3 space-y-2">
               {insights.weakTransitions.slice(0, 3).map((transition) => (
-                <div key={transition.id} className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-3">
+                <div key={transition.id} className="rounded-[16px] bg-[color:var(--kw-fill)] px-3 py-3">
                   <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{transition.fromRef} -&gt; {transition.toRef}</p>
                   <p className="mt-1 text-xs text-[color:var(--kw-muted)]">Success {transition.successRatePct}%</p>
                 </div>
@@ -143,7 +143,7 @@ export default async function FluencyPage() {
           </div>
           <Link
             href="/fluency/retest"
-            className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+            className="inline-flex items-center gap-2 min-h-10 rounded-full bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2 text-sm font-medium transition-colors duration-200 hover:bg-[rgba(var(--kw-accent-rgb),0.18)] text-[rgba(var(--kw-accent-rgb),1)]"
           >
             Open fluency retest <ArrowRight size={14} />
           </Link>

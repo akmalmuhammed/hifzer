@@ -266,25 +266,17 @@ export function DashboardFirstRunGuide(props: {
   }
 
   return (
-    <Card
-      className="border-[rgba(var(--kw-accent-rgb),0.24)]"
-      style={{
-        background: [
-          "linear-gradient(145deg, rgba(var(--kw-accent-rgb), 0.08), rgba(255, 255, 255, 0.18))",
-          "var(--kw-panel-gradient-soft)",
-        ].join(", "),
-      }}
-    >
+    <Card>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <Pill tone="accent">Quick start</Pill>
             <Pill tone="neutral">New dashboard</Pill>
           </div>
-          <p className="mt-3 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+          <p className="mt-3 text-[1.6rem] font-semibold leading-[1.1] tracking-[-0.028em] text-[color:var(--kw-ink)]">
             Start here.
           </p>
-          <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">
+          <p className="mt-2 max-w-3xl text-[0.94rem] leading-[1.5] text-[color:var(--kw-muted)]">
             {"These tips show what to open first and how full today's review is."}
           </p>
         </div>
@@ -303,7 +295,7 @@ export function DashboardFirstRunGuide(props: {
 
       <div className="mt-5 grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
         <div className="space-y-2">
-          <div className="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
+          <div className="flex items-center justify-between gap-3 text-[0.82rem] font-medium tabular-nums text-[color:var(--kw-faint)]">
             <span>
               Step {selectedIndex + 1} of {steps.length}
             </span>
@@ -325,39 +317,39 @@ export function DashboardFirstRunGuide(props: {
                 onClick={() => setSelectedIndex(index)}
                 aria-pressed={active}
                 className={[
-                  "w-full rounded-[20px] border px-4 py-3 text-left transition",
+                  "w-full rounded-[14px] px-4 py-3 text-left transition-colors duration-200",
                   active
-                    ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] shadow-[0_16px_30px_rgba(11,18,32,0.08)]"
-                    : "border-[color:var(--kw-border-2)] bg-white/70 hover:bg-white",
+                    ? "bg-[rgba(var(--kw-accent-rgb),0.1)]"
+                    : "bg-[color:var(--kw-fill)] hover:bg-[color:var(--kw-fill-strong)]",
                 ].join(" ")}
               >
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
+                <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">
                   {item.label}
                 </p>
-                <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">{item.note}</p>
+                <p className="mt-1 text-[0.94rem] font-semibold text-[color:var(--kw-ink)]">{item.note}</p>
               </button>
             );
           })}
         </div>
 
-        <div className="rounded-[24px] border border-[rgba(var(--kw-accent-rgb),0.18)] bg-white/82 p-5 shadow-[0_18px_38px_rgba(11,18,32,0.08)]">
-          <span className="grid h-12 w-12 place-items-center rounded-[20px] border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[rgba(var(--kw-accent-rgb),0.10)] text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)]">
+        <div className="rounded-[18px] bg-[color:var(--kw-fill)] p-5 sm:p-6">
+          <span className="grid h-12 w-12 place-items-center rounded-[14px] bg-[rgba(var(--kw-accent-rgb),0.1)] text-[rgba(var(--kw-accent-rgb),1)]">
             <Icon size={20} />
           </span>
 
-          <p className="mt-4 text-xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+          <p className="mt-4 text-[1.3rem] font-semibold leading-[1.15] tracking-[-0.02em] text-[color:var(--kw-ink)]">
             {step.title}
           </p>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">{step.body}</p>
+          <p className="mt-2 max-w-2xl text-[0.94rem] leading-[1.5] text-[color:var(--kw-muted)]">{step.body}</p>
 
           <div className="mt-5 grid gap-2 sm:grid-cols-3">
             {step.highlights.map((item) => (
               <div
                 key={`${step.key}-${item.label}`}
-                className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/72 px-3 py-3"
+                className="rounded-[14px] bg-[color:var(--kw-card)] px-3 py-3"
               >
                 <Pill tone={item.tone ?? "neutral"}>{item.label}</Pill>
-                <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">{item.value}</p>
+                <p className="mt-2 text-[1.06rem] font-semibold tabular-nums tracking-[-0.02em] text-[color:var(--kw-ink)]">{item.value}</p>
               </div>
             ))}
           </div>

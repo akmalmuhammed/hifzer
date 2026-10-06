@@ -116,7 +116,7 @@ export function ReciterSettingsClient(props: ReciterSettingsClientProps) {
       />
 
       <Card className="relative overflow-hidden">
-        <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-[rgba(var(--kw-accent-rgb),0.14)] blur-2xl" />
+        <div className="hidden" />
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-2xl">
             <div className="flex flex-wrap items-center gap-2">
@@ -128,14 +128,14 @@ export function ReciterSettingsClient(props: ReciterSettingsClientProps) {
                 {props.remoteCatalog.status === "available" ? "Quran.com catalog ready" : "Quran.com catalog unavailable"}
               </Pill>
             </div>
-            <h2 className="mt-4 font-[family-name:var(--font-kw-display)] text-3xl tracking-tight text-[color:var(--kw-ink)]">
+            <h2 className="mt-4 font-[family-name:var(--font-kw-display)] text-3xl font-semibold leading-[1.1] tracking-[-0.025em] text-[color:var(--kw-ink)]">
               {selectedLabel}
             </h2>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
               Used across the reader and Hifz.
             </p>
           </div>
-          <span className="grid h-12 w-12 place-items-center rounded-[22px] border border-[color:var(--kw-border-2)] kw-surface-gradient text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
+          <span className="grid h-12 w-12 place-items-center rounded-[14px] bg-[rgba(var(--kw-accent-rgb),0.1)] text-[rgba(var(--kw-accent-rgb),1)]">
             <Music4 size={18} />
           </span>
         </div>
@@ -143,15 +143,15 @@ export function ReciterSettingsClient(props: ReciterSettingsClientProps) {
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.9fr)]">
         <Card>
-          <div className="rounded-[22px] border border-[color:var(--kw-border-2)] kw-surface-gradient-soft px-4 py-4">
+          <div>
             <div className="flex items-center gap-2">
               <RadioTower size={16} className="text-[color:var(--kw-faint)]" />
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Audio route</p>
+              <p className="text-[0.86rem] font-medium text-[color:var(--kw-faint)]">Audio route</p>
             </div>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
               Choose local or Quran.com audio for this device.
             </p>
-            <div className="mt-4 grid gap-3">
+            <div className="mt-3 grid overflow-hidden rounded-[16px] bg-[color:var(--kw-fill)] [&>button+button]:border-t [&>button+button]:border-[color:var(--kw-border-2)]">
               {AUDIO_PLAYBACK_MODE_OPTIONS.map((option) => {
                 const active = playbackMode === option.id;
                 const quranModeUnavailable =
@@ -168,19 +168,19 @@ export function ReciterSettingsClient(props: ReciterSettingsClientProps) {
                       persistAudioPlaybackMode(nextMode);
                     }}
                     className={[
-                      "rounded-[22px] border px-4 py-4 text-left transition disabled:cursor-not-allowed disabled:opacity-60",
+                      "min-h-11 px-4 py-3.5 text-left transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60",
                       active
-                        ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.10)]"
-                        : "border-[color:var(--kw-border-2)] kw-surface-gradient hover:bg-white",
+                        ? "bg-[rgba(var(--kw-accent-rgb),0.1)]"
+                        : "bg-transparent hover:bg-[color:var(--kw-hover-soft)]",
                     ].join(" ")}
                   >
-                    <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{option.label}</p>
+                          <p className="text-[0.96rem] font-medium text-[color:var(--kw-ink)]">{option.label}</p>
                           {quranModeUnavailable ? <Pill tone="neutral">API unavailable</Pill> : null}
                         </div>
-                        <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">{option.description}</p>
+                        <p className="mt-0.5 text-sm leading-6 text-[color:var(--kw-faint)]">{option.description}</p>
                       </div>
                       {active ? <Pill tone="accent">Selected</Pill> : null}
                     </div>
@@ -198,9 +198,9 @@ export function ReciterSettingsClient(props: ReciterSettingsClientProps) {
 
           <div className="mt-6 flex items-center gap-2">
             <Headphones size={16} className="text-[color:var(--kw-faint)]" />
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Hifzer local voices</p>
+            <p className="text-[0.86rem] font-medium text-[color:var(--kw-faint)]">Hifzer local voices</p>
           </div>
-          <div className="mt-4 grid gap-3">
+          <div className="mt-3 grid overflow-hidden rounded-[16px] bg-[color:var(--kw-fill)] [&>button+button]:border-t [&>button+button]:border-[color:var(--kw-border-2)]">
             {RECITER_OPTIONS.map((option) => {
               const active = reciterId === option.id;
               return (
@@ -209,16 +209,16 @@ export function ReciterSettingsClient(props: ReciterSettingsClientProps) {
                   type="button"
                   onClick={() => setReciterId(option.id)}
                   className={[
-                    "rounded-[22px] border px-4 py-4 text-left transition",
+                    "min-h-11 px-4 py-3.5 text-left transition-colors duration-200",
                     active
-                      ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.10)]"
-                      : "border-[color:var(--kw-border-2)] kw-surface-gradient hover:bg-white",
+                      ? "bg-[rgba(var(--kw-accent-rgb),0.1)]"
+                      : "bg-transparent hover:bg-[color:var(--kw-hover-soft)]",
                   ].join(" ")}
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{option.label}</p>
-                      <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">{option.description}</p>
+                      <p className="text-[0.96rem] font-medium text-[color:var(--kw-ink)]">{option.label}</p>
+                      <p className="mt-0.5 text-sm leading-6 text-[color:var(--kw-faint)]">{option.description}</p>
                     </div>
                     {active ? <Pill tone="accent">Selected</Pill> : null}
                   </div>
@@ -230,13 +230,13 @@ export function ReciterSettingsClient(props: ReciterSettingsClientProps) {
           <div className="mt-6 border-t border-[color:var(--kw-border-2)] pt-6">
             <div className="flex items-center gap-2">
               <RadioTower size={16} className="text-[color:var(--kw-faint)]" />
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+              <p className="text-[0.86rem] font-medium text-[color:var(--kw-faint)]">
                 Official Quran.com catalog
               </p>
             </div>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">{props.remoteCatalog.detail}</p>
             {remoteChoices.length ? (
-              <div className="mt-4 grid gap-3">
+              <div className="mt-3 grid overflow-hidden rounded-[16px] bg-[color:var(--kw-fill)] [&>button+button]:border-t [&>button+button]:border-[color:var(--kw-border-2)]">
                 {remoteChoices.map((option) => {
                   const active = reciterId === option.id;
                   return (
@@ -245,19 +245,19 @@ export function ReciterSettingsClient(props: ReciterSettingsClientProps) {
                       type="button"
                       onClick={() => setReciterId(option.id)}
                       className={[
-                        "rounded-[22px] border px-4 py-4 text-left transition",
+                        "min-h-11 px-4 py-3.5 text-left transition-colors duration-200",
                         active
-                          ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.10)]"
-                          : "border-[color:var(--kw-border-2)] kw-surface-gradient hover:bg-white",
+                          ? "bg-[rgba(var(--kw-accent-rgb),0.1)]"
+                          : "bg-transparent hover:bg-[color:var(--kw-hover-soft)]",
                       ].join(" ")}
                     >
-                      <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
-                            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{option.label}</p>
+                            <p className="text-[0.96rem] font-medium text-[color:var(--kw-ink)]">{option.label}</p>
                             <Pill tone="neutral">Quran.com</Pill>
                           </div>
-                          <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">{option.description}</p>
+                          <p className="mt-0.5 text-sm leading-6 text-[color:var(--kw-faint)]">{option.description}</p>
                         </div>
                         {active ? <Pill tone="accent">Selected</Pill> : null}
                       </div>
@@ -266,7 +266,7 @@ export function ReciterSettingsClient(props: ReciterSettingsClientProps) {
                 })}
               </div>
             ) : (
-              <div className="mt-4 rounded-[22px] border border-[color:var(--kw-border-2)] kw-surface-gradient-soft px-4 py-4 text-sm leading-7 text-[color:var(--kw-muted)]">
+              <div className="mt-4 rounded-[16px] bg-[color:var(--kw-fill)] px-4 py-4 text-sm leading-7 text-[color:var(--kw-muted)]">
                 Local Hifzer voices are available now. Quran.com voices will appear here when the catalog is reachable.
               </div>
             )}
@@ -280,7 +280,7 @@ export function ReciterSettingsClient(props: ReciterSettingsClientProps) {
         </Card>
 
         <Card>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Preview</p>
+          <p className="text-[0.86rem] font-medium text-[color:var(--kw-faint)]">Preview</p>
           <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
             Ayah 1 preview.
           </p>

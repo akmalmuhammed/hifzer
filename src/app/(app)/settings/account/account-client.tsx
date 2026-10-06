@@ -39,11 +39,11 @@ export function AccountSettingsClient() {
     <Card>
       <div className="flex flex-wrap items-start justify-between gap-6">
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Signed in</p>
-          <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+          <p className="text-[1rem] font-medium tracking-[-0.01em] text-[color:var(--kw-ink)]">Signed in</p>
+          <p className="mt-1 text-sm leading-6 text-[color:var(--kw-muted)]">
             {primaryEmail ? (
               <>
-                Email: <span className="font-semibold text-[color:var(--kw-ink)]">{primaryEmail}</span>
+                Email: <span className="font-medium text-[color:var(--kw-ink)]">{primaryEmail}</span>
               </>
             ) : (
               <>Your email is not available.</>

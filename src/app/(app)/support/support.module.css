@@ -1,71 +1,42 @@
 .hero {
   position: relative;
-  overflow: hidden;
-  border-radius: calc(var(--kw-radius-xl) + 2px);
-  border: 1px solid rgba(var(--kw-accent-rgb), 0.24);
-  background:
-    radial-gradient(920px 280px at -5% -55%, rgba(var(--kw-accent-rgb), 0.2), transparent 62%),
-    radial-gradient(760px 220px at 110% -45%, rgba(10, 138, 119, 0.18), transparent 62%),
-    linear-gradient(140deg, var(--kw-card-strong), var(--kw-surface-strong));
-}
-
-.hero::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: linear-gradient(to right, rgba(11, 18, 32, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(11, 18, 32, 0.04) 1px, transparent 1px);
-  background-size: 26px 26px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), transparent 88%);
 }
 
 .choiceCard,
 .emailChip {
   position: relative;
-  z-index: 1;
 }
 
 .choiceCard {
-  border-radius: 20px;
+  border-radius: var(--kw-radius-xl);
   border: 1px solid var(--kw-border-2);
-  background:
-    radial-gradient(140% 140% at 0% 0%, rgba(var(--kw-accent-rgb), 0.08), transparent 58%),
-    var(--kw-panel-gradient-strong);
-  box-shadow: var(--kw-shadow-soft);
-  padding: 1rem;
+  background: var(--kw-card);
+  padding: clamp(1.25rem, 2.4vw, 1.75rem);
 }
 
 .emailChip {
   display: inline-flex;
-  min-height: 2.5rem;
+  min-height: 2.75rem;
   align-items: center;
   gap: 0.45rem;
   border-radius: 999px;
-  border: 1px solid var(--kw-border-2);
-  background: var(--kw-card-strong);
-  padding: 0 0.9rem;
-  font-size: 0.85rem;
-  font-weight: 700;
+  background: var(--kw-fill);
+  padding: 0 1rem;
+  font-size: 0.86rem;
+  font-weight: 500;
   color: var(--kw-ink-2);
 }
 
 .panel {
-  border-radius: 18px;
+  border-radius: var(--kw-radius-xl);
   border: 1px solid var(--kw-border-2);
-  background:
-    radial-gradient(140% 140% at 0% 0%, rgba(var(--kw-accent-rgb), 0.08), transparent 58%),
-    radial-gradient(120% 120% at 100% 100%, rgba(10, 138, 119, 0.05), transparent 60%),
-    var(--kw-panel-gradient);
-  box-shadow: var(--kw-shadow-soft);
+  background: var(--kw-card);
+  box-shadow: none;
 }
 
 .tipCard {
   border-radius: 14px;
-  border: 1px solid var(--kw-border-2);
-  background:
-    radial-gradient(120% 120% at 0% 0%, rgba(var(--kw-accent-rgb), 0.06), transparent 58%),
-    var(--kw-panel-gradient-strong);
+  background: var(--kw-fill);
 }
 
 .paymentPanel {
@@ -75,21 +46,17 @@
 .purchaseBadge {
   min-width: 170px;
   align-self: flex-start;
-  border-radius: 18px;
-  border: 1px solid rgba(var(--kw-accent-rgb), 0.18);
-  background: rgba(var(--kw-accent-rgb), 0.08);
-  padding: 0.8rem 0.95rem;
+  border-radius: 16px;
+  background: rgba(var(--kw-accent-rgb), 0.1);
+  padding: 0.8rem 1rem;
 }
 
 .reasonCard {
   display: flex;
   gap: 0.7rem;
-  border-radius: 16px;
-  border: 1px solid var(--kw-border-2);
-  background:
-    radial-gradient(120% 120% at 0% 0%, rgba(var(--kw-accent-rgb), 0.05), transparent 60%),
-    var(--kw-panel-gradient-strong);
-  padding: 0.85rem 0.95rem;
+  border-radius: 14px;
+  background: var(--kw-fill);
+  padding: 0.9rem 1rem;
 }
 
 .policyGrid {
@@ -99,12 +66,9 @@
 }
 
 .policySection {
-  border-radius: 18px;
-  border: 1px solid var(--kw-border-2);
-  background:
-    radial-gradient(120% 120% at 0% 0%, rgba(var(--kw-accent-rgb), 0.06), transparent 58%),
-    var(--kw-panel-gradient-strong);
-  padding: 1rem;
+  border-radius: 16px;
+  background: var(--kw-fill);
+  padding: 1.1rem 1.15rem;
 }
 
 .policyList {
@@ -117,14 +81,14 @@
   display: flex;
   gap: 0.65rem;
   font-size: 0.92rem;
-  line-height: 1.75;
+  line-height: 1.6;
   color: var(--kw-muted);
 }
 
 .policyDot {
-  margin-top: 0.62rem;
-  width: 0.42rem;
-  height: 0.42rem;
+  margin-top: 0.55rem;
+  width: 0.38rem;
+  height: 0.38rem;
   flex: 0 0 auto;
   border-radius: 999px;
   background: rgba(var(--kw-accent-rgb), 1);

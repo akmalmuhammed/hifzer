@@ -94,16 +94,16 @@ export function InstallAppBanner({ className }: { className?: string }) {
       role="region"
       aria-label="Install on Android"
     >
-      <div className="rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.24)] bg-white/92 px-3 py-3 shadow-[var(--kw-shadow)] backdrop-blur">
+      <div className="kw-material rounded-[20px] border border-[color:var(--kw-border-2)] px-4 py-3.5 shadow-[var(--kw-shadow-float)]">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{title}</p>
+            <p className="text-[0.94rem] font-semibold tracking-[-0.01em] text-[color:var(--kw-ink)]">{title}</p>
             <p className="mt-1 text-xs leading-5 text-[color:var(--kw-muted)]">{hint}</p>
           </div>
           <button
             type="button"
             onClick={dismiss}
-            className="rounded-lg p-1 text-[color:var(--kw-faint)] transition hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)]"
+            className="rounded-full p-1.5 text-[color:var(--kw-faint)] transition duration-200 hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)]"
             aria-label="Dismiss install banner"
             title="Dismiss install banner"
           >
@@ -117,7 +117,7 @@ export function InstallAppBanner({ className }: { className?: string }) {
             onClick={() => {
               void onInstall();
             }}
-            className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)] transition hover:bg-[rgba(var(--kw-accent-rgb),0.16)]"
+            className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[rgba(var(--kw-accent-rgb),1)] px-4 text-sm font-medium text-white transition duration-200 hover:bg-[rgba(var(--kw-accent-rgb),0.88)] active:scale-[0.98]"
           >
             <Icon size={15} />
             Install now
@@ -125,7 +125,7 @@ export function InstallAppBanner({ className }: { className?: string }) {
           <button
             type="button"
             onClick={dismiss}
-            className="inline-flex h-10 items-center justify-center rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-3 text-sm font-semibold text-[color:var(--kw-muted)] transition hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)]"
+            className="inline-flex h-11 items-center justify-center rounded-full bg-[color:var(--kw-fill-strong)] px-4 text-sm font-medium text-[color:var(--kw-ink)] transition duration-200 hover:bg-[color:var(--kw-hover-strong)] active:scale-[0.98]"
           >
             Not now
           </button>

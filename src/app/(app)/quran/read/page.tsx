@@ -361,7 +361,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
     })}#${COMPACT_READER_ANCHOR}`
     : null;
   const renderFilterControls = () => (
-    <Card>
+    <Card className="!border-transparent !bg-transparent !shadow-none">
       <ReaderPreferencesControls
         initialTranslationId={quranTranslationId}
         initialShowDetails={quranShowDetails}
@@ -376,40 +376,40 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <Link
           href={trackedHref}
-          className={`inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm font-semibold ${
+          className={`inline-flex min-h-11 items-center rounded-full border px-4 py-2 text-sm font-medium ${
             !anonymous
-              ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-              : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
+              ? "border-transparent bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+              : "border-transparent bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)]"
           }`}
         >
           {ui.trackingOn}
         </Link>
         <Link
           href={anonymousHref}
-          className={`inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm font-semibold ${
+          className={`inline-flex min-h-11 items-center rounded-full border px-4 py-2 text-sm font-medium ${
             anonymous
-              ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-              : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
+              ? "border-transparent bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+              : "border-transparent bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)]"
           }`}
         >
           {ui.anonymousWindow}
         </Link>
         <Link
           href={listHref}
-          className={`inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm font-semibold ${
+          className={`inline-flex min-h-11 items-center rounded-full border px-4 py-2 text-sm font-medium ${
             view === "list"
-              ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-              : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
+              ? "border-transparent bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+              : "border-transparent bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)]"
           }`}
         >
           {ui.listView}
         </Link>
         <Link
           href={compactHref}
-          className={`inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm font-semibold ${
+          className={`inline-flex min-h-11 items-center rounded-full border px-4 py-2 text-sm font-medium ${
             view === "compact"
-              ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-              : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
+              ? "border-transparent bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+              : "border-transparent bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)]"
           }`}
         >
           {ui.compactView}
@@ -419,20 +419,20 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <Link
           href={phoneticToggleHref}
-          className={`inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm font-semibold ${
+          className={`inline-flex min-h-11 items-center rounded-full border px-4 py-2 text-sm font-medium ${
             showPhonetic
-              ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-              : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
+              ? "border-transparent bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+              : "border-transparent bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)]"
           }`}
         >
           {showPhonetic ? ui.disablePhonetics : ui.enablePhonetics}
         </Link>
         <Link
           href={translationToggleHref}
-          className={`inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm font-semibold ${
+          className={`inline-flex min-h-11 items-center rounded-full border px-4 py-2 text-sm font-medium ${
             showTranslation
-              ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-              : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
+              ? "border-transparent bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+              : "border-transparent bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)]"
           }`}
         >
           {showTranslation ? ui.disableTranslation : ui.enableTranslation}
@@ -440,10 +440,10 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
         {availableTafsirs.length ? (
           <Link
             href={tafsirToggleHref}
-            className={`inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm font-semibold ${
+            className={`inline-flex min-h-11 items-center rounded-full border px-4 py-2 text-sm font-medium ${
               showTafsir
-                ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-                : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)]"
+                ? "border-transparent bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+                : "border-transparent bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)]"
             }`}
           >
             {showTafsir ? "Hide tafsir" : "Show tafsir"}
@@ -467,7 +467,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
           <select
             name="surah"
             defaultValue={surahNumber != null ? String(surahNumber) : ""}
-            className="mt-1 h-11 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
+            className="mt-1 h-11 w-full rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
           >
             <option value="">{ui.allSurahs}</option>
             {surahs.map((surah) => (
@@ -486,7 +486,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
             max={6236}
             defaultValue={ayahId != null ? String(ayahId) : ""}
             placeholder={ui.ayahPlaceholder}
-            className="mt-1 h-11 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
+            className="mt-1 h-11 w-full rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
           />
         </label>
         {availableTafsirs.length ? (
@@ -495,7 +495,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
             <select
               name="tafsirId"
               defaultValue={tafsirSelectValue}
-              className="mt-1 h-11 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)]"
+              className="mt-1 h-11 w-full rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
             >
               <option value="">
                 {selectedTafsirResource ? `Recommended - ${selectedTafsirResource.label}` : "Recommended"}
@@ -511,13 +511,13 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
         <div className="flex flex-wrap items-start gap-2">
           <button
             type="submit"
-            className="h-11 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+            className="h-11 rounded-full border border-transparent bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 text-sm font-medium text-[rgba(var(--kw-accent-rgb),1)]"
           >
             {ui.applyFilters}
           </button>
           <Link
             href={clearHref}
-            className="inline-flex h-11 items-center rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-2 text-sm font-semibold text-[color:var(--kw-ink)]"
+            className="inline-flex h-11 items-center rounded-full border border-transparent bg-[color:var(--kw-fill-strong)] px-4 py-2 text-sm font-medium text-[color:var(--kw-ink)]"
           >
             {ui.clear}
           </Link>
@@ -541,7 +541,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
         <>
           <Link
             href="/quran"
-            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-white"
+            className="-ml-2 inline-flex min-h-11 items-center gap-1 rounded-full px-2.5 text-[0.94rem] font-medium text-[rgba(var(--kw-accent-rgb),1)] transition-colors duration-200 hover:bg-[rgba(var(--kw-accent-rgb),0.08)]"
           >
             <ArrowLeft size={16} />
             {ui.back}
@@ -549,29 +549,29 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
 
           <div className="mt-6">
             <Pill tone="neutral">{ui.quranReaderPill}</Pill>
-            <h1 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
+            <h1 className="kw-page-title mt-4 text-balance text-[color:var(--kw-ink)]">
               {ui.heroTitle}
             </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
+            <p className="kw-page-subtitle mt-3 text-[color:var(--kw-muted)]">
               {ui.heroSubtitle}
-              <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
+              <span className="ml-2 inline-flex items-center rounded-full bg-[color:var(--kw-fill-strong)] px-2.5 py-1 align-middle text-xs font-medium leading-none text-[color:var(--kw-faint)]">
                 Sahih Muslim 804a
               </span>
             </p>
           </div>
 
           <div className="mt-8">
-            <details className="group rounded-[24px] border border-[color:var(--kw-border-2)] bg-white/65 p-3 shadow-[var(--kw-shadow-soft)]">
-              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/75 px-3 py-2.5 text-sm font-semibold text-[color:var(--kw-ink)]">
+            <details className="group rounded-[var(--kw-radius-xl)] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-card)] p-2">
+              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-[18px] px-4 py-2.5 text-[0.94rem] font-semibold text-[color:var(--kw-ink)] transition-colors duration-200 hover:bg-[color:var(--kw-hover-soft)]">
                 <span>{ui.readerFilters}</span>
-                <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/80 px-2 py-0.5 text-xs text-[color:var(--kw-muted)] group-open:hidden">
+                <span className="rounded-full bg-[color:var(--kw-fill-strong)] px-3 py-1 text-xs font-medium text-[color:var(--kw-ink-2)] group-open:hidden">
                   {ui.show}
                 </span>
-                <span className="hidden rounded-full border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.1)] px-2 py-0.5 text-xs text-[rgba(var(--kw-accent-rgb),1)] group-open:inline-flex">
+                <span className="hidden rounded-full bg-[rgba(var(--kw-accent-rgb),0.1)] px-3 py-1 text-xs font-medium text-[rgba(var(--kw-accent-rgb),1)] group-open:inline-flex">
                   {ui.hide}
                 </span>
               </summary>
-              <div className="pt-3">{renderFilterControls()}</div>
+              <div className="border-t border-[color:var(--kw-border-2)] pt-1 mt-2">{renderFilterControls()}</div>
             </details>
           </div>
         </>
@@ -592,12 +592,12 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
       ) : null}
 
       {ayahs.length > 0 && view === "list" ? (
-        <div className="mt-8 space-y-3">
+        <div className="mt-8 rounded-[var(--kw-radius-xl)] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-card)]">
           <QuranViewportProgressTracker enabled={Boolean(!anonymous && authEnabled && userId)} />
           {listAyahs.map((ayah) => (
             <Card
               key={ayah.id}
-              className="py-3"
+              className="!rounded-none !border-0 !border-b !border-[color:var(--kw-border-2)] !bg-transparent py-7 !shadow-none last:!border-b-0 sm:px-8"
               data-quran-track="1"
               data-quran-ayah-id={ayah.id}
               data-quran-surah-number={ayah.surahNumber}
@@ -605,7 +605,7 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1 text-xs font-semibold text-[color:var(--kw-muted)]">
+                  <span className="rounded-full bg-[color:var(--kw-fill)] px-2.5 py-1 text-xs font-medium tabular-nums text-[color:var(--kw-faint)]">
                     {ayah.surahNumber}:{ayah.ayahNumber}
                   </span>
                   <span className="text-xs text-[color:var(--kw-faint)]">#{ayah.id}</span>
@@ -620,11 +620,11 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
                 </div>
               </div>
 
-              <div dir="rtl" lang="ar" className="mt-4 text-right text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
+              <div dir="rtl" lang="ar" className="mt-5 text-right font-[family-name:var(--font-kw-quran)] text-[1.9rem] leading-[2.2] text-[color:var(--kw-ink)] sm:text-[2.1rem]">
                 {ayah.textUthmani}
               </div>
               {showAnyDetails ? (
-                <div className="mt-3 space-y-2">
+                <div className="mt-5 space-y-4">
                   {showPhonetic ? (
                     <SupportTextPanel kind="transliteration">
                       {getPhoneticByAyahId(ayah.id) ?? ui.phoneticUnavailable}
@@ -667,8 +667,8 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
           ))}
 
           {totalListPages > 1 ? (
-            <Card className="py-3">
-              <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+            <Card className="!rounded-none !border-0 !bg-transparent py-4 !shadow-none sm:px-8">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-sm tabular-nums">
                 {listPage > 1 ? (
                   <Link
                     href={buildHref({
@@ -678,12 +678,12 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
                       page: listPage - 1,
                       anonymous,
                     })}
-                    className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 font-semibold text-[color:var(--kw-ink)]"
+                    className="rounded-full border border-transparent bg-[color:var(--kw-fill-strong)] px-4 py-2 font-medium text-[color:var(--kw-ink)]"
                   >
                     {ui.previousPage}
                   </Link>
                 ) : (
-                  <span className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/50 px-3 py-2 font-semibold text-[color:var(--kw-faint)]">
+                  <span className="rounded-full border border-transparent bg-[color:var(--kw-fill)] px-4 py-2 font-medium text-[color:var(--kw-faint)]">
                     {ui.previousPage}
                   </span>
                 )}
@@ -701,12 +701,12 @@ export default async function QuranReaderPage(props: { searchParams: Promise<Sea
                       page: listPage + 1,
                       anonymous,
                     })}
-                    className="rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+                    className="rounded-full border border-transparent bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2 font-medium text-[rgba(var(--kw-accent-rgb),1)]"
                   >
                     {ui.nextPage}
                   </Link>
                 ) : (
-                  <span className="rounded-xl border border-[color:var(--kw-border-2)] bg-white/50 px-3 py-2 font-semibold text-[color:var(--kw-faint)]">
+                  <span className="rounded-full border border-transparent bg-[color:var(--kw-fill)] px-4 py-2 font-medium text-[color:var(--kw-faint)]">
                     {ui.nextPage}
                   </span>
                 )}

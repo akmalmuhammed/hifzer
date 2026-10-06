@@ -140,7 +140,7 @@ export function QuranFoundationContentPanel(props: { ayahId: number; compact?: b
   }
 
   return (
-    <Card className={props.compact ? "mt-3" : "mt-4"}>
+    <Card className={props.compact ? "mt-6 !rounded-[18px] !border-transparent !bg-[color:var(--kw-fill)] !shadow-none" : "mt-4"}>
       <div className="flex flex-wrap items-center gap-2">
         <Pill tone={tone}>Quran Foundation</Pill>
         {content?.pageNumber ? <Pill tone="neutral">Page {content.pageNumber}</Pill> : null}
@@ -161,7 +161,7 @@ export function QuranFoundationContentPanel(props: { ayahId: number; compact?: b
         <div className="mt-4 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             <BookOpenText size={15} className="text-[color:var(--kw-faint)]" />
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
+            <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">
               Official translation layer
             </p>
           </div>
@@ -170,10 +170,10 @@ export function QuranFoundationContentPanel(props: { ayahId: number; compact?: b
               type="button"
               onClick={() => setTranslationId(null)}
               className={[
-                "min-w-[140px] rounded-[18px] border px-3 py-2 text-left transition",
+                "min-w-[140px] rounded-[14px] border px-3.5 py-2.5 text-left transition-colors duration-200",
                 translationId == null
-                  ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.10)]"
-                  : "border-[color:var(--kw-border-2)] bg-white/70 hover:bg-white",
+                  ? "border-transparent bg-[rgba(var(--kw-accent-rgb),0.10)]"
+                  : "border-transparent bg-[color:var(--kw-fill-strong)] hover:bg-[color:var(--kw-hover-strong)]",
               ].join(" ")}
             >
               <p className="text-xs font-semibold text-[color:var(--kw-ink)]">Recommended</p>
@@ -187,10 +187,10 @@ export function QuranFoundationContentPanel(props: { ayahId: number; compact?: b
                   type="button"
                   onClick={() => setTranslationId(resource.id === catalog?.defaultTranslationId ? null : resource.id)}
                   className={[
-                    "min-w-[180px] rounded-[18px] border px-3 py-2 text-left transition",
+                    "min-w-[180px] rounded-[14px] border px-3.5 py-2.5 text-left transition-colors duration-200",
                     active
-                      ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.10)]"
-                      : "border-[color:var(--kw-border-2)] bg-white/70 hover:bg-white",
+                      ? "border-transparent bg-[rgba(var(--kw-accent-rgb),0.10)]"
+                      : "border-transparent bg-[color:var(--kw-fill-strong)] hover:bg-[color:var(--kw-hover-strong)]",
                   ].join(" ")}
                 >
                   <p className="text-xs font-semibold text-[color:var(--kw-ink)]">{resource.label}</p>
@@ -206,7 +206,7 @@ export function QuranFoundationContentPanel(props: { ayahId: number; compact?: b
 
       {content?.officialTranslation ? (
         <div className="mt-3 space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
+          <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">
             {renderResourceMeta(content.officialTranslation) || "Official translation"}
           </p>
           <SupportTextPanel
@@ -222,7 +222,7 @@ export function QuranFoundationContentPanel(props: { ayahId: number; compact?: b
       {visibleTafsirs.length ? (
         <div className="mt-4 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
+            <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">
               Multi-tafsir
             </p>
             <Pill tone="neutral">Pick up to 2</Pill>
@@ -232,10 +232,10 @@ export function QuranFoundationContentPanel(props: { ayahId: number; compact?: b
               type="button"
               onClick={() => setTafsirIds([])}
               className={[
-                "min-w-[140px] rounded-[18px] border px-3 py-2 text-left transition",
+                "min-w-[140px] rounded-[14px] border px-3.5 py-2.5 text-left transition-colors duration-200",
                 tafsirIds.length === 0
-                  ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.10)]"
-                  : "border-[color:var(--kw-border-2)] bg-white/70 hover:bg-white",
+                  ? "border-transparent bg-[rgba(var(--kw-accent-rgb),0.10)]"
+                  : "border-transparent bg-[color:var(--kw-fill-strong)] hover:bg-[color:var(--kw-hover-strong)]",
               ].join(" ")}
             >
               <p className="text-xs font-semibold text-[color:var(--kw-ink)]">Recommended</p>
@@ -249,10 +249,10 @@ export function QuranFoundationContentPanel(props: { ayahId: number; compact?: b
                   type="button"
                   onClick={() => onToggleTafsir(resource.id)}
                   className={[
-                    "min-w-[200px] rounded-[18px] border px-3 py-2 text-left transition",
+                    "min-w-[200px] rounded-[14px] border px-3.5 py-2.5 text-left transition-colors duration-200",
                     active
-                      ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.10)]"
-                      : "border-[color:var(--kw-border-2)] bg-white/70 hover:bg-white",
+                      ? "border-transparent bg-[rgba(var(--kw-accent-rgb),0.10)]"
+                      : "border-transparent bg-[color:var(--kw-fill-strong)] hover:bg-[color:var(--kw-hover-strong)]",
                   ].join(" ")}
                 >
                   <p className="text-xs font-semibold text-[color:var(--kw-ink)]">{resource.label}</p>
@@ -270,7 +270,7 @@ export function QuranFoundationContentPanel(props: { ayahId: number; compact?: b
         <div className="mt-3 space-y-3">
           {content.officialTafsirs.map((tafsir) => (
             <div key={tafsir.resourceId} className="space-y-2">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
+              <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">
                 {renderResourceMeta(tafsir) || "Official tafsir"}
               </p>
               <SupportTextPanel

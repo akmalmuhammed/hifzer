@@ -56,7 +56,7 @@ export function QuranCompletionProgress(props: QuranCompletionProgressProps) {
             aria-valuenow={Number(displayProgress.toFixed(1))}
           >
             <div className={styles.ringInner}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[color:var(--kw-faint)]">Read so far</p>
+              <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">Read so far</p>
               <p className="mt-1 font-[family-name:var(--font-kw-display)] text-4xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
                 {formatPercent(displayProgress)}%
               </p>
@@ -70,7 +70,7 @@ export function QuranCompletionProgress(props: QuranCompletionProgressProps) {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <Pill tone="accent">Total Qur&apos;an progress</Pill>
-            <span className="inline-flex items-center gap-1 rounded-full border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.1)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[rgba(var(--kw-accent-rgb),1)]">
+            <span className="inline-flex items-center gap-1 rounded-full border border-transparent bg-[rgba(var(--kw-accent-rgb),0.1)] px-2.5 py-1 text-[0.8rem] font-medium text-[rgba(var(--kw-accent-rgb),1)]">
               <Sparkles size={12} aria-hidden="true" />
               From your reading
             </span>
@@ -96,15 +96,15 @@ export function QuranCompletionProgress(props: QuranCompletionProgressProps) {
 
           <div className="mt-3 grid gap-2 sm:grid-cols-3">
             <div className={styles.statCard}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--kw-faint)]">Read</p>
+              <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">Read</p>
               <p className="mt-1 text-xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{NUMBER_FORMATTER.format(completedAyahs)}</p>
             </div>
             <div className={styles.statCard}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--kw-faint)]">Left</p>
+              <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">Left</p>
               <p className="mt-1 text-xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{NUMBER_FORMATTER.format(remainingAyahs)}</p>
             </div>
             <div className={styles.statCard}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--kw-faint)]">Last place</p>
+              <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">Last place</p>
               <p className="mt-1 text-xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{props.currentSurahNumber}:{props.currentAyahNumber}</p>
             </div>
           </div>
@@ -113,7 +113,7 @@ export function QuranCompletionProgress(props: QuranCompletionProgressProps) {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <BookOpenCheck size={15} className="text-[rgba(var(--kw-accent-rgb),1)]" aria-hidden="true" />
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--kw-faint)]">Private reading history</p>
+                <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">Private reading history</p>
               </div>
               <span className={styles.rankCountPill}>
                 <LockKeyhole size={12} aria-hidden="true" />

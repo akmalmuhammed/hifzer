@@ -60,7 +60,7 @@ export function PlanSettingsClient(props: PlanClientProps) {
             <Input
               id="settings-plan-daily-minutes"
               label="Daily minutes"
-              labelClassName="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]"
+              labelClassName="text-[0.86rem] font-medium text-[color:var(--kw-faint)]"
               type="number"
               min={5}
               max={240}
@@ -72,7 +72,7 @@ export function PlanSettingsClient(props: PlanClientProps) {
             <Input
               id="settings-plan-practice-days"
               label="Practice days / week"
-              labelClassName="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]"
+              labelClassName="text-[0.86rem] font-medium text-[color:var(--kw-faint)]"
               type="number"
               min={1}
               max={7}
@@ -82,9 +82,9 @@ export function PlanSettingsClient(props: PlanClientProps) {
           </div>
         </div>
 
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <div className="mt-6 grid gap-5 border-t border-[color:var(--kw-border-2)] pt-5 md:grid-cols-2">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+            <p className="text-[0.86rem] font-medium text-[color:var(--kw-faint)]">
               Plan bias
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
@@ -94,10 +94,10 @@ export function PlanSettingsClient(props: PlanClientProps) {
                   type="button"
                   onClick={() => setDraft((d) => ({ ...d, planBias: bias }))}
                   className={[
-                    "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
+                    "min-h-9 rounded-full border border-transparent px-4 py-1.5 text-sm font-medium transition-colors duration-200",
                     draft.planBias === bias
-                      ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-                      : "border-[color:var(--kw-border-2)] kw-surface-gradient text-[color:var(--kw-ink)] hover:bg-white",
+                      ? "bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+                      : "bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-strong)]",
                   ].join(" ")}
                 >
                   {bias}
@@ -106,7 +106,7 @@ export function PlanSettingsClient(props: PlanClientProps) {
             </div>
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+            <p className="text-[0.86rem] font-medium text-[color:var(--kw-faint)]">
               Teacher support
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
@@ -116,10 +116,10 @@ export function PlanSettingsClient(props: PlanClientProps) {
                   type="button"
                   onClick={() => setDraft((d) => ({ ...d, hasTeacher: value }))}
                   className={[
-                    "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
+                    "min-h-9 rounded-full border border-transparent px-4 py-1.5 text-sm font-medium transition-colors duration-200",
                     draft.hasTeacher === value
-                      ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-                      : "border-[color:var(--kw-border-2)] kw-surface-gradient text-[color:var(--kw-ink)] hover:bg-white",
+                      ? "bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+                      : "bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-strong)]",
                   ].join(" ")}
                 >
                   {value ? "Yes" : "No"}
@@ -129,7 +129,7 @@ export function PlanSettingsClient(props: PlanClientProps) {
           </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-between gap-3">
+        <div className="mt-6 flex items-center justify-between gap-3 border-t border-[color:var(--kw-border-2)] pt-5">
           <p className="text-xs text-[color:var(--kw-faint)]">Timezone: {draft.timezone}</p>
           <Button className="gap-2" loading={saving} onClick={save}>
             Save plan <ArrowRight size={16} />

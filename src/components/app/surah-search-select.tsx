@@ -86,7 +86,7 @@ export function SurahSearchSelect(props: SurahSearchSelectProps) {
         type="button"
         disabled={props.disabled}
         onClick={() => setOpen((prev) => !prev)}
-        className="flex w-full items-center justify-between gap-2 rounded-2xl border border-[color:var(--kw-border)] bg-white px-3 py-2 text-left text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex min-h-11 w-full items-center justify-between gap-2 rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3.5 py-2 text-left text-sm font-medium text-[color:var(--kw-ink)] transition-[border-color,box-shadow] duration-200 focus-visible:border-[rgba(var(--kw-accent-rgb),0.55)] disabled:cursor-not-allowed disabled:opacity-60"
       >
         <span>
           {selected
@@ -100,7 +100,7 @@ export function SurahSearchSelect(props: SurahSearchSelectProps) {
         ? createPortal(
           <div
             ref={menuRef}
-            className="z-[140] rounded-2xl border border-[color:var(--kw-border)] bg-white p-2 shadow-[var(--kw-shadow)]"
+            className="kw-material z-[140] rounded-[18px] border border-[color:var(--kw-border-2)] p-2 shadow-[var(--kw-shadow-float)]"
             style={{
               position: "fixed",
               top: menuRect.top,
@@ -132,10 +132,10 @@ export function SurahSearchSelect(props: SurahSearchSelectProps) {
                       setQuery("");
                     }}
                     className={[
-                      "w-full rounded-xl px-2 py-2 text-left text-sm transition",
+                      "w-full rounded-[10px] px-2.5 py-2 text-left text-sm transition-colors duration-200",
                       active
                         ? "bg-[rgba(var(--kw-accent-rgb),0.12)] text-[color:var(--kw-ink)]"
-                        : "text-[color:var(--kw-muted)] hover:bg-[color:var(--kw-surface)]",
+                        : "text-[color:var(--kw-muted)] hover:bg-[color:var(--kw-hover-soft)]",
                     ].join(" ")}
                   >
                     <span className="font-semibold text-[color:var(--kw-ink)]">

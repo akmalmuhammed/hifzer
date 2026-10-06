@@ -4,7 +4,7 @@ import { MarketingProviders } from "@/components/providers/marketing-providers";
 import landingStyles from "@/components/landing/landing.module.css";
 import { DEFAULT_UI_LANGUAGE } from "@/hifzer/i18n/ui-language";
 import { DEFAULT_THEME_DOCUMENT_STATE } from "@/hifzer/theme/preferences";
-import { marketingDisplayFont, quranFont } from "@/lib/fonts";
+import { quranFont } from "@/lib/fonts";
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,7 +16,6 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
         className={[
           landingStyles.marketingShell,
           "min-h-dvh",
-          marketingDisplayFont.variable,
           quranFont.variable,
         ].join(" ")}
       >

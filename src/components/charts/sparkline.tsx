@@ -11,7 +11,7 @@ function toneColor(tone: Tone): string {
     return "var(--kw-chart-3)";
   }
   if (tone === "neutral") {
-    return "rgba(11,18,32,0.35)";
+    return "var(--kw-faint)";
   }
   return "var(--kw-chart-1)";
 }
@@ -52,8 +52,8 @@ export function Sparkline({
     >
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="120" y2="0" gradientUnits="userSpaceOnUse">
-          <stop stopColor={color} stopOpacity="0.32" />
-          <stop offset="1" stopColor={color} stopOpacity="0.04" />
+          <stop stopColor={color} stopOpacity="0.2" />
+          <stop offset="1" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
 

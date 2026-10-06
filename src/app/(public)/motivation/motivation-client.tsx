@@ -116,20 +116,19 @@ const MOTIVATION_TILES: MotivationTile[] = [
 function tileBackgroundClass(index: number) {
   const variant = index % 5;
 
-  if (variant === 0) return "bg-[linear-gradient(150deg,rgba(var(--kw-accent-rgb),0.2)_0%,var(--kw-surface-strong)_72%)]";
-  if (variant === 1) return "bg-[linear-gradient(160deg,rgba(20,184,166,0.2)_0%,var(--kw-surface-strong)_72%)]";
-  if (variant === 2) return "bg-[linear-gradient(145deg,rgba(148,163,184,0.16)_0%,var(--kw-surface)_68%)]";
-  if (variant === 3) return "bg-[linear-gradient(155deg,rgba(99,102,241,0.2)_0%,var(--kw-surface-strong)_74%)]";
+  if (variant === 0) return "bg-[color-mix(in_srgb,rgba(var(--kw-accent-rgb),1)_9%,var(--kw-tile))]";
+  if (variant === 1) return "bg-[color:var(--kw-tile)]";
+  if (variant === 2) return "bg-[color:var(--kw-tile)]";
+  if (variant === 3) return "bg-[color-mix(in_srgb,rgba(var(--kw-accent-rgb),1)_9%,var(--kw-tile))]";
 
-  return "bg-[linear-gradient(160deg,rgba(14,116,144,0.18)_0%,var(--kw-surface-strong)_76%)]";
+  return "bg-[color:var(--kw-tile)]";
 }
 
 function splitGradientTextClass(isLarge = false) {
   return [
-    "bg-[linear-gradient(94deg,var(--kw-ink)_0_54%,rgba(var(--kw-accent-rgb),1)_54%_100%)]",
-    "bg-clip-text text-transparent",
+    "text-[color:var(--kw-ink)]",
     isLarge ? "text-[clamp(1.28rem,6.3vw,2.3rem)]" : "text-[clamp(1.05rem,2.2vw,1.9rem)]",
-    "font-extrabold leading-[1.08] tracking-[-0.025em]",
+    "font-semibold leading-[1.1] tracking-[-0.028em]",
   ].join(" ");
 }
 
@@ -158,19 +157,19 @@ export function MotivationClientPage() {
   }, [activeTile]);
 
   return (
-    <section className="py-8 md:py-12">
-      <div className="mx-auto max-w-[1200px]">
-        <div className="mb-6 text-center md:mb-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
+    <section className="px-[1.4rem] pb-24 pt-14 md:pb-32 md:pt-24">
+      <div className="mx-auto max-w-[1160px]">
+        <div className="mb-12 text-center md:mb-16">
+          <p className="text-[1.05rem] font-semibold tracking-[-0.014em] text-[rgba(var(--kw-accent-rgb),1)]">
             Motivation Grid
           </p>
-          <h1 className="kw-marketing-display mt-2 text-balance text-3xl leading-tight text-[color:var(--kw-ink)] md:text-5xl">
+          <h1 className="kw-marketing-display mx-auto mt-2 max-w-[52rem] text-balance text-[clamp(2.4rem,5vw,4rem)] leading-[1.06] tracking-[-0.034em] text-[color:var(--kw-ink)]">
             100 Daily Creatives for Hifz, Qur&apos;an, and Progress
           </h1>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-[color:var(--kw-border)] bg-[color:var(--kw-border)] p-px shadow-[var(--kw-shadow-soft)]">
-          <div className="grid gap-px bg-[color:var(--kw-border)] [grid-template-columns:repeat(auto-fill,minmax(170px,1fr))] md:[grid-template-columns:repeat(auto-fill,minmax(220px,1fr))]">
+        <div className="overflow-hidden">
+          <div className="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(160px,1fr))] md:[grid-template-columns:repeat(auto-fill,minmax(216px,1fr))]">
             {MOTIVATION_TILES.map((tile, index) => (
               <button
                 key={`${tile.title}-${index}`}
@@ -178,23 +177,23 @@ export function MotivationClientPage() {
                 onClick={() => {
                   setActiveIndex(index);
                 }}
-                className={`relative aspect-[9/16] cursor-pointer overflow-hidden p-4 text-left md:p-5 ${tileBackgroundClass(index)}`}
+                className={`relative aspect-[9/16] cursor-pointer overflow-hidden rounded-[22px] p-4 text-left transition-transform duration-300 ease-[var(--kw-ease)] hover:scale-[1.015] motion-reduce:transition-none motion-reduce:hover:scale-100 md:p-5 ${tileBackgroundClass(index)}`}
                 aria-label={`Open creative: ${tile.title}`}
               >
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_18%,rgba(var(--kw-accent-rgb),0.22),transparent_45%),radial-gradient(circle_at_82%_88%,rgba(148,163,184,0.18),transparent_40%)]" />
+                <div className="hidden" />
                 <div className="relative flex h-full flex-col">
-                  <p className="inline-flex w-fit rounded-full border border-[color:var(--kw-border)] bg-[color:var(--kw-surface-strong)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-ink-2)]">
+                  <p className="inline-flex w-fit rounded-full bg-[color:var(--kw-fill-strong)] px-2.5 py-1 text-[0.72rem] font-semibold text-[color:var(--kw-ink-2)]">
                     {tile.category}
                   </p>
 
                   <div className="flex flex-1 flex-col items-center justify-center text-center">
                     <h2 className={`${splitGradientTextClass()} text-balance`}>{tile.title}</h2>
-                    <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
+                    <p className="mt-3 text-[0.74rem] font-medium text-[color:var(--kw-faint)]">
                       {tile.source}
                     </p>
                   </div>
 
-                  <p className="text-center text-[11px] font-semibold text-[color:var(--kw-teal-800)]">
+                  <p className="text-center text-[0.78rem] font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
                     Join Hifzer
                   </p>
                 </div>
@@ -203,8 +202,8 @@ export function MotivationClientPage() {
           </div>
         </div>
 
-        <p className="mt-6 text-center text-xs text-[color:var(--kw-faint)]">
-          <TrackedLink href="/" telemetryName="motivation.back-home" className="underline underline-offset-2">
+        <p className="mt-14 text-center text-[1.02rem] text-[color:var(--kw-faint)]">
+          <TrackedLink href="/" telemetryName="motivation.back-home" className="text-[rgba(var(--kw-accent-rgb),1)] underline-offset-2 hover:underline">
             Back to home
           </TrackedLink>
         </p>
@@ -212,7 +211,7 @@ export function MotivationClientPage() {
 
       {activeTile ? (
         <div
-          className="fixed inset-0 z-[90] bg-[rgba(11,18,32,0.84)] p-3 backdrop-blur-sm md:p-6"
+          className="fixed inset-0 z-[90] bg-black/70 p-3 backdrop-blur-md md:p-6"
           onClick={() => {
             setActiveIndex(null);
           }}
@@ -223,7 +222,7 @@ export function MotivationClientPage() {
               setActiveIndex(null);
             }}
             aria-label="Close full screen creative"
-            className="absolute right-4 top-4 z-[91] inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-black/25 text-white"
+            className="absolute right-4 top-4 z-[91] inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white transition-colors duration-200 hover:bg-white/25"
           >
             <X size={18} />
           </button>
@@ -233,22 +232,22 @@ export function MotivationClientPage() {
               onClick={(event) => {
                 event.stopPropagation();
               }}
-              className={`relative aspect-[9/16] h-full max-h-full w-full max-w-[560px] overflow-hidden rounded-2xl p-6 shadow-[0_20px_50px_rgba(0,0,0,0.35)] md:p-8 ${tileBackgroundClass(activeIndex ?? 0)}`}
+              className={`relative aspect-[9/16] h-full max-h-full w-full max-w-[560px] overflow-hidden rounded-[28px] p-6 shadow-[var(--kw-shadow-float)] md:p-8 ${tileBackgroundClass(activeIndex ?? 0)}`}
             >
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_18%,rgba(var(--kw-accent-rgb),0.22),transparent_45%),radial-gradient(circle_at_82%_88%,rgba(148,163,184,0.18),transparent_40%)]" />
+              <div className="hidden" />
               <div className="relative flex h-full flex-col">
-                <p className="inline-flex w-fit rounded-full border border-[color:var(--kw-border)] bg-[color:var(--kw-surface-strong)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-ink-2)]">
+                <p className="inline-flex w-fit rounded-full bg-[color:var(--kw-fill-strong)] px-3 py-1.5 text-[0.84rem] font-semibold text-[color:var(--kw-ink-2)]">
                   {activeTile.category}
                 </p>
 
                 <div className="flex flex-1 flex-col items-center justify-center text-center">
                   <h2 className={`${splitGradientTextClass(true)} text-balance`}>{activeTile.title}</h2>
-                  <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
+                  <p className="mt-4 text-[0.9rem] font-medium text-[color:var(--kw-faint)]">
                     {activeTile.source}
                   </p>
                 </div>
 
-                <p className="text-center text-sm font-semibold text-[color:var(--kw-teal-800)]">
+                <p className="text-center text-[0.94rem] font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
                   Join Hifzer
                 </p>
               </div>

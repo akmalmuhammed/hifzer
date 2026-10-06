@@ -12,7 +12,7 @@ export default function QuranGlossaryPage() {
     <div className="pb-12 pt-10 md:pb-16 md:pt-14">
       <Link
         href="/quran"
-        className="inline-flex items-center gap-2 rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-white"
+        className="-ml-2 inline-flex min-h-11 items-center gap-1 rounded-full px-2.5 text-[0.94rem] font-medium text-[rgba(var(--kw-accent-rgb),1)] transition-colors duration-200 hover:bg-[rgba(var(--kw-accent-rgb),0.08)]"
       >
         <ArrowLeft size={16} />
         Back
@@ -20,12 +20,12 @@ export default function QuranGlossaryPage() {
 
       <div className="mt-6">
         <Pill tone="neutral">Qur&apos;an Library</Pill>
-        <h1 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
+        <h1 className="kw-page-title mt-4 text-balance text-[color:var(--kw-ink)]">
           Seek meaning. Walk the path of knowledge.
         </h1>
-        <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
+        <p className="kw-page-subtitle mt-3 text-[color:var(--kw-muted)]">
           Every term you learn is a step Allah rewards.
-          <span className="ml-2 inline-flex items-center rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2 py-0.5 align-middle text-[10px] font-semibold leading-none tracking-[0.08em] text-[color:var(--kw-faint)]">
+          <span className="ml-2 inline-flex items-center rounded-full bg-[color:var(--kw-fill-strong)] px-2.5 py-1 align-middle text-xs font-medium leading-none text-[color:var(--kw-faint)]">
             Sahih Muslim 2699a
           </span>
         </p>

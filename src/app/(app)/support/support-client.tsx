@@ -73,19 +73,19 @@ export function SupportClient(props: { hasPortal?: boolean }) {
 
   function renderSupportPayment() {
     return (
-      <Card id="paid-support" className={`${styles.panel} ${styles.paymentPanel} px-4 py-4 sm:px-5 sm:py-5`}>
+      <Card id="paid-support" className={`${styles.panel} ${styles.paymentPanel} px-5 py-5 sm:px-7 sm:py-7`}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <ShieldCheck size={16} className="text-[color:var(--kw-ink-2)]" />
-              <p className="text-sm font-semibold text-[color:var(--kw-ink)]">One-time premium</p>
+              <ShieldCheck size={16} className="text-[rgba(var(--kw-accent-rgb),1)]" />
+              <p className="text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]">One-time premium</p>
             </div>
-            <h2 className="mt-3 max-w-[20ch] text-balance text-3xl font-[family-name:var(--font-kw-display)] tracking-tight text-[color:var(--kw-ink)] sm:text-[2.2rem]">
+            <h2 className="mt-3 max-w-[20ch] text-balance text-3xl font-[family-name:var(--font-kw-display)] font-semibold leading-[1.08] tracking-[-0.03em] text-[color:var(--kw-ink)] sm:text-[2.2rem]">
               Unlock Hifzer premium with a one-time payment.
             </h2>
           </div>
           <div className={styles.purchaseBadge}>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">
+            <p className="text-[0.8rem] font-medium text-[color:var(--kw-faint)]">
               Checkout
             </p>
             <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">No subscription</p>
@@ -94,15 +94,15 @@ export function SupportClient(props: { hasPortal?: boolean }) {
         <p className="mt-4 max-w-[62ch] text-sm leading-7 text-[color:var(--kw-muted)]">
           One checkout unlocks premium access and helps support Hifzer development.
         </p>
-        <div className="mt-4 grid gap-2 sm:grid-cols-3">
+        <div className="mt-5 grid gap-2.5 sm:grid-cols-3">
           {PAYMENT_REASONS.map((reason) => (
             <div key={reason} className={styles.reasonCard}>
-              <CheckCircle2 size={15} className="mt-0.5 text-[rgba(var(--kw-accent-rgb),1)]" />
+              <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-[rgba(var(--kw-accent-rgb),1)]" />
               <p className="text-sm leading-6 text-[color:var(--kw-ink-2)]">{reason}</p>
             </div>
           ))}
         </div>
-        <div className="mt-4">
+        <div className="mt-6 border-t border-[color:var(--kw-border-2)] pt-6">
           <SupportCheckoutCard hasPortal={props.hasPortal} />
         </div>
       </Card>
@@ -131,23 +131,23 @@ export function SupportClient(props: { hasPortal?: boolean }) {
         )}
       />
 
-      <section className={`kw-fade-in ${styles.hero} px-5 py-5 sm:px-6`}>
-        <div className="relative grid gap-3 lg:grid-cols-2">
+      <section className={`kw-fade-in ${styles.hero}`}>
+        <div className="relative grid gap-4 lg:grid-cols-2">
           <div className={styles.choiceCard}>
             <div className="flex flex-wrap items-center gap-2">
               <Pill tone="accent">Free</Pill>
-              <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
+              <span className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">
                 Usually 24-48 hours
               </span>
             </div>
-            <h2 className="mt-4 text-2xl font-[family-name:var(--font-kw-display)] tracking-tight text-[color:var(--kw-ink)]">
+            <h2 className="mt-4 text-[1.6rem] font-[family-name:var(--font-kw-display)] font-semibold leading-[1.1] tracking-[-0.025em] text-[color:var(--kw-ink)]">
               Report a problem
             </h2>
             <p className="mt-2 max-w-[54ch] text-sm leading-7 text-[color:var(--kw-muted)]">
               Use this for broken pages, blocked flows, confusing behavior, account access problems, or billing
               questions.
             </p>
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-5 flex flex-wrap gap-2">
               <a href={mailtoHref}>
                 <Button className="gap-2">
                   Open support email <Mail size={15} />
@@ -162,17 +162,17 @@ export function SupportClient(props: { hasPortal?: boolean }) {
           <div className={styles.choiceCard}>
             <div className="flex flex-wrap items-center gap-2">
               <Pill tone="brand">One-time</Pill>
-              <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
+              <span className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">
                 No subscription
               </span>
             </div>
-            <h2 className="mt-4 text-2xl font-[family-name:var(--font-kw-display)] tracking-tight text-[color:var(--kw-ink)]">
+            <h2 className="mt-4 text-[1.6rem] font-[family-name:var(--font-kw-display)] font-semibold leading-[1.1] tracking-[-0.025em] text-[color:var(--kw-ink)]">
               Unlock premium
             </h2>
             <p className="mt-2 max-w-[54ch] text-sm leading-7 text-[color:var(--kw-muted)]">
               One payment, no subscription. Premium access plus support for ongoing development.
             </p>
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-5 flex flex-wrap gap-2">
               <Link href="#paid-support">
                 <Button variant="secondary" className="gap-2">
                   See premium options <ArrowRight size={15} />
@@ -193,7 +193,7 @@ export function SupportClient(props: { hasPortal?: boolean }) {
         </div>
 
         <div className="kw-fade-in" style={{ animationDelay: "100ms" }}>
-          <Card className={`${styles.panel} px-4 py-4 sm:px-5 sm:py-5`}>
+          <Card className={`${styles.panel} px-5 py-5 sm:px-7 sm:py-7`}>
             <div className="flex items-center gap-2">
               <ShieldCheck size={16} className="text-[color:var(--kw-ink-2)]" />
               <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Support policy</p>

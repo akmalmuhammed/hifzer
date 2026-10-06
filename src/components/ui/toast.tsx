@@ -68,19 +68,19 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
 function toneClasses(tone: ToastTone): string {
   if (tone === "success") {
-    return "border-[color:var(--kw-toast-success-border)] bg-[color:var(--kw-toast-success-bg)] text-[color:var(--kw-toast-success-fg)]";
+    return "[&_p:first-of-type]:text-[color:var(--kw-lime-600)]";
   }
   if (tone === "warning") {
-    return "border-[color:var(--kw-toast-warning-border)] bg-[color:var(--kw-toast-warning-bg)] text-[color:var(--kw-toast-warning-fg)]";
+    return "[&_p:first-of-type]:text-[color:var(--kw-ember-600)]";
   }
-  return "border-[color:var(--kw-toast-neutral-border)] bg-[color:var(--kw-toast-neutral-bg)] text-[color:var(--kw-toast-neutral-fg)]";
+  return "[&_p:first-of-type]:text-[color:var(--kw-ink)]";
 }
 
 function ToastViewport(props: { items: ToastItem[]; onDismiss: (id: string) => void }) {
   const { items, onDismiss } = props;
   return (
     <div
-      className="pointer-events-none fixed right-4 top-4 z-[100] flex w-[min(420px,calc(100vw-2rem))] flex-col gap-2"
+      className="pointer-events-none fixed right-4 top-4 z-[100] flex w-[min(400px,calc(100vw-2rem))] flex-col gap-2.5"
       aria-live="polite"
       aria-relevant="additions"
     >
@@ -88,21 +88,21 @@ function ToastViewport(props: { items: ToastItem[]; onDismiss: (id: string) => v
         <div
           key={item.id}
           className={clsx(
-            "pointer-events-auto rounded-2xl border px-3 py-2 shadow-[var(--kw-shadow-soft)] backdrop-blur",
+            "kw-material pointer-events-auto rounded-[20px] border border-[color:var(--kw-border-2)] px-4 py-3 text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-float)]",
             toneClasses(item.tone ?? "neutral"),
           )}
         >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold">{item.title}</p>
+              <p className="truncate text-[0.94rem] font-semibold tracking-[-0.01em]">{item.title}</p>
               {item.message ? (
-                <p className="mt-0.5 line-clamp-2 text-sm opacity-80">{item.message}</p>
+                <p className="mt-0.5 line-clamp-2 text-sm leading-[1.4] text-[color:var(--kw-muted)]">{item.message}</p>
               ) : null}
             </div>
             <button
               type="button"
               onClick={() => onDismiss(item.id)}
-              className="rounded-md p-1 opacity-70 transition hover:opacity-100 focus-visible:opacity-100"
+              className="rounded-full p-1.5 text-[color:var(--kw-faint)] transition duration-200 hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)] focus-visible:text-[color:var(--kw-ink)]"
               aria-label="Dismiss notification"
             >
               <X size={16} />

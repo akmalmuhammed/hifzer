@@ -14,7 +14,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       type="button"
       onClick={toggleMode}
       className={clsx(
-        "relative grid h-[var(--kw-control-md-height)] w-[var(--kw-control-md-height)] place-items-center rounded-[var(--kw-control-md-radius)] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] transition hover:bg-[color:var(--kw-hover-soft)] active:scale-95",
+        "relative grid h-[var(--kw-control-md-height)] w-[var(--kw-control-md-height)] place-items-center rounded-[var(--kw-control-md-radius)] bg-[color:var(--kw-fill-strong)] transition-colors hover:bg-[color:var(--kw-hover-strong)] active:scale-95",
         className
       )}
       title={`Switch to ${isDark ? "light" : "dark"} mode`}

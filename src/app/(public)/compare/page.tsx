@@ -13,12 +13,12 @@ export const metadata: Metadata = {
 
 export default function ComparePage() {
   return (
-    <div className="pb-12 pt-10 md:pb-16 md:pt-14">
+    <div className="mx-auto w-full max-w-[1160px] px-[1.4rem] pb-24 pt-14 text-center md:pb-32 md:pt-24">
       <Pill tone="neutral">Compare</Pill>
-      <h1 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
+      <h1 className="mx-auto mt-5 max-w-[56rem] text-balance font-[family-name:var(--font-kw-display)] text-[clamp(2.6rem,5.8vw,4.5rem)] font-semibold leading-[1.05] tracking-[-0.035em] text-[color:var(--kw-ink)]">
         Built for retention, not streaks.
       </h1>
-      <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
+      <p className="mx-auto mt-5 max-w-2xl text-[clamp(1.1rem,1.6vw,1.3rem)] leading-[1.42] tracking-[-0.014em] text-[color:var(--kw-muted)]">
         Most tools track activity. Hifzer protects the loop: read with trusted sources, review what may fade,
         save what matters, and return tomorrow without starting over.
       </p>

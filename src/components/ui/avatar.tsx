@@ -34,24 +34,24 @@ export function Avatar(props: {
   const size = props.size ?? 40;
   const seed = (props.seed ?? props.name).trim() || "kitewave";
   const pick = GRADIENTS[hash(seed) % GRADIENTS.length]!;
-  const [a, b] = pick;
+  const [a] = pick;
 
   return (
     <div
       className={clsx(
-        "grid shrink-0 place-items-center rounded-2xl border border-[color:var(--kw-border-2)]",
-        "text-white shadow-[var(--kw-shadow-soft)]",
+        "grid shrink-0 place-items-center rounded-full",
+        "text-white",
         props.className,
       )}
       style={{
         width: size,
         height: size,
-        background: `radial-gradient(14px 14px at 30% 30%, rgba(255,255,255,0.85), rgba(255,255,255,0.0) 65%), linear-gradient(135deg, ${a}, ${b})`,
+        background: a,
       }}
       aria-label={props.name}
       title={props.name}
     >
-      <span className="text-xs font-semibold tracking-tight">{initials(props.name)}</span>
+      <span className="text-xs font-semibold tracking-[-0.01em]">{initials(props.name)}</span>
     </div>
   );
 }

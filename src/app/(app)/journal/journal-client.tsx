@@ -4139,7 +4139,7 @@ export function JournalClient(props: {
       />
 
       {props.syncEnabled && (syncIssue || pendingMutations.length > 0) ? (
-        <Card className="border-[rgba(var(--kw-accent-rgb),0.18)] bg-[rgba(var(--kw-accent-rgb),0.06)]">
+        <Card className="border-transparent bg-[rgba(var(--kw-accent-rgb),0.1)] shadow-none">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold text-[color:var(--kw-ink)]">

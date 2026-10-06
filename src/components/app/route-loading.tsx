@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Card } from "@/components/ui/card";
 
 function SkeletonBlock(props: { className: string }) {
-  return <div className={`animate-pulse rounded-[18px] bg-[color:var(--kw-skeleton)] ${props.className}`} />;
+  return <div className={`animate-pulse rounded-[12px] bg-[color:var(--kw-skeleton)] motion-reduce:animate-none ${props.className}`} />;
 }
 
 function LoadingHeader(props: {
@@ -38,7 +38,7 @@ export function GenericAppRouteLoading() {
           <SkeletonBlock className="h-8 w-28 rounded-full" />
         </div>
         <SkeletonBlock className="h-12 w-full" />
-        <SkeletonBlock className="h-28 w-full rounded-[22px]" />
+        <SkeletonBlock className="h-28 w-full rounded-[16px]" />
       </Card>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -67,13 +67,13 @@ export function GenericAppRouteLoading() {
           <SkeletonBlock className="h-5 w-36" />
           <SkeletonBlock className="h-4 w-5/6" />
           <SkeletonBlock className="h-4 w-2/3" />
-          <SkeletonBlock className="h-24 w-full rounded-[22px]" />
+          <SkeletonBlock className="h-24 w-full rounded-[16px]" />
         </Card>
         <Card className="space-y-3">
           <SkeletonBlock className="h-5 w-32" />
           <SkeletonBlock className="h-4 w-3/4" />
           <SkeletonBlock className="h-4 w-2/3" />
-          <SkeletonBlock className="h-24 w-full rounded-[22px]" />
+          <SkeletonBlock className="h-24 w-full rounded-[16px]" />
         </Card>
       </div>
     </LoadingShell>
@@ -91,12 +91,12 @@ export function DashboardRouteLoading() {
           <SkeletonBlock className="h-8 w-32 rounded-full" />
           <SkeletonBlock className="h-8 w-24 rounded-full" />
         </div>
-        <SkeletonBlock className="h-16 w-full rounded-[22px]" />
+        <SkeletonBlock className="h-16 w-full rounded-[16px]" />
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <SkeletonBlock className="h-24 w-full rounded-[22px]" />
-          <SkeletonBlock className="h-24 w-full rounded-[22px]" />
-          <SkeletonBlock className="h-24 w-full rounded-[22px]" />
-          <SkeletonBlock className="h-24 w-full rounded-[22px]" />
+          <SkeletonBlock className="h-24 w-full rounded-[16px]" />
+          <SkeletonBlock className="h-24 w-full rounded-[16px]" />
+          <SkeletonBlock className="h-24 w-full rounded-[16px]" />
+          <SkeletonBlock className="h-24 w-full rounded-[16px]" />
         </div>
       </Card>
 
@@ -104,14 +104,14 @@ export function DashboardRouteLoading() {
         <Card className="space-y-3">
           <SkeletonBlock className="h-5 w-36" />
           <SkeletonBlock className="h-4 w-5/6" />
-          <SkeletonBlock className="h-36 w-full rounded-[22px]" />
+          <SkeletonBlock className="h-36 w-full rounded-[16px]" />
         </Card>
         <Card className="space-y-3">
           <SkeletonBlock className="h-5 w-28" />
           <SkeletonBlock className="h-4 w-2/3" />
-          <SkeletonBlock className="h-14 w-full rounded-[18px]" />
-          <SkeletonBlock className="h-14 w-full rounded-[18px]" />
-          <SkeletonBlock className="h-14 w-full rounded-[18px]" />
+          <SkeletonBlock className="h-14 w-full rounded-[14px]" />
+          <SkeletonBlock className="h-14 w-full rounded-[14px]" />
+          <SkeletonBlock className="h-14 w-full rounded-[14px]" />
         </Card>
       </div>
     </LoadingShell>
@@ -129,7 +129,7 @@ export function DuaRouteLoading() {
           <SkeletonBlock className="h-9 w-28 rounded-full" />
           <SkeletonBlock className="h-9 w-24 rounded-full" />
         </div>
-        <SkeletonBlock className="h-32 w-full rounded-[22px]" />
+        <SkeletonBlock className="h-32 w-full rounded-[16px]" />
       </Card>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -167,7 +167,7 @@ export function JournalRouteLoading() {
           <SkeletonBlock className="h-8 w-28 rounded-full" />
         </div>
         <SkeletonBlock className="h-12 w-full" />
-        <SkeletonBlock className="h-36 w-full rounded-[22px]" />
+        <SkeletonBlock className="h-36 w-full rounded-[16px]" />
         <div className="flex flex-wrap gap-2">
           <SkeletonBlock className="h-10 w-28" />
           <SkeletonBlock className="h-10 w-32" />
@@ -207,9 +207,9 @@ export function SettingsRouteLoading() {
       </Card>
 
       <div className="flex gap-2 overflow-hidden">
-        <SkeletonBlock className="h-24 min-w-[190px] flex-1 rounded-[20px]" />
-        <SkeletonBlock className="h-24 min-w-[190px] flex-1 rounded-[20px]" />
-        <SkeletonBlock className="h-24 min-w-[190px] flex-1 rounded-[20px]" />
+        <SkeletonBlock className="h-24 min-w-[190px] flex-1 rounded-[16px]" />
+        <SkeletonBlock className="h-24 min-w-[190px] flex-1 rounded-[16px]" />
+        <SkeletonBlock className="h-24 min-w-[190px] flex-1 rounded-[16px]" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

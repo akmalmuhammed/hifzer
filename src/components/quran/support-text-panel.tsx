@@ -27,18 +27,18 @@ export function SupportTextPanel({
   return (
     <div
       className={clsx(
-        "rounded-[18px] border px-3 py-3",
+        "border-t pt-4",
         isTransliteration
-          ? "border-[rgba(245,158,11,0.18)] bg-[rgba(245,158,11,0.08)]"
-          : "border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)]",
+          ? "border-[color:var(--kw-border-2)]"
+          : "border-[color:var(--kw-border-2)]",
         className,
       )}
       {...props}
     >
       <p
         className={clsx(
-          "text-[10px] font-semibold uppercase tracking-[0.15em]",
-          isTransliteration ? "text-[rgba(180,83,9,0.9)]" : "text-[color:var(--kw-faint)]",
+          "text-[0.8rem] font-semibold",
+          "text-[color:var(--kw-faint)]",
         )}
       >
         {label ?? labelForKind(kind)}
@@ -46,9 +46,9 @@ export function SupportTextPanel({
       <div
         dir={dir}
         className={clsx(
-          "mt-2 text-sm leading-7",
+          "mt-1.5 text-[1.02rem] leading-[1.65]",
           isTransliteration
-            ? "font-medium italic tracking-[0.01em] text-[color:var(--kw-ink-2)]"
+            ? "italic text-[color:var(--kw-ink-2)]"
             : "text-[color:var(--kw-muted)]",
           alignClassName,
         )}

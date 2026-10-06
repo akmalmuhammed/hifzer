@@ -18,7 +18,7 @@ function toneRamp(tone: Tone): string[] {
     return ["rgba(234,88,12,0.10)", "rgba(234,88,12,0.18)", "rgba(234,88,12,0.28)", "rgba(234,88,12,0.42)"];
   }
   if (tone === "neutral") {
-    return ["rgba(11,18,32,0.06)", "rgba(11,18,32,0.10)", "rgba(11,18,32,0.14)", "rgba(11,18,32,0.20)"];
+    return ["rgba(118,118,128,0.12)", "rgba(118,118,128,0.24)", "rgba(118,118,128,0.38)", "rgba(118,118,128,0.56)"];
   }
   return ["rgba(10,138,119,0.10)", "rgba(10,138,119,0.18)", "rgba(10,138,119,0.28)", "rgba(10,138,119,0.42)"];
 }
@@ -57,7 +57,7 @@ export function HeatStrip(props: {
 
   function colorFor(v: number): string {
     if (v <= 0) {
-      return "rgba(11,18,32,0.06)";
+      return "var(--kw-fill)";
     }
     const pct = v / max;
     if (pct < 0.34) {
@@ -95,7 +95,7 @@ export function HeatStrip(props: {
               height={cell}
               rx="3"
               fill={colorFor(d.value)}
-              stroke="rgba(11,18,32,0.10)"
+              stroke="transparent"
               strokeWidth="0.5"
               style={
                 props.animate
@@ -125,7 +125,7 @@ export function HeatStrip(props: {
 
       {hovered ? (
         <div
-          className="pointer-events-none absolute rounded-2xl border border-[color:var(--kw-border-2)] bg-white/85 px-3 py-2 text-xs shadow-[var(--kw-shadow-soft)] backdrop-blur"
+          className="pointer-events-none absolute rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-material)] px-3 py-2 text-xs tabular-nums shadow-[var(--kw-shadow)] backdrop-blur-xl"
           style={{
             left: hovered.x + 10,
             top: hovered.y + 10,

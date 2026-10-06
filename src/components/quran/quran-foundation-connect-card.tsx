@@ -76,7 +76,7 @@ export function QuranFoundationConnectCard(props: QuranFoundationConnectCardProp
   return (
     <Card
       className={clsx(
-        "border border-[rgba(var(--kw-accent-rgb),0.16)] bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(246,248,252,0.94))]",
+        "",
         props.className,
       )}
     >
@@ -97,13 +97,13 @@ export function QuranFoundationConnectCard(props: QuranFoundationConnectCardProp
           ) : null}
 
           {feedback ? (
-            <div className="mt-3 rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/75 px-4 py-3 text-sm text-[color:var(--kw-muted)]">
+            <div className="mt-3 rounded-[14px] bg-[color:var(--kw-fill)] px-4 py-3 text-sm text-[color:var(--kw-muted)]">
               {feedback}
             </div>
           ) : null}
         </div>
 
-        <span className="grid h-12 w-12 place-items-center rounded-[22px] border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.10)] text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)]">
+        <span className="grid h-12 w-12 place-items-center rounded-full bg-[rgba(var(--kw-accent-rgb),0.10)] text-[rgba(var(--kw-accent-rgb),1)]">
           {linked ? <CheckCircle2 size={18} /> : <Link2 size={18} />}
         </span>
       </div>

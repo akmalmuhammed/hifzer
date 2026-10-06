@@ -16,13 +16,13 @@ export function SettingsDetailHeader(props: {
       eyebrow={(
         <nav
           aria-label="Breadcrumb"
-          className="flex flex-wrap items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]"
+          className="flex flex-wrap items-center gap-1 text-[0.86rem] font-medium text-[color:var(--kw-faint)]"
         >
-          <Link href="/settings" className="transition hover:text-[color:var(--kw-ink)]">
+          <Link href="/settings" className="text-[rgba(var(--kw-accent-rgb),1)] transition-opacity duration-200 hover:opacity-70">
             Settings
           </Link>
           <ChevronRight size={14} aria-hidden="true" />
-          <span className="text-[color:var(--kw-ink)]">{props.title}</span>
+          <span className="text-[color:var(--kw-faint)]">{props.title}</span>
         </nav>
       )}
       title={props.title}

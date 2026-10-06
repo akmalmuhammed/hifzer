@@ -217,22 +217,22 @@ export function OnboardingAssessmentClient(props: { localStorageUserId: string |
         },
       ]}
     >
-      <Card>
-        <div className="max-w-2xl">
-          <p className="text-sm leading-7 text-[color:var(--kw-muted)]">
+      <Card className="border-0! bg-transparent! p-0! shadow-none!">
+        <div className="mx-auto max-w-xl text-center">
+          <p className="text-[0.94rem] leading-[1.5] text-[color:var(--kw-faint)]">
             This one step now covers your pace and your starting lane so onboarding stays short.
           </p>
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3">
+          <div className="rounded-[18px] bg-[color:var(--kw-card)] px-5 py-5">
             <label
               htmlFor="assessment-daily-minutes"
-              className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]"
+              className="text-[1.06rem] font-semibold tracking-[-0.015em] text-[color:var(--kw-ink)]"
             >
               Daily minutes
             </label>
-            <div className="mt-2 flex items-center gap-2">
+            <div className="mt-3 flex items-center gap-2.5">
               <Input
                 id="assessment-daily-minutes"
                 type="number"
@@ -241,18 +241,18 @@ export function OnboardingAssessmentClient(props: { localStorageUserId: string |
                 value={draft.dailyMinutes}
                 onChange={(e) => setDraft((d) => ({ ...d, dailyMinutes: Number(e.target.value) }))}
               />
-              <span className="text-sm font-semibold text-[color:var(--kw-muted)]">min</span>
+              <span className="text-[0.94rem] font-medium text-[color:var(--kw-muted)]">min</span>
             </div>
           </div>
 
-          <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3">
+          <div className="rounded-[18px] bg-[color:var(--kw-card)] px-5 py-5">
             <label
               htmlFor="assessment-practice-days"
-              className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]"
+              className="text-[1.06rem] font-semibold tracking-[-0.015em] text-[color:var(--kw-ink)]"
             >
               Practice days / week
             </label>
-            <div className="mt-2 flex items-center gap-2">
+            <div className="mt-3 flex items-center gap-2.5">
               <Input
                 id="assessment-practice-days"
                 type="number"
@@ -263,12 +263,12 @@ export function OnboardingAssessmentClient(props: { localStorageUserId: string |
                   setDraft((d) => ({ ...d, practiceDaysPerWeek: Number(e.target.value) }))
                 }
               />
-              <span className="text-sm font-semibold text-[color:var(--kw-muted)]">days</span>
+              <span className="text-[0.94rem] font-medium text-[color:var(--kw-muted)]">days</span>
             </div>
           </div>
 
-          <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+          <div className="rounded-[18px] bg-[color:var(--kw-card)] px-5 py-5">
+            <p className="text-[1.06rem] font-semibold tracking-[-0.015em] text-[color:var(--kw-ink)]">
               Plan bias
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -282,10 +282,10 @@ export function OnboardingAssessmentClient(props: { localStorageUserId: string |
                   type="button"
                   onClick={() => setDraft((d) => ({ ...d, planBias: opt.v as AssessmentDraft["planBias"] }))}
                   className={[
-                    "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
+                    "inline-flex h-11 items-center rounded-full px-5 text-[0.94rem] font-medium transition-colors duration-200",
                     draft.planBias === opt.v
-                      ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-                      : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)] hover:bg-white",
+                      ? "bg-[rgba(var(--kw-accent-rgb),1)] text-white"
+                      : "bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-strong)]",
                   ].join(" ")}
                 >
                   {opt.label}
@@ -294,11 +294,11 @@ export function OnboardingAssessmentClient(props: { localStorageUserId: string |
             </div>
           </div>
 
-          <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+          <div className="rounded-[18px] bg-[color:var(--kw-card)] px-5 py-5">
+            <p className="text-[1.06rem] font-semibold tracking-[-0.015em] text-[color:var(--kw-ink)]">
               Teacher mode
             </p>
-            <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+            <p className="mt-1 text-[0.94rem] leading-[1.45] text-[color:var(--kw-muted)]">
               Do you have a teacher who reviews your recitation?
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -311,10 +311,10 @@ export function OnboardingAssessmentClient(props: { localStorageUserId: string |
                   type="button"
                   onClick={() => setDraft((d) => ({ ...d, hasTeacher: opt.v }))}
                   className={[
-                    "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
+                    "inline-flex h-11 items-center rounded-full px-5 text-[0.94rem] font-medium transition-colors duration-200",
                     draft.hasTeacher === opt.v
-                      ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-                      : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)] hover:bg-white",
+                      ? "bg-[rgba(var(--kw-accent-rgb),1)] text-white"
+                      : "bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-strong)]",
                   ].join(" ")}
                 >
                   {opt.label}
@@ -323,14 +323,14 @@ export function OnboardingAssessmentClient(props: { localStorageUserId: string |
             </div>
           </div>
 
-          <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3 md:col-span-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+          <div className="rounded-[18px] bg-[color:var(--kw-card)] px-5 py-5 md:col-span-2">
+            <p className="text-[1.06rem] font-semibold tracking-[-0.015em] text-[color:var(--kw-ink)]">
               Start with
             </p>
-            <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+            <p className="mt-1 text-[0.94rem] leading-[1.45] text-[color:var(--kw-muted)]">
               Choose the surface that feels most helpful right now. You can move between them later.
             </p>
-            <div className="mt-3 grid gap-3 md:grid-cols-2">
+            <div className="mt-4 grid gap-2.5">
               {[
                 {
                   v: "hifz",
@@ -369,18 +369,18 @@ export function OnboardingAssessmentClient(props: { localStorageUserId: string |
                       }))
                     }
                     className={[
-                      "rounded-[20px] border px-4 py-3 text-left transition",
+                      "min-h-[4.5rem] rounded-[16px] px-4 py-3.5 text-left transition-colors duration-200",
                       active
-                        ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)]"
-                        : "border-[color:var(--kw-border-2)] bg-white/70 hover:bg-white",
+                        ? "bg-[rgba(var(--kw-accent-rgb),0.1)] [&_span]:bg-[rgba(var(--kw-accent-rgb),1)] [&_span]:text-white"
+                        : "bg-[color:var(--kw-fill)] hover:bg-[color:var(--kw-fill-strong)]",
                     ].join(" ")}
                   >
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center justify-between gap-4">
                       <div>
-                        <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{option.label}</p>
-                        <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">{option.body}</p>
+                        <p className="text-[1.02rem] font-semibold tracking-[-0.01em] text-[color:var(--kw-ink)]">{option.label}</p>
+                        <p className="mt-0.5 text-[0.94rem] leading-[1.45] text-[color:var(--kw-muted)]">{option.body}</p>
                       </div>
-                      <span className="grid h-9 w-9 place-items-center rounded-2xl border border-[color:var(--kw-border-2)] bg-white/80 text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[color:var(--kw-card)] text-[color:var(--kw-muted)] transition-colors duration-200">
                         {option.icon}
                       </span>
                     </div>
@@ -390,21 +390,21 @@ export function OnboardingAssessmentClient(props: { localStorageUserId: string |
             </div>
           </div>
 
-          <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3 md:col-span-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+          <div className="rounded-[18px] bg-[color:var(--kw-card)] px-5 py-5 md:col-span-2">
+            <p className="text-[1.06rem] font-semibold tracking-[-0.015em] text-[color:var(--kw-ink)]">
               Translation language
             </p>
-            <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+            <p className="mt-1 text-[0.94rem] leading-[1.45] text-[color:var(--kw-muted)]">
               This becomes your default across Qur&apos;an reading and session translation views.
             </p>
-            <label className="mt-3 block text-sm text-[color:var(--kw-muted)]">
+            <label className="mt-4 block text-[0.94rem] text-[color:var(--kw-muted)]">
               Language
               <select
                 value={draft.quranTranslationId}
                 onChange={(e) =>
                   setDraft((d) => ({ ...d, quranTranslationId: e.target.value as QuranTranslationId }))
                 }
-                className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 px-3 text-sm text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] outline-none transition focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)] md:max-w-[520px]"
+                className="mt-1.5 h-11 w-full rounded-[12px] border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-[0.94rem] text-[color:var(--kw-ink)] outline-none transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
               >
                 {QURAN_TRANSLATION_OPTIONS.map((option) => (
                   <option key={option.id} value={option.id}>
@@ -416,20 +416,20 @@ export function OnboardingAssessmentClient(props: { localStorageUserId: string |
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-          <div className="max-w-2xl">
-            <p className="text-xs text-[color:var(--kw-faint)]">
+        <div className="mt-8 flex flex-col-reverse items-center gap-6 text-center">
+          <div className="max-w-xl">
+            <p className="text-[0.84rem] leading-[1.45] text-[color:var(--kw-faint)]">
               Timezone detected: {draft.timezone}. Adjust it later if you travel often.
             </p>
-            <p className="mt-2 text-xs text-[color:var(--kw-faint)]">
+            <p className="mt-1 text-[0.84rem] leading-[1.45] text-[color:var(--kw-faint)]">
               Two quick steps from here: this page, then your starting point.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button onClick={startWithDefaults} variant="secondary" className="gap-2" loading={quickStarting}>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Button onClick={startWithDefaults} variant="secondary" className="min-w-[11rem] gap-2" loading={quickStarting}>
               Start with defaults <ArrowRight size={16} />
             </Button>
-            <Button onClick={saveAndNext} className="gap-2" loading={saving}>
+            <Button onClick={saveAndNext} className="min-w-[11rem] gap-2" loading={saving}>
               Continue <ArrowRight size={16} />
             </Button>
           </div>

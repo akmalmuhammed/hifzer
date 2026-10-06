@@ -17,10 +17,10 @@ export function DistractionFreeToggle(props: DistractionFreeToggleProps) {
       type="button"
       onClick={toggle}
       className={clsx(
-        "inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold shadow-[var(--kw-shadow-soft)] transition",
+        "inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium transition-colors duration-200",
         enabled
-          ? "border-[rgba(var(--kw-accent-rgb),0.3)] bg-[rgba(var(--kw-accent-rgb),0.14)] text-[rgba(var(--kw-accent-rgb),1)]"
-          : "border-[color:var(--kw-border-2)] bg-white/75 text-[color:var(--kw-ink)] hover:bg-white",
+          ? "bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+          : "bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-strong)]",
         props.className,
       )}
       aria-pressed={enabled}

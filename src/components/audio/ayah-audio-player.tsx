@@ -523,7 +523,7 @@ function AyahAudioPlayerInner(props: {
   return (
     <div
       className={clsx(
-        "rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-2 shadow-[var(--kw-shadow-soft)] sm:px-3",
+        "rounded-[18px] bg-[color:var(--kw-fill)] px-2.5 py-2 sm:px-3",
         props.className,
       )}
     >
@@ -536,10 +536,10 @@ function AyahAudioPlayerInner(props: {
             onClick={() => void onTogglePlayback()}
             disabled={disabled}
             className={clsx(
-              "grid h-11 w-11 shrink-0 place-items-center rounded-2xl border shadow-[var(--kw-shadow-soft)] transition",
+              "grid h-11 w-11 shrink-0 place-items-center rounded-full border transition-[background-color,transform] duration-200 active:scale-[0.96]",
               disabled
-                ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]"
-                : "border-[rgba(43,75,255,0.22)] bg-[rgba(43,75,255,0.10)] text-[rgba(31,54,217,1)] hover:bg-[rgba(43,75,255,0.14)]",
+                ? "cursor-not-allowed border-transparent bg-[color:var(--kw-fill)] text-[color:var(--kw-faint)]"
+                : "border-transparent bg-[rgba(var(--kw-accent-rgb),1)] text-white hover:bg-[rgba(var(--kw-accent-rgb),0.88)]",
             )}
             aria-label={
               loadError ? "Audio unavailable" : resolvingFallback ? "Loading audio" : playing ? "Pause" : "Play"
@@ -559,25 +559,25 @@ function AyahAudioPlayerInner(props: {
 
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline gap-2">
-              <p className="truncate text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+              <p className="truncate text-[0.8rem] font-semibold text-[color:var(--kw-ink-2)]">
                 Audio
               </p>
               {loadError ? (
-                <span className="text-xs text-[color:var(--kw-muted)]">Unavailable</span>
+                <span className="text-xs tabular-nums text-[color:var(--kw-faint)]">Unavailable</span>
               ) : resolvingFallback ? (
-                <span className="text-xs text-[color:var(--kw-muted)]">Loading</span>
+                <span className="text-xs tabular-nums text-[color:var(--kw-faint)]">Loading</span>
               ) : activeSrc ? (
-                <span className="text-xs text-[color:var(--kw-muted)]">
+                <span className="text-xs tabular-nums text-[color:var(--kw-faint)]">
                   {formatSeconds(currentTime)} / {formatSeconds(duration)}
                 </span>
               ) : (
-                <span className="text-xs text-[color:var(--kw-muted)]">Ready on demand</span>
+                <span className="text-xs tabular-nums text-[color:var(--kw-faint)]">Ready on demand</span>
               )}
             </div>
             <div className="relative mt-1 w-full min-w-24 max-w-72">
-              <div className="h-1.5 overflow-hidden rounded-full bg-black/[0.06]">
+              <div className="h-1 overflow-hidden rounded-full bg-[color:var(--kw-track)]">
                 <div
-                  className="h-full rounded-full bg-[rgba(31,54,217,0.75)] transition-[width]"
+                  className="h-full rounded-full bg-[rgba(var(--kw-accent-rgb),1)] transition-[width]"
                   style={{ width: `${progress01 * 100}%` }}
                 />
               </div>
@@ -621,10 +621,10 @@ function AyahAudioPlayerInner(props: {
             disabled={disabled}
             onClick={() => setRepeatCount((value) => (value >= 10 ? 1 : value + 1))}
             className={clsx(
-              "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-2xl border px-2 py-2 text-[11px] font-semibold shadow-[var(--kw-shadow-soft)] transition sm:gap-2 sm:px-2.5 sm:text-xs",
+              "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full border px-3 py-2 text-[11px] font-medium tabular-nums transition-colors duration-200 sm:px-3.5 sm:text-xs",
               disabled
-                ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]"
-                : "border-[color:var(--kw-border-2)] bg-white/80 text-[color:var(--kw-ink)] hover:bg-white",
+                ? "cursor-not-allowed border-transparent bg-[color:var(--kw-fill)] text-[color:var(--kw-faint)]"
+                : "border-transparent bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-strong)]",
             )}
             aria-label="Repeat count"
             title="Repeat"
@@ -638,10 +638,10 @@ function AyahAudioPlayerInner(props: {
             disabled={disabled}
             onClick={() => setSpeedIndex((value) => (value + 1) % SPEEDS.length)}
             className={clsx(
-              "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-2xl border px-2 py-2 text-[11px] font-semibold shadow-[var(--kw-shadow-soft)] transition sm:gap-2 sm:px-2.5 sm:text-xs",
+              "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full border px-3 py-2 text-[11px] font-medium tabular-nums transition-colors duration-200 sm:px-3.5 sm:text-xs",
               disabled
-                ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]"
-                : "border-[color:var(--kw-border-2)] bg-white/80 text-[color:var(--kw-ink)] hover:bg-white",
+                ? "cursor-not-allowed border-transparent bg-[color:var(--kw-fill)] text-[color:var(--kw-faint)]"
+                : "border-transparent bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-strong)]",
             )}
             aria-label="Playback speed"
             title="Speed"
@@ -656,12 +656,12 @@ function AyahAudioPlayerInner(props: {
               disabled={disabled}
               onClick={toggleAutoPlay}
               className={clsx(
-                "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-2xl border px-2 py-2 text-[11px] font-semibold shadow-[var(--kw-shadow-soft)] transition sm:gap-2 sm:px-2.5 sm:text-xs",
+                "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full border px-3 py-2 text-[11px] font-medium tabular-nums transition-colors duration-200 sm:px-3.5 sm:text-xs",
                 disabled
-                  ? "cursor-not-allowed border-[color:var(--kw-border-2)] bg-white/50 text-[color:var(--kw-faint)]"
+                  ? "cursor-not-allowed border-transparent bg-[color:var(--kw-fill)] text-[color:var(--kw-faint)]"
                   : autoPlayEnabled
-                    ? "border-[rgba(var(--kw-accent-rgb),0.30)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)] hover:bg-[rgba(var(--kw-accent-rgb),0.18)]"
-                    : "border-[color:var(--kw-border-2)] bg-white/80 text-[color:var(--kw-ink)] hover:bg-white",
+                    ? "border-transparent bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)] hover:bg-[rgba(var(--kw-accent-rgb),0.18)]"
+                    : "border-transparent bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-strong)]",
               )}
               aria-label={autoPlayEnabled ? "Auto play and advance is on" : "Auto play and advance is off"}
               title={autoPlayEnabled ? "Auto play and advance is on" : "Auto play and advance is off"}
@@ -680,18 +680,18 @@ function AyahAudioPlayerInner(props: {
           <button
             type="button"
             onClick={() => void retryAudio()}
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-3 py-2 text-xs font-semibold text-[color:var(--kw-ink)]"
+            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[color:var(--kw-fill-strong)] px-4 py-2 text-xs font-medium text-[color:var(--kw-ink)] transition-colors duration-200 hover:bg-[color:var(--kw-hover-strong)]"
           >
             <RefreshCw size={14} aria-hidden="true" />
             Try audio again
           </button>
           <Link
             href="/settings/reciter"
-            className="inline-flex min-h-11 items-center rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-3 py-2 text-xs font-semibold text-[color:var(--kw-ink)]"
+            className="inline-flex min-h-11 items-center rounded-full bg-[color:var(--kw-fill-strong)] px-4 py-2 text-xs font-medium text-[color:var(--kw-ink)] transition-colors duration-200 hover:bg-[color:var(--kw-hover-strong)]"
           >
             Choose another reciter
           </Link>
-          <span className="text-xs text-[color:var(--kw-muted)]">Text reading remains available.</span>
+          <span className="text-xs tabular-nums text-[color:var(--kw-faint)]">Text reading remains available.</span>
         </div>
       ) : null}
     </div>

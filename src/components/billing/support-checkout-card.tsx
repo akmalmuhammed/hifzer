@@ -85,10 +85,10 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
   return (
     <div className={props.className}>
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[color:var(--kw-faint)]">
+        <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">
           Choose a starting amount
         </p>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
           {PRESETS.map((option) => {
             const formatted = option.amount.toFixed(2);
             const active = normalizedAmount === formatted;
@@ -98,33 +98,33 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
                 type="button"
                 onClick={() => setAmount(formatted)}
                 className={clsx(
-                  "group rounded-[18px] border px-3 py-3 text-left transition",
+                  "group flex flex-col rounded-[16px] border px-4 py-3.5 text-left transition-colors duration-200",
                   active
-                    ? "border-[rgba(var(--kw-accent-rgb),0.32)] bg-[rgba(var(--kw-accent-rgb),0.12)] shadow-[var(--kw-shadow-soft)]"
-                    : "border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-strong)] hover:border-[rgba(var(--kw-accent-rgb),0.18)] hover:bg-[color:var(--kw-card-strong)]",
+                    ? "border-[rgba(var(--kw-accent-rgb),1)] bg-[rgba(var(--kw-accent-rgb),0.08)]"
+                    : "border-transparent bg-[color:var(--kw-fill)] hover:bg-[color:var(--kw-fill-strong)]",
                 )}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-base font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                    <p className="text-[0.94rem] font-medium text-[color:var(--kw-ink-2)]">
                       {option.label}
                     </p>
-                    <p className="mt-1 text-sm text-[color:var(--kw-muted)]">${option.amount}</p>
+                    <p className="mt-1 text-[2rem] font-semibold leading-[1.05] tracking-[-0.03em] tabular-nums text-[color:var(--kw-ink)]">${option.amount}</p>
                   </div>
                   {option.recommended ? <Pill tone="accent">Recommended</Pill> : null}
                 </div>
-                <p className="mt-3 text-sm leading-6 text-[color:var(--kw-muted)]">{option.detail}</p>
+                <p className="mt-2 text-sm leading-6 text-[color:var(--kw-muted)]">{option.detail}</p>
               </button>
             );
           })}
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2">
         {TRUST_POINTS.map((point) => (
           <span
             key={point}
-            className="inline-flex items-center gap-2 rounded-full border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3 py-1.5 text-xs font-semibold text-[color:var(--kw-ink-2)]"
+            className="inline-flex items-center gap-1.5 text-[0.82rem] font-medium text-[color:var(--kw-ink-2)] [&_svg]:h-3.5 [&_svg]:w-3.5"
           >
             <Check size={12} className="text-[rgba(var(--kw-accent-rgb),1)]" />
             {point}
@@ -132,7 +132,7 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
         ))}
       </div>
 
-      <div className="mt-5 rounded-[20px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] p-4">
+      <div className="mt-5 border-t border-[color:var(--kw-border-2)] pt-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <label className="block text-sm font-semibold text-[color:var(--kw-ink)]" htmlFor="support-amount">
@@ -143,8 +143,8 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
             </p>
           </div>
           {selectedPreset ? (
-            <div className="rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[rgba(var(--kw-accent-rgb),0.08)] px-3 py-2">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
+            <div className="rounded-[12px] bg-[rgba(var(--kw-accent-rgb),0.1)] px-3.5 py-2">
+              <p className="text-[0.8rem] font-medium text-[color:var(--kw-faint)]">
                 Selected amount
               </p>
               <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">{selectedPreset.label}</p>
@@ -155,11 +155,11 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
         <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
           <div
             className={clsx(
-              "flex h-11 min-w-[220px] items-center rounded-xl border bg-[color:var(--kw-card-strong)] px-3 text-sm text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] transition",
+              "flex h-[var(--kw-control-lg-height)] min-w-[220px] items-center rounded-[12px] border bg-[color:var(--kw-surface)] px-3.5 text-[1rem] tabular-nums text-[color:var(--kw-ink)] transition-[border-color,box-shadow] duration-200",
               "focus-within:border-[rgba(var(--kw-accent-rgb),0.55)] focus-within:ring-4 focus-within:ring-[rgba(var(--kw-accent-rgb),0.16)]",
               amountError
                 ? "border-[rgba(225,29,72,0.42)] bg-[rgba(225,29,72,0.06)] focus-within:border-[rgba(225,29,72,0.6)] focus-within:ring-[rgba(225,29,72,0.18)]"
-                : "border-[color:var(--kw-border-2)]",
+                : "border-[color:var(--kw-border)]",
             )}
           >
             <span className="mr-2 text-[color:var(--kw-muted)]">$</span>
@@ -248,9 +248,9 @@ export function SupportCheckoutCard(props: { className?: string; hasPortal?: boo
         ) : null}
       </div>
 
-      <div className="mt-4 rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.18)] bg-[rgba(var(--kw-accent-rgb),0.08)] p-4">
+      <div className="mt-5 rounded-[16px] bg-[color:var(--kw-fill)] p-4">
         <div className="flex items-start gap-3">
-          <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-white/60 text-[rgba(var(--kw-accent-rgb),1)]">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-[rgba(var(--kw-accent-rgb),0.1)] text-[rgba(var(--kw-accent-rgb),1)]">
             <LifeBuoy size={18} />
           </span>
           <div className="min-w-0">

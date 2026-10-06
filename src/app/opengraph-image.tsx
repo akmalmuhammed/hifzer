@@ -17,22 +17,12 @@ export default function OpenGraphImage() {
           display: "flex",
           position: "relative",
           overflow: "hidden",
-          background:
-            "radial-gradient(circle at top left, rgba(10,138,119,0.28), transparent 30%), radial-gradient(circle at top right, rgba(31,54,217,0.24), transparent 32%), linear-gradient(135deg, #08111f 0%, #0b1220 55%, #132033 100%)",
-          color: "#f8fafc",
+          background: "#1d1d1f",
+          color: "#f5f5f7",
           fontFamily:
             "Inter, Plus Jakarta Sans, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
         }}
       >
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(135deg, rgba(255,255,255,0.08), transparent 36%), repeating-linear-gradient(135deg, rgba(255,255,255,0.025) 0, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 18px)",
-          }}
-        />
-
         <div
           style={{
             display: "flex",
@@ -49,12 +39,8 @@ export default function OpenGraphImage() {
               alignSelf: "flex-start",
               alignItems: "center",
               gap: "14px",
-              padding: "12px 20px",
-              borderRadius: "999px",
-              border: "1px solid rgba(255,255,255,0.12)",
-              background: "rgba(255,255,255,0.08)",
-              color: "#cbd5e1",
-              fontSize: 24,
+              color: "#f5f5f7",
+              fontSize: 30,
               fontWeight: 600,
               letterSpacing: "-0.02em",
             }}
@@ -64,8 +50,7 @@ export default function OpenGraphImage() {
                 width: "14px",
                 height: "14px",
                 borderRadius: "999px",
-                background: "#2dd4bf",
-                boxShadow: "0 0 28px rgba(45,212,191,0.7)",
+                background: "#4fd1bd",
               }}
             />
             Hifzer
@@ -76,7 +61,7 @@ export default function OpenGraphImage() {
               display: "flex",
               flexDirection: "column",
               gap: "24px",
-              maxWidth: "920px",
+              maxWidth: "1000px",
             }}
           >
             <div
@@ -92,11 +77,10 @@ export default function OpenGraphImage() {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    padding: "10px 18px",
+                    padding: "10px 20px",
                     borderRadius: "999px",
-                    border: "1px solid rgba(255,255,255,0.12)",
-                    background: "rgba(255,255,255,0.08)",
-                    color: "#cbd5e1",
+                    background: "rgba(255,255,255,0.1)",
+                    color: "#d2d2d7",
                     fontSize: 24,
                     fontWeight: 500,
                   }}
@@ -109,10 +93,10 @@ export default function OpenGraphImage() {
             <div
               style={{
                 display: "flex",
-                fontSize: 70,
-                lineHeight: 1.02,
-                fontWeight: 800,
-                letterSpacing: "-0.06em",
+                fontSize: 68,
+                lineHeight: 1.06,
+                fontWeight: 600,
+                letterSpacing: "-0.035em",
                 maxWidth: "980px",
               }}
             >
@@ -123,8 +107,8 @@ export default function OpenGraphImage() {
               style={{
                 display: "flex",
                 fontSize: 30,
-                lineHeight: 1.45,
-                color: "rgba(248,250,252,0.78)",
+                lineHeight: 1.4,
+                color: "#a1a1a6",
                 maxWidth: "860px",
               }}
             >
@@ -144,7 +128,7 @@ export default function OpenGraphImage() {
               style={{
                 display: "flex",
                 fontSize: 24,
-                color: "rgba(248,250,252,0.52)",
+                color: "#86868b",
               }}
             >
               hifzer.com
@@ -155,7 +139,7 @@ export default function OpenGraphImage() {
                 alignItems: "center",
                 gap: "12px",
                 fontSize: 24,
-                color: "#99f6e4",
+                color: "#4fd1bd",
                 fontWeight: 600,
               }}
             >

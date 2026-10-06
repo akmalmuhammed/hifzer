@@ -4,7 +4,7 @@ type Tone = "brand" | "accent" | "warn" | "neutral";
 
 function toneColor(tone: Tone): string {
   if (tone === "accent") {
-    return "var(--kw-chart-2)";
+    return "rgba(var(--kw-accent-rgb), 1)";
   }
   if (tone === "warn") {
     return "var(--kw-chart-3)";
@@ -29,7 +29,7 @@ export function ProgressBar(props: {
   return (
     <div
       className={clsx(
-        "w-full overflow-hidden rounded-full border border-[color:var(--kw-border-2)] bg-[color:var(--kw-track)]",
+        "w-full overflow-hidden rounded-full bg-[color:var(--kw-track)]",
         props.className,
       )}
       style={{ height: h }}
@@ -40,10 +40,10 @@ export function ProgressBar(props: {
       aria-valuenow={Math.round(v * 100)}
     >
       <div
-        className="h-full rounded-full"
+        className="h-full rounded-full transition-[width] duration-300 ease-[var(--kw-ease)]"
         style={{
           width: `${(v * 100).toFixed(1)}%`,
-          background: `linear-gradient(90deg, ${color}, rgba(255,255,255,0.18))`,
+          background: color,
         }}
       />
     </div>

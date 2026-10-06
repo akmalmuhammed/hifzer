@@ -30,7 +30,7 @@ export function Pill({
   return (
     <span
       className={clsx(
-        "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold tracking-tight",
+        "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium",
         toneClasses(tone),
         className,
       )}

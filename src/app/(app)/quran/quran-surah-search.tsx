@@ -43,12 +43,12 @@ export function QuranSurahSearch({ surahs }: { surahs: SurahEntry[] }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search surahs by name or number..."
-          className="h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/70 pl-9 pr-3 text-sm text-[color:var(--kw-ink)] placeholder:text-[color:var(--kw-faint)] focus:border-[rgba(var(--kw-accent-rgb),0.5)] focus:outline-none focus:ring-2 focus:ring-[rgba(var(--kw-accent-rgb),0.15)]"
+          className="h-11 w-full rounded-xl border border-transparent bg-[color:var(--kw-fill-strong)] pl-9 pr-3 text-sm text-[color:var(--kw-ink)] transition-[border-color,box-shadow] duration-200 placeholder:text-[color:var(--kw-faint)] focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus:outline-none focus:ring-4 focus:ring-[rgba(var(--kw-accent-rgb),0.16)]"
         />
       </div>
 
       {trimmed.length > 0 && (
-        <ul className="mt-2 max-h-72 overflow-y-auto rounded-xl border border-[color:var(--kw-border-2)] bg-white/90 backdrop-blur">
+        <ul className="mt-2 max-h-72 divide-y divide-[color:var(--kw-border-2)] overflow-y-auto rounded-[14px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-card)]">
           {filtered.length === 0 ? (
             <li className="px-4 py-3 text-sm text-[color:var(--kw-muted)]">
               No surahs found for &ldquo;{query.trim()}&rdquo;
@@ -58,11 +58,11 @@ export function QuranSurahSearch({ surahs }: { surahs: SurahEntry[] }) {
               <li key={s.surahNumber}>
                 <Link
                   href={`/quran/read?view=compact&surah=${s.surahNumber}`}
-                  className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-[rgba(var(--kw-accent-rgb),0.07)]"
+                  className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-[color:var(--kw-hover-soft)]"
                   onClick={() => setQuery("")}
                 >
                   <span className="flex items-center gap-2">
-                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[rgba(var(--kw-accent-rgb),0.1)] text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
+                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[rgba(var(--kw-accent-rgb),0.1)] text-xs font-semibold tabular-nums text-[rgba(var(--kw-accent-rgb),1)]">
                       {s.surahNumber}
                     </span>
                     <span className="font-medium text-[color:var(--kw-ink)]">
@@ -72,7 +72,7 @@ export function QuranSurahSearch({ surahs }: { surahs: SurahEntry[] }) {
                       {s.nameArabic}
                     </span>
                   </span>
-                  <span className="shrink-0 text-xs text-[color:var(--kw-faint)]">
+                  <span className="shrink-0 text-xs tabular-nums text-[color:var(--kw-faint)]">
                     {s.ayahCount} ayahs
                   </span>
                 </Link>

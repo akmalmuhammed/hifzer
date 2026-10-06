@@ -1,11 +1,10 @@
 import Image from "next/image";
 import type { CSSProperties, ReactNode } from "react";
 import {
-  ArrowRight,
   BookMarked,
   BookOpenText,
-  Check,
   ChevronDown,
+  ChevronRight,
   Heart,
   LineChart,
   Lock,
@@ -151,18 +150,12 @@ function ScreenCard({
   priority = false,
 }: {
   image: ShowcaseImage;
-  label: string;
+  label?: string;
   className?: string;
   priority?: boolean;
 }) {
   return (
-    <div className={`${styles.screenCard} ${className ?? ""}`}>
-      <div className={styles.screenChrome}>
-        <span />
-        <span />
-        <span />
-        <p>{label}</p>
-      </div>
+    <figure className={`${styles.screenCard} ${className ?? ""}`}>
       <div className={styles.screenImageWrap}>
         <Image
           src={image.src}
@@ -170,62 +163,65 @@ function ScreenCard({
           fill
           priority={priority}
           fetchPriority={priority ? "high" : undefined}
-          sizes="(max-width: 640px) 82vw, (max-width: 1024px) 42vw, 460px"
+          sizes={
+            priority
+              ? "(max-width: 1160px) 94vw, 1120px"
+              : "(max-width: 760px) 78vw, 360px"
+          }
           className="object-cover object-top"
         />
       </div>
-    </div>
+      {label ? <figcaption className={styles.screenLabel}>{label}</figcaption> : null}
+    </figure>
   );
 }
 
 function HeroChapter() {
   return (
     <section className={styles.hero} aria-labelledby="landing-hero-title">
-      <div className={styles.heroGlow} />
-      <div className={styles.heroGrid}>
-        <Reveal className={styles.heroCopy}>
+      <Reveal className={styles.heroCopy}>
           <p className={styles.heroEyebrow}>A daily Qur&apos;an companion for reading and hifz</p>
           <h1 id="landing-hero-title" className={styles.heroTitle}>
-            Return to your ayah. Keep what you memorized.
+            Return to your ayah.<br className="hidden md:inline" /> Keep what you memorized.
           </h1>
           <p className={styles.heroSummary}>
             Hifzer brings your next ayah, sabaq, sabqi and manzil review, trusted translation and tafsir, duas, and private reflections into one calm daily routine.
           </p>
           <div className={styles.heroActions}>
-            <Button asChild size="lg" className={`${styles.primaryCta} w-full sm:w-auto`}>
+            <Button asChild size="lg">
               <TrackedLink
                 href="/signup"
                 prefetch={false}
                 telemetryName="landing.primary_open_app_click"
                 telemetryMeta={{ placement: "hero" }}
               >
-                Start my free routine <ArrowRight size={17} />
+                Start my free routine
               </TrackedLink>
             </Button>
-            <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
-              <TrackedLink
-                href="#routine"
-                telemetryName="landing.hero_story_click"
-                telemetryMeta={{ placement: "hero" }}
-              >
-                See how Hifzer works <ArrowRight size={17} />
-              </TrackedLink>
-            </Button>
+            <TrackedLink
+              href="#routine"
+              className={styles.textLink}
+              telemetryName="landing.hero_story_click"
+              telemetryMeta={{ placement: "hero" }}
+            >
+              See how Hifzer works <ChevronRight size={18} aria-hidden />
+            </TrackedLink>
           </div>
           <div className={styles.heroTrust} aria-label="Hifzer trust notes">
             <span>Free in your browser</span>
             <span>No card required</span>
             <span>Private reflections</span>
           </div>
-        </Reveal>
+      </Reveal>
 
-        <Reveal className={styles.heroVisual}>
-          <ScreenCard image={showcaseImages.dashboard} label="Daily rhythm" priority className={styles.heroMainScreen} />
-          <ScreenCard image={showcaseImages.hifz} label="Hifz" className={styles.heroFloatOne} />
-          <ScreenCard image={showcaseImages.dua} label="Dua" className={styles.heroFloatTwo} />
-          <ScreenCard image={showcaseImages.journal} label="Journal" className={styles.heroFloatThree} />
-        </Reveal>
-      </div>
+      <Reveal className={styles.heroVisual}>
+        <ScreenCard image={showcaseImages.dashboard} priority className={styles.heroMainScreen} />
+        <div className={styles.heroShelf}>
+          <ScreenCard image={showcaseImages.hifz} label="Hifz" />
+          <ScreenCard image={showcaseImages.dua} label="Dua" />
+          <ScreenCard image={showcaseImages.journal} label="Journal" />
+        </div>
+      </Reveal>
     </section>
   );
 }
@@ -233,12 +229,13 @@ function HeroChapter() {
 function RoutineChapter() {
   return (
     <section id="routine" className={styles.chapter} tabIndex={-1}>
-      <div className={styles.chapterGrid}>
+      <div>
         <Reveal>
           <SectionHeading
             eyebrow="Guided routine"
             title="Read, review, reflect, then return."
             body="One calm path keeps your reading place, review, and reflections ready for the next return."
+            align="center"
           />
         </Reveal>
         <Reveal className={styles.planBuilder}>
@@ -250,18 +247,13 @@ function RoutineChapter() {
                 style={{ "--step": index } as CSSProperties}
                 aria-labelledby={`routine-step-${index + 1}`}
               >
-                <div className={styles.planStepLead}>
-                  <div className={styles.planStepBadge}>
-                    <span>{step.label}</span>
-                    <small>{String(index + 1).padStart(2, "0")}</small>
-                  </div>
+                <div className={styles.planStepBadge}>
+                  <span>{step.label}</span>
+                  <small aria-hidden>{String(index + 1).padStart(2, "0")}</small>
                 </div>
                 <div className={styles.planStepCopy}>
                   <h3 id={`routine-step-${index + 1}`}>{step.title}</h3>
                   <p>{step.body}</p>
-                </div>
-                <div className={styles.planStepState} aria-hidden>
-                  <Check size={18} />
                 </div>
               </article>
             );
@@ -333,7 +325,7 @@ function HifzChapter() {
 function GuidanceChapter() {
   return (
     <section id="guidance" className={styles.chapter} tabIndex={-1}>
-      <div className={`${styles.chapterGrid} ${styles.guidanceGrid}`}>
+      <div className={styles.chapterGrid}>
         <Reveal className={styles.guidanceCopy}>
           <SectionHeading
             eyebrow="Trusted guidance"
@@ -378,18 +370,6 @@ function ReaderChapter() {
         </Reveal>
         <Reveal className={styles.readerMock}>
           <div className={styles.readerWindow}>
-            <div className={styles.readerWindowBar}>
-              <div className={styles.readerWindowDots} aria-hidden>
-                <span />
-                <span />
-                <span />
-              </div>
-              <p>Reader connected to trusted Qur&apos;an content</p>
-            </div>
-          <div className={styles.readerApiTopline}>
-            <span>Trusted Qur&apos;an content</span>
-            <span>Translation, tafsir, and recitation in place</span>
-          </div>
           <div className={styles.ayahLine}>
             <span>2:286</span>
             <p dir="rtl" lang="ar">لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا</p>
@@ -406,11 +386,6 @@ function ReaderChapter() {
               <strong>Meaning, recitation, and context stay beside the ayah.</strong>
             </div>
             <span>No tab switching</span>
-          </div>
-          <div className={styles.readerSignalRow}>
-            <span>Official translation choices</span>
-            <span>Official tafsir options</span>
-            <span>Reciter audio when you need it</span>
           </div>
           <div className={styles.progressTrack}><span /></div>
           </div>
@@ -529,22 +504,20 @@ function ClosingCta() {
         <p>
           Keep your next ayah, review, duas, and reflections ready in one calm place.
         </p>
-        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Button asChild size="lg" className={`${styles.primaryCta} w-full sm:w-auto`}>
+        <div className={styles.finalActions}>
+          <Button asChild size="lg">
             <TrackedLink
               href="/signup"
               prefetch={false}
               telemetryName="landing.final_start_click"
               telemetryMeta={{ placement: "final-cta" }}
             >
-              Start my free routine <ArrowRight size={17} />
+              Start my free routine
             </TrackedLink>
           </Button>
-          <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
-            <TrackedLink href="#routine" telemetryName="landing.final_story_click">
-              See how it works
-            </TrackedLink>
-          </Button>
+          <TrackedLink href="#routine" className={styles.textLink} telemetryName="landing.final_story_click">
+            See how it works <ChevronRight size={18} aria-hidden />
+          </TrackedLink>
         </div>
         <span className={styles.noCard}>Free in your browser. No card required.</span>
       </Reveal>

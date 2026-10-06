@@ -59,8 +59,8 @@ export function RemindersSettingsClient(props: RemindersClientProps) {
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Email reminders</p>
-            <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">
+            <p className="text-[1rem] font-medium tracking-[-0.01em] text-[color:var(--kw-ink)]">Email reminders</p>
+            <p className="mt-0.5 text-sm leading-6 text-[color:var(--kw-faint)]">
               One reminder if you have not finished for the day.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -80,13 +80,13 @@ export function RemindersSettingsClient(props: RemindersClientProps) {
           </Button>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6 border-t border-[color:var(--kw-border-2)] pt-5">
           <Input
             id="settings-reminders-time"
             label="Reminder time (local)"
             description="Local time."
             fieldClassName="max-w-[220px]"
-            labelClassName="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]"
+            labelClassName="text-[0.82rem] font-medium text-[color:var(--kw-faint)]"
             type="time"
             value={draft.reminderTimeLocal}
             onChange={(e) => setDraft((d) => ({ ...d, reminderTimeLocal: e.target.value }))}

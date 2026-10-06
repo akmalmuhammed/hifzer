@@ -56,19 +56,19 @@ export function OnboardingCompleteClient(props: {
       ]}
     >
       <div className="space-y-4">
-        <Card>
-          <div className="flex flex-wrap items-start justify-between gap-6">
-            <div className="max-w-2xl space-y-3">
-              <p className="text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
+        <Card className="border-0! bg-transparent! p-0! shadow-none! text-center">
+          <div className="flex flex-col-reverse items-center gap-6">
+            <div className="max-w-xl space-y-3">
+              <p className="text-[1.4rem] font-semibold leading-[1.2] tracking-[-0.022em] text-[color:var(--kw-ink)]">
                 Your setup is saved and your dashboard is ready.
               </p>
-              <p className="text-sm leading-7 text-[color:var(--kw-muted)]">
+              <p className="text-[1.02rem] leading-[1.5] text-[color:var(--kw-muted)]">
                 Start with the plan and reading place you just chose. You can adjust the rest later from inside Hifzer.
               </p>
               {quranFeedback ? (
-                <p className="text-sm text-[color:var(--kw-muted)]">{quranFeedback}</p>
+                <p className="text-[0.94rem] text-[color:var(--kw-muted)]">{quranFeedback}</p>
               ) : null}
-              <div className="flex flex-wrap items-center gap-3 pt-1">
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
                 <Button
                   size="lg"
                   className="gap-2"
@@ -149,7 +149,7 @@ export function OnboardingCompleteClient(props: {
                 ) : null}
               </div>
             </div>
-            <span className="grid h-12 w-12 place-items-center rounded-[22px] border border-[rgba(22,163,74,0.26)] bg-[rgba(22,163,74,0.10)] text-[color:var(--kw-lime-600)] shadow-[var(--kw-shadow-soft)]">
+            <span className="grid h-16 w-16 place-items-center rounded-full bg-[color:var(--kw-pill-success-bg)] text-[color:var(--kw-lime-600)] [&_svg]:h-7 [&_svg]:w-7">
               <CheckCircle2 size={18} />
             </span>
           </div>

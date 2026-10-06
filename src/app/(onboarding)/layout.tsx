@@ -9,7 +9,6 @@ import { getProfileSnapshot } from "@/hifzer/profile/server";
 import { resolveClerkUserIdForServer } from "@/hifzer/testing/request-auth";
 import { clerkEnabled } from "@/lib/clerk-config";
 import { resolveInitialThemeState, resolveInitialUiLanguage } from "@/lib/layout-preferences";
-import { marketingDisplayFont } from "@/lib/fonts";
 
 export default async function OnboardingLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
@@ -44,12 +43,10 @@ export default async function OnboardingLayout({ children }: { children: React.R
         initialDistractionFree={initialDistractionFree}
         initialThemeState={initialThemeState}
       >
-        <div className={marketingDisplayFont.variable}>
-          <main id="main-content" className="mx-auto w-full max-w-[1120px] px-4 py-6 sm:py-10">
-            <ProfileHydrator profile={profile} />
-            {children}
-          </main>
-        </div>
+        <main id="main-content" className="mx-auto w-full max-w-[1120px] px-4 py-6 sm:py-10">
+          <ProfileHydrator profile={profile} />
+          {children}
+        </main>
       </AppProviders>
     </ClerkRouteProvider>
   );

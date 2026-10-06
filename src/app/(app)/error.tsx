@@ -21,17 +21,17 @@ export default function AppError(props: { error: Error & { digest?: string }; re
       <Card>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">
+            <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">
               Recovery
             </p>
-            <h1 className="mt-3 font-[family-name:var(--font-kw-display)] text-3xl tracking-tight text-[color:var(--kw-ink)]">
+            <h1 className="mt-3 font-[family-name:var(--font-kw-display)] text-3xl font-semibold leading-[1.1] tracking-[-0.025em] text-[color:var(--kw-ink)]">
               Something went wrong.
             </h1>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
               Try this view again. If your session expired, sign in again; otherwise you can keep reading while the service recovers.
             </p>
           </div>
-          <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[rgba(234,88,12,0.28)] bg-[rgba(234,88,12,0.12)] text-[color:var(--kw-ember-600)]">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[12px] bg-[color:var(--kw-pill-warn-bg)] text-[color:var(--kw-ember-600)]">
             <AlertTriangle size={18} />
           </span>
         </div>

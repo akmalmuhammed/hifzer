@@ -1,56 +1,62 @@
 @import "tailwindcss";
 
+/*
+  Design tokens.
+  The visual language follows the Apple system: neutral grouped backgrounds,
+  opaque cards, hairline separators, one tint colour, capsule controls,
+  SF Pro (Inter off-platform), and translucent material only for chrome.
+*/
 :root {
   /* Standard theme defaults (html[data-theme="standard"]). */
-  --kw-bg: #f6f7f9;
-  --kw-ink: #0b1220;
-  --kw-ink-2: #132033;
-  --kw-muted: rgba(11, 18, 32, 0.64);
-  --kw-faint: rgba(11, 18, 32, 0.52);
-  --kw-border: rgba(11, 18, 32, 0.12);
-  --kw-border-2: rgba(11, 18, 32, 0.08);
+  --kw-bg: #f5f5f7;
+  --kw-ink: #1d1d1f;
+  --kw-ink-2: #424245;
+  --kw-muted: #5e5e63;
+  --kw-faint: #6e6e73;
+  --kw-border: rgba(0, 0, 0, 0.1);
+  --kw-border-2: rgba(0, 0, 0, 0.06);
 
-  --kw-card: rgba(255, 255, 255, 0.72);
-  --kw-card-strong: rgba(255, 255, 255, 0.9);
+  --kw-card: #ffffff;
+  --kw-card-strong: #ffffff;
   --kw-card-solid: #ffffff;
-  --kw-surface-soft: rgba(255, 255, 255, 0.56);
-  --kw-surface: rgba(255, 255, 255, 0.72);
-  --kw-surface-strong: rgba(255, 255, 255, 0.88);
-  --kw-panel-gradient-soft:
-    radial-gradient(140% 140% at 0% 0%, rgba(var(--kw-accent-rgb), 0.07), transparent 56%),
-    radial-gradient(120% 120% at 100% 100%, rgba(10, 138, 119, 0.06), transparent 60%),
-    linear-gradient(155deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0.58));
-  --kw-panel-gradient:
-    radial-gradient(140% 140% at 0% 0%, rgba(var(--kw-accent-rgb), 0.08), transparent 56%),
-    radial-gradient(120% 120% at 100% 100%, rgba(10, 138, 119, 0.07), transparent 60%),
-    linear-gradient(155deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.68));
-  --kw-panel-gradient-strong:
-    radial-gradient(145% 145% at 0% 0%, rgba(var(--kw-accent-rgb), 0.1), transparent 54%),
-    radial-gradient(125% 125% at 100% 100%, rgba(10, 138, 119, 0.08), transparent 58%),
-    linear-gradient(155deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.8));
+  --kw-fill: rgba(118, 118, 128, 0.08);
+  --kw-fill-strong: rgba(118, 118, 128, 0.14);
+  --kw-surface-soft: var(--kw-fill);
+  --kw-surface: #ffffff;
+  --kw-surface-strong: #ffffff;
+  --kw-panel-gradient-soft: var(--kw-fill);
+  --kw-panel-gradient: var(--kw-card);
+  --kw-panel-gradient-strong: var(--kw-card-strong);
 
-  --kw-shadow: 0 18px 44px rgba(11, 18, 32, 0.12);
-  --kw-shadow-soft: 0 10px 26px rgba(11, 18, 32, 0.1);
-  --kw-hover-soft: rgba(11, 18, 32, 0.05);
-  --kw-hover-strong: rgba(11, 18, 32, 0.08);
-  --kw-track: rgba(11, 18, 32, 0.08);
-  --kw-skeleton: rgba(11, 18, 32, 0.08);
+  /* Marketing canvas: white page, grey tiles (the inverse of the app). */
+  --kw-page: #ffffff;
+  --kw-tile: #f5f5f7;
+  --kw-material: rgba(255, 255, 255, 0.72);
+  --kw-material-filter: saturate(180%) blur(20px);
 
-  --kw-accent-rgb: 31, 54, 217;
-  --kw-accent: #1f36d9;
-  --kw-accent-2: #2b4bff;
+  --kw-shadow: 0 1px 2px rgba(0, 0, 0, 0.03), 0 12px 32px rgba(0, 0, 0, 0.06);
+  --kw-shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --kw-shadow-float: 0 4px 12px rgba(0, 0, 0, 0.06), 0 24px 60px rgba(0, 0, 0, 0.14);
+  --kw-hover-soft: rgba(0, 0, 0, 0.04);
+  --kw-hover-strong: rgba(0, 0, 0, 0.07);
+  --kw-track: rgba(118, 118, 128, 0.16);
+  --kw-skeleton: rgba(118, 118, 128, 0.12);
 
-  --kw-teal-900: #052c26;
-  --kw-teal-800: #064a42;
-  --kw-teal-700: #07685a;
+  --kw-accent-rgb: 0, 113, 227;
+  --kw-accent: #0071e3;
+  --kw-accent-2: #0077ed;
+
+  --kw-teal-900: #04352e;
+  --kw-teal-800: #06564b;
+  --kw-teal-700: #077567;
   --kw-teal-600: #0a8a77;
-  --kw-cobalt-700: #1f36d9;
-  --kw-cobalt-600: #2b4bff;
-  --kw-ember-600: #c2410c;
-  --kw-ember-500: #ea580c;
-  --kw-lime-600: #16a34a;
-  --kw-sky-600: #0284c7;
-  --kw-rose-600: #e11d48;
+  --kw-cobalt-700: #0066cc;
+  --kw-cobalt-600: #0071e3;
+  --kw-ember-600: #b93400;
+  --kw-ember-500: #d9480f;
+  --kw-lime-600: #1d7a36;
+  --kw-sky-600: #0077b6;
+  --kw-rose-600: #d70015;
 
   --kw-chart-1: var(--kw-teal-600);
   --kw-chart-2: var(--kw-cobalt-600);
@@ -59,67 +65,70 @@
   --kw-chart-5: var(--kw-rose-600);
   --kw-chart-6: var(--kw-lime-600);
 
-  --kw-pill-neutral-border: var(--kw-border-2);
-  --kw-pill-neutral-bg: var(--kw-surface-soft);
+  /* Capsules are tinted fills without outlines. */
+  --kw-pill-neutral-border: transparent;
+  --kw-pill-neutral-bg: var(--kw-fill-strong);
   --kw-pill-neutral-fg: var(--kw-ink-2);
-  --kw-pill-brand-border: rgba(10, 138, 119, 0.25);
+  --kw-pill-brand-border: transparent;
   --kw-pill-brand-bg: rgba(10, 138, 119, 0.12);
   --kw-pill-brand-fg: var(--kw-teal-800);
-  --kw-pill-accent-border: rgba(43, 75, 255, 0.25);
-  --kw-pill-accent-bg: rgba(43, 75, 255, 0.12);
-  --kw-pill-accent-fg: var(--kw-cobalt-700);
-  --kw-pill-warn-border: rgba(234, 88, 12, 0.28);
-  --kw-pill-warn-bg: rgba(234, 88, 12, 0.12);
+  --kw-pill-accent-border: transparent;
+  --kw-pill-accent-bg: rgba(var(--kw-accent-rgb), 0.12);
+  --kw-pill-accent-fg: var(--kw-accent);
+  --kw-pill-warn-border: transparent;
+  --kw-pill-warn-bg: rgba(217, 72, 15, 0.1);
   --kw-pill-warn-fg: var(--kw-ember-600);
-  --kw-pill-success-border: rgba(22, 163, 74, 0.28);
-  --kw-pill-success-bg: rgba(22, 163, 74, 0.12);
+  --kw-pill-success-border: transparent;
+  --kw-pill-success-bg: rgba(29, 122, 54, 0.1);
   --kw-pill-success-fg: var(--kw-lime-600);
-  --kw-pill-danger-border: rgba(225, 29, 72, 0.26);
-  --kw-pill-danger-bg: rgba(225, 29, 72, 0.12);
+  --kw-pill-danger-border: transparent;
+  --kw-pill-danger-bg: rgba(215, 0, 21, 0.08);
   --kw-pill-danger-fg: var(--kw-rose-600);
 
-  --kw-toast-neutral-border: rgba(148, 163, 184, 0.3);
+  --kw-toast-neutral-border: var(--kw-border);
   --kw-toast-neutral-bg: var(--kw-surface-strong);
   --kw-toast-neutral-fg: var(--kw-ink);
-  --kw-toast-success-border: rgba(16, 185, 129, 0.34);
-  --kw-toast-success-bg: rgba(16, 185, 129, 0.14);
-  --kw-toast-success-fg: #065f46;
-  --kw-toast-warning-border: rgba(245, 158, 11, 0.34);
-  --kw-toast-warning-bg: rgba(245, 158, 11, 0.16);
+  --kw-toast-success-border: rgba(29, 122, 54, 0.24);
+  --kw-toast-success-bg: #eaf6ed;
+  --kw-toast-success-fg: #14532d;
+  --kw-toast-warning-border: rgba(217, 119, 6, 0.26);
+  --kw-toast-warning-bg: #fdf3e2;
   --kw-toast-warning-fg: #78350f;
 
-  --kw-radius-xl: 22px;
+  --kw-radius-xl: 24px;
   --kw-radius-lg: 18px;
   --kw-radius-md: 14px;
-  --kw-radius-sm: 12px;
+  --kw-radius-sm: 10px;
 
-  --kw-noise-opacity: 0.08;
+  --kw-ease: cubic-bezier(0.28, 0.11, 0.32, 1);
+
+  --kw-noise-opacity: 0;
   --kw-root-font-size: 15.5px;
-  --kw-page-title-size: clamp(2.2rem, 2.7vw, 3rem);
-  --kw-page-subtitle-size: 0.98rem;
-  --kw-page-subtitle-leading: 1.65;
+  --kw-page-title-size: clamp(2rem, 2.5vw, 2.6rem);
+  --kw-page-subtitle-size: 1.06rem;
+  --kw-page-subtitle-leading: 1.47;
   --kw-page-subtitle-max: 46rem;
-  --kw-app-hero-title-size: clamp(2.6rem, 3.8vw, 4rem);
-  --kw-app-hero-body-size: 1rem;
-  --kw-app-hero-body-leading: 1.72;
-  --kw-card-pad-x: clamp(0.95rem, 1.2vw, 1.15rem);
-  --kw-card-pad-y: clamp(0.95rem, 1.2vw, 1.1rem);
-  --kw-control-sm-height: 2.25rem;
+  --kw-app-hero-title-size: clamp(2.4rem, 3.6vw, 3.6rem);
+  --kw-app-hero-body-size: 1.06rem;
+  --kw-app-hero-body-leading: 1.47;
+  --kw-card-pad-x: clamp(1.1rem, 1.4vw, 1.4rem);
+  --kw-card-pad-y: clamp(1.1rem, 1.4vw, 1.35rem);
+  --kw-control-sm-height: 2.1rem;
   --kw-control-md-height: 2.75rem;
-  --kw-control-lg-height: 3rem;
-  --kw-control-sm-radius: 12px;
-  --kw-control-md-radius: 15px;
-  --kw-control-lg-radius: 18px;
+  --kw-control-lg-height: 3.1rem;
+  --kw-control-sm-radius: 980px;
+  --kw-control-md-radius: 980px;
+  --kw-control-lg-radius: 980px;
   --kw-app-frame-max: 1180px;
   --kw-app-main-max: 100%;
   --kw-app-sidebar-width: 224px;
-  --kw-app-shell-gap: clamp(1rem, 1.4vw, 1.35rem);
+  --kw-app-shell-gap: clamp(1.25rem, 2vw, 2rem);
   --kw-app-shell-pad-x: clamp(0.9rem, 1.4vw, 1.25rem);
   --kw-app-shell-pad-y: clamp(1rem, 1.4vw, 1.35rem);
-  --kw-app-nav-height: 64px;
-  --kw-app-nav-icon-box: 38px;
-  --kw-app-nav-font-size: 0.92rem;
-  --kw-app-section-label-size: 0.66rem;
+  --kw-app-nav-height: 40px;
+  --kw-app-nav-icon-box: 26px;
+  --kw-app-nav-font-size: 0.94rem;
+  --kw-app-section-label-size: 0.74rem;
   --kw-mobile-nav-block-size: 5.75rem;
 }
 
@@ -138,13 +147,12 @@ html[data-display-tier="wide"] {
   --kw-app-frame-max: 1420px;
   --kw-app-main-max: 1220px;
   --kw-app-sidebar-width: 236px;
-  --kw-app-shell-gap: 1.5rem;
+  --kw-app-shell-gap: 2.25rem;
   --kw-app-shell-pad-x: clamp(1.2rem, 1.8vw, 1.75rem);
   --kw-app-shell-pad-y: clamp(1.2rem, 1.8vw, 1.75rem);
-  --kw-app-nav-height: 68px;
-  --kw-app-nav-icon-box: 40px;
-  --kw-app-nav-font-size: 0.94rem;
-  --kw-app-section-label-size: 0.68rem;
+  --kw-app-nav-height: 42px;
+  --kw-app-nav-icon-box: 28px;
+  --kw-app-nav-font-size: 0.95rem;
 }
 
 html[data-display-tier="ultra"] {
@@ -152,151 +160,123 @@ html[data-display-tier="ultra"] {
   --kw-app-frame-max: 1560px;
   --kw-app-main-max: 1340px;
   --kw-app-sidebar-width: 248px;
-  --kw-app-shell-gap: 1.75rem;
+  --kw-app-shell-gap: 2.5rem;
   --kw-app-shell-pad-x: clamp(1.45rem, 2.2vw, 2.2rem);
   --kw-app-shell-pad-y: clamp(1.45rem, 2.2vw, 2rem);
-  --kw-app-nav-height: 72px;
-  --kw-app-nav-icon-box: 42px;
+  --kw-app-nav-height: 44px;
+  --kw-app-nav-icon-box: 28px;
   --kw-app-nav-font-size: 0.96rem;
-  --kw-app-section-label-size: 0.69rem;
 }
 
 @media (min-width: 769px) and (max-width: 1600px) and (max-height: 980px) {
   :root {
     --kw-root-font-size: 15.2px;
-    --kw-page-title-size: clamp(2.05rem, 2.45vw, 2.7rem);
-    --kw-app-hero-title-size: clamp(2.35rem, 3.4vw, 3.45rem);
-    --kw-card-pad-x: clamp(0.9rem, 1vw, 1.05rem);
-    --kw-card-pad-y: clamp(0.88rem, 1vw, 1rem);
+    --kw-page-title-size: clamp(1.9rem, 2.3vw, 2.4rem);
+    --kw-app-hero-title-size: clamp(2.2rem, 3.2vw, 3.2rem);
+    --kw-card-pad-x: clamp(1rem, 1.2vw, 1.25rem);
+    --kw-card-pad-y: clamp(1rem, 1.2vw, 1.2rem);
     --kw-app-shell-pad-y: clamp(0.85rem, 1.1vw, 1.05rem);
-    --kw-app-nav-height: 60px;
-    --kw-app-nav-icon-box: 36px;
+    --kw-app-nav-height: 38px;
   }
 }
 
+/* Theme presets are quiet tints of the grouped background, nothing more. */
 html[data-theme="paper"] {
-  --kw-bg: #fbf7f2;
-  --kw-card: rgba(255, 255, 255, 0.72);
-  --kw-card-strong: rgba(255, 255, 255, 0.9);
-  --kw-card-solid: #ffffff;
+  --kw-bg: #f6f3ee;
 }
 
 html[data-theme="noor"] {
-  --kw-bg: #f4f8ff;
-  --kw-card: rgba(249, 252, 255, 0.78);
-  --kw-card-strong: rgba(255, 255, 255, 0.92);
-  --kw-card-solid: #ffffff;
+  --kw-bg: #f2f5fa;
 }
 
 html[data-theme="dawn"] {
-  --kw-bg: #fff7ee;
-  --kw-card: rgba(255, 251, 245, 0.8);
-  --kw-card-strong: rgba(255, 255, 255, 0.94);
-  --kw-card-solid: #fffdf9;
+  --kw-bg: #f9f4ec;
 }
 
 html[data-theme="rose"] {
-  --kw-bg: #fff4f7;
-  --kw-card: rgba(255, 248, 251, 0.8);
-  --kw-card-strong: rgba(255, 250, 252, 0.94);
-  --kw-card-solid: #fffdfd;
+  --kw-bg: #f9f2f4;
 }
 
 html[data-accent="teal"] {
-  --kw-accent-rgb: 10, 138, 119;
+  --kw-accent-rgb: 7, 117, 103;
   --kw-accent: var(--kw-teal-700);
   --kw-accent-2: var(--kw-teal-600);
 }
 
 html[data-accent="cobalt"] {
-  --kw-accent-rgb: 31, 54, 217;
+  --kw-accent-rgb: 0, 113, 227;
   --kw-accent: var(--kw-cobalt-700);
   --kw-accent-2: var(--kw-cobalt-600);
 }
 
 html[data-accent="ember"] {
-  --kw-accent-rgb: 194, 65, 12;
+  --kw-accent-rgb: 196, 60, 6;
   --kw-accent: var(--kw-ember-600);
   --kw-accent-2: var(--kw-ember-500);
 }
 
 html[data-mode="dark"] {
-  --kw-bg: #0b1220;
-  --kw-ink: rgba(248, 250, 252, 0.92);
-  --kw-ink-2: rgba(248, 250, 252, 0.82);
-  --kw-muted: rgba(248, 250, 252, 0.68);
-  --kw-faint: rgba(248, 250, 252, 0.56);
-  --kw-border: rgba(248, 250, 252, 0.14);
-  --kw-border-2: rgba(248, 250, 252, 0.1);
+  --kw-bg: #000000;
+  --kw-ink: #f5f5f7;
+  --kw-ink-2: #d2d2d7;
+  --kw-muted: #a1a1a6;
+  --kw-faint: #8e8e93;
+  --kw-border: rgba(255, 255, 255, 0.14);
+  --kw-border-2: rgba(255, 255, 255, 0.08);
 
-  --kw-card: rgba(17, 24, 39, 0.55);
-  --kw-card-strong: rgba(17, 24, 39, 0.72);
-  --kw-card-solid: rgba(17, 24, 39, 0.92);
-  --kw-surface-soft: rgba(15, 23, 42, 0.56);
-  --kw-surface: rgba(15, 23, 42, 0.68);
-  --kw-surface-strong: rgba(30, 41, 59, 0.78);
-  --kw-panel-gradient-soft:
-    radial-gradient(140% 140% at 0% 0%, rgba(var(--kw-accent-rgb), 0.16), transparent 56%),
-    radial-gradient(120% 120% at 100% 100%, rgba(20, 184, 166, 0.12), transparent 60%),
-    linear-gradient(155deg, rgba(18, 26, 44, 0.78), rgba(12, 18, 32, 0.64));
-  --kw-panel-gradient:
-    radial-gradient(140% 140% at 0% 0%, rgba(var(--kw-accent-rgb), 0.18), transparent 56%),
-    radial-gradient(120% 120% at 100% 100%, rgba(20, 184, 166, 0.14), transparent 60%),
-    linear-gradient(155deg, rgba(18, 26, 44, 0.86), rgba(12, 18, 32, 0.72));
-  --kw-panel-gradient-strong:
-    radial-gradient(145% 145% at 0% 0%, rgba(var(--kw-accent-rgb), 0.22), transparent 54%),
-    radial-gradient(125% 125% at 100% 100%, rgba(20, 184, 166, 0.16), transparent 58%),
-    linear-gradient(155deg, rgba(24, 34, 56, 0.92), rgba(14, 21, 38, 0.8));
+  --kw-card: #1c1c1e;
+  --kw-card-strong: #1c1c1e;
+  --kw-card-solid: #1c1c1e;
+  --kw-fill: rgba(118, 118, 128, 0.18);
+  --kw-fill-strong: rgba(118, 118, 128, 0.28);
+  --kw-surface: #1c1c1e;
+  --kw-surface-strong: #2c2c2e;
 
-  --kw-shadow: 0 18px 44px rgba(0, 0, 0, 0.5);
-  --kw-shadow-soft: 0 10px 26px rgba(0, 0, 0, 0.42);
-  --kw-hover-soft: rgba(148, 163, 184, 0.12);
-  --kw-hover-strong: rgba(148, 163, 184, 0.2);
-  --kw-track: rgba(148, 163, 184, 0.2);
-  --kw-skeleton: rgba(148, 163, 184, 0.18);
+  --kw-page: #000000;
+  --kw-tile: #161617;
+  --kw-material: rgba(22, 22, 23, 0.72);
 
-  --kw-teal-900: #99f6e4;
-  --kw-teal-800: #5eead4;
-  --kw-teal-700: #2dd4bf;
-  --kw-teal-600: #14b8a6;
-  --kw-cobalt-700: #c7d2fe;
-  --kw-cobalt-600: #a5b4fc;
-  --kw-ember-600: #fdba74;
-  --kw-ember-500: #fb923c;
-  --kw-lime-600: #86efac;
-  --kw-sky-600: #7dd3fc;
-  --kw-rose-600: #fda4af;
+  --kw-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.5);
+  --kw-shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --kw-shadow-float: 0 4px 12px rgba(0, 0, 0, 0.4), 0 24px 60px rgba(0, 0, 0, 0.6);
+  --kw-hover-soft: rgba(255, 255, 255, 0.06);
+  --kw-hover-strong: rgba(255, 255, 255, 0.1);
+  --kw-track: rgba(118, 118, 128, 0.32);
+  --kw-skeleton: rgba(118, 118, 128, 0.24);
 
-  --kw-pill-neutral-border: rgba(148, 163, 184, 0.24);
-  --kw-pill-neutral-bg: rgba(30, 41, 59, 0.68);
-  --kw-pill-neutral-fg: rgba(241, 245, 249, 0.92);
-  --kw-pill-brand-border: rgba(20, 184, 166, 0.36);
-  --kw-pill-brand-bg: rgba(20, 184, 166, 0.2);
-  --kw-pill-brand-fg: #99f6e4;
-  --kw-pill-accent-border: rgba(129, 140, 248, 0.38);
-  --kw-pill-accent-bg: rgba(129, 140, 248, 0.2);
-  --kw-pill-accent-fg: #c7d2fe;
-  --kw-pill-warn-border: rgba(251, 146, 60, 0.38);
-  --kw-pill-warn-bg: rgba(251, 146, 60, 0.2);
-  --kw-pill-warn-fg: #fdba74;
-  --kw-pill-success-border: rgba(74, 222, 128, 0.38);
-  --kw-pill-success-bg: rgba(74, 222, 128, 0.2);
-  --kw-pill-success-fg: #bbf7d0;
-  --kw-pill-danger-border: rgba(251, 113, 133, 0.38);
-  --kw-pill-danger-bg: rgba(251, 113, 133, 0.2);
-  --kw-pill-danger-fg: #fecdd3;
+  --kw-teal-900: #b8f5ea;
+  --kw-teal-800: #7fe7d6;
+  --kw-teal-700: #40cbb8;
+  --kw-teal-600: #2bb5a2;
+  --kw-cobalt-700: #6cb6ff;
+  --kw-cobalt-600: #2997ff;
+  --kw-ember-600: #ffb07a;
+  --kw-ember-500: #ff9f0a;
+  --kw-lime-600: #5fd97a;
+  --kw-sky-600: #64d2ff;
+  --kw-rose-600: #ff6961;
 
-  --kw-toast-neutral-border: rgba(148, 163, 184, 0.32);
-  --kw-toast-neutral-bg: rgba(15, 23, 42, 0.88);
-  --kw-toast-neutral-fg: rgba(248, 250, 252, 0.94);
-  --kw-toast-success-border: rgba(74, 222, 128, 0.36);
-  --kw-toast-success-bg: rgba(20, 83, 45, 0.65);
-  --kw-toast-success-fg: #dcfce7;
-  --kw-toast-warning-border: rgba(251, 191, 36, 0.36);
-  --kw-toast-warning-bg: rgba(120, 53, 15, 0.64);
-  --kw-toast-warning-fg: #fef3c7;
+  --kw-pill-neutral-fg: var(--kw-ink);
+  --kw-pill-brand-bg: rgba(43, 181, 162, 0.2);
+  --kw-pill-brand-fg: #7fe7d6;
+  --kw-pill-warn-bg: rgba(255, 159, 10, 0.2);
+  --kw-pill-warn-fg: #ffb07a;
+  --kw-pill-success-bg: rgba(48, 209, 88, 0.2);
+  --kw-pill-success-fg: #5fd97a;
+  --kw-pill-danger-bg: rgba(255, 69, 58, 0.2);
+  --kw-pill-danger-fg: #ff8a80;
 
-  --kw-noise-opacity: 0.06;
+  --kw-toast-neutral-bg: #2c2c2e;
+  --kw-toast-success-border: rgba(48, 209, 88, 0.3);
+  --kw-toast-success-bg: #12301b;
+  --kw-toast-success-fg: #d1f7da;
+  --kw-toast-warning-border: rgba(255, 159, 10, 0.3);
+  --kw-toast-warning-bg: #38270b;
+  --kw-toast-warning-fg: #ffe8bf;
+}
+
+html[data-mode="dark"][data-accent="teal"] {
+  --kw-accent-rgb: 13, 148, 132;
 }
 
 @theme inline {
@@ -317,9 +297,9 @@ html[data-mode="dark"] {
   --shadow-card: var(--kw-shadow);
   --shadow-soft: var(--kw-shadow-soft);
 
-  --font-sans: var(--font-kw-sans);
-  --font-mono: var(--font-kw-mono);
-  --font-kw-display: var(--font-kw-marketing, var(--font-kw-sans));
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", var(--font-kw-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", var(--font-kw-mono), Menlo, Consolas, monospace;
+  --font-kw-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", var(--font-kw-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-kw-quran: var(--font-quran-uthmani, "KFGQPC Uthmanic Script HAFS"), "Scheherazade New", "Amiri", "Noto Naskh Arabic", "Traditional Arabic", serif;
 }
 
@@ -351,66 +331,54 @@ body {
   background: var(--kw-bg);
   color: var(--kw-ink);
   font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Text",
+    "SF Pro Display",
     var(--font-kw-sans),
     "Inter",
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
+    "Helvetica Neue",
     Helvetica,
     Arial,
+    sans-serif,
     "Apple Color Emoji",
     "Segoe UI Emoji";
-  font-feature-settings: "cv11", "ss01";
+  letter-spacing: -0.012em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: rgba(var(--kw-accent-rgb), 0.22);
+  background: rgba(var(--kw-accent-rgb), 0.2);
 }
 
 :focus-visible {
-  outline: 3px solid rgba(var(--kw-accent-rgb), 0.56);
-  outline-offset: 3px;
+  outline: 3px solid rgba(var(--kw-accent-rgb), 0.6);
+  outline-offset: 2px;
 }
 
-/* ── Typography – display headings ──────────────────────────── */
-/* Elements referencing --font-kw-display need explicit bold weight
-   because Inter (unlike Fraunces) doesn't come with implicit bold. */
+/* ── Typography ─────────────────────────────────────────────── */
+/* Semibold, tightly tracked headlines. */
 h1, h2, h3 {
-  font-weight: 700;
-  letter-spacing: -0.03em;
+  font-weight: 600;
+  letter-spacing: -0.022em;
 }
 
-/* Tighten leading on large display text */
 h1 {
-  line-height: 0.95;
+  line-height: 1.07;
 }
 
 h2 {
   line-height: 1.1;
 }
 
-/* Base body letter-spacing for clean readability */
-body {
-  letter-spacing: -0.011em;
-}
-
 .kw-page-title {
-  font-family:
-    var(--font-kw-display),
-    var(--font-kw-sans),
-    ui-sans-serif,
-    -apple-system,
-    "Helvetica Neue",
-    Helvetica,
-    Arial,
-    sans-serif;
+  font-family: var(--font-kw-display);
   font-size: var(--kw-page-title-size);
-  line-height: 0.98;
-  letter-spacing: -0.042em;
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.028em;
 }
 
 .kw-page-subtitle {
@@ -421,8 +389,8 @@ body {
 
 .kw-app-hero-title {
   font-size: var(--kw-app-hero-title-size);
-  line-height: 0.94;
-  letter-spacing: -0.048em;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
 }
 
 .kw-app-hero-body {
@@ -431,44 +399,17 @@ body {
 }
 
 .kw-marketing-display {
-  font-family:
-    var(--font-kw-marketing, var(--font-kw-sans)),
-    var(--font-kw-sans),
-    ui-sans-serif,
-    -apple-system,
-    "Helvetica Neue",
-    Helvetica,
-    Arial,
-    sans-serif;
-  font-weight: 800;
-  letter-spacing: -0.04em;
+  font-family: var(--font-kw-display);
+  font-weight: 600;
+  letter-spacing: -0.028em;
 }
 
+/* Kept as a class for existing markup; headlines are solid ink now. */
 .kw-gradient-headline {
-  background: linear-gradient(
-    112deg,
-    rgba(8, 109, 95, 1) 0%,
-    rgba(var(--kw-accent-rgb), 1) 48%,
-    rgba(194, 65, 12, 0.9) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--kw-ink);
 }
 
-html[data-mode="dark"] .kw-gradient-headline {
-  background: linear-gradient(
-    112deg,
-    rgba(94, 234, 212, 0.96) 0%,
-    rgba(165, 180, 252, 0.95) 54%,
-    rgba(253, 186, 116, 0.95) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* Background language: warm paper, subtle gradients, and wind-line motif. */
+/* Canvas: one flat grouped background. No gradients, no grain. */
 .kw-canvas {
   position: relative;
   isolation: isolate;
@@ -477,169 +418,9 @@ html[data-mode="dark"] .kw-gradient-headline {
   overscroll-behavior-x: none;
 }
 
-.kw-canvas::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  background:
-    radial-gradient(
-      1100px 700px at 12% 18%,
-      rgba(10, 138, 119, 0.18),
-      transparent 62%
-    ),
-    radial-gradient(
-      900px 560px at 86% 22%,
-      rgba(var(--kw-accent-rgb), 0.14),
-      transparent 60%
-    ),
-    radial-gradient(
-      980px 620px at 70% 92%,
-      rgba(234, 88, 12, 0.05),
-      transparent 64%
-    ),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(246, 247, 249, 1));
-  filter: saturate(112%);
-}
-
-html[data-theme="paper"] .kw-canvas::before {
-  background:
-    radial-gradient(980px 620px at 14% 16%, rgba(161, 98, 7, 0.12), transparent 62%),
-    radial-gradient(880px 520px at 84% 18%, rgba(194, 65, 12, 0.12), transparent 60%),
-    radial-gradient(920px 560px at 68% 90%, rgba(10, 138, 119, 0.1), transparent 64%),
-    linear-gradient(180deg, rgba(255, 253, 249, 0.92), rgba(251, 247, 242, 1));
-}
-
-html[data-theme="noor"] .kw-canvas::before {
-  background:
-    radial-gradient(1120px 700px at 10% 16%, rgba(34, 197, 94, 0.12), transparent 60%),
-    radial-gradient(920px 560px at 88% 18%, rgba(56, 189, 248, 0.18), transparent 60%),
-    radial-gradient(960px 620px at 72% 92%, rgba(99, 102, 241, 0.12), transparent 66%),
-    linear-gradient(180deg, rgba(249, 252, 255, 0.94), rgba(244, 248, 255, 1));
-}
-
-html[data-theme="dawn"] .kw-canvas::before {
-  background:
-    radial-gradient(1120px 700px at 12% 16%, rgba(245, 158, 11, 0.16), transparent 60%),
-    radial-gradient(920px 560px at 88% 18%, rgba(251, 146, 60, 0.14), transparent 60%),
-    radial-gradient(980px 620px at 68% 92%, rgba(236, 72, 153, 0.1), transparent 66%),
-    linear-gradient(180deg, rgba(255, 251, 244, 0.94), rgba(255, 247, 238, 1));
-}
-
-html[data-theme="rose"] .kw-canvas::before {
-  background:
-    radial-gradient(1120px 700px at 12% 16%, rgba(236, 72, 153, 0.18), transparent 60%),
-    radial-gradient(920px 560px at 88% 18%, rgba(244, 114, 182, 0.14), transparent 60%),
-    radial-gradient(980px 620px at 70% 92%, rgba(168, 85, 247, 0.12), transparent 66%),
-    linear-gradient(180deg, rgba(255, 249, 251, 0.94), rgba(255, 244, 247, 1));
-}
-
-.kw-canvas::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.45'/%3E%3C/svg%3E");
-  opacity: var(--kw-noise-opacity);
-  mix-blend-mode: multiply;
-}
-
-html[data-mode="dark"] .kw-canvas::before {
-  position: fixed;
-  background:
-    radial-gradient(
-      1100px 700px at 10% 15%,
-      rgba(10, 138, 119, 0.2),
-      transparent 62%
-    ),
-    radial-gradient(
-      900px 560px at 88% 18%,
-      rgba(var(--kw-accent-rgb), 0.16),
-      transparent 62%
-    ),
-    radial-gradient(
-      980px 620px at 70% 90%,
-      rgba(234, 88, 12, 0.04),
-      transparent 68%
-    ),
-    linear-gradient(180deg, rgba(5, 10, 18, 0.96), rgba(11, 18, 32, 1));
-  filter: saturate(118%);
-}
-
-html[data-mode="dark"][data-theme="paper"] .kw-canvas::before {
-  background:
-    radial-gradient(1100px 700px at 10% 15%, rgba(194, 65, 12, 0.16), transparent 62%),
-    radial-gradient(900px 560px at 88% 18%, rgba(245, 158, 11, 0.16), transparent 62%),
-    radial-gradient(980px 620px at 70% 90%, rgba(20, 184, 166, 0.12), transparent 68%),
-    linear-gradient(180deg, rgba(18, 14, 12, 0.96), rgba(27, 22, 18, 1));
-}
-
-html[data-mode="dark"][data-theme="noor"] .kw-canvas::before {
-  background:
-    radial-gradient(1100px 700px at 10% 15%, rgba(34, 197, 94, 0.16), transparent 62%),
-    radial-gradient(900px 560px at 88% 18%, rgba(56, 189, 248, 0.18), transparent 62%),
-    radial-gradient(980px 620px at 70% 90%, rgba(129, 140, 248, 0.16), transparent 68%),
-    linear-gradient(180deg, rgba(7, 13, 24, 0.96), rgba(10, 19, 34, 1));
-}
-
-html[data-mode="dark"][data-theme="dawn"] .kw-canvas::before {
-  background:
-    radial-gradient(1100px 700px at 10% 15%, rgba(251, 146, 60, 0.18), transparent 62%),
-    radial-gradient(900px 560px at 88% 18%, rgba(245, 158, 11, 0.16), transparent 62%),
-    radial-gradient(980px 620px at 70% 90%, rgba(244, 114, 182, 0.12), transparent 68%),
-    linear-gradient(180deg, rgba(22, 12, 8, 0.96), rgba(30, 18, 10, 1));
-}
-
-html[data-mode="dark"][data-theme="rose"] .kw-canvas::before {
-  background:
-    radial-gradient(1100px 700px at 10% 15%, rgba(244, 114, 182, 0.18), transparent 62%),
-    radial-gradient(900px 560px at 88% 18%, rgba(236, 72, 153, 0.14), transparent 62%),
-    radial-gradient(980px 620px at 70% 90%, rgba(168, 85, 247, 0.14), transparent 68%),
-    linear-gradient(180deg, rgba(22, 10, 18, 0.96), rgba(30, 12, 26, 1));
-}
-
-html[data-mode="dark"] .kw-canvas::after {
-  mix-blend-mode: overlay;
-}
-
 @media (max-width: 768px) {
   html {
     font-size: 16px;
-  }
-
-  .kw-canvas::before {
-    background:
-      radial-gradient(
-        580px 360px at 12% 16%,
-        rgba(10, 138, 119, 0.16),
-        transparent 62%
-      ),
-      radial-gradient(
-        520px 320px at 88% 14%,
-        rgba(var(--kw-accent-rgb), 0.12),
-        transparent 60%
-      ),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(246, 247, 249, 1));
-  }
-
-  html[data-mode="dark"] .kw-canvas::before {
-    background:
-      radial-gradient(
-        580px 360px at 10% 12%,
-        rgba(10, 138, 119, 0.18),
-        transparent 62%
-      ),
-      radial-gradient(
-        520px 320px at 90% 12%,
-        rgba(var(--kw-accent-rgb), 0.14),
-        transparent 62%
-      ),
-      linear-gradient(180deg, rgba(5, 10, 18, 0.96), rgba(11, 18, 32, 1));
-  }
-
-  .kw-canvas::after {
-    display: none;
   }
 
   .kw-beta-marquee-track {
@@ -665,11 +446,6 @@ html[data-mode="dark"] .kw-canvas::after {
 
   .kw-beta-marquee-segment[aria-hidden] {
     display: none;
-  }
-
-  .kw-glass,
-  .kw-glass-strong {
-    backdrop-filter: none;
   }
 }
 
@@ -798,50 +574,35 @@ html[data-mode="dark"] [class~="focus:bg-white"]:focus {
   padding-inline: 1.25rem;
 }
 
-/* Glassmorphic feature cards */
+/* ── Surfaces ───────────────────────────────────────────────── */
+/* Cards are opaque, with a hairline edge and almost no shadow. */
+@layer components {
 .kw-feature-card {
-  background: linear-gradient(
-    135deg,
-    rgba(10, 138, 119, 0.08) 0%,
-    rgba(255, 255, 255, 0.52) 50%,
-    rgba(234, 88, 12, 0.03) 100%
-  );
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.72);
-  box-shadow:
-    0 8px 32px rgba(11, 18, 32, 0.07),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-}
-
-html[data-mode="dark"] .kw-feature-card {
-  background: linear-gradient(
-    135deg,
-    rgba(10, 138, 119, 0.16) 0%,
-    rgba(11, 18, 32, 0.62) 50%,
-    rgba(234, 88, 12, 0.04) 100%
-  );
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  background: var(--kw-card);
+  border: 1px solid var(--kw-border-2);
+  box-shadow: none;
 }
 
 .kw-glass {
   background: var(--kw-card);
   border: 1px solid var(--kw-border-2);
-  box-shadow: var(--kw-shadow-soft);
-  backdrop-filter: blur(10px);
+  box-shadow: none;
 }
 
 .kw-glass-strong {
   background: var(--kw-card-strong);
-  border: 1px solid var(--kw-border);
-  box-shadow: var(--kw-shadow);
-  backdrop-filter: blur(12px);
+  border: 1px solid var(--kw-border-2);
+  box-shadow: var(--kw-shadow-soft);
 }
+
+/* Translucent material is reserved for chrome that floats over content. */
+.kw-material {
+  background: var(--kw-material);
+  -webkit-backdrop-filter: var(--kw-material-filter);
+  backdrop-filter: var(--kw-material-filter);
+}
+}
+
 
 .kw-surface-gradient-soft {
   background: var(--kw-panel-gradient-soft);
@@ -855,72 +616,36 @@ html[data-mode="dark"] .kw-feature-card {
   background: var(--kw-panel-gradient-strong);
 }
 
-.kw-app-shell :where(.kw-glass):not([class*="bg-"]) {
-  background: var(--kw-panel-gradient);
-}
-
-.kw-app-shell :where(.kw-glass-strong):not([class*="bg-"]) {
-  background: var(--kw-panel-gradient-strong);
-}
-
+/*
+  Legacy utility bridge: older markup paints surfaces with bg-white/NN.
+  Low-opacity whites become the grouped fill, the rest become cards.
+*/
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/40"],
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/50"],
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/55"],
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/60"],
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/65"],
-.kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class*="bg-[color:var(--kw-surface-soft)]"] {
-  background: var(--kw-panel-gradient-soft);
-  background-color: transparent;
+.kw-quran-shell [class~="bg-white/50"],
+.kw-quran-shell [class~="bg-white/55"],
+.kw-quran-shell [class~="bg-white/60"],
+.kw-quran-shell [class~="bg-white/65"] {
+  background: var(--kw-surface-soft);
 }
 
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/70"],
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/75"],
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/78"],
-.kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class*="bg-[color:var(--kw-surface)]"] {
-  background: var(--kw-panel-gradient);
-  background-color: transparent;
-}
-
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/80"],
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/85"],
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white/90"],
 .kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class~="bg-white"],
-.kw-app-shell :is(div, section, article, aside, li, main, details, summary)[class*="bg-[color:var(--kw-surface-strong)]"] {
-  background: var(--kw-panel-gradient-strong);
-  background-color: transparent;
-}
-
-.kw-quran-shell .kw-glass {
-  background: var(--kw-panel-gradient);
-}
-
-.kw-quran-shell .kw-glass-strong {
-  background: var(--kw-panel-gradient-strong);
-}
-
-.kw-quran-shell [class~="bg-white/50"],
-.kw-quran-shell [class~="bg-white/55"],
-.kw-quran-shell [class~="bg-white/60"],
-.kw-quran-shell [class~="bg-white/65"],
-.kw-quran-shell [class*="bg-[color:var(--kw-surface-soft)]"] {
-  background: var(--kw-panel-gradient-soft);
-  background-color: transparent;
-}
-
 .kw-quran-shell [class~="bg-white/70"],
 .kw-quran-shell [class~="bg-white/75"],
-.kw-quran-shell [class*="bg-[color:var(--kw-surface)]"] {
-  background: var(--kw-panel-gradient);
-  background-color: transparent;
-}
-
 .kw-quran-shell [class~="bg-white/80"],
 .kw-quran-shell [class~="bg-white/85"],
 .kw-quran-shell [class~="bg-white/90"],
-.kw-quran-shell [class~="bg-white"],
-.kw-quran-shell [class*="bg-[color:var(--kw-surface-strong)]"] {
-  background: var(--kw-panel-gradient-strong);
-  background-color: transparent;
+.kw-quran-shell [class~="bg-white"] {
+  background: var(--kw-surface);
 }
 
 .kw-hairline {

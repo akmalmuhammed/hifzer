@@ -16,25 +16,25 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 function variantClasses(variant: ButtonVariant): string {
   if (variant === "secondary") {
-    return "border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-surface-strong)]";
+    return "border border-transparent bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-strong)]";
   }
   if (variant === "ghost") {
     return "border border-transparent bg-transparent text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-soft)]";
   }
   if (variant === "danger") {
-    return "border border-transparent bg-rose-600 text-white hover:bg-rose-700";
+    return "border border-transparent bg-[#d70015] text-white hover:bg-[#b80012]";
   }
-  return "border border-transparent bg-[rgba(var(--kw-accent-rgb),1)] text-white hover:bg-[rgba(var(--kw-accent-rgb),0.86)]";
+  return "border border-transparent bg-[rgba(var(--kw-accent-rgb),1)] text-white hover:bg-[rgba(var(--kw-accent-rgb),0.88)]";
 }
 
 function sizeClasses(size: ButtonSize): string {
   if (size === "sm") {
-    return "h-[var(--kw-control-sm-height)] rounded-[var(--kw-control-sm-radius)] px-3 text-sm";
+    return "h-[var(--kw-control-sm-height)] rounded-[var(--kw-control-sm-radius)] px-3.5 text-sm";
   }
   if (size === "lg") {
-    return "h-[var(--kw-control-lg-height)] rounded-[var(--kw-control-lg-radius)] px-5 text-[0.95rem]";
+    return "h-[var(--kw-control-lg-height)] rounded-[var(--kw-control-lg-radius)] px-6 text-[1.06rem]";
   }
-  return "h-[var(--kw-control-md-height)] rounded-[var(--kw-control-md-radius)] px-4 text-sm";
+  return "h-[var(--kw-control-md-height)] rounded-[var(--kw-control-md-radius)] px-5 text-[0.94rem]";
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
@@ -53,9 +53,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 ) {
   const isDisabled = disabled || loading;
   const buttonClasses = clsx(
-    "inline-flex select-none items-center justify-center gap-2 whitespace-nowrap font-semibold transition",
+    "inline-flex select-none items-center justify-center gap-2 whitespace-nowrap font-medium tracking-[-0.01em] transition-[background-color,color,transform,opacity] duration-200",
     "[&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0",
-    "shadow-[var(--kw-shadow-soft)] active:translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-60",
+    "active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--kw-bg)]",
     variantClasses(variant),
     sizeClasses(size),

@@ -351,7 +351,7 @@ export function BookmarkManagerClient(props: { connectionStatus: QuranFoundation
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search by name, note, or ayah"
-              className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/80 px-3 text-sm text-[color:var(--kw-ink)]"
+              className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
             />
           </label>
           <label className="text-sm text-[color:var(--kw-muted)]">
@@ -359,7 +359,7 @@ export function BookmarkManagerClient(props: { connectionStatus: QuranFoundation
             <select
               value={categoryFilter}
               onChange={(event) => setCategoryFilter(event.target.value)}
-              className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/80 px-3 text-sm text-[color:var(--kw-ink)]"
+              className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
             >
               <option value="">All categories</option>
               <option value="__none__">No category</option>
@@ -386,13 +386,13 @@ export function BookmarkManagerClient(props: { connectionStatus: QuranFoundation
             value={newCategoryName}
             onChange={(event) => setNewCategoryName(event.target.value)}
             placeholder="New category name"
-            className="h-10 rounded-xl border border-[color:var(--kw-border-2)] bg-white/80 px-3 text-sm text-[color:var(--kw-ink)]"
+            className="h-10 rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
           />
           <input
             value={newCategorySortOrder}
             onChange={(event) => setNewCategorySortOrder(event.target.value)}
             placeholder="Sort order"
-            className="h-10 rounded-xl border border-[color:var(--kw-border-2)] bg-white/80 px-3 text-sm text-[color:var(--kw-ink)]"
+            className="h-10 rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
           />
           <Button onClick={() => void createCategory()} loading={busyKey === "category-create"}>
             Add category
@@ -406,7 +406,7 @@ export function BookmarkManagerClient(props: { connectionStatus: QuranFoundation
             categories.map((category) => (
               <span
                 key={category.id}
-                className="inline-flex items-center gap-2 rounded-full border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-1 text-xs font-semibold text-[color:var(--kw-ink)]"
+                className="inline-flex items-center gap-2 rounded-full border border-transparent bg-[color:var(--kw-fill-strong)] px-3 py-1 text-xs font-medium text-[color:var(--kw-ink)]"
               >
                 {category.name}
                 {category.archivedAt ? (
@@ -486,7 +486,7 @@ export function BookmarkManagerClient(props: { connectionStatus: QuranFoundation
                     const next = event.target.value;
                     setDrafts((prev) => ({ ...prev, [bookmark.id]: { ...draft, name: next } }));
                   }}
-                  className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/80 px-3 text-sm text-[color:var(--kw-ink)] disabled:opacity-60"
+                  className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] disabled:opacity-60 transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
                 />
               </label>
 
@@ -499,7 +499,7 @@ export function BookmarkManagerClient(props: { connectionStatus: QuranFoundation
                     const next = event.target.value;
                     setDrafts((prev) => ({ ...prev, [bookmark.id]: { ...draft, categoryId: next } }));
                   }}
-                  className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/80 px-3 text-sm text-[color:var(--kw-ink)] disabled:opacity-60"
+                  className="mt-1 h-10 w-full rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 text-sm text-[color:var(--kw-ink)] disabled:opacity-60 transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
                 >
                   <option value="">No category</option>
                   {categories.filter((x) => !x.archivedAt).map((category) => (
@@ -518,7 +518,7 @@ export function BookmarkManagerClient(props: { connectionStatus: QuranFoundation
                     setDrafts((prev) => ({ ...prev, [bookmark.id]: { ...draft, note: next } }));
                   }}
                   rows={3}
-                  className="mt-1 w-full rounded-xl border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-2 text-sm text-[color:var(--kw-ink)] disabled:opacity-60"
+                  className="mt-1 w-full rounded-xl border border-[color:var(--kw-border)] bg-[color:var(--kw-surface)] px-3 py-2 text-sm text-[color:var(--kw-ink)] disabled:opacity-60 transition-[border-color,box-shadow] duration-200 focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--kw-accent-rgb),0.16)]"
                 />
               </label>
             </div>

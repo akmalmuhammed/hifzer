@@ -37,20 +37,20 @@ function ProgressRow({ item }: { item: SurahProgressItem }) {
 
   return (
     <div
-      className={`rounded-[22px] border p-4 transition-colors ${
+      className={`rounded-[18px] p-4 transition-colors sm:p-5 ${
         item.isCompleted
-          ? "border-[rgba(22,163,74,0.24)] bg-[rgba(22,163,74,0.08)]"
+          ? "bg-[color:var(--kw-pill-success-bg)]"
           : item.isCurrent
-            ? "border-[rgba(var(--kw-accent-rgb),0.24)] bg-[rgba(var(--kw-accent-rgb),0.08)]"
-            : "border-[color:var(--kw-border-2)] bg-white/65"
+            ? "bg-[rgba(var(--kw-accent-rgb),0.08)]"
+            : "bg-[color:var(--kw-fill)]"
       }`}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-base font-semibold text-[color:var(--kw-ink)]">
+          <p className="truncate text-[1.06rem] font-semibold tracking-[-0.02em] text-[color:var(--kw-ink)]">
             {item.surahName}
           </p>
-          <p className="mt-1 text-xs uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
+          <p className="mt-1 text-[0.82rem] tabular-nums text-[color:var(--kw-faint)]">
             Surah {item.surahNumber} - {item.completedAyahCount}/{item.ayahCount} ayahs
           </p>
         </div>
@@ -58,10 +58,10 @@ function ProgressRow({ item }: { item: SurahProgressItem }) {
           {item.isCurrent ? <Pill tone="accent">Current</Pill> : null}
           {item.isCompleted ? <Pill tone="accent">Completed</Pill> : null}
           <span
-            className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${
+            className={`inline-flex items-center rounded-full bg-[color:var(--kw-card)] px-2.5 py-1 text-xs font-semibold tabular-nums ${
               item.isCompleted
-                ? "border-[rgba(22,163,74,0.26)] bg-[rgba(22,163,74,0.14)] text-[rgb(21,128,61)]"
-                : "border-[color:var(--kw-border-2)] bg-white/75 text-[color:var(--kw-muted)]"
+                ? "text-[color:var(--kw-pill-success-fg)]"
+                : "text-[color:var(--kw-muted)]"
             }`}
           >
             {completionBadge}
@@ -69,16 +69,16 @@ function ProgressRow({ item }: { item: SurahProgressItem }) {
         </div>
       </div>
 
-      <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-black/[0.07]">
+      <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-[color:var(--kw-track)]">
         <div
           className={`h-full rounded-full transition-[width] ${
-            item.isCompleted ? "bg-[rgba(22,163,74,0.78)]" : "bg-[rgba(var(--kw-accent-rgb),0.78)]"
+            item.isCompleted ? "bg-[color:var(--kw-lime-600)]" : "bg-[rgba(var(--kw-accent-rgb),1)]"
           }`}
           style={{ width: `${item.completionPct}%` }}
         />
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm tabular-nums">
         <span className="text-[color:var(--kw-muted)]">
           {item.isCompleted
             ? `Completed ${item.completionCount} time${item.completionCount === 1 ? "" : "s"}`
@@ -112,13 +112,13 @@ export function SurahProgressSection({
             <div>
               <div className="flex items-center gap-2">
                 <BookOpenText size={16} className="text-[color:var(--kw-faint)]" />
-                <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">{title}</p>
+                <p className="text-[1.12rem] font-semibold tracking-[-0.02em] text-[color:var(--kw-ink)]">{title}</p>
               </div>
-              <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--kw-muted)]">{subtitle}</p>
+              <p className="mt-2 max-w-3xl text-[0.94rem] leading-[1.5] text-[color:var(--kw-muted)]">{subtitle}</p>
             </div>
             <div className="flex items-center gap-2">
               <Pill tone="neutral">{items.length} surahs</Pill>
-              <span className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)]">
+              <span className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[color:var(--kw-fill-strong)] px-3.5 py-2 text-sm font-medium text-[color:var(--kw-ink)]">
                 <span className="group-open:hidden">Show</span>
                 <span className="hidden group-open:inline">Hide</span>
                 <ChevronDown size={15} className="transition-transform group-open:rotate-180" />
@@ -132,7 +132,7 @@ export function SurahProgressSection({
             <div className="mb-4 flex justify-start">
               <Link
                 href={viewAllHref}
-                className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-4 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+                className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[rgba(var(--kw-accent-rgb),0.1)] px-4 py-2 text-sm font-medium text-[rgba(var(--kw-accent-rgb),1)] transition-colors duration-200 hover:bg-[rgba(var(--kw-accent-rgb),0.16)]"
               >
                 See all surahs <ArrowRight size={15} />
               </Link>
@@ -140,9 +140,9 @@ export function SurahProgressSection({
           ) : null}
 
           {items.length < 1 ? (
-            <div className="rounded-[22px] border border-dashed border-[color:var(--kw-border-2)] bg-white/55 p-5">
+            <div className="rounded-[18px] bg-[color:var(--kw-fill)] p-5">
               <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{emptyTitle}</p>
-              <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">{emptyBody}</p>
+              <p className="mt-1 text-sm leading-6 text-[color:var(--kw-muted)]">{emptyBody}</p>
             </div>
           ) : (
             <>
@@ -150,7 +150,7 @@ export function SurahProgressSection({
                 <div>
                   <div className="flex items-center gap-2">
                     <Pill tone="neutral">In progress</Pill>
-                    <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">
+                    <span className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">
                       Where you are now
                     </span>
                   </div>
@@ -166,7 +166,7 @@ export function SurahProgressSection({
                 <div className="mt-6">
                   <div className="flex items-center gap-2">
                     <Pill tone="accent">Completed</Pill>
-                    <span className="text-xs uppercase tracking-wide text-[color:var(--kw-faint)]">
+                    <span className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">
                       Finished surahs
                     </span>
                   </div>

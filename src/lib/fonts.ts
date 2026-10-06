@@ -2,7 +2,6 @@ import {
   Amiri,
   IBM_Plex_Mono,
   Inter,
-  Plus_Jakarta_Sans,
 } from "next/font/google";
 
 export const appSansFont = Inter({
@@ -26,11 +25,4 @@ export const quranFont = Amiri({
   weight: ["400", "700"],
   display: "swap",
   preload: false,
-});
-
-export const marketingDisplayFont = Plus_Jakarta_Sans({
-  variable: "--font-kw-marketing",
-  subsets: ["latin"],
-  display: "swap",
-  preload: true,
 });

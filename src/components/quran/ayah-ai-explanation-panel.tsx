@@ -17,7 +17,7 @@ type LoadState =
 
 function sectionHeading(label: string) {
   return (
-    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
+    <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">
       {label}
     </p>
   );
@@ -60,7 +60,7 @@ export function AyahAiExplanationPanel(props: { ayahId: number; compact?: boolea
   const errorDetail = state.phase === "error" ? state.detail : null;
 
   return (
-    <Card className={props.compact ? "mt-3" : "mt-4"}>
+    <Card className={props.compact ? "mt-6 !rounded-[18px] !border-transparent !bg-[color:var(--kw-fill)] !shadow-none" : "mt-4"}>
       <div className="flex flex-wrap items-center gap-2">
         <Pill tone="accent">AI beta</Pill>
         <Pill tone="neutral">Optional guidance</Pill>
@@ -74,7 +74,7 @@ export function AyahAiExplanationPanel(props: { ayahId: number; compact?: boolea
           <button
             type="button"
             onClick={loadExplanation}
-            className="inline-flex items-center gap-2 rounded-full border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.10)] px-4 py-2 text-sm font-semibold text-[color:var(--kw-ink)] transition hover:bg-[rgba(var(--kw-accent-rgb),0.14)]"
+            className="inline-flex items-center gap-2 rounded-full border border-transparent bg-[rgba(var(--kw-accent-rgb),0.10)] px-4 py-2 text-sm font-medium text-[color:var(--kw-ink)] transition hover:bg-[rgba(var(--kw-accent-rgb),0.14)]"
           >
             <Sparkles size={15} />
             Explain this ayah
@@ -83,19 +83,19 @@ export function AyahAiExplanationPanel(props: { ayahId: number; compact?: boolea
       ) : null}
 
       {loading ? (
-        <div className="mt-4 flex items-center gap-3 rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3 text-sm text-[color:var(--kw-muted)]">
+        <div className="mt-4 flex items-center gap-3 rounded-[14px] bg-[color:var(--kw-fill)] px-4 py-3 text-sm text-[color:var(--kw-muted)]">
           <Loader2 size={16} className="animate-spin text-[color:var(--kw-faint)]" />
           Loading a grounded explanation for this ayah...
         </div>
       ) : null}
 
       {errorDetail ? (
-        <div className="mt-4 rounded-[18px] border border-[rgba(180,83,9,0.18)] bg-[rgba(245,158,11,0.08)] px-4 py-3">
+        <div className="mt-4 rounded-[18px] bg-[color:var(--kw-pill-warn-bg)] px-4 py-3">
           <p className="text-sm leading-7 text-[color:var(--kw-muted)]">{errorDetail}</p>
           <button
             type="button"
             onClick={loadExplanation}
-            className="mt-3 inline-flex items-center gap-2 rounded-full border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-2 text-xs font-semibold text-[color:var(--kw-ink)] transition hover:bg-white"
+            className="mt-3 inline-flex items-center gap-2 rounded-full border border-transparent bg-[color:var(--kw-fill-strong)] px-4 py-2 text-xs font-medium text-[color:var(--kw-ink)] transition hover:bg-[color:var(--kw-hover-strong)]"
           >
             <RefreshCw size={13} />
             Try again
@@ -115,7 +115,7 @@ export function AyahAiExplanationPanel(props: { ayahId: number; compact?: boolea
         <div className="mt-4 space-y-4">
           <div className="space-y-2">
             {sectionHeading("Explanation insights")}
-            <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3">
+            <div className="rounded-[14px] bg-[color:var(--kw-fill)] px-4 py-3">
               <p className="text-sm leading-7 text-[color:var(--kw-ink)]">{ready.explanation.summary}</p>
             </div>
           </div>
@@ -126,7 +126,7 @@ export function AyahAiExplanationPanel(props: { ayahId: number; compact?: boolea
               {ready.explanation.tafsirInsights.map((insight) => (
                 <div
                   key={`${insight.source}-${insight.title}`}
-                  className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3"
+                  className="rounded-[14px] bg-[color:var(--kw-fill)] px-4 py-3"
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{insight.title}</p>
@@ -144,7 +144,7 @@ export function AyahAiExplanationPanel(props: { ayahId: number; compact?: boolea
               {ready.explanation.wordNotes.map((note) => (
                 <div
                   key={`${note.term}-${note.detail}`}
-                  className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3"
+                  className="rounded-[14px] bg-[color:var(--kw-fill)] px-4 py-3"
                 >
                   <div className="flex items-center gap-2">
                     <BookOpenText size={14} className="text-[color:var(--kw-faint)]" />
@@ -166,7 +166,7 @@ export function AyahAiExplanationPanel(props: { ayahId: number; compact?: boolea
                     href={source.url ?? "/legal/sources"}
                     target={source.url?.startsWith("http") ? "_blank" : undefined}
                     rel={source.url?.startsWith("http") ? "noreferrer" : undefined}
-                    className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-[color:var(--kw-border-2)] bg-white/75 px-3 py-2 text-xs font-semibold text-[color:var(--kw-ink)]"
+                    className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-transparent bg-[color:var(--kw-fill-strong)] px-4 py-2 text-xs font-medium text-[color:var(--kw-ink)]"
                   >
                     {source.label}
                     <ExternalLink size={12} aria-hidden="true" />
@@ -179,7 +179,7 @@ export function AyahAiExplanationPanel(props: { ayahId: number; compact?: boolea
           <button
             type="button"
             onClick={loadExplanation}
-            className="inline-flex items-center gap-2 rounded-full border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-2 text-xs font-semibold text-[color:var(--kw-ink)] transition hover:bg-white"
+            className="inline-flex items-center gap-2 rounded-full border border-transparent bg-[color:var(--kw-fill-strong)] px-4 py-2 text-xs font-medium text-[color:var(--kw-ink)] transition hover:bg-[color:var(--kw-hover-strong)]"
           >
             <RefreshCw size={13} />
             Refresh explanation

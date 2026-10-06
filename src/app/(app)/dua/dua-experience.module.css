@@ -10,14 +10,22 @@
 .explorerCard,
 .stageCard,
 .toolCard,
-.studyCard,
 .managerCard {
   display: grid;
   gap: 18px;
   border: 1px solid var(--kw-border-2);
-  background:
-    radial-gradient(540px 180px at 100% -20%, rgba(var(--kw-accent-rgb), 0.08), transparent 58%),
-    linear-gradient(180deg, var(--kw-card-strong), var(--kw-surface-strong));
+  background: var(--kw-card);
+  box-shadow: none;
+}
+
+/* Page headers sit directly on the page background, like a large title. */
+.homeHeroCard,
+.focusHero {
+  gap: 20px;
+  border-color: transparent;
+  background: transparent;
+  padding-inline: 0;
+  padding-block: 0.25rem 0.5rem;
 }
 
 .homeHeroTop,
@@ -64,56 +72,79 @@
   align-items: flex-start;
 }
 
+.homeHeroTop {
+  align-items: flex-end;
+}
+
+.focusMetaRow {
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.toolActions {
+  margin-top: 14px;
+  gap: 8px;
+}
+
 .homeEyebrow,
 .sectionLabel,
 .fieldLabel,
 .moduleEyebrow,
 .stageCount,
 .stepEyebrow {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.4;
   color: var(--kw-faint);
+}
+
+.homeEyebrow {
+  color: rgba(var(--kw-accent-rgb), 1);
+}
+
+.stageCount {
+  font-variant-numeric: tabular-nums;
 }
 
 .homeTitle,
 .focusTitle,
 .moduleTitle,
 .stageTitle,
-.principleTitle,
-.studyTitle,
 .managerTitle,
-.deckOrderTitle,
-.evidenceTitle {
-  font-weight: 700;
-  letter-spacing: -0.03em;
+.deckOrderTitle {
+  font-weight: 600;
+  letter-spacing: -0.025em;
   color: var(--kw-ink);
 }
 
 .homeTitle {
   margin-top: 8px;
   font-size: clamp(2.25rem, 5vw, 3.5rem);
-  line-height: 0.98;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
 }
 
 .focusTitle {
-  margin-top: 10px;
+  margin-top: 12px;
   font-size: clamp(2rem, 4vw, 3rem);
-  line-height: 1.02;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.06;
 }
 
 .moduleTitle {
-  font-size: 1.18rem;
+  font-size: 1.22rem;
+  line-height: 1.2;
 }
 
-.studyTitle,
 .managerTitle {
+  margin-top: 4px;
   font-size: 1.45rem;
+  line-height: 1.15;
 }
 
 .homeSubtitle,
-.principleText,
 .moduleDescription,
 .focusSubtitle,
 .stageSummary,
@@ -121,77 +152,28 @@
 .duaIntro,
 .toolSummary,
 .counterNote,
-.studySummary,
-.studyClosed,
 .managerSubtitle,
 .deckOrderSummary,
-.evidenceDetail,
 .practiceItem p,
-.reflectionCard p,
-.contextNotice p,
 .notice {
   color: var(--kw-muted);
-  line-height: 1.72;
+  line-height: 1.6;
+}
+
+.homeSubtitle,
+.focusSubtitle {
+  margin-top: 10px;
+  max-width: 46rem;
+  font-size: 1.06rem;
+  line-height: 1.47;
+}
+
+.managerSubtitle {
+  margin-top: 6px;
 }
 
 .homeActions {
   justify-content: flex-start;
-}
-
-.principleGrid {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.principleCard,
-.metricChip,
-.focusMetaPill,
-.stepButton,
-.practiceItem,
-.contextNotice,
-.reflectionCard,
-.evidenceItem,
-.fieldInput,
-.fieldTextarea,
-.notice,
-.deckOrderRow {
-  border-radius: 18px;
-  border: 1px solid var(--kw-border-2);
-  background: var(--kw-surface);
-}
-
-.principleCard {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 12px;
-  padding: 16px;
-}
-
-.principleIcon,
-.moduleIcon,
-.actionIcon,
-.boundaryIcon,
-.practiceDot,
-.stepNumber {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.principleIcon,
-.moduleIcon {
-  width: 40px;
-  height: 40px;
-  border-radius: 16px;
-  border: 1px solid var(--kw-border-2);
-  background: var(--kw-surface);
-}
-
-.principleIcon {
-  border-color: rgba(var(--kw-accent-rgb), 0.18);
-  background: rgba(var(--kw-accent-rgb), 0.1);
-  color: rgba(var(--kw-accent-rgb), 1);
 }
 
 .moduleGrid {
@@ -201,21 +183,16 @@
 }
 
 .moduleOverviewCard {
-  transition:
-    transform 180ms ease,
-    border-color 180ms ease,
-    background-color 180ms ease;
+  padding: 1.5rem;
+  transition: border-color 200ms var(--kw-ease);
 }
 
 .moduleOverviewCard:hover {
-  transform: translateY(-2px);
-  border-color: rgba(var(--kw-accent-rgb), 0.18);
-  background: rgba(255, 255, 255, 0.82);
+  border-color: var(--kw-border);
 }
 
 .moduleOverviewCard[data-active="1"] {
-  border-color: rgba(var(--kw-accent-rgb), 0.24);
-  box-shadow: var(--kw-shadow-soft);
+  border-color: rgba(var(--kw-accent-rgb), 0.4);
 }
 
 .moduleOverviewTop {
@@ -229,36 +206,47 @@
   min-width: 0;
 }
 
+.moduleIcon,
+.actionIcon,
+.practiceDot,
+.stepNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.moduleIcon {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--kw-fill-strong);
+  color: var(--kw-ink-2);
+}
+
 .moduleIcon[data-tone="accent"] {
-  border-color: rgba(var(--kw-accent-rgb), 0.2);
-  background: rgba(var(--kw-accent-rgb), 0.12);
+  background: rgba(var(--kw-accent-rgb), 0.1);
   color: rgba(var(--kw-accent-rgb), 1);
 }
 
 .moduleIcon[data-tone="warn"] {
-  border-color: rgba(194, 65, 12, 0.18);
-  background: rgba(194, 65, 12, 0.12);
+  background: color-mix(in srgb, var(--kw-ember-500) 12%, transparent);
   color: var(--kw-ember-600);
 }
 
 .moduleIcon[data-tone="success"] {
-  border-color: rgba(22, 163, 74, 0.18);
-  background: rgba(22, 163, 74, 0.12);
+  background: color-mix(in srgb, var(--kw-lime-600) 12%, transparent);
   color: var(--kw-lime-600);
 }
 
 .moduleCount,
 .counterValue {
-  font-family:
-    var(--font-kw-mono),
-    "IBM Plex Mono",
-    ui-monospace,
-    monospace;
+  font-variant-numeric: tabular-nums;
 }
 
 .moduleCount {
-  font-size: 0.82rem;
-  font-weight: 700;
+  font-size: 0.86rem;
+  font-weight: 500;
   color: var(--kw-faint);
 }
 
@@ -270,14 +258,17 @@
 
 .metricChip,
 .focusMetaPill {
-  padding: 10px 12px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--kw-faint);
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--kw-fill-strong);
+  font-size: 0.84rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--kw-ink-2);
 }
 
-.focusMetaPill {
-  border-radius: 999px;
+.moduleOverviewCard .metricChip {
+  background: var(--kw-fill);
 }
 
 .managerMetaRow {
@@ -287,17 +278,18 @@
 }
 
 .progressTrack {
-  height: 10px;
+  height: 6px;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(11, 18, 32, 0.08);
+  background: var(--kw-track);
 }
 
 .progressFill {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, rgba(var(--kw-accent-rgb), 0.95), rgba(var(--kw-accent-rgb), 0.55));
+  background: rgba(var(--kw-accent-rgb), 1);
+  transition: width 400ms var(--kw-ease);
 }
 
 .stepShell {
@@ -306,6 +298,7 @@
 
 .explorerCard {
   gap: 16px;
+  padding: 1.5rem;
 }
 
 .searchField,
@@ -314,43 +307,62 @@
   gap: 8px;
 }
 
-.searchInput,
-.filterChip {
-  border-radius: 16px;
-  border: 1px solid var(--kw-border-2);
-  background: var(--kw-surface);
-  color: var(--kw-ink);
-}
-
 .searchInput {
   min-width: min(100%, 360px);
-  padding: 12px 14px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: var(--kw-fill-strong);
+  color: var(--kw-ink);
   font-size: 0.95rem;
   line-height: 1.5;
+  transition:
+    border-color 200ms var(--kw-ease),
+    box-shadow 200ms var(--kw-ease);
+}
+
+.searchInput::placeholder {
+  color: var(--kw-faint);
+}
+
+.searchInput:focus,
+.fieldInput:focus,
+.fieldTextarea:focus {
+  border-color: rgba(var(--kw-accent-rgb), 0.55);
+  box-shadow: 0 0 0 4px rgba(var(--kw-accent-rgb), 0.16);
+  outline: none;
 }
 
 .filterRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .filterChip {
-  padding: 10px 14px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--kw-fill-strong);
+  color: var(--kw-ink-2);
   font-size: 0.86rem;
-  font-weight: 700;
+  font-weight: 500;
   transition:
-    color 180ms ease,
-    border-color 180ms ease,
-    background-color 180ms ease;
+    color 200ms var(--kw-ease),
+    background-color 200ms var(--kw-ease);
 }
 
-.filterChip[data-active="1"] {
-  border-color: rgba(var(--kw-accent-rgb), 0.22);
-  background: rgba(var(--kw-accent-rgb), 0.12);
+.filterChip:hover {
   color: var(--kw-ink);
 }
 
+.filterChip[data-active="1"] {
+  background: rgba(var(--kw-accent-rgb), 0.12);
+  color: rgba(var(--kw-accent-rgb), 1);
+}
+
+/* Step rail: a quiet strip of white tiles on the page background. */
 .stepRail {
   display: grid;
   grid-auto-flow: column;
@@ -371,218 +383,250 @@
   gap: 12px;
   align-items: start;
   min-height: 100%;
-  padding: 12px;
+  padding: 14px;
+  border: 1px solid var(--kw-border-2);
+  border-radius: 18px;
+  background: var(--kw-card);
   text-align: left;
   transition:
-    border-color 180ms ease,
-    background-color 180ms ease,
-    transform 180ms ease;
+    border-color 200ms var(--kw-ease),
+    background-color 200ms var(--kw-ease);
 }
 
 .stepButton:hover {
-  transform: translateY(-1px);
-  border-color: rgba(var(--kw-accent-rgb), 0.18);
+  border-color: var(--kw-border);
 }
 
 .stepButton[data-active="1"] {
-  border-color: rgba(var(--kw-accent-rgb), 0.22);
-  background:
-    linear-gradient(180deg, rgba(var(--kw-accent-rgb), 0.14), rgba(var(--kw-accent-rgb), 0.05)),
-    var(--kw-surface);
+  border-color: rgba(var(--kw-accent-rgb), 0.55);
 }
 
 .stepNumber {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 999px;
-  background: var(--kw-surface-strong);
-  color: var(--kw-ink);
+  background: var(--kw-fill-strong);
+  color: var(--kw-ink-2);
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .stepButton[data-seen="1"] .stepNumber {
-  background: rgba(22, 163, 74, 0.14);
+  background: color-mix(in srgb, var(--kw-lime-600) 14%, transparent);
   color: var(--kw-lime-600);
+}
+
+.stepButton[data-active="1"] .stepNumber {
+  background: rgba(var(--kw-accent-rgb), 1);
+  color: #fff;
 }
 
 .stepCopy {
   min-width: 0;
 }
 
+.stepEyebrow {
+  font-size: 0.78rem;
+}
+
 .stepTitle {
   display: block;
-  margin-top: 6px;
+  margin-top: 4px;
   font-size: 0.94rem;
-  line-height: 1.5;
+  font-weight: 500;
+  line-height: 1.4;
   color: var(--kw-ink);
 }
 
 .stepArabic {
   display: block;
   margin-top: 6px;
-  font-family:
-    var(--font-kw-quran),
-    "KFGQPC Uthmanic Script HAFS",
-    "Scheherazade New",
-    "Amiri",
-    "Noto Naskh Arabic",
-    serif;
-  font-size: 1.1rem;
+  font-family: var(--font-kw-quran);
+  font-size: 1.15rem;
   line-height: 1.8;
   color: var(--kw-ink);
 }
 
 .stepMeaning,
 .nameTransliteration {
-  font-size: 0.82rem;
-  line-height: 1.55;
+  font-size: 0.84rem;
+  line-height: 1.5;
   color: var(--kw-muted);
 }
 
+/* Reading stage: one dua at a time, centred like a page in a book. */
 .focusStage {
   display: grid;
   gap: 16px;
   width: 100%;
-  max-width: 900px;
+  max-width: 820px;
   margin: 0 auto;
+}
+
+.stageCard {
+  gap: 28px;
+  padding: clamp(1.5rem, 4vw, 3rem);
 }
 
 .stageHeader {
   display: grid;
-  gap: 12px;
+  justify-items: center;
+  gap: 16px;
+  text-align: center;
 }
 
 .stageTitle {
-  margin-top: 8px;
-  font-size: clamp(1.9rem, 4vw, 2.9rem);
-  line-height: 1.04;
+  margin-top: 6px;
+  font-size: clamp(1.7rem, 3.4vw, 2.4rem);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
 }
 
-.nameCard,
-.nameCopy {
-  align-items: start;
+.stageSummary {
+  max-width: 58ch;
+  margin: 12px auto 0;
+  font-size: 1.02rem;
 }
 
 .nameCard {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 16px 18px;
-  border-radius: 22px;
-  border: 1px solid rgba(22, 163, 74, 0.16);
-  background:
-    radial-gradient(320px 140px at 100% -10%, rgba(22, 163, 74, 0.08), transparent 60%),
-    linear-gradient(180deg, var(--kw-card-strong), var(--kw-surface-strong));
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 24px 20px;
+  border-radius: 18px;
+  background: var(--kw-fill);
+  text-align: center;
+}
+
+.nameCopy {
+  justify-items: center;
 }
 
 .nameArabic {
-  font-family:
-    var(--font-kw-quran),
-    "KFGQPC Uthmanic Script HAFS",
-    "Scheherazade New",
-    "Amiri",
-    "Noto Naskh Arabic",
-    serif;
-  font-size: clamp(1.9rem, 4vw, 2.5rem);
-  line-height: 1.9;
+  font-family: var(--font-kw-quran);
+  font-size: clamp(2.2rem, 5vw, 3rem);
+  line-height: 1.8;
   color: var(--kw-ink);
 }
 
 .nameMeaning {
+  margin-top: 2px;
   color: var(--kw-ink);
-  font-size: 1rem;
+  font-size: 1.06rem;
   font-weight: 600;
-  line-height: 1.5;
-}
-
-.actionBand,
-.contextNotice {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 12px;
-  padding: 14px 16px;
+  line-height: 1.4;
 }
 
 .actionBand {
-  border-radius: 20px;
-  border: 1px solid var(--kw-border-2);
-  background: var(--kw-surface);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--kw-fill);
 }
 
-.actionIcon,
-.boundaryIcon {
+.actionIcon {
   width: 36px;
   height: 36px;
-  border-radius: 14px;
-  border: 1px solid rgba(194, 65, 12, 0.18);
-  background: rgba(194, 65, 12, 0.12);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--kw-ember-500) 12%, transparent);
   color: var(--kw-ember-600);
 }
 
 .duaCard {
   display: grid;
-  gap: 16px;
-  padding: 18px;
-  border-radius: 24px;
-  border: 1px solid rgba(var(--kw-accent-rgb), 0.16);
-  background:
-    radial-gradient(420px 160px at 90% -10%, rgba(var(--kw-accent-rgb), 0.08), transparent 60%),
-    linear-gradient(180deg, var(--kw-card-strong), var(--kw-surface-strong));
+  gap: 28px;
+  padding: 28px 0;
+  border-block: 1px solid var(--kw-border-2);
+  text-align: center;
+}
+
+.duaIntro {
+  max-width: 54ch;
+  margin: 6px auto 0;
+  font-size: 0.94rem;
 }
 
 .duaArabic {
-  font-family:
-    var(--font-kw-quran),
-    "KFGQPC Uthmanic Script HAFS",
-    "Scheherazade New",
-    "Amiri",
-    "Noto Naskh Arabic",
-    serif;
-  font-size: clamp(2rem, 4vw, 2.7rem);
-  line-height: 2.02;
+  font-family: var(--font-kw-quran);
+  font-size: clamp(2.2rem, 4.6vw, 3.1rem);
+  line-height: 2;
   color: var(--kw-ink);
+  text-align: center;
+  text-wrap: balance;
 }
 
 .duaSupportStack,
 .practiceList,
-.evidenceList,
 .managerForm,
-.deckOrderList,
-.supportGrid {
+.deckOrderList {
   display: grid;
   gap: 12px;
 }
 
+.duaSupportStack {
+  gap: 22px;
+  justify-items: center;
+}
+
+/* Transliteration and meaning read as plain text under the Arabic. */
 .duaSupportPanel {
+  max-width: 60ch;
   margin-top: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
-.practiceSection,
-.evidenceSection {
+.duaSupportPanel > p {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--kw-faint);
+}
+
+.duaSupportPanel > div {
+  margin-top: 6px;
+  font-size: 1.04rem;
+  letter-spacing: 0;
+  line-height: 1.65;
+}
+
+.practiceSection {
   display: grid;
   gap: 12px;
+}
+
+.practiceList,
+.deckOrderList {
+  gap: 0;
 }
 
 .practiceItem {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 12px;
-  padding: 14px;
+  padding: 14px 0;
+  border-top: 1px solid var(--kw-border-2);
+}
+
+.practiceItem:first-child {
+  border-top: 0;
 }
 
 .practiceDot {
-  width: 12px;
-  height: 12px;
-  margin-top: 8px;
+  width: 8px;
+  height: 8px;
+  margin-top: 9px;
   border-radius: 999px;
-  background: rgba(var(--kw-accent-rgb), 0.78);
+  background: rgba(var(--kw-accent-rgb), 1);
 }
 
-.toolCard,
-.studyCard {
+.toolCard {
   gap: 16px;
 }
 
@@ -593,7 +637,7 @@
 .compactSummary {
   margin-top: 4px;
   color: var(--kw-muted);
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 .practiceDisclosureBody {
@@ -603,8 +647,9 @@
 
 .counterPanel {
   gap: 16px;
+  margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid rgba(11, 18, 32, 0.08);
+  border-top: 1px solid var(--kw-border-2);
 }
 
 .counterControls {
@@ -617,82 +662,41 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 14px;
-  border: 1px solid var(--kw-border-2);
-  background: var(--kw-surface);
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--kw-fill-strong);
   color: var(--kw-ink);
+  transition: background-color 200ms var(--kw-ease);
+}
+
+.counterButton:hover {
+  background: var(--kw-hover-strong);
 }
 
 .counterValue {
   min-width: 56px;
   text-align: center;
-  font-size: 1.35rem;
-  font-weight: 700;
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   color: var(--kw-ink);
-}
-
-.studyTop {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.reflectionCard,
-.evidenceItem {
-  padding: 16px;
-}
-
-.evidenceItem {
-  display: grid;
-  gap: 10px;
-}
-
-.evidenceBody {
-  display: grid;
-  gap: 6px;
-}
-
-.evidenceTitle {
-  margin-top: 6px;
-  font-size: 1.04rem;
-}
-
-.sourceLink,
-.privateSource {
-  font-size: 0.84rem;
-  font-weight: 700;
-}
-
-.sourceLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  width: fit-content;
-  color: var(--kw-link);
-  text-decoration: none;
-}
-
-.privateSource {
-  color: var(--kw-faint);
 }
 
 .notice {
   padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--kw-fill);
 }
 
 .notice[data-tone="success"] {
-  border-color: rgba(22, 163, 74, 0.18);
-  background: rgba(22, 163, 74, 0.08);
+  background: color-mix(in srgb, var(--kw-lime-600) 10%, transparent);
   color: var(--kw-ink);
 }
 
 .notice[data-tone="danger"] {
-  border-color: rgba(225, 29, 72, 0.18);
-  background: rgba(225, 29, 72, 0.08);
+  background: color-mix(in srgb, var(--kw-rose-600) 9%, transparent);
   color: var(--kw-ink);
 }
 
@@ -708,12 +712,13 @@
 }
 
 .managerHero {
-  gap: 14px;
+  gap: 16px;
 }
 
 .managerCard {
   align-self: start;
   gap: 20px;
+  padding: 1.5rem;
 }
 
 .managerComposerCard {
@@ -745,9 +750,19 @@
 .fieldTextarea {
   width: 100%;
   padding: 12px 14px;
+  border: 1px solid var(--kw-border);
+  border-radius: 12px;
+  background: var(--kw-surface);
   font-size: 0.95rem;
   line-height: 1.6;
   color: var(--kw-ink);
+  transition:
+    border-color 200ms var(--kw-ease),
+    box-shadow 200ms var(--kw-ease);
+}
+
+.fieldInput[type="number"] {
+  font-variant-numeric: tabular-nums;
 }
 
 .fieldTextarea {
@@ -755,13 +770,21 @@
   resize: vertical;
 }
 
+/* Sequence rows share one card and are separated by hairlines. */
 .deckOrderRow {
   display: grid;
   gap: 14px;
-  padding: 18px;
-  background:
-    radial-gradient(360px 140px at 100% -18%, rgba(var(--kw-accent-rgb), 0.08), transparent 60%),
-    linear-gradient(180deg, var(--kw-card-strong), var(--kw-surface-strong));
+  padding: 18px 0;
+  border-top: 1px solid var(--kw-border-2);
+}
+
+.deckOrderRow:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.deckOrderRow:last-child {
+  padding-bottom: 0;
 }
 
 .deckOrderMain {
@@ -785,8 +808,8 @@
 }
 
 .deckOrderTitle {
-  font-size: 1.12rem;
-  line-height: 1.4;
+  font-size: 1.1rem;
+  line-height: 1.3;
 }
 
 .deckOrderSummary {
@@ -798,7 +821,6 @@
 }
 
 @media (max-width: 1180px) {
-  .principleGrid,
   .moduleGrid,
   .managerShell {
     grid-template-columns: 1fr;
@@ -823,7 +845,6 @@
   .stageSummary,
   .duaIntro,
   .toolSummary,
-  .studyClosed,
   .compactSummary {
     display: -webkit-box;
     overflow: hidden;
@@ -831,8 +852,7 @@
   }
 
   .homeSubtitle,
-  .focusSubtitle,
-  .studyClosed {
+  .focusSubtitle {
     -webkit-line-clamp: 2;
   }
 
@@ -855,6 +875,10 @@
     align-items: stretch;
   }
 
+  .homeHeroTop {
+    align-items: stretch;
+  }
+
   .homeActions :global(a),
   .moduleOverviewActions :global(a),
   .focusHeroActions :global(a),
@@ -874,16 +898,15 @@
 
   .metricChip,
   .focusMetaPill {
-    padding: 8px 10px;
-    font-size: 0.76rem;
+    padding: 8px 12px;
+    font-size: 0.8rem;
   }
 
   .stepRail {
     grid-auto-columns: minmax(220px, 82vw);
   }
 
-  .explorerTop,
-  .nameCard {
+  .explorerTop {
     display: grid;
   }
 
@@ -905,12 +928,12 @@
   }
 
   .duaCard {
-    padding: 16px;
-    gap: 14px;
+    padding: 22px 0;
+    gap: 22px;
   }
 
   .duaArabic {
-    font-size: 1.82rem;
-    line-height: 1.92;
+    font-size: 2rem;
+    line-height: 1.95;
   }
 }

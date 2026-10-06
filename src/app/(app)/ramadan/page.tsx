@@ -40,22 +40,21 @@ export default async function RamadanPage() {
         subtitle="Use this as a seasonal khatmah planner or any focused month-long reading push. The math is simple so the habit stays simple."
       />
 
-      <Card className="relative overflow-hidden">
-        <div className="pointer-events-none absolute -right-20 -top-20 h-44 w-44 rounded-full bg-[rgba(var(--kw-accent-rgb),0.12)] blur-2xl" />
-        <div className="relative flex flex-wrap items-start justify-between gap-4">
+      <Card>
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <Pill tone="accent">Current coverage</Pill>
               <Pill tone="neutral">{progress.completionPct.toFixed(1)}%</Pill>
             </div>
-            <p className="mt-4 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+            <p className="mt-4 text-3xl font-semibold leading-[1.12] tracking-[-0.03em] tabular-nums text-[color:var(--kw-ink)]">
               {remainingAyahs} ayahs left in the current cycle
             </p>
             <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
               Resume from {cursorAyah ? `${cursorAyah.surahNumber}:${cursorAyah.ayahNumber}` : "1:1"} and choose the pace that matches your season.
             </p>
           </div>
-          <span className="grid h-12 w-12 place-items-center rounded-[22px] border border-[color:var(--kw-border-2)] bg-white/75 text-[color:var(--kw-ink-2)] shadow-[var(--kw-shadow-soft)]">
+          <span className="grid h-12 w-12 place-items-center rounded-[14px] bg-[rgba(var(--kw-accent-rgb),0.1)] text-[rgba(var(--kw-accent-rgb),1)]">
             <MoonStar size={18} />
           </span>
         </div>
@@ -68,7 +67,7 @@ export default async function RamadanPage() {
           return (
             <Card key={days}>
               <Pill tone={days === 30 ? "accent" : "neutral"}>{days}-day track</Pill>
-              <p className="mt-3 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">{ayahsPerDay}</p>
+              <p className="mt-3 text-3xl font-semibold leading-[1.1] tracking-[-0.03em] tabular-nums text-[color:var(--kw-ink)]">{ayahsPerDay}</p>
               <p className="mt-1 text-sm text-[color:var(--kw-muted)]">Ayahs per day</p>
               <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
                 Roughly {pagesPerDay} page{pagesPerDay === 1 ? "" : "s"} per day from your current place.
@@ -88,7 +87,7 @@ export default async function RamadanPage() {
           </div>
           <Link
             href={resumeHref}
-            className="inline-flex items-center gap-2 rounded-xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] px-3 py-2 text-sm font-semibold text-[rgba(var(--kw-accent-rgb),1)]"
+            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[rgba(var(--kw-accent-rgb),0.1)] px-4 py-2 text-sm font-medium text-[rgba(var(--kw-accent-rgb),1)] transition-colors duration-200 hover:bg-[rgba(var(--kw-accent-rgb),0.16)]"
           >
             Resume reading <ArrowRight size={14} />
           </Link>

@@ -48,9 +48,9 @@ export function EntitlementActivationStatus() {
   }, [attempt]);
 
   return (
-    <div className="mt-4 rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] p-4" aria-live="polite">
+    <div className="mt-4 rounded-[16px] bg-[color:var(--kw-fill)] p-4" aria-live="polite">
       {state === "active" ? (
-        <p className="flex items-center gap-2 text-sm font-semibold text-emerald-700">
+        <p className="flex items-center gap-2 text-sm font-semibold text-[color:var(--kw-lime-600)]">
           <CheckCircle2 size={17} aria-hidden="true" /> Premium is active on your account.
         </p>
       ) : state === "checking" ? (

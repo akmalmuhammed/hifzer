@@ -1,56 +1,29 @@
 .dailySurface,
 .zakatSurface {
   position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(var(--kw-accent-rgb), 0.2);
-  border-radius: calc(var(--kw-radius-xl) + 2px);
-  background:
-    radial-gradient(720px 320px at -6% -20%, rgba(var(--kw-accent-rgb), 0.16), transparent 62%),
-    radial-gradient(540px 260px at 104% 10%, rgba(58, 185, 168, 0.12), transparent 66%),
-    linear-gradient(135deg, color-mix(in srgb, var(--kw-surface) 91%, transparent), color-mix(in srgb, var(--kw-surface-soft) 86%, transparent));
-  box-shadow: var(--kw-shadow);
-  padding: clamp(1rem, 2.4vw, 1.65rem);
+  border: 1px solid var(--kw-border-2);
+  border-radius: var(--kw-radius-xl);
+  background: var(--kw-card);
+  padding: clamp(1.25rem, 2.4vw, 1.9rem);
 }
 
+/* Decorative glow elements are still rendered by the TSX; keep them out of the layout. */
 .dailyGlow,
 .zakatOrbit,
 .fastingHalo,
 .reflectionOrb {
-  pointer-events: none;
-  position: absolute;
-  border-radius: 999px;
-  filter: blur(8px);
+  display: none;
 }
 
-.dailyGlow {
-  right: -56px;
-  top: -72px;
-  width: 240px;
-  height: 240px;
-  background: radial-gradient(circle, rgba(var(--kw-accent-rgb), 0.23), transparent 66%);
-  animation: worship-drift 12s ease-in-out infinite;
-}
-
+/* Prayer rows: one grouped list separated by hairlines. */
 .prayerTile {
   min-width: 0;
-  border: 1px solid var(--kw-border-2);
-  border-radius: 20px;
-  background: color-mix(in srgb, var(--kw-surface) 76%, transparent);
-  padding: 14px;
-  box-shadow: 0 12px 26px rgba(11, 18, 32, 0.05);
-  transition: border-color 180ms ease, transform 180ms ease, background 180ms ease;
+  border-top: 1px solid var(--kw-border-2);
+  padding: 14px 0;
 }
 
-.prayerTile:hover {
-  border-color: rgba(var(--kw-accent-rgb), 0.28);
-  transform: translateY(-1px);
-}
-
-.prayerTileComplete {
-  border-color: rgba(var(--kw-accent-rgb), 0.25);
-  background:
-    radial-gradient(180px 120px at 100% 0%, rgba(var(--kw-accent-rgb), 0.14), transparent 72%),
-    color-mix(in srgb, var(--kw-surface) 82%, transparent);
+.prayerTile:last-child {
+  padding-bottom: 0;
 }
 
 .statusButton,
@@ -58,40 +31,56 @@
 .clearAction,
 .fastingChoice,
 .routeChip {
-  border: 1px solid var(--kw-border-2);
-  background: color-mix(in srgb, var(--kw-surface) 88%, transparent);
+  border: 0;
+  border-radius: 999px;
+  background: var(--kw-fill-strong);
   color: var(--kw-ink-2);
-  font-size: 0.72rem;
-  font-weight: 700;
-  transition: 160ms ease;
+  font-size: 0.84rem;
+  font-weight: 500;
+  transition:
+    color 200ms var(--kw-ease),
+    background-color 200ms var(--kw-ease);
 }
 
 .statusButton {
-  border-radius: 12px;
-  padding: 8px 6px;
+  min-height: 36px;
+  padding: 6px 16px;
 }
 
 .statusButton:hover,
-.subtleAction:hover,
 .fastingChoice:hover,
 .routeChip:hover {
-  border-color: rgba(var(--kw-accent-rgb), 0.32);
+  background: var(--kw-hover-strong);
+  color: var(--kw-ink);
+}
+
+.subtleAction:hover {
   color: var(--kw-ink);
 }
 
 .statusButtonActive,
+.statusButtonActive:hover,
 .subtleActionActive,
-.fastingChoiceActive {
-  border-color: rgba(var(--kw-accent-rgb), 0.32);
+.subtleActionActive:hover,
+.fastingChoiceActive,
+.fastingChoiceActive:hover {
   background: rgba(var(--kw-accent-rgb), 0.12);
   color: rgba(var(--kw-accent-rgb), 1);
 }
 
 .subtleAction,
 .clearAction {
-  border-color: transparent;
+  min-height: 36px;
   background: transparent;
-  padding: 5px 1px;
+  padding: 6px 12px;
+}
+
+.subtleAction {
+  color: var(--kw-muted);
+}
+
+.subtleActionActive {
+  background: rgba(var(--kw-accent-rgb), 0.12);
 }
 
 .clearAction {
@@ -102,54 +91,47 @@
   color: var(--kw-ink);
 }
 
-.fastingHalo {
-  right: -62px;
-  bottom: -74px;
-  width: 230px;
-  height: 230px;
-  background: radial-gradient(circle, rgba(85, 123, 232, 0.15), transparent 68%);
-}
-
-.reflectionOrb {
-  left: -82px;
-  top: -98px;
-  width: 260px;
-  height: 260px;
-  background: radial-gradient(circle, rgba(var(--kw-accent-rgb), 0.14), transparent 70%);
-  animation: worship-drift 14s ease-in-out infinite reverse;
+.statusButton:disabled,
+.subtleAction:disabled,
+.clearAction:disabled,
+.fastingChoice:disabled {
+  opacity: 0.5;
 }
 
 .fastingChoice {
   min-height: 44px;
-  border-radius: 14px;
-  padding: 8px;
+  padding: 8px 12px;
 }
 
 .fastingKindSelect {
-  min-height: 34px;
-  border: 1px solid var(--kw-border-2);
+  min-height: 36px;
+  border: 0;
   border-radius: 10px;
-  background: color-mix(in srgb, var(--kw-surface) 88%, transparent);
+  background: var(--kw-fill-strong);
   color: var(--kw-ink-2);
-  padding: 0 28px 0 10px;
+  padding: 0 28px 0 12px;
   font: inherit;
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: 0.84rem;
+  font-weight: 500;
 }
 
 .fastingKindSelect:focus {
-  border-color: rgba(var(--kw-accent-rgb), 0.52);
-  box-shadow: 0 0 0 3px rgba(var(--kw-accent-rgb), 0.12);
+  box-shadow: 0 0 0 4px rgba(var(--kw-accent-rgb), 0.16);
   outline: none;
 }
 
 .routeChip {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  border-radius: 999px;
-  padding: 9px 11px;
+  gap: 6px;
+  min-height: 40px;
+  padding: 9px 16px;
+  color: rgba(var(--kw-accent-rgb), 1);
   text-decoration: none;
+}
+
+.routeChip:hover {
+  color: rgba(var(--kw-accent-rgb), 1);
 }
 
 .routeChip svg {
@@ -157,94 +139,32 @@
   height: 14px;
 }
 
-.zakatSurface {
-  background:
-    radial-gradient(660px 340px at 100% 10%, rgba(205, 169, 72, 0.14), transparent 66%),
-    radial-gradient(680px 350px at -10% 100%, rgba(var(--kw-accent-rgb), 0.15), transparent 68%),
-    linear-gradient(135deg, color-mix(in srgb, var(--kw-surface) 92%, transparent), color-mix(in srgb, var(--kw-surface-soft) 88%, transparent));
-}
-
-.zakatOrbit {
-  right: 30%;
-  top: -210px;
-  width: 420px;
-  height: 420px;
-  border: 1px solid rgba(var(--kw-accent-rgb), 0.16);
-  box-shadow: inset 0 0 48px rgba(var(--kw-accent-rgb), 0.08);
-  animation: worship-spin 35s linear infinite;
-}
-
 .fieldLabel {
   display: grid;
   gap: 7px;
   color: var(--kw-faint);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 .fieldInput {
   width: 100%;
   min-height: 44px;
-  border: 1px solid var(--kw-border-2);
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--kw-surface) 90%, transparent);
+  border: 1px solid var(--kw-border);
+  border-radius: 12px;
+  background: var(--kw-surface);
   color: var(--kw-ink);
   padding: 0 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.95rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
   outline: none;
-  transition: border-color 160ms ease, box-shadow 160ms ease;
+  transition:
+    border-color 200ms var(--kw-ease),
+    box-shadow 200ms var(--kw-ease);
 }
 
 .fieldInput:focus {
-  border-color: rgba(var(--kw-accent-rgb), 0.52);
-  box-shadow: 0 0 0 3px rgba(var(--kw-accent-rgb), 0.12);
-}
-
-:global(html[data-mode="dark"]) .dailySurface,
-:global(html[data-mode="dark"]) .zakatSurface {
-  border-color: rgba(var(--kw-accent-rgb), 0.26);
-  background:
-    radial-gradient(720px 320px at -6% -20%, rgba(var(--kw-accent-rgb), 0.21), transparent 62%),
-    radial-gradient(540px 260px at 104% 10%, rgba(58, 185, 168, 0.15), transparent 66%),
-    linear-gradient(135deg, rgba(16, 28, 43, 0.94), rgba(8, 18, 31, 0.9));
-}
-
-:global(html[data-mode="dark"]) .zakatSurface {
-  background:
-    radial-gradient(660px 340px at 100% 10%, rgba(205, 169, 72, 0.12), transparent 66%),
-    radial-gradient(680px 350px at -10% 100%, rgba(var(--kw-accent-rgb), 0.18), transparent 68%),
-    linear-gradient(135deg, rgba(16, 28, 43, 0.94), rgba(8, 18, 31, 0.9));
-}
-
-:global(html[data-mode="dark"]) .prayerTile,
-:global(html[data-mode="dark"]) .fieldInput,
-:global(html[data-mode="dark"]) .statusButton,
-:global(html[data-mode="dark"]) .fastingChoice,
-:global(html[data-mode="dark"]) .fastingKindSelect,
-:global(html[data-mode="dark"]) .routeChip {
-  background: rgba(13, 27, 44, 0.7);
-}
-
-@keyframes worship-drift {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(-10px, 8px, 0) scale(1.05); }
-}
-
-@keyframes worship-spin {
-  to { transform: rotate(360deg); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .dailyGlow,
-  .reflectionOrb,
-  .zakatOrbit {
-    animation: none;
-  }
-
-  .prayerTile {
-    transition: none;
-  }
+  border-color: rgba(var(--kw-accent-rgb), 0.55);
+  box-shadow: 0 0 0 4px rgba(var(--kw-accent-rgb), 0.16);
 }

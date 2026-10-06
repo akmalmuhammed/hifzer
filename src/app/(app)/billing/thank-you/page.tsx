@@ -22,14 +22,14 @@ export default function BillingThankYouPage() {
       />
 
       <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-        <Card className="bg-[linear-gradient(180deg,rgba(255,255,255,0.86),rgba(255,255,255,0.74))]">
+        <Card className="sm:p-7!">
           <div className="flex items-start gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[color:var(--kw-pill-success-bg)] text-[color:var(--kw-lime-600)]">
               <CheckCircle2 size={18} />
             </span>
             <div className="min-w-0">
               <Pill tone="success">Payment received</Pill>
-              <p className="mt-3 text-xl font-[family-name:var(--font-kw-display)] tracking-tight text-[color:var(--kw-ink)] sm:text-2xl">
+              <p className="mt-3 text-[1.5rem] font-[family-name:var(--font-kw-display)] font-semibold leading-[1.12] tracking-[-0.025em] text-[color:var(--kw-ink)] sm:text-[1.75rem]">
                 Your one-time Hifzer premium payment went through successfully.
               </p>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
@@ -54,7 +54,7 @@ export default function BillingThankYouPage() {
 
         <Card>
           <div className="flex items-start gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.10)] text-[rgba(var(--kw-accent-rgb),1)]">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[12px] bg-[rgba(var(--kw-accent-rgb),0.1)] text-[rgba(var(--kw-accent-rgb),1)]">
               <HeartHandshake size={18} />
             </span>
             <div className="min-w-0">
@@ -65,7 +65,7 @@ export default function BillingThankYouPage() {
                 <li>Use the support page if you need billing or receipt follow-up.</li>
               </ul>
 
-              <div className="mt-4 rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-4 py-4">
+              <div className="mt-4 rounded-[16px] bg-[color:var(--kw-fill)] px-4 py-4">
                 <div className="flex items-start gap-2">
                   <Mail size={16} className="mt-1 text-[color:var(--kw-ink-2)]" />
                   <div>
@@ -74,7 +74,7 @@ export default function BillingThankYouPage() {
                       Paddle usually emails the receipt directly. If something looks off, contact{" "}
                       <a
                         href={`mailto:${RECEIPT_EMAIL}`}
-                        className="font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline"
+                        className="font-medium text-[rgba(var(--kw-accent-rgb),1)] hover:underline"
                       >
                         {RECEIPT_EMAIL}
                       </a>

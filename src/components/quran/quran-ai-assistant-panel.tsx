@@ -25,7 +25,7 @@ type LoadState =
 
 function sectionHeading(label: string) {
   return (
-    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
+    <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">
       {label}
     </p>
   );
@@ -116,7 +116,7 @@ export function QuranAiAssistantPanel(props: { ayahId?: number | null; compact?:
               setQuery(prompt);
               void submitAssistantQuery(prompt);
             }}
-            className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-1.5 text-left text-xs font-semibold text-[color:var(--kw-ink)] transition hover:bg-white"
+            className="rounded-full border border-transparent bg-[color:var(--kw-fill-strong)] px-3 py-1.5 text-left text-xs font-medium text-[color:var(--kw-ink)] transition hover:bg-[color:var(--kw-hover-strong)]"
           >
             {prompt}
           </button>
@@ -136,14 +136,14 @@ export function QuranAiAssistantPanel(props: { ayahId?: number | null; compact?:
                 ? "Ask anything about mercy, fear, patience, hardship, or a surah..."
                 : "Ask about mercy, fear, patience, hardship, or any surah..."
             }
-            className="mt-1 w-full rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/75 px-4 py-3 text-sm leading-7 text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] outline-none transition placeholder:text-[color:var(--kw-faint)] focus:border-[rgba(var(--kw-accent-rgb),0.28)] focus:ring-2 focus:ring-[rgba(var(--kw-accent-rgb),0.12)]"
+            className="mt-1 w-full rounded-[14px] border border-transparent bg-[color:var(--kw-fill-strong)] px-4 py-3 text-sm leading-7 text-[color:var(--kw-ink)] outline-none transition placeholder:text-[color:var(--kw-faint)] focus:border-[rgba(var(--kw-accent-rgb),0.55)] focus:ring-4 focus:ring-[rgba(var(--kw-accent-rgb),0.16)]"
           />
         </label>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center gap-2 rounded-full border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.10)] px-4 py-2 text-sm font-semibold text-[color:var(--kw-ink)] transition hover:bg-[rgba(var(--kw-accent-rgb),0.14)] disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex items-center gap-2 rounded-full border border-transparent bg-[rgba(var(--kw-accent-rgb),0.10)] px-4 py-2 text-sm font-medium text-[color:var(--kw-ink)] transition hover:bg-[rgba(var(--kw-accent-rgb),0.14)] disabled:cursor-not-allowed disabled:opacity-70"
           >
             {loading ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
             Ask AI
@@ -152,7 +152,7 @@ export function QuranAiAssistantPanel(props: { ayahId?: number | null; compact?:
             <button
               type="button"
               onClick={() => void submitAssistantQuery()}
-              className="inline-flex items-center gap-2 rounded-full border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-2 text-xs font-semibold text-[color:var(--kw-ink)] transition hover:bg-white"
+              className="inline-flex items-center gap-2 rounded-full border border-transparent bg-[color:var(--kw-fill-strong)] px-4 py-2 text-xs font-medium text-[color:var(--kw-ink)] transition hover:bg-[color:var(--kw-hover-strong)]"
             >
               <RefreshCw size={13} />
               Refresh answer
@@ -162,17 +162,17 @@ export function QuranAiAssistantPanel(props: { ayahId?: number | null; compact?:
       </form>
 
       {loading ? (
-        <div className="mt-4 flex items-center gap-3 rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3 text-sm text-[color:var(--kw-muted)]">
+        <div className="mt-4 flex items-center gap-3 rounded-[14px] bg-[color:var(--kw-fill)] px-4 py-3 text-sm text-[color:var(--kw-muted)]">
           <Loader2 size={16} className="animate-spin text-[color:var(--kw-faint)]" />
           Searching grounded Qur&apos;an matches for your question...
         </div>
       ) : null}
 
       {errorDetail ? (
-        <div className="mt-4 rounded-[18px] border border-[rgba(180,83,9,0.18)] bg-[rgba(245,158,11,0.08)] px-4 py-3">
+        <div className="mt-4 rounded-[18px] bg-[color:var(--kw-pill-warn-bg)] px-4 py-3">
           <p className="text-sm leading-7 text-[color:var(--kw-muted)]">{errorDetail}</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <button type="button" onClick={() => void submitAssistantQuery()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[color:var(--kw-border-2)] bg-white/80 px-3 py-2 text-xs font-semibold text-[color:var(--kw-ink)]">
+            <button type="button" onClick={() => void submitAssistantQuery()} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-transparent bg-[color:var(--kw-fill-strong)] px-4 py-2 text-xs font-medium text-[color:var(--kw-ink)]">
               <RefreshCw size={13} aria-hidden="true" /> Try again
             </button>
             <Link href="/quran" className="inline-flex min-h-11 items-center rounded-xl px-3 text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)] hover:underline">Open the Qur&apos;an</Link>
@@ -185,10 +185,10 @@ export function QuranAiAssistantPanel(props: { ayahId?: number | null; compact?:
         <div className="mt-4 space-y-4">
           <div className="space-y-2">
             {sectionHeading("Grounded answer")}
-            <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3">
+            <div className="rounded-[14px] bg-[color:var(--kw-fill)] px-4 py-3">
               <div className="flex flex-wrap items-center gap-2">
                 <MessageSquareQuote size={15} className="text-[color:var(--kw-faint)]" />
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
+                <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">
                   {ready.query}
                 </p>
               </div>
@@ -202,7 +202,7 @@ export function QuranAiAssistantPanel(props: { ayahId?: number | null; compact?:
               {ready.matches.map((match) => (
                 <div
                   key={`${ready.query}-${match.verseKey}`}
-                  className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 px-4 py-3"
+                  className="rounded-[14px] bg-[color:var(--kw-fill)] px-4 py-3"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-2">
@@ -228,8 +228,8 @@ export function QuranAiAssistantPanel(props: { ayahId?: number | null; compact?:
                     {match.arabicText}
                   </p>
                   {match.translation ? (
-                    <div className="mt-3 rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/80 px-4 py-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
+                    <div className="mt-3 rounded-[14px] bg-[color:var(--kw-fill)] px-4 py-3">
+                      <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">
                         {match.translation.label}
                       </p>
                       <p
@@ -242,8 +242,8 @@ export function QuranAiAssistantPanel(props: { ayahId?: number | null; compact?:
                       </p>
                     </div>
                   ) : null}
-                  <div className="mt-3 rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/80 px-4 py-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">
+                  <div className="mt-3 rounded-[14px] bg-[color:var(--kw-fill)] px-4 py-3">
+                    <p className="text-[0.8rem] font-semibold text-[color:var(--kw-faint)]">
                       Tafsir summary
                     </p>
                     <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">{match.tafsirSummary}</p>

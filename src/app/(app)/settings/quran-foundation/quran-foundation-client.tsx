@@ -157,7 +157,7 @@ export function QuranFoundationSettingsClient(props: {
               <p className="mt-2 text-xs text-[color:var(--kw-faint)]">Last synced: {lastSyncedAtLabel}</p>
             ) : null}
             {reconnectRequired || needsRelink ? (
-              <div className="mt-3 rounded-[18px] border border-[rgba(214,153,46,0.25)] bg-[rgba(214,153,46,0.08)] px-4 py-3 text-sm text-[color:var(--kw-muted)]">
+              <div className="mt-3 rounded-[14px] bg-[color:var(--kw-pill-warn-bg)] px-4 py-3 text-sm text-[color:var(--kw-ink-2)]">
                 {reconnectRequired
                   ? "This Quran.com connection needs to be renewed before syncing can continue."
                   : scopeApprovalBlocked
@@ -232,28 +232,28 @@ export function QuranFoundationSettingsClient(props: {
         </div>
 
         <div className="mt-4 grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] p-4">
+          <div className="rounded-[18px] bg-[color:var(--kw-fill)] p-4 sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">User API</p>
+                <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">User API</p>
                 <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">Live Quran.com account data</p>
               </div>
               <Pill tone={userApiReady ? "accent" : "warn"}>
                 {userApiReady ? "Visible in app" : "Needs reconnect"}
               </Pill>
             </div>
-            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            <div className="mt-3 grid gap-x-6 sm:grid-cols-2">
               {userApiProof.map((item) => (
                 <div
                   key={item.label}
-                  className="flex items-center justify-between gap-3 rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3 py-2 text-sm"
+                  className="flex min-h-11 items-center justify-between gap-3 border-t border-[color:var(--kw-border-2)] py-2 text-sm"
                 >
                   <span className="font-medium text-[color:var(--kw-ink-2)]">{item.label}</span>
                   <span
                     className={
                       item.ready
-                        ? "rounded-full bg-[color:var(--kw-pill-success-bg)] px-2 py-1 text-xs font-semibold text-[color:var(--kw-pill-success-fg)]"
-                        : "rounded-full bg-[color:var(--kw-pill-warn-bg)] px-2 py-1 text-xs font-semibold text-[color:var(--kw-pill-warn-fg)]"
+                        ? "rounded-full bg-[color:var(--kw-pill-success-bg)] px-2.5 py-1 text-xs font-medium text-[color:var(--kw-pill-success-fg)]"
+                        : "rounded-full bg-[color:var(--kw-pill-warn-bg)] px-2.5 py-1 text-xs font-medium text-[color:var(--kw-pill-warn-fg)]"
                     }
                   >
                     {item.ready ? "Active" : "Missing"}
@@ -263,28 +263,28 @@ export function QuranFoundationSettingsClient(props: {
             </div>
           </div>
 
-          <div className="rounded-[22px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] p-4">
+          <div className="rounded-[18px] bg-[color:var(--kw-fill)] p-4 sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">Content API</p>
+                <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Content API</p>
                 <p className="mt-1 text-sm font-semibold text-[color:var(--kw-ink)]">Official reader enrichment</p>
               </div>
               <Pill tone={status.contentApiReady ? "accent" : "warn"}>
                 {status.contentApiReady ? "Live" : "Unavailable"}
               </Pill>
             </div>
-            <div className="mt-4 space-y-2">
+            <div className="mt-3">
               {["Official translations", "Tafsir selection", "Reciter audio", "Ayah-level alignment"].map((label) => (
                 <div
                   key={label}
-                  className="flex items-center justify-between gap-3 rounded-2xl border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-3 py-2 text-sm"
+                  className="flex min-h-11 items-center justify-between gap-3 border-t border-[color:var(--kw-border-2)] py-2 text-sm"
                 >
                   <span className="font-medium text-[color:var(--kw-ink-2)]">{label}</span>
                   <span
                     className={
                       status.contentApiReady
-                        ? "rounded-full bg-[color:var(--kw-pill-success-bg)] px-2 py-1 text-xs font-semibold text-[color:var(--kw-pill-success-fg)]"
-                        : "rounded-full bg-[color:var(--kw-pill-warn-bg)] px-2 py-1 text-xs font-semibold text-[color:var(--kw-pill-warn-fg)]"
+                        ? "rounded-full bg-[color:var(--kw-pill-success-bg)] px-2.5 py-1 text-xs font-medium text-[color:var(--kw-pill-success-fg)]"
+                        : "rounded-full bg-[color:var(--kw-pill-warn-bg)] px-2.5 py-1 text-xs font-medium text-[color:var(--kw-pill-warn-fg)]"
                     }
                   >
                     {status.contentApiReady ? "Ready" : "Missing"}
@@ -299,8 +299,8 @@ export function QuranFoundationSettingsClient(props: {
       {overview ? (
         <Card>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-            <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Reading place</p>
+            <div className="rounded-[16px] bg-[color:var(--kw-fill)] p-4">
+              <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Reading place</p>
               <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
                 {hasReadingSessionScope && overview.readingSession
                   ? `Surah ${overview.readingSession.surahNumber}:${overview.readingSession.ayahNumber}`
@@ -317,8 +317,8 @@ export function QuranFoundationSettingsClient(props: {
               </p>
             </div>
 
-            <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Quran.com streak</p>
+            <div className="rounded-[16px] bg-[color:var(--kw-fill)] p-4">
+              <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Quran.com streak</p>
               <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
                 {hasStreakReadScope ? `${overview.streak ? `${overview.streak.currentDays} days` : "No streak yet"}` : "Reconnect needed"}
               </p>
@@ -331,8 +331,8 @@ export function QuranFoundationSettingsClient(props: {
               </p>
             </div>
 
-            <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Bookmark folders</p>
+            <div className="rounded-[16px] bg-[color:var(--kw-fill)] p-4">
+              <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Bookmark folders</p>
               <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
                 {hasCollectionScope
                   ? overview.collections
@@ -347,8 +347,8 @@ export function QuranFoundationSettingsClient(props: {
               </p>
             </div>
 
-            <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Quran.com goal</p>
+            <div className="rounded-[16px] bg-[color:var(--kw-fill)] p-4">
+              <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Quran.com goal</p>
               <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
                 {hasGoalScope
                   ? overview.goalPlan
@@ -363,8 +363,8 @@ export function QuranFoundationSettingsClient(props: {
               </p>
             </div>
 
-            <div className="rounded-[18px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Notes and reflections</p>
+            <div className="rounded-[16px] bg-[color:var(--kw-fill)] p-4">
+              <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Notes and reflections</p>
               <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">
                 {hasNoteScope
                   ? overview.notes
@@ -395,8 +395,8 @@ export function QuranFoundationSettingsClient(props: {
             </div>
 
             <div className="grid gap-4 lg:grid-cols-2">
-              <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">Bring into Hifzer</p>
+              <div className="rounded-[18px] bg-[color:var(--kw-fill)] p-4 sm:p-5">
+                <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Bring into Hifzer</p>
                 <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">Pull your saved Quran.com items here</p>
                 <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
                   Use this when you want your Quran.com bookmarks or notes to appear inside Hifzer right away.
@@ -423,8 +423,8 @@ export function QuranFoundationSettingsClient(props: {
                 </div>
               </div>
 
-              <div className="rounded-[20px] border border-[color:var(--kw-border-2)] bg-white/70 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--kw-faint)]">Save from Hifzer</p>
+              <div className="rounded-[18px] bg-[color:var(--kw-fill)] p-4 sm:p-5">
+                <p className="text-[0.82rem] font-medium text-[color:var(--kw-faint)]">Save from Hifzer</p>
                 <p className="mt-2 text-sm font-semibold text-[color:var(--kw-ink)]">Send your latest Hifzer memory back to Quran.com</p>
                 <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
                   Use this when you want your Hifzer bookmarks, folders, or reflections saved into your Quran.com account.
@@ -461,7 +461,7 @@ export function QuranFoundationSettingsClient(props: {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-[20px] border border-[rgba(148,163,184,0.18)] bg-[rgba(255,255,255,0.58)] px-4 py-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[color:var(--kw-border-2)] pt-5">
               <div>
                 <p className="text-sm font-semibold text-[color:var(--kw-ink)]">Need to disconnect?</p>
                 <p className="mt-1 text-sm leading-7 text-[color:var(--kw-muted)]">

@@ -34,17 +34,17 @@ export function InstallAppButton({ className }: { className?: string }) {
         void onInstall();
       }}
       className={clsx(
-        "max-w-full rounded-full border border-[rgba(var(--kw-accent-rgb),0.24)] bg-white/85 px-3 py-2 text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] backdrop-blur transition hover:bg-white",
+        "max-w-full rounded-full bg-[color:var(--kw-fill-strong)] px-3.5 py-2 text-[color:var(--kw-ink)] transition duration-200 hover:bg-[color:var(--kw-hover-strong)] active:scale-[0.98]",
         className,
       )}
       aria-label={label}
       title={label}
     >
       <span className="flex items-center gap-2">
-        <span className="grid h-6 w-6 place-items-center rounded-full bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]">
+        <span className="grid h-6 w-6 place-items-center rounded-full bg-[rgba(var(--kw-accent-rgb),0.1)] text-[rgba(var(--kw-accent-rgb),1)]">
           <Icon size={14} />
         </span>
-        <span className="text-sm font-semibold leading-none">{label}</span>
+        <span className="text-sm font-medium leading-none">{label}</span>
       </span>
     </button>
   );

@@ -16,10 +16,10 @@ function OptionRow(props: {
   children?: ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-3">
-      <div className="min-w-0">
-        <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{props.title}</p>
-        <p className="mt-1 text-sm leading-6 text-[color:var(--kw-muted)]">{props.desc}</p>
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="min-w-0 flex-1">
+        <p className="text-[1rem] font-medium tracking-[-0.01em] text-[color:var(--kw-ink)]">{props.title}</p>
+        <p className="mt-0.5 text-sm leading-6 text-[color:var(--kw-faint)]">{props.desc}</p>
         {props.children ? <div className="mt-4">{props.children}</div> : null}
       </div>
       {props.right ? <div className="shrink-0">{props.right}</div> : null}
@@ -37,10 +37,10 @@ function SelectPill(props: {
       type="button"
       onClick={props.onClick}
       className={[
-        "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition",
+        "inline-flex min-h-9 items-center gap-2 rounded-full border border-transparent px-4 py-1.5 text-sm font-medium transition-colors duration-200",
         props.selected
-          ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-          : "border-[color:var(--kw-border-2)] kw-surface-gradient text-[color:var(--kw-ink)] hover:bg-white",
+          ? "bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
+          : "bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-strong)]",
       ].join(" ")}
     >
       {props.selected ? <Check size={14} /> : null}
@@ -59,38 +59,38 @@ const THEME_OPTIONS: Array<{
     id: "standard",
     label: "Standard",
     description: "Default",
-    previewClass: "from-[#dff7f1] via-[#eef2ff] to-[#fff4e5]",
+    previewClass: "bg-[#f5f5f7]",
   },
   {
     id: "paper",
     label: "Paper",
     description: "Warm",
-    previewClass: "from-[#fff8ef] via-[#fffaf6] to-[#f5efe8]",
+    previewClass: "bg-[#f6f3ee]",
   },
   {
     id: "noor",
     label: "Noor",
     description: "Cool",
-    previewClass: "from-[#e1f5ff] via-[#eff6ff] to-[#dff7f1]",
+    previewClass: "bg-[#f2f5fa]",
   },
   {
     id: "dawn",
     label: "Dawn",
     description: "Soft",
-    previewClass: "from-[#fff1d8] via-[#fff8ef] to-[#ffe4c7]",
+    previewClass: "bg-[#f9f4ec]",
   },
   {
     id: "rose",
     label: "Rose",
     description: "Rose",
-    previewClass: "from-[#ffe0ea] via-[#fff1f5] to-[#f7e8ff]",
+    previewClass: "bg-[#f9f2f4]",
   },
 ];
 
 const ACCENT_OPTIONS: Array<{ id: AccentPreset; label: string; swatchClass: string }> = [
-  { id: "teal", label: "Teal", swatchClass: "bg-[#0a8a77]" },
-  { id: "cobalt", label: "Cobalt", swatchClass: "bg-[#2b4bff]" },
-  { id: "ember", label: "Ember", swatchClass: "bg-[#ea580c]" },
+  { id: "teal", label: "Teal", swatchClass: "bg-[#077567]" },
+  { id: "cobalt", label: "Cobalt", swatchClass: "bg-[#0071e3]" },
+  { id: "ember", label: "Ember", swatchClass: "bg-[#c43c06]" },
 ];
 
 function ThemeCard(props: {
@@ -105,20 +105,20 @@ function ThemeCard(props: {
       type="button"
       onClick={props.onClick}
       className={[
-        "w-full rounded-[22px] border p-3 text-left transition",
+        "w-full rounded-[18px] border p-3 text-left transition-colors duration-200",
         props.selected
-          ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.08)] shadow-[var(--kw-shadow-soft)]"
-          : "border-[color:var(--kw-border-2)] kw-surface-gradient-soft hover:bg-white",
+          ? "border-[rgba(var(--kw-accent-rgb),1)] bg-[rgba(var(--kw-accent-rgb),0.08)]"
+          : "border-transparent bg-[color:var(--kw-fill)] hover:bg-[color:var(--kw-fill-strong)]",
       ].join(" ")}
     >
-      <div className={`h-16 rounded-[18px] bg-gradient-to-br ${props.previewClass}`} />
-      <div className="mt-3 flex items-start justify-between gap-3">
+      <div className={`h-16 rounded-[12px] border border-[color:var(--kw-border)] ${props.previewClass}`} />
+      <div className="mt-3 flex items-center justify-between gap-3 px-1">
         <div>
-          <p className="text-sm font-semibold text-[color:var(--kw-ink)]">{props.label}</p>
-          <p className="mt-1 text-sm leading-6 text-[color:var(--kw-muted)]">{props.description}</p>
+          <p className="text-sm font-medium text-[color:var(--kw-ink)]">{props.label}</p>
+          <p className="text-[0.82rem] leading-5 text-[color:var(--kw-faint)]">{props.description}</p>
         </div>
         {props.selected ? (
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]">
+          <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[rgba(var(--kw-accent-rgb),1)] text-white [&_svg]:h-3.5 [&_svg]:w-3.5">
             <Check size={16} />
           </span>
         ) : null}
@@ -223,7 +223,7 @@ export default function DisplaySettingsPage() {
           title="Theme"
           desc="Surface style."
         >
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
             {THEME_OPTIONS.map((option) => (
               <ThemeCard
                 key={option.id}
@@ -257,7 +257,7 @@ export default function DisplaySettingsPage() {
             {ACCENT_OPTIONS.map((option) => (
               <div
                 key={`${option.id}-swatch`}
-                className="inline-flex items-center gap-2 rounded-full border border-[color:var(--kw-border-2)] kw-surface-gradient-soft px-3 py-2 text-sm text-[color:var(--kw-muted)]"
+                className="inline-flex items-center gap-2 rounded-full bg-[color:var(--kw-fill)] px-3 py-2 text-sm text-[color:var(--kw-muted)]"
               >
                 <span className={`h-3 w-3 rounded-full ${option.swatchClass}`} />
                 {option.label}

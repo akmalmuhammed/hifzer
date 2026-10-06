@@ -55,7 +55,7 @@ const demoSteps = [
 
 export default function JudgePage() {
   return (
-    <div className="pb-16 pt-10 md:pb-20 md:pt-14">
+    <div className="mx-auto w-full max-w-[1160px] px-[1.4rem] pb-24 pt-14 md:pb-32 md:pt-24">
       <div className="grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.55fr)] lg:items-start">
         <section className="space-y-6">
           <div className="flex flex-wrap gap-2">
@@ -64,10 +64,10 @@ export default function JudgePage() {
           </div>
 
           <div>
-            <h1 className="max-w-4xl text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
+            <h1 className="max-w-4xl text-balance font-[family-name:var(--font-kw-display)] text-[clamp(2.5rem,5vw,4rem)] font-semibold leading-[1.05] tracking-[-0.034em] text-[color:var(--kw-ink)]">
               Hifzer keeps Qur&apos;an practice connected, sourced, and easy to resume.
             </h1>
-            <p className="mt-5 max-w-2xl text-base leading-8 text-[color:var(--kw-muted)]">
+            <p className="mt-5 max-w-2xl text-[clamp(1.1rem,1.6vw,1.3rem)] leading-[1.42] tracking-[-0.014em] text-[color:var(--kw-muted)]">
               Reviewers can see the working proof quickly: trusted Qur&apos;an content in the reader, connected
               Quran.com memory, and source-grounded AI answers in the actual Hifzer flow.
             </p>
@@ -85,19 +85,19 @@ export default function JudgePage() {
               </Link>
             </Button>
           </div>
-          <p className="max-w-2xl text-sm leading-6 text-[color:var(--kw-faint)]">
+          <p className="max-w-2xl text-[0.94rem] leading-[1.5] text-[color:var(--kw-faint)]">
             Connected sync requires the prepared judge account. The read-only reader is available without signing in.
           </p>
         </section>
 
-        <Card className="border-[rgba(var(--kw-accent-rgb),0.28)]">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
+        <Card className="rounded-[28px]! border-0! p-7! shadow-none! md:p-9!">
+          <p className="text-[0.9rem] font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
             2-minute demo path
           </p>
-          <ol className="mt-4 space-y-3">
+          <ol className="mt-5 space-y-3.5">
             {demoSteps.map((step, index) => (
-              <li key={step} className="flex gap-3 text-sm leading-6 text-[color:var(--kw-muted)]">
-                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[rgba(var(--kw-accent-rgb),0.1)] text-xs font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
+              <li key={step} className="flex gap-3 text-[0.98rem] leading-[1.5] text-[color:var(--kw-ink-2)]">
+                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[rgba(var(--kw-accent-rgb),0.1)] text-xs font-semibold tabular-nums text-[rgba(var(--kw-accent-rgb),1)]">
                   {index + 1}
                 </span>
                 <span>{step}</span>
@@ -107,23 +107,23 @@ export default function JudgePage() {
         </Card>
       </div>
 
-      <div className="mt-10 grid gap-4 md:grid-cols-2">
+      <div className="mt-16 grid gap-4 md:mt-24 md:grid-cols-2">
         {proofCards.map((item) => {
           const Icon = item.icon;
           return (
-            <Card key={item.label} className="min-h-full">
+            <Card key={item.label} className="min-h-full rounded-[28px]! border-0! p-7! shadow-none! md:p-9!">
               <div className="flex items-start gap-4">
-                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[20px] border border-[rgba(var(--kw-accent-rgb),0.24)] bg-[rgba(var(--kw-accent-rgb),0.1)] text-[rgba(var(--kw-accent-rgb),1)]">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[rgba(var(--kw-accent-rgb),0.1)] text-[rgba(var(--kw-accent-rgb),1)]">
                   <Icon size={21} />
                 </span>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--kw-faint)]">
+                  <p className="text-[0.9rem] font-semibold text-[rgba(var(--kw-accent-rgb),1)]">
                     {item.label}
                   </p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+                  <h2 className="mt-2 text-[1.6rem] font-semibold leading-[1.12] tracking-[-0.025em] text-[color:var(--kw-ink)]">
                     {item.title}
                   </h2>
-                  <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">{item.body}</p>
+                  <p className="mt-3 text-[1.02rem] leading-[1.55] text-[color:var(--kw-muted)]">{item.body}</p>
                 </div>
               </div>
             </Card>
@@ -131,14 +131,14 @@ export default function JudgePage() {
         })}
       </div>
 
-      <Card className="mt-6">
+      <Card className="mt-4 rounded-[28px]! border-0! p-7! shadow-none! md:p-9!">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(320px,0.45fr)] lg:items-center">
           <div>
             <Pill tone="accent">Submission proof</Pill>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-[color:var(--kw-ink)]">
+            <h2 className="mt-4 text-[clamp(1.8rem,3vw,2.4rem)] font-semibold leading-[1.1] tracking-[-0.03em] text-[color:var(--kw-ink)]">
               How the API work shows up for users
             </h2>
-            <p className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">
+            <p className="mt-3 text-[1.02rem] leading-[1.55] text-[color:var(--kw-muted)]">
               Hifzer uses Quran Foundation content so the reader can show trusted translations, tafsir, ayah
               metadata, and reciter audio in context. Connected Quran.com accounts unlock memory that travels:
               bookmarks, folders, notes, reading place, activity, goals, and streak signals. Grounded AI keeps
@@ -149,7 +149,7 @@ export default function JudgePage() {
             {["Official content", "Connected memory", "Grounded answers", "Reader demo"].map((item) => (
               <div
                 key={item}
-                className="flex items-center gap-3 rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] px-4 py-3 text-sm font-semibold text-[color:var(--kw-ink)]"
+                className="flex items-center gap-3 rounded-[14px] bg-[color:var(--kw-page)] px-4 py-3.5 text-[0.98rem] font-medium text-[color:var(--kw-ink)]"
               >
                 <CheckCircle2 size={17} className="text-[rgba(var(--kw-accent-rgb),1)]" />
                 {item}

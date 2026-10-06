@@ -176,20 +176,20 @@ function NavLink(props: {
       className={clsx(
         styles.navLink,
         compact && styles.railNavLink,
-        "flex items-center gap-3 rounded-[18px] border font-semibold shadow-[var(--kw-shadow-soft)] transition",
+        "flex items-center gap-2.5 rounded-[10px] font-medium transition-colors duration-150",
         active
-          ? "border-[rgba(var(--kw-accent-rgb),0.26)] bg-[rgba(var(--kw-accent-rgb),0.10)] text-[color:var(--kw-ink)]"
-          : "border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)] text-[color:var(--kw-muted)] hover:bg-[color:var(--kw-surface-strong)] hover:text-[color:var(--kw-ink)]",
+          ? "bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)]"
+          : "text-[color:var(--kw-ink-2)] hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)]",
       )}
     >
       <span
         className={clsx(
           styles.navIcon,
-          "grid place-items-center rounded-[16px] border bg-[color:var(--kw-surface)] text-[color:var(--kw-ink-2)]",
-          active ? "border-[rgba(var(--kw-accent-rgb),0.26)]" : "border-[color:var(--kw-border-2)]",
+          "grid shrink-0 place-items-center",
+          active ? "text-[rgba(var(--kw-accent-rgb),1)]" : "text-[color:var(--kw-faint)]",
         )}
       >
-        <Icon size={17} />
+        <Icon size={18} strokeWidth={1.9} />
       </span>
       <span className={clsx(styles.navText, compact && "sr-only", "truncate")}>{label}</span>
     </TrackedLink>
@@ -301,11 +301,11 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
               className={clsx(styles.brand, journalShell && styles.journalBrand, "flex items-center")}
               telemetryName="shell.logo"
             >
-              <span className={clsx(styles.brandMark, "grid place-items-center rounded-2xl border border-[rgba(var(--kw-accent-rgb),0.22)] bg-[color:var(--kw-surface-soft)] text-[rgba(var(--kw-accent-rgb),1)] shadow-[var(--kw-shadow-soft)] backdrop-blur-md")}>
+              <span className={clsx(styles.brandMark, "grid place-items-center")}>
                 <HifzerMark />
               </span>
               <div className={clsx("leading-tight", journalShell && styles.journalBrandCopy)}>
-                <p className="text-sm font-semibold tracking-tight text-[color:var(--kw-ink)]">Hifzer</p>
+                <p className="text-[1.06rem] font-semibold tracking-[-0.02em] text-[color:var(--kw-ink)]">Hifzer</p>
                 {!journalShell ? <p className="text-xs text-[color:var(--kw-muted)]">{copy.brandTagline}</p> : null}
               </div>
             </TrackedLink>
@@ -340,7 +340,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
                     onClick={() => setInsightsOpen((v) => !v)}
                     aria-expanded={insightsOpen}
                     aria-controls={insightsId}
-                    className={clsx(styles.sectionToggle, "flex w-full items-center justify-between rounded-[14px] px-3 py-1.5 font-semibold uppercase tracking-widest text-[color:var(--kw-faint)] transition hover:text-[color:var(--kw-muted)]")}
+                    className={clsx(styles.sectionToggle, "flex w-full items-center justify-between rounded-[10px] px-2.5 py-1.5 font-semibold text-[color:var(--kw-faint)] transition-colors hover:text-[color:var(--kw-ink-2)]")}
                   >
                     <span>{copy.sectionInsights}</span>
                     <ChevronDown
@@ -363,7 +363,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
                     onClick={() => setPlatformOpen((v) => !v)}
                     aria-expanded={platformOpen}
                     aria-controls={platformId}
-                    className={clsx(styles.sectionToggle, "flex w-full items-center justify-between rounded-[14px] px-3 py-1.5 font-semibold uppercase tracking-widest text-[color:var(--kw-faint)] transition hover:text-[color:var(--kw-muted)]")}
+                    className={clsx(styles.sectionToggle, "flex w-full items-center justify-between rounded-[10px] px-2.5 py-1.5 font-semibold text-[color:var(--kw-faint)] transition-colors hover:text-[color:var(--kw-ink-2)]")}
                   >
                     <span>{copy.sectionProduct}</span>
                     <ChevronDown
@@ -388,7 +388,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
                   />
                 </nav>
 
-                <div className={clsx(styles.languageCard, "rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface-soft)]")}>
+                <div className={clsx(styles.languageCard, "rounded-[12px]")}>
                   <UiLanguageSwitcher compact />
                 </div>
               </>
@@ -408,7 +408,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
         aria-label="Primary navigation"
         lang={uiLanguageToHtmlLang(language)}
         dir={isUiLanguageRtl(language) ? "rtl" : "ltr"}
-        className={clsx(styles.mobileNav, "fixed left-1/2 z-40 w-[min(520px,calc(100vw-1.5rem))] -translate-x-1/2 rounded-[26px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-surface)] px-2 py-2 shadow-[var(--kw-shadow)] backdrop-blur md:hidden")}
+        className={clsx(styles.mobileNav, "fixed left-1/2 z-40 w-[min(520px,calc(100vw-1.5rem))] -translate-x-1/2 kw-material rounded-[28px] border border-[color:var(--kw-border-2)] px-1.5 py-1.5 shadow-[var(--kw-shadow-float)] md:hidden")}
       >
         <div
           className="grid gap-1"
@@ -425,10 +425,10 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
                 telemetryName={`shell.mobile-nav.${item.key}`}
                 aria-current={active ? "page" : undefined}
                 className={clsx(
-                  "flex flex-col items-center justify-center gap-0.5 rounded-[18px] px-1 py-2 text-[10px] font-semibold transition",
+                  "flex flex-col items-center justify-center gap-0.5 rounded-[22px] px-1 py-2 text-[10px] font-medium transition-colors",
                   active
-                    ? "bg-[rgba(var(--kw-accent-rgb),0.12)] text-[color:var(--kw-ink)]"
-                    : "text-[color:var(--kw-muted)] hover:bg-[color:var(--kw-hover-soft)] hover:text-[color:var(--kw-ink)]",
+                    ? "bg-[color:var(--kw-fill-strong)] text-[rgba(var(--kw-accent-rgb),1)]"
+                    : "text-[color:var(--kw-muted)] hover:text-[color:var(--kw-ink)]",
                 )}
               >
                 <Icon size={17} />

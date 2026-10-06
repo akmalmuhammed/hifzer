@@ -52,7 +52,7 @@ export default async function JuzPage(props: { params: Promise<{ id: string }> }
     <div className="pb-12 pt-10 md:pb-16 md:pt-14">
       <Link
         href="/quran"
-        className="inline-flex items-center gap-2 rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-3 py-2 text-sm font-semibold text-[color:var(--kw-ink)] shadow-[var(--kw-shadow-soft)] hover:bg-white"
+        className="-ml-2 inline-flex min-h-11 items-center gap-1 rounded-full px-2.5 text-[0.94rem] font-medium text-[rgba(var(--kw-accent-rgb),1)] transition-colors duration-200 hover:bg-[rgba(var(--kw-accent-rgb),0.08)]"
       >
         <ArrowLeft size={16} />
         Back
@@ -60,20 +60,20 @@ export default async function JuzPage(props: { params: Promise<{ id: string }> }
 
       <div className="mt-6">
         <Pill tone="neutral">Juz {info.juzNumber}</Pill>
-        <h1 className="mt-4 text-balance font-[family-name:var(--font-kw-display)] text-5xl leading-[0.95] tracking-tight text-[color:var(--kw-ink)] sm:text-6xl">
+        <h1 className="kw-page-title mt-4 text-balance text-[color:var(--kw-ink)]">
           Juz {info.juzNumber}
         </h1>
-        <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--kw-muted)]">
+        <p className="kw-page-subtitle mt-3 text-[color:var(--kw-muted)]">
           {info.ayahCount} ayahs
         </p>
       </div>
 
-      <div className="mt-10 space-y-3">
+      <div className="mt-10 rounded-[var(--kw-radius-xl)] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-card)]">
         <QuranViewportProgressTracker enabled={Boolean(userId)} />
         {ayahs.map((a) => (
           <Card
             key={a.id}
-            className="py-3"
+            className="!rounded-none !border-0 !border-b !border-[color:var(--kw-border-2)] !bg-transparent py-7 !shadow-none last:!border-b-0 sm:px-8"
             data-quran-track="1"
             data-quran-ayah-id={a.id}
             data-quran-surah-number={a.surahNumber}
@@ -81,7 +81,7 @@ export default async function JuzPage(props: { params: Promise<{ id: string }> }
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span className="rounded-full border border-[color:var(--kw-border-2)] bg-white/70 px-2.5 py-1 text-xs font-semibold text-[color:var(--kw-muted)]">
+                <span className="rounded-full bg-[color:var(--kw-fill)] px-2.5 py-1 text-xs font-medium tabular-nums text-[color:var(--kw-faint)]">
                   {a.surahNumber}:{a.ayahNumber}
                 </span>
               </div>
@@ -95,7 +95,7 @@ export default async function JuzPage(props: { params: Promise<{ id: string }> }
               </div>
             </div>
 
-            <div dir="rtl" lang="ar" className="mt-4 text-right text-2xl leading-[2.1] text-[color:var(--kw-ink)]">
+            <div dir="rtl" lang="ar" className="mt-5 text-right font-[family-name:var(--font-kw-quran)] text-[1.9rem] leading-[2.2] text-[color:var(--kw-ink)] sm:text-[2.1rem]">
               {a.textUthmani}
             </div>
             <p dir="ltr" className="mt-3 text-sm leading-7 text-[color:var(--kw-muted)]">

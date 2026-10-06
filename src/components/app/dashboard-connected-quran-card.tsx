@@ -114,7 +114,7 @@ function LoadingState() {
         <div className="h-4 w-[70%] animate-pulse rounded-full bg-[color:var(--kw-skeleton)]" />
         <div className={styles.grid}>
           {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="min-h-[110px] animate-pulse rounded-[18px] border border-[color:var(--kw-border-2)] bg-[color:var(--kw-skeleton)]" />
+            <div key={index} className="min-h-[110px] animate-pulse rounded-[16px] bg-[color:var(--kw-skeleton)]" />
           ))}
         </div>
       </div>
@@ -208,10 +208,10 @@ export function DashboardConnectedQuranCard(props: { mode?: CardMode }) {
               <div className="flex flex-wrap items-center gap-2">
                 <Pill tone="warn">Quran.com</Pill>
               </div>
-              <p className="mt-3 text-base font-semibold tracking-tight text-[color:var(--kw-ink)]">
+              <p className="mt-3 text-[1.18rem] font-semibold leading-[1.2] tracking-[-0.02em] text-[color:var(--kw-ink)]">
                 Quran.com connection unavailable
               </p>
-              <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+              <p className="mt-2 text-[0.94rem] leading-[1.5] text-[color:var(--kw-muted)]">
                 {error ?? "The dashboard could not load the linked Quran.com state right now."}
               </p>
             </div>
@@ -244,18 +244,18 @@ export function DashboardConnectedQuranCard(props: { mode?: CardMode }) {
                 {connected ? <Pill tone={hasBookmarkScope ? "accent" : "warn"}>User API sync</Pill> : null}
                 {status.contentApiReady ? <Pill tone="neutral">Content API ready</Pill> : null}
               </div>
-              <p className="mt-3 text-base font-semibold tracking-tight text-[color:var(--kw-ink)]">
+              <p className="mt-3 text-[1.18rem] font-semibold leading-[1.2] tracking-[-0.02em] text-[color:var(--kw-ink)]">
                 {connected
                   ? "Quran.com sync is visible in your daily flow."
                   : "Connect Quran.com whenever you want your reading place and saved items to follow you here."}
               </p>
-              <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+              <p className="mt-2 text-[0.94rem] leading-[1.5] text-[color:var(--kw-muted)]">
                 {connected
                   ? "Reading place, bookmarks, folders, goals, notes, and official reader content stay available from Hifzer."
                   : "This is optional. You can start with Hifz or reading first, then connect Quran.com later when you want everything in one place."}
               </p>
               {connected && hasReadingSessionScope && overview?.readingSession ? (
-                <p className="mt-3 text-xs text-[color:var(--kw-faint)]">
+                <p className="mt-3 text-[0.82rem] tabular-nums text-[color:var(--kw-faint)]">
                   Latest reading place: Surah {overview.readingSession.surahNumber}:{overview.readingSession.ayahNumber}
                 </p>
               ) : null}
@@ -344,7 +344,7 @@ export function DashboardConnectedQuranCard(props: { mode?: CardMode }) {
                 <Pill tone="warn">Reconnect needed</Pill>
               ) : null}
             </div>
-            <p className="mt-3 text-base font-semibold tracking-tight text-[color:var(--kw-ink)]">
+            <p className="mt-3 text-[1.18rem] font-semibold leading-[1.2] tracking-[-0.02em] text-[color:var(--kw-ink)]">
               {simpleMode
                 ? connected
                   ? "Your Quran.com journey stays together here."
@@ -353,7 +353,7 @@ export function DashboardConnectedQuranCard(props: { mode?: CardMode }) {
                   ? "Keep your reading place, bookmarks, and notes together."
                   : "Connect Quran.com to continue where you left off."}
             </p>
-            <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+            <p className="mt-2 text-[0.94rem] leading-[1.5] text-[color:var(--kw-muted)]">
               {simpleMode
                 ? connected
                   ? "Open the Qur'an reader to pick up your reading place, or manage the bookmarks and notes you want to keep in sync."

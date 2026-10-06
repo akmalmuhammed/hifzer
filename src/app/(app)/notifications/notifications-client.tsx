@@ -73,10 +73,10 @@ export function NotificationsClient(props: NotificationsClientProps) {
                 </Pill>
                 <Pill tone="neutral">{draft.timezone}</Pill>
               </div>
-              <p className="mt-4 text-lg font-semibold tracking-tight text-[color:var(--kw-ink)]">
+              <p className="mt-4 text-[1.3rem] font-semibold leading-[1.15] tracking-[-0.02em] text-[color:var(--kw-ink)]">
                 Daily reminder timing
               </p>
-              <p className="mt-2 text-sm leading-7 text-[color:var(--kw-muted)]">
+              <p className="mt-2 text-[0.94rem] leading-[1.5] text-[color:var(--kw-muted)]">
                 Hifzer sends at most one reminder on a local day when you have not yet finished your practice.
               </p>
             </div>
@@ -96,19 +96,19 @@ export function NotificationsClient(props: NotificationsClientProps) {
           <div className="mt-6">
             <div className="flex items-center gap-2">
               <Clock3 size={16} className="text-[color:var(--kw-faint)]" />
-              <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Suggested presets</p>
+              <p className="text-[0.84rem] font-semibold text-[color:var(--kw-faint)]">Suggested presets</p>
             </div>
-            <div className="mt-2 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               {PRESETS.map((preset) => (
                 <button
                   key={preset.label}
                   type="button"
                   onClick={() => setDraft((current) => ({ ...current, reminderTimeLocal: preset.time }))}
                   className={[
-                    "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
+                    "min-h-9 rounded-full px-3.5 py-1.5 text-[0.84rem] font-medium tabular-nums transition-colors duration-200",
                     draft.reminderTimeLocal === preset.time
-                      ? "border-[rgba(var(--kw-accent-rgb),0.28)] bg-[rgba(var(--kw-accent-rgb),0.12)] text-[rgba(var(--kw-accent-rgb),1)]"
-                      : "border-[color:var(--kw-border-2)] bg-white/70 text-[color:var(--kw-ink)] hover:bg-white",
+                      ? "bg-[rgba(var(--kw-accent-rgb),0.1)] text-[rgba(var(--kw-accent-rgb),1)]"
+                      : "bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)] hover:bg-[color:var(--kw-hover-strong)]",
                   ].join(" ")}
                 >
                   {preset.label} {preset.time}
@@ -123,7 +123,7 @@ export function NotificationsClient(props: NotificationsClientProps) {
               label="Reminder time (local)"
               description="This is your local clock time, not server time. It works best when your timezone stays accurate."
               fieldClassName="max-w-[220px]"
-              labelClassName="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]"
+              labelClassName="text-[0.84rem] font-semibold text-[color:var(--kw-faint)]"
               type="time"
               value={draft.reminderTimeLocal}
               onChange={(event) => setDraft((current) => ({ ...current, reminderTimeLocal: event.target.value }))}
@@ -140,9 +140,9 @@ export function NotificationsClient(props: NotificationsClientProps) {
         <Card>
           <div className="flex items-center gap-2">
             <Mail size={16} className="text-[color:var(--kw-faint)]" />
-            <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--kw-faint)]">Current delivery model</p>
+            <p className="text-[1.12rem] font-semibold tracking-[-0.02em] text-[color:var(--kw-ink)]">Current delivery model</p>
           </div>
-          <div className="mt-4 space-y-3 text-sm leading-7 text-[color:var(--kw-muted)]">
+          <div className="mt-3 space-y-3 text-[0.94rem] leading-[1.5] text-[color:var(--kw-muted)]">
             <p>Email reminders are live now. They are intentionally simple and non-spammy.</p>
             <p>Push notifications, regional prayer-linked timing, and weekend-heavy plans can layer on top later without changing your core habit loop.</p>
           </div>
