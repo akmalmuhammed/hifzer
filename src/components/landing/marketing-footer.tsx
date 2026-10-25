@@ -3,10 +3,10 @@ import { TrackedLink } from "@/components/telemetry/tracked-link";
 import styles from "./landing.module.css";
 
 const PRODUCT_LINKS = [
-  { href: "/#routine", label: "Routine" },
-  { href: "/#hifz", label: "Hifz" },
-  { href: "/#guidance", label: "Guidance" },
-  { href: "/#reflection", label: "Reflection" },
+  { href: "/#reader", label: "Read" },
+  { href: "/#hifz", label: "Memorize" },
+  { href: "/#guidance", label: "Understand" },
+  { href: "/#reflection", label: "Reflect" },
 ] as const;
 
 export function MarketingFooter() {

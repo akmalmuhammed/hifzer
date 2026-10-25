@@ -240,57 +240,226 @@
   margin: clamp(2.75rem, 6vw, 4.75rem) auto 0;
 }
 
-.screenCard {
+.stage {
   position: relative;
-  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: clamp(0.75rem, 2vw, 1.25rem);
   margin: 0;
-  border-radius: clamp(1.1rem, 2.2vw, 1.75rem);
+  padding: clamp(0.9rem, 3vw, 2.5rem);
+  border-radius: clamp(1.5rem, 3.2vw, 2.5rem);
   background: var(--kw-tile);
   text-align: start;
 }
 
-.heroMainScreen {
+.stageCard {
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--kw-border-2);
-  box-shadow: var(--kw-shadow-float);
-}
-
-.screenImageWrap {
-  position: relative;
-  aspect-ratio: 16 / 10;
-  background: var(--kw-tile);
-}
-
-.screenLabel {
-  padding: 1rem 1.25rem 1.15rem;
-  color: var(--kw-ink);
-  font-size: 1.06rem;
-  font-weight: 600;
-  letter-spacing: -0.018em;
-}
-
-.heroShelf {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.heroShelf .screenImageWrap {
-  margin: 1rem 1rem 0;
-  overflow: hidden;
-  border-radius: 0.8rem;
+  border-radius: clamp(1.25rem, 2.4vw, 1.75rem);
+  padding: clamp(1.1rem, 2.6vw, 2rem);
+  background: var(--kw-page);
   box-shadow: var(--kw-shadow);
 }
 
+.stagePills,
+.stageActions,
+.stageHead {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.stageHead {
+  justify-content: space-between;
+}
+
+.stagePill {
+  display: inline-flex;
+  align-items: center;
+  height: 2.1rem;
+  padding: 0 0.9rem;
+  border-radius: 999px;
+  background: var(--kw-fill);
+  color: var(--kw-ink-2);
+  font-size: 0.88rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.stagePillOn {
+  background: rgba(var(--kw-accent-rgb), 0.12);
+  color: var(--kw-accent);
+  font-weight: 600;
+}
+
+.stageAyah {
+  margin-top: clamp(1.1rem, 2.4vw, 1.75rem);
+  color: var(--kw-ink);
+  font-family: var(--font-kw-quran);
+  font-size: clamp(2rem, 4.4vw, 3.4rem);
+  font-weight: 700;
+  line-height: 1.85;
+  text-align: right;
+}
+
+.stageTranslation {
+  margin-top: 0.5rem;
+  color: var(--kw-muted);
+  font-size: clamp(1rem, 1.5vw, 1.15rem);
+  line-height: 1.45;
+}
+
+.stageActions {
+  margin-top: auto;
+  padding-top: clamp(1.25rem, 3vw, 2rem);
+}
+
+.stageButton {
+  display: inline-flex;
+  align-items: center;
+  height: 2.9rem;
+  padding: 0 1.4rem;
+  border-radius: 999px;
+  background: var(--kw-accent);
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.stageLink {
+  padding: 0 0.6rem;
+  color: var(--kw-accent);
+  font-size: 0.98rem;
+  font-weight: 500;
+}
+
+.stageTitle {
+  color: var(--kw-ink);
+  font-size: clamp(1.25rem, 2vw, 1.6rem);
+  font-weight: 600;
+  letter-spacing: -0.024em;
+}
+
+.stageNote {
+  color: var(--kw-faint);
+  font-size: 0.84rem;
+}
+
+.stageRows {
+  display: grid;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stageRows li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: clamp(0.8rem, 1.6vw, 1.1rem) 0;
+  border-top: 1px solid var(--kw-border-2);
+  font-size: clamp(0.98rem, 1.5vw, 1.12rem);
+}
+
+.stageRows li:first-child {
+  border-top: 0;
+}
+
+.stageRows span {
+  color: var(--kw-muted);
+}
+
+.stageRows strong {
+  color: var(--kw-ink);
+  font-size: clamp(1.15rem, 2vw, 1.5rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stageWarn strong {
+  color: var(--kw-ember-600);
+}
+
+.stageBar {
+  overflow: hidden;
+  height: 0.4rem;
+  margin-top: auto;
+  border-radius: 999px;
+  background: var(--kw-track);
+}
+
+.stageBar span {
+  display: block;
+  width: 82%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--kw-accent);
+  transform-origin: left;
+}
+
+.sourceLine {
+  margin-top: 1.1rem;
+  color: var(--kw-faint);
+  font-size: 0.84rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
 @media (prefers-reduced-motion: no-preference) {
-  .heroCopy,
-  .heroVisual {
+  .heroCopy {
     animation: heroRise 900ms var(--kw-ease) both;
   }
 
   .heroVisual {
-    animation-delay: 140ms;
+    animation: heroRise 1000ms var(--kw-ease) 140ms both;
   }
+
+  .stageCard {
+    animation: heroRise 900ms var(--kw-ease) both;
+    animation-delay: calc(320ms + var(--i, 0) * 130ms);
+  }
+
+  .stageBar span {
+    animation: barFill 1400ms var(--kw-ease) 900ms both;
+  }
+
+  .stagePillOn {
+    animation: placePulse 1800ms var(--kw-ease) 1100ms 1 both;
+  }
+}
+
+@keyframes barFill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes placePulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--kw-accent-rgb), 0);
+  }
+  40% {
+    box-shadow: 0 0 0 0.5rem rgba(var(--kw-accent-rgb), 0.16);
+  }
+}
+
+/* ── Scroll reveal (see reveal.tsx; the server render is always visible) ── */
+
+.revealHidden {
+  opacity: 0;
+  transform: translate3d(0, 1.75rem, 0);
+}
+
+.revealShown {
+  transition:
+    opacity 900ms var(--kw-ease),
+    transform 900ms var(--kw-ease);
 }
 
 /* ── Chapters ───────────────────────────────────────────────── */
@@ -345,8 +514,7 @@
 .metricCard,
 .warmCard,
 .journalCard,
-.syncOrbit,
-.summaryStats > div {
+.factTile {
   border-radius: 1.75rem;
   background: var(--kw-tile);
 }
@@ -409,6 +577,27 @@
   line-height: 1.45;
 }
 
+@property --ring {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 82;
+}
+
+@keyframes ringFill {
+  from {
+    --ring: 0;
+  }
+  to {
+    --ring: 82;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .revealShown .retentionRing {
+    animation: ringFill 1500ms var(--kw-ease) 150ms both;
+  }
+}
+
 /* ── Hifz ───────────────────────────────────────────────────── */
 
 .metricsGrid {
@@ -445,8 +634,8 @@
   border-radius: 999px;
   background: conic-gradient(
     from 0deg,
-    rgba(var(--kw-accent-rgb), 1) 0 82%,
-    rgba(var(--kw-accent-rgb), 0.16) 82% 100%
+    rgba(var(--kw-accent-rgb), 1) 0 calc(var(--ring) * 1%),
+    rgba(var(--kw-accent-rgb), 0.16) calc(var(--ring) * 1%) 100%
   );
 }
 
@@ -825,120 +1014,24 @@ html[data-mode="dark"] .readerShell {
 
 /* ── Continuity ─────────────────────────────────────────────── */
 
-.summaryPanel {
+.factGrid {
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
   margin-top: clamp(2.5rem, 5vw, 3.75rem);
 }
 
-.syncOrbit {
-  position: relative;
-  display: grid;
-  place-items: center;
-  min-height: 26rem;
-  overflow: hidden;
-}
-
-.syncOrbit::before {
-  content: "";
-  position: absolute;
-  width: min(74%, 17.5rem);
-  aspect-ratio: 1;
-  border: 1px solid var(--kw-border);
-  border-radius: 999px;
-}
-
-.syncOrbitCore {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  justify-items: center;
-  gap: 0.3rem;
-  max-width: 10.5rem;
-  text-align: center;
-}
-
-.syncOrbitCore small {
-  color: rgba(var(--kw-accent-rgb), 1);
-  font-size: 0.86rem;
-  font-weight: 600;
-}
-
-.syncOrbitCore strong {
-  color: var(--kw-ink);
-  font-size: 1.5rem;
-  font-weight: 600;
-  line-height: 1.1;
-  letter-spacing: -0.024em;
-}
-
-.syncOrbitCore span {
-  color: var(--kw-muted);
-  font-size: 0.86rem;
-  line-height: 1.4;
-}
-
-.syncOrbitRing {
-  position: absolute;
-  inset: 50%;
-  width: min(74%, 17.5rem);
-  aspect-ratio: 1;
-  translate: -50% -50%;
-  animation: spinSlow 48s linear infinite;
-}
-
-.syncOrbitNode {
-  position: absolute;
-  display: grid;
-  place-items: center;
-  width: 3rem;
-  height: 3rem;
-  border-radius: 999px;
-  color: rgba(var(--kw-accent-rgb), 1);
-  background: var(--kw-page);
-  box-shadow: var(--kw-shadow);
-  animation: counterSpin 48s linear infinite;
-}
-
-.syncOrbitNodeTop {
-  left: 50%;
-  top: 0;
-  translate: -50% -50%;
-}
-
-.syncOrbitNodeRight {
-  right: 0;
-  top: 50%;
-  translate: 50% -50%;
-}
-
-.syncOrbitNodeBottom {
-  left: 50%;
-  bottom: 0;
-  translate: -50% 50%;
-}
-
-.syncOrbitNodeLeft {
-  left: 0;
-  top: 50%;
-  translate: -50% -50%;
-}
-
-.summaryStats {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.summaryStats > div {
+.factTile {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: clamp(1.4rem, 2.2vw, 1.9rem);
+  min-height: 15rem;
+  border-radius: 1.75rem;
+  padding: clamp(1.3rem, 2vw, 1.75rem);
+  background: var(--kw-tile);
 }
 
-.summaryStats strong {
+.factTile strong {
   display: block;
   color: var(--kw-ink);
   font-size: clamp(1.25rem, 1.8vw, 1.5rem);
@@ -947,9 +1040,9 @@ html[data-mode="dark"] .readerShell {
   letter-spacing: -0.024em;
 }
 
-.summaryStats span {
+.factTile span {
   display: block;
-  margin-top: 0.5rem;
+  margin-top: 0.55rem;
   color: var(--kw-muted);
   font-size: 1rem;
   line-height: 1.42;
@@ -1140,9 +1233,6 @@ html[data-mode="dark"] .readerShell {
 @media (max-width: 1024px) {
   .chapterGrid,
   .readerShell,
-  .summaryPanel {
-    grid-template-columns: minmax(0, 1fr);
-  }
 
   .guidanceCopy {
     max-width: none;
@@ -1169,13 +1259,8 @@ html[data-mode="dark"] .readerShell {
 
   .metricsPanel,
   .warmCard,
-  .journalCard,
-  .syncOrbit {
+  .journalCard {
     min-height: 0;
-  }
-
-  .syncOrbit {
-    padding: 4.5rem 0;
   }
 
   .footerGrid {
@@ -1186,26 +1271,6 @@ html[data-mode="dark"] .readerShell {
     grid-column: 1 / -1;
   }
 
-  /* Screens become a swipeable gallery instead of three tiny thumbnails. */
-  .heroShelf {
-    grid-template-columns: none;
-    grid-auto-flow: column;
-    grid-auto-columns: 82%;
-    overflow-x: auto;
-    margin-inline: -1.4rem;
-    padding-inline: 1.4rem;
-    scroll-padding-inline: 1.4rem;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-  }
-
-  .heroShelf::-webkit-scrollbar {
-    display: none;
-  }
-
-  .heroShelf > * {
-    scroll-snap-align: start;
-  }
 }
 
 @media (max-width: 520px) {
@@ -1226,8 +1291,7 @@ html[data-mode="dark"] .readerShell {
     justify-content: center;
   }
 
-  .metricCards,
-  .summaryStats {
+  .metricCards {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -1241,9 +1305,39 @@ html[data-mode="dark"] .readerShell {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .metricGraph span,
-  .syncOrbitRing,
-  .syncOrbitNode {
+  .metricGraph span {
     animation: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .footerLinks a {
+    min-height: 2.75rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .factGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .factTile {
+    min-height: 12rem;
+  }
+}
+
+@media (max-width: 760px) {
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .factGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .factTile {
+    min-height: 0;
   }
 }

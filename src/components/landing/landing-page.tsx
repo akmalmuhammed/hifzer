@@ -1,45 +1,18 @@
-import Image from "next/image";
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
 import {
   BookMarked,
   BookOpenText,
   ChevronDown,
   ChevronRight,
   Heart,
-  LineChart,
-  Lock,
-  MessageCircleQuestion,
   PenLine,
   Sparkles,
 } from "lucide-react";
 import { TrackedLink } from "@/components/telemetry/tracked-link";
 import { Button } from "@/components/ui/button";
 import { GroundedGuidanceDemo } from "./grounded-guidance-demo";
+import { CountUp, Reveal } from "./reveal";
 import styles from "./landing.module.css";
-
-type ShowcaseImage = {
-  src: string;
-  alt: string;
-};
-
-const showcaseImages = {
-  dashboard: {
-    src: "/landing/showcase/dashboard.webp",
-    alt: "Hifzer dashboard with Qur'an progress, hifz review, dua, and journal surfaces.",
-  },
-  hifz: {
-    src: "/landing/showcase/Hifz%20final.webp",
-    alt: "Hifzer hifz review screen with structured recall and revision controls.",
-  },
-  dua: {
-    src: "/landing/showcase/Dua.webp",
-    alt: "Hifzer dua screen with Arabic, transliteration, and meaning.",
-  },
-  journal: {
-    src: "/landing/showcase/Journal%20final.webp",
-    alt: "Hifzer private journal screen with Qur'an reflections.",
-  },
-} satisfies Record<string, ShowcaseImage>;
 
 const routineSteps = [
   {
@@ -84,16 +57,12 @@ const continuityFeatures = [
 
 const faqs = [
   {
+    q: "Is Hifzer free?",
+    a: "The core routine is free to start in your browser, with no card required. Optional premium features, where offered, use a one-time purchase rather than a subscription.",
+  },
+  {
     q: "Who is Hifzer for?",
     a: "For Muslims who want a steadier relationship with the Qur'an, whether they are reading daily, memorizing, revising, making dua, or reflecting privately.",
-  },
-  {
-    q: "Do I need a Quran.com account?",
-    a: "No. You can use Hifzer without linking Quran.com. Connecting it is optional and helps supported Qur'an activity, such as saved ayahs, follow your account.",
-  },
-  {
-    q: "What happens after signup?",
-    a: "You start with a short setup, then enter the dashboard with the main Qur'an, hifz, dua, and journal tools ready to use.",
   },
   {
     q: "Does Hifzer replace a teacher?",
@@ -108,20 +77,14 @@ const faqs = [
     a: "Yes. Your notes and reflections are treated as a private space, not a social feed.",
   },
   {
-    q: "Is Hifzer free?",
-    a: "The core routine is free to start in your browser. Optional premium features, where offered, use a one-time purchase rather than a subscription.",
+    q: "Do I need a Quran.com account?",
+    a: "No. You can use Hifzer without linking Quran.com. Connecting it is optional and helps supported Qur'an activity, such as saved ayahs, follow your account.",
+  },
+  {
+    q: "What happens after signup?",
+    a: "You start with a short setup, then enter the dashboard with the main Qur'an, hifz, dua, and journal tools ready to use.",
   },
 ] as const;
-
-function Reveal({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return <div className={className}>{children}</div>;
-}
 
 function SectionHeading({
   eyebrow,
@@ -143,35 +106,58 @@ function SectionHeading({
   );
 }
 
-function ScreenCard({
-  image,
-  label,
-  className,
-  priority = false,
-}: {
-  image: ShowcaseImage;
-  label?: string;
-  className?: string;
-  priority?: boolean;
-}) {
+/**
+ * The hero product shot is built from the app's own labels and copy, so it stays
+ * sharp at every size, follows light and dark mode, and never goes stale the way
+ * a screenshot does. It is decorative; the text above carries the pitch.
+ */
+function HeroStage() {
   return (
-    <figure className={`${styles.screenCard} ${className ?? ""}`}>
-      <div className={styles.screenImageWrap}>
-        <Image
-          src={image.src}
-          alt={image.alt}
-          fill
-          priority={priority}
-          fetchPriority={priority ? "high" : undefined}
-          sizes={
-            priority
-              ? "(max-width: 1160px) 94vw, 1120px"
-              : "(max-width: 760px) 78vw, 360px"
-          }
-          className="object-cover object-top"
-        />
+    <figure className={styles.stage} aria-label="Example of Hifzer: your reading place and today's hifz review">
+      <div className={styles.stageCard} style={{ "--i": 0 } as CSSProperties}>
+        <div className={styles.stagePills}>
+          <span className={styles.stagePill}>2:286</span>
+          <span className={`${styles.stagePill} ${styles.stagePillOn}`}>Your place</span>
+        </div>
+        <p dir="rtl" lang="ar" className={styles.stageAyah}>
+          لَا يُكَلِّفُ ٱللَّهُ نَفْسًا إِلَّا وُسْعَهَا
+        </p>
+        <p className={styles.stageTranslation}>
+          Allah does not charge a soul except [with that within] its capacity.
+        </p>
+        <div className={styles.stageActions} aria-hidden>
+          <span className={styles.stageButton}>Continue reading</span>
+          <span className={styles.stageLink}>Listen</span>
+        </div>
       </div>
-      {label ? <figcaption className={styles.screenLabel}>{label}</figcaption> : null}
+
+      <div className={styles.stageCard} style={{ "--i": 1 } as CSSProperties}>
+        <div className={styles.stageHead}>
+          <span className={styles.stageTitle}>Today</span>
+          <span className={styles.stageNote}>Example day</span>
+        </div>
+        <ul className={styles.stageRows}>
+          <li>
+            <span>Sabaq</span>
+            <strong>2 ayahs</strong>
+          </li>
+          <li>
+            <span>Sabqi</span>
+            <strong>7 min</strong>
+          </li>
+          <li>
+            <span>Manzil</span>
+            <strong>82%</strong>
+          </li>
+          <li className={styles.stageWarn}>
+            <span>Fading soon</span>
+            <strong>3</strong>
+          </li>
+        </ul>
+        <div className={styles.stageBar} aria-hidden>
+          <span />
+        </div>
+      </div>
     </figure>
   );
 }
@@ -179,49 +165,48 @@ function ScreenCard({
 function HeroChapter() {
   return (
     <section className={styles.hero} aria-labelledby="landing-hero-title">
-      <Reveal className={styles.heroCopy}>
-          <p className={styles.heroEyebrow}>A daily Qur&apos;an companion for reading and hifz</p>
-          <h1 id="landing-hero-title" className={styles.heroTitle}>
-            Return to your ayah.<br className="hidden md:inline" /> Keep what you memorized.
-          </h1>
-          <p className={styles.heroSummary}>
-            Hifzer brings your next ayah, sabaq, sabqi and manzil review, trusted translation and tafsir, duas, and private reflections into one calm daily routine.
-          </p>
-          <div className={styles.heroActions}>
-            <Button asChild size="lg">
-              <TrackedLink
-                href="/signup"
-                prefetch={false}
-                telemetryName="landing.primary_open_app_click"
-                telemetryMeta={{ placement: "hero" }}
-              >
-                Start my free routine
-              </TrackedLink>
-            </Button>
+      <div className={styles.heroCopy}>
+        <p className={styles.heroEyebrow}>The daily Qur&apos;an companion</p>
+        <h1 id="landing-hero-title" className={styles.heroTitle}>
+          Return to your ayah.<br className="hidden md:inline" /> Keep what you memorized.
+        </h1>
+        <p className={styles.heroSummary}>
+          Pick up at the exact ayah you left. Review what you have memorized before it fades.
+          Understand with sources in view, make dua, and reflect privately.
+        </p>
+        <div className={styles.heroActions}>
+          <Button asChild size="lg">
             <TrackedLink
-              href="#routine"
-              className={styles.textLink}
-              telemetryName="landing.hero_story_click"
+              href="/signup"
+              prefetch={false}
+              telemetryName="landing.primary_open_app_click"
               telemetryMeta={{ placement: "hero" }}
             >
-              See how Hifzer works <ChevronRight size={18} aria-hidden />
+              Start free
             </TrackedLink>
-          </div>
-          <div className={styles.heroTrust} aria-label="Hifzer trust notes">
-            <span>Free in your browser</span>
-            <span>No card required</span>
-            <span>Private reflections</span>
-          </div>
-      </Reveal>
-
-      <Reveal className={styles.heroVisual}>
-        <ScreenCard image={showcaseImages.dashboard} priority className={styles.heroMainScreen} />
-        <div className={styles.heroShelf}>
-          <ScreenCard image={showcaseImages.hifz} label="Hifz" />
-          <ScreenCard image={showcaseImages.dua} label="Dua" />
-          <ScreenCard image={showcaseImages.journal} label="Journal" />
+          </Button>
+          <TrackedLink
+            href="#routine"
+            className={styles.textLink}
+            telemetryName="landing.hero_story_click"
+            telemetryMeta={{ placement: "hero" }}
+          >
+            See how it works <ChevronRight size={18} aria-hidden />
+          </TrackedLink>
         </div>
-      </Reveal>
+        <div className={styles.heroTrust} aria-label="Hifzer trust notes">
+          <span>Free in your browser</span>
+          <span>No card required</span>
+          <span>Private reflections</span>
+        </div>
+      </div>
+
+      <div className={styles.heroVisual}>
+        <HeroStage />
+        <p className={styles.sourceLine}>
+          Arabic text and Sahih International translation from Tanzil. Tafsir from Quran.com.
+        </p>
+      </div>
     </section>
   );
 }
@@ -229,37 +214,75 @@ function HeroChapter() {
 function RoutineChapter() {
   return (
     <section id="routine" className={styles.chapter} tabIndex={-1}>
-      <div>
-        <Reveal>
-          <SectionHeading
-            eyebrow="Guided routine"
-            title="Read, review, reflect, then return."
-            body="One calm path keeps your reading place, review, and reflections ready for the next return."
-            align="center"
-          />
-        </Reveal>
-        <Reveal className={styles.planBuilder}>
-          {routineSteps.map((step, index) => {
-            return (
-              <article
-                key={step.label}
-                className={styles.planStep}
-                style={{ "--step": index } as CSSProperties}
-                aria-labelledby={`routine-step-${index + 1}`}
-              >
-                <div className={styles.planStepBadge}>
-                  <span>{step.label}</span>
-                  <small aria-hidden>{String(index + 1).padStart(2, "0")}</small>
-                </div>
-                <div className={styles.planStepCopy}>
-                  <h3 id={`routine-step-${index + 1}`}>{step.title}</h3>
-                  <p>{step.body}</p>
-                </div>
-              </article>
-            );
-          })}
-        </Reveal>
+      <Reveal>
+        <SectionHeading
+          eyebrow="Guided routine"
+          title="Read, review, reflect, then return."
+          body="One calm path keeps your reading place, review, and reflections ready for the next return."
+          align="center"
+        />
+      </Reveal>
+      <div className={styles.planBuilder}>
+        {routineSteps.map((step, index) => (
+          <Reveal key={step.label} delay={index * 90}>
+            <article className={styles.planStep} aria-labelledby={`routine-step-${index + 1}`}>
+              <div className={styles.planStepBadge}>
+                <span>{step.label}</span>
+                <small aria-hidden>{String(index + 1).padStart(2, "0")}</small>
+              </div>
+              <div className={styles.planStepCopy}>
+                <h3 id={`routine-step-${index + 1}`}>{step.title}</h3>
+                <p>{step.body}</p>
+              </div>
+            </article>
+          </Reveal>
+        ))}
       </div>
+    </section>
+  );
+}
+
+function ReaderChapter() {
+  return (
+    <section id="reader" className={styles.chapter} tabIndex={-1}>
+      <Reveal>
+        <div className={styles.readerShell}>
+          <div>
+            <SectionHeading
+              eyebrow="Read"
+              title="Meaning and recitation stay beside the ayah."
+              body="Choose a trusted translation, tafsir, or reciter without leaving your place. Connect Quran.com only when you want saved Qur'an activity to follow your account."
+            />
+            <div className={styles.readerApiProof}>
+              <span>Meaning and context beside each ayah</span>
+              <span>Saved ayahs can follow your account</span>
+              <span>Recitation, tafsir, and notes in one flow</span>
+            </div>
+          </div>
+          <div className={styles.readerMock}>
+            <div className={styles.readerWindow}>
+              <div className={styles.ayahLine}>
+                <span>2:286</span>
+                <p dir="rtl" lang="ar">لَا يُكَلِّفُ ٱللَّهُ نَفْسًا إِلَّا وُسْعَهَا</p>
+              </div>
+              <div className={styles.readerControls}>
+                <span><BookOpenText size={14} /> Read with trusted translation</span>
+                <span>Go deeper with tafsir</span>
+                <span>Listen with your reciter</span>
+                <span><BookMarked size={14} /> Keep saved ayahs close</span>
+              </div>
+              <div className={styles.readerApiPanel}>
+                <div>
+                  <small>As you read</small>
+                  <strong>Meaning, recitation, and context stay beside the ayah.</strong>
+                </div>
+                <span>No tab switching</span>
+              </div>
+              <div className={styles.progressTrack}><span /></div>
+            </div>
+          </div>
+        </div>
+      </Reveal>
     </section>
   );
 }
@@ -269,7 +292,7 @@ function HifzChapter() {
     <section id="hifz" className={styles.chapter} tabIndex={-1}>
       <Reveal>
         <SectionHeading
-          eyebrow="Hifz"
+          eyebrow="Memorize"
           title="Memorization you can actually keep."
           body="See today's new work, recent revision, long-term review, and passages that need care before they fade."
           align="center"
@@ -278,16 +301,15 @@ function HifzChapter() {
       <div className={styles.metricsGrid}>
         <Reveal className={styles.metricsPanel}>
           <div className={styles.retentionRingShell}>
-            <div className={styles.retentionRingGlow} aria-hidden />
             <div className={styles.retentionRing}>
               <div>
-                <strong>82%</strong>
+                <strong><CountUp to={82} /></strong>
                 <span>retention health</span>
               </div>
             </div>
           </div>
           <div className={styles.retentionCaption}>
-            <small>Steady this week</small>
+            <small>Example day</small>
             <strong>Memory is holding, with a few passages asking for repair before they fade.</strong>
           </div>
           <div className={styles.metricGraph} aria-hidden>
@@ -304,19 +326,15 @@ function HifzChapter() {
             ))}
           </div>
         </Reveal>
-        <Reveal className={styles.metricCards}>
+        <div className={styles.metricCards}>
           {hifzMetrics.map(([label, value, body], index) => (
-            <div
-              key={label}
-              className={styles.metricCard}
-              style={{ "--metric-delay": `${index * 120}ms` } as CSSProperties}
-            >
+            <Reveal key={label} delay={index * 80} className={styles.metricCard}>
               <p>{label}</p>
               <strong>{value}</strong>
               <span>{body}</span>
-            </div>
+            </Reveal>
           ))}
-        </Reveal>
+        </div>
       </div>
     </section>
   );
@@ -328,7 +346,7 @@ function GuidanceChapter() {
       <div className={styles.chapterGrid}>
         <Reveal className={styles.guidanceCopy}>
           <SectionHeading
-            eyebrow="Trusted guidance"
+            eyebrow="Understand"
             title="Ask with the sources in view."
             body="Explore a question with matched ayahs, translation, and tafsir context beside the answer instead of receiving an unsupported summary."
           />
@@ -344,51 +362,8 @@ function GuidanceChapter() {
             Built for study and reflection. It does not replace a qualified teacher or scholar.
           </p>
         </Reveal>
-        <Reveal className={styles.assistantMock}>
+        <Reveal className={styles.assistantMock} delay={120}>
           <GroundedGuidanceDemo />
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
-function ReaderChapter() {
-  return (
-    <section id="reader" className={styles.chapter} tabIndex={-1}>
-      <div className={styles.readerShell}>
-        <Reveal>
-          <SectionHeading
-            eyebrow="Trusted Qur'an sources"
-            title="Meaning and recitation stay beside the ayah."
-            body="Choose a trusted translation, tafsir, or reciter without leaving your place. Connect Quran.com only when you want saved Qur'an activity to follow your account."
-          />
-          <div className={styles.readerApiProof}>
-            <span>Meaning and context beside each ayah</span>
-            <span>Saved ayahs can follow your account</span>
-            <span>Recitation, tafsir, and notes in one flow</span>
-          </div>
-        </Reveal>
-        <Reveal className={styles.readerMock}>
-          <div className={styles.readerWindow}>
-          <div className={styles.ayahLine}>
-            <span>2:286</span>
-            <p dir="rtl" lang="ar">لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا</p>
-          </div>
-          <div className={styles.readerControls}>
-            <span><BookOpenText size={14} /> Read with trusted translation</span>
-            <span>Go deeper with tafsir</span>
-            <span>Listen with your reciter</span>
-            <span><BookMarked size={14} /> Keep saved ayahs close</span>
-          </div>
-          <div className={styles.readerApiPanel}>
-            <div>
-              <small>As you read</small>
-              <strong>Meaning, recitation, and context stay beside the ayah.</strong>
-            </div>
-            <span>No tab switching</span>
-          </div>
-          <div className={styles.progressTrack}><span /></div>
-          </div>
         </Reveal>
       </div>
     </section>
@@ -401,7 +376,7 @@ function ReflectionChapter() {
       <div className={styles.splitCards}>
         <Reveal className={styles.warmCard}>
           <Heart className={styles.cardIcon} aria-hidden />
-          <p className={styles.eyebrow}>Dua</p>
+          <p className={styles.eyebrow}>Reflect: Dua</p>
           <h2 className={styles.cardTitle}>Dua that feels present.</h2>
           <p className={styles.cardBody}>
             Return to sourced duas for repentance, hardship, gratitude, and Allah&apos;s names without searching through an endless list.
@@ -413,9 +388,9 @@ function ReflectionChapter() {
             <span>Allah&apos;s names</span>
           </div>
         </Reveal>
-        <Reveal className={styles.journalCard}>
+        <Reveal className={styles.journalCard} delay={120}>
           <PenLine className={styles.cardIcon} aria-hidden />
-          <p className={styles.eyebrow}>Journal</p>
+          <p className={styles.eyebrow}>Reflect: Journal</p>
           <h2 className={styles.cardTitle}>A private space for your Qur&apos;an journey.</h2>
           <p className={styles.cardBody}>
             Keep an ayah and the reflection it inspired together, privately under your account.
@@ -442,29 +417,14 @@ function ContinuityChapter() {
           align="center"
         />
       </Reveal>
-      <Reveal className={styles.summaryPanel}>
-        <div className={styles.syncOrbit}>
-          <div className={styles.syncOrbitCore}>
-            <small>Daily continuity</small>
-            <strong>Return ready</strong>
-            <span>Your reading place, review, notes, and duas stay in one calm loop.</span>
-          </div>
-          <div className={styles.syncOrbitRing} aria-hidden>
-            <span className={`${styles.syncOrbitNode} ${styles.syncOrbitNodeTop}`}><BookOpenText size={18} /></span>
-            <span className={`${styles.syncOrbitNode} ${styles.syncOrbitNodeRight}`}><LineChart size={18} /></span>
-            <span className={`${styles.syncOrbitNode} ${styles.syncOrbitNodeBottom}`}><MessageCircleQuestion size={18} /></span>
-            <span className={`${styles.syncOrbitNode} ${styles.syncOrbitNodeLeft}`}><Lock size={18} /></span>
-          </div>
-        </div>
-        <div className={styles.summaryStats}>
-          {continuityFeatures.map(([label, body]) => (
-            <div key={label}>
-              <strong>{label}</strong>
-              <span>{body}</span>
-            </div>
-          ))}
-        </div>
-      </Reveal>
+      <div className={styles.factGrid}>
+        {continuityFeatures.map(([label, body], index) => (
+          <Reveal key={label} delay={index * 80} className={styles.factTile}>
+            <strong>{label}</strong>
+            <span>{body}</span>
+          </Reveal>
+        ))}
+      </div>
     </section>
   );
 }
@@ -480,17 +440,19 @@ function FaqChapter() {
           align="center"
         />
       </Reveal>
-      <div className={styles.faqList}>
-        {faqs.map((faq) => (
-          <details key={faq.q} className={styles.faqItem}>
-            <summary>
-              <span>{faq.q}</span>
-              <ChevronDown size={18} aria-hidden />
-            </summary>
-            <p>{faq.a}</p>
-          </details>
-        ))}
-      </div>
+      <Reveal>
+        <div className={styles.faqList}>
+          {faqs.map((faq) => (
+            <details key={faq.q} className={styles.faqItem}>
+              <summary>
+                <span>{faq.q}</span>
+                <ChevronDown size={18} aria-hidden />
+              </summary>
+              <p>{faq.a}</p>
+            </details>
+          ))}
+        </div>
+      </Reveal>
     </section>
   );
 }
@@ -501,9 +463,7 @@ function ClosingCta() {
       <Reveal className="mx-auto max-w-3xl text-center">
         <p className={styles.eyebrow}>Begin gently</p>
         <h2>Make tomorrow&apos;s return to the Qur&apos;an easier.</h2>
-        <p>
-          Keep your next ayah, review, duas, and reflections ready in one calm place.
-        </p>
+        <p>Keep your next ayah, review, duas, and reflections ready in one calm place.</p>
         <div className={styles.finalActions}>
           <Button asChild size="lg">
             <TrackedLink
@@ -512,14 +472,16 @@ function ClosingCta() {
               telemetryName="landing.final_start_click"
               telemetryMeta={{ placement: "final-cta" }}
             >
-              Start my free routine
+              Start free
             </TrackedLink>
           </Button>
           <TrackedLink href="#routine" className={styles.textLink} telemetryName="landing.final_story_click">
             See how it works <ChevronRight size={18} aria-hidden />
           </TrackedLink>
         </div>
-        <span className={styles.noCard}>Free in your browser. No card required.</span>
+        <span className={styles.noCard}>
+          Free in your browser. No card required. Optional premium features, where offered, are a one-time purchase, never a subscription.
+        </span>
       </Reveal>
     </section>
   );
@@ -530,9 +492,9 @@ export function LandingPageContent() {
     <div className={styles.page}>
       <HeroChapter />
       <RoutineChapter />
+      <ReaderChapter />
       <HifzChapter />
       <GuidanceChapter />
-      <ReaderChapter />
       <ReflectionChapter />
       <ContinuityChapter />
       <FaqChapter />

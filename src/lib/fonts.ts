@@ -4,9 +4,12 @@ import {
   Inter,
 } from "next/font/google";
 
+// Inter ships an optical-size axis: large type automatically uses the tighter
+// "display" cut, which is the closest match to SF Pro Display off Apple devices.
 export const appSansFont = Inter({
   variable: "--font-kw-sans",
   subsets: ["latin"],
+  axes: ["opsz"],
   display: "swap",
   preload: true,
 });

@@ -74,7 +74,7 @@
   --kw-pill-brand-fg: var(--kw-teal-800);
   --kw-pill-accent-border: transparent;
   --kw-pill-accent-bg: rgba(var(--kw-accent-rgb), 0.12);
-  --kw-pill-accent-fg: var(--kw-accent);
+  --kw-pill-accent-fg: color-mix(in srgb, var(--kw-accent) 74%, #000);
   --kw-pill-warn-border: transparent;
   --kw-pill-warn-bg: rgba(217, 72, 15, 0.1);
   --kw-pill-warn-fg: var(--kw-ember-600);

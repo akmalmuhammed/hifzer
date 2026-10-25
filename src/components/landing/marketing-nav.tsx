@@ -12,7 +12,7 @@ import { getAppUiCopy } from "@/hifzer/i18n/app-ui-copy";
 import styles from "./landing.module.css";
 
 const STORY_LINKS = [
-  { href: "/#routine", label: "Read" },
+  { href: "/#reader", label: "Read" },
   { href: "/#hifz", label: "Memorize" },
   { href: "/#guidance", label: "Understand" },
   { href: "/#reflection", label: "Reflect" },
@@ -28,7 +28,7 @@ export function MarketingNav() {
   const { language } = useUiLanguage();
   const copy = getAppUiCopy(language);
   const signInLabel = copy.marketing.signIn;
-  const getStartedLabel = "Start my routine";
+  const getStartedLabel = "Start free";
 
   useEffect(() => {
     if (!open) return;
