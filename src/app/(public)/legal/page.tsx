@@ -52,7 +52,7 @@ export default function LegalHubPage() {
             <h2 className="text-[1.3rem] font-semibold leading-[1.2] tracking-[-0.02em] text-[color:var(--kw-ink)]">{item.title}</h2>
             <p className="mt-2 text-[1.02rem] leading-[1.5] text-[color:var(--kw-muted)]">{item.description}</p>
             <div className="mt-3">
-              <Link href={item.href} className="text-[1.02rem] text-[rgba(var(--kw-accent-rgb),1)] underline-offset-2 hover:underline">
+              <Link href={item.href} className="text-[1.02rem] text-[rgba(var(--kw-accent-rgb),1)] underline underline-offset-2 hover:no-underline">
                 Open page
               </Link>
             </div>

@@ -47,11 +47,11 @@ export default function LegalRefundPolicyPage() {
           <h2 className="text-[1.3rem] font-semibold leading-[1.2] tracking-[-0.02em] text-[color:var(--kw-ink)]">3. How to request</h2>
           <p className="mt-3 text-[1.02rem] leading-[1.6] text-[color:var(--kw-ink-2)]">
             Email your request with the purchase email and receipt reference to{" "}
-            <a href="mailto:support@hifzer.com" className="text-[rgba(var(--kw-accent-rgb),1)] underline-offset-2 hover:underline">
+            <a href="mailto:support@hifzer.com" className="text-[rgba(var(--kw-accent-rgb),1)] underline underline-offset-2 hover:no-underline">
               support@hifzer.com
             </a>
             . You can also contact Paddle Buyer Support directly at{" "}
-            <a href="https://paddle.net/" className="text-[rgba(var(--kw-accent-rgb),1)] underline-offset-2 hover:underline">
+            <a href="https://paddle.net/" className="text-[rgba(var(--kw-accent-rgb),1)] underline underline-offset-2 hover:no-underline">
               paddle.net
             </a>
             .
@@ -78,10 +78,10 @@ export default function LegalRefundPolicyPage() {
         <Card className="rounded-none! border-0! bg-transparent! p-0! shadow-none!">
           <h2 className="text-[1.3rem] font-semibold leading-[1.2] tracking-[-0.02em] text-[color:var(--kw-ink)]">6. Related policies</h2>
           <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
-            <Link href="/legal/terms" className="text-[1.02rem] text-[rgba(var(--kw-accent-rgb),1)] underline-offset-2 hover:underline">
+            <Link href="/legal/terms" className="text-[1.02rem] text-[rgba(var(--kw-accent-rgb),1)] underline underline-offset-2 hover:no-underline">
               Terms of service
             </Link>
-            <Link href="/legal/privacy" className="text-[1.02rem] text-[rgba(var(--kw-accent-rgb),1)] underline-offset-2 hover:underline">
+            <Link href="/legal/privacy" className="text-[1.02rem] text-[rgba(var(--kw-accent-rgb),1)] underline underline-offset-2 hover:no-underline">
               Privacy policy
             </Link>
           </div>

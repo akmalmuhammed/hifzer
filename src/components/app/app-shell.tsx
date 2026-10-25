@@ -427,7 +427,7 @@ export function AppShell(props: { children: React.ReactNode; streakEnabled?: boo
                 className={clsx(
                   "flex flex-col items-center justify-center gap-0.5 rounded-[22px] px-1 py-2 text-[10px] font-medium transition-colors",
                   active
-                    ? "bg-[color:var(--kw-fill-strong)] text-[rgba(var(--kw-accent-rgb),1)]"
+                    ? "bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink)] [&_svg]:text-[rgba(var(--kw-accent-rgb),1)]"
                     : "text-[color:var(--kw-muted)] hover:text-[color:var(--kw-ink)]",
                 )}
               >

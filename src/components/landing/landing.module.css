@@ -322,7 +322,7 @@
   padding: 0 1.4rem;
   border-radius: 999px;
   background: var(--kw-accent);
-  color: #fff;
+  color: var(--kw-on-accent);
   font-size: 0.98rem;
   font-weight: 600;
 }

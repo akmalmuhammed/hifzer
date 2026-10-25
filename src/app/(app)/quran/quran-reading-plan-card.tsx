@@ -205,7 +205,8 @@ export function QuranReadingPlanCard(props: ReadingPlanCardProps) {
             <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
               Roughly {computed.pagesPerDay} page{computed.pagesPerDay === 1 ? "" : "s"} daily at {resolvedMinutes} minutes.
             </p>
-            <p className="mt-2 text-sm text-[color:var(--kw-muted)]">
+            {/* The date depends on the viewer's locale and clock, so the server and browser can differ. */}
+            <p className="mt-2 text-sm text-[color:var(--kw-muted)]" suppressHydrationWarning>
               {computed.daysToFinish > 0 ? `Projected finish: ${formatFutureDate(computed.daysToFinish)}` : "You have already completed a full khatmah track."}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">

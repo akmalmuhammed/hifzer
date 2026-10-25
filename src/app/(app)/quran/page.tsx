@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { ArrowRight, BookMarked, BookOpen, Compass, MoonStar } from "lucide-react";
+import { ArrowRight, BookMarked, Compass, MoonStar } from "lucide-react";
 import { DistractionFreeToggle } from "@/components/app/distraction-free-toggle";
 import { NextActionCard } from "@/components/app/next-action-card";
 import { SurahProgressSection } from "@/components/progress/surah-progress-section";
 import { DisclosureCard } from "@/components/ui/disclosure-card";
-import { Pill } from "@/components/ui/pill";
 import { buildQuranResumeAction } from "@/hifzer/continuity/next-action";
 import { listQuranSurahProgress } from "@/hifzer/progress/surah-progress.server";
 import { getOrCreateUserProfile } from "@/hifzer/profile/server";
@@ -71,14 +70,9 @@ export default async function QuranIndexPage() {
 
   return (
     <div className="pb-12 pt-10 md:pb-16 md:pt-14">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Pill tone="neutral">Qur&apos;an</Pill>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <h1 className="kw-page-title text-[color:var(--kw-ink)]">Qur&apos;an</h1>
         <DistractionFreeToggle />
-      </div>
-      <div className="mt-6 flex justify-end">
-        <span className="grid h-12 w-12 place-items-center rounded-full bg-[color:var(--kw-fill-strong)] text-[color:var(--kw-ink-2)]">
-          <BookOpen size={18} />
-        </span>
       </div>
 
       <div className="mt-8">

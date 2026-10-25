@@ -161,16 +161,16 @@ export default function LegalSourcesPage() {
               </div>
 
               <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-[0.98rem] text-[color:var(--kw-faint)]">
-                <a href={source.officialUrl} className="text-[rgba(var(--kw-accent-rgb),1)] underline-offset-2 hover:underline">
+                <a href={source.officialUrl} className="text-[rgba(var(--kw-accent-rgb),1)] underline underline-offset-2 hover:no-underline">
                   Official site
                 </a>
                 {source.docsUrl ? (
-                  <a href={source.docsUrl} className="text-[rgba(var(--kw-accent-rgb),1)] underline-offset-2 hover:underline">
+                  <a href={source.docsUrl} className="text-[rgba(var(--kw-accent-rgb),1)] underline underline-offset-2 hover:no-underline">
                     Docs
                   </a>
                 ) : null}
                 {source.termsUrl ? (
-                  <a href={source.termsUrl} className="text-[rgba(var(--kw-accent-rgb),1)] underline-offset-2 hover:underline">
+                  <a href={source.termsUrl} className="text-[rgba(var(--kw-accent-rgb),1)] underline underline-offset-2 hover:no-underline">
                     Terms
                   </a>
                 ) : null}

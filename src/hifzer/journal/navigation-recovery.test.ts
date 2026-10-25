@@ -78,9 +78,9 @@ describe("journal navigation recovery", () => {
     const newer = createDraft({ title: "Newer words" });
     writeJournalNavigationRecovery(newer, target, { now });
 
-    expect(clearJournalNavigationRecovery(target, createDraft({ title: "Older words" }))).toBe(false);
+    expect(clearJournalNavigationRecovery(target, createDraft({ title: "Older words" }), now)).toBe(false);
     expect(readJournalNavigationRecovery(target, now)?.draft.title).toBe("Newer words");
-    expect(clearJournalNavigationRecovery(target, newer)).toBe(true);
+    expect(clearJournalNavigationRecovery(target, newer, now)).toBe(true);
     expect(readJournalNavigationRecovery(target, now)).toBeNull();
   });
 

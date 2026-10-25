@@ -100,7 +100,7 @@ export default function LegalPrivacyPage() {
           <p className="mt-3 text-[1.02rem] leading-[1.6] text-[color:var(--kw-ink-2)]">
             You can update profile preferences in Settings and request account deletion by contacting
             support. Refund handling is described in our{" "}
-            <Link href="/legal/refund-policy" className="text-[rgba(var(--kw-accent-rgb),1)] underline-offset-2 hover:underline">
+            <Link href="/legal/refund-policy" className="text-[rgba(var(--kw-accent-rgb),1)] underline underline-offset-2 hover:no-underline">
               Refund policy
             </Link>
             .
@@ -111,7 +111,7 @@ export default function LegalPrivacyPage() {
           <h2 className="text-[1.3rem] font-semibold leading-[1.2] tracking-[-0.02em] text-[color:var(--kw-ink)]">10. Contact</h2>
           <p className="mt-3 text-[1.02rem] leading-[1.6] text-[color:var(--kw-ink-2)]">
             Privacy requests:{" "}
-            <a href="mailto:support@hifzer.com" className="text-[rgba(var(--kw-accent-rgb),1)] underline-offset-2 hover:underline">
+            <a href="mailto:support@hifzer.com" className="text-[rgba(var(--kw-accent-rgb),1)] underline underline-offset-2 hover:no-underline">
               support@hifzer.com
             </a>
           </p>

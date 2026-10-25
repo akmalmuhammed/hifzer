@@ -188,7 +188,7 @@ export function MotivationClientPage() {
 
                   <div className="flex flex-1 flex-col items-center justify-center text-center">
                     <h2 className={`${splitGradientTextClass()} text-balance`}>{tile.title}</h2>
-                    <p className="mt-3 text-[0.74rem] font-medium text-[color:var(--kw-faint)]">
+                    <p className="mt-3 text-[0.84rem] font-medium text-[color:var(--kw-faint)]">
                       {tile.source}
                     </p>
                   </div>

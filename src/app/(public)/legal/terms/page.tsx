@@ -61,7 +61,7 @@ export default function LegalTermsPage() {
           </p>
           <p className="mt-4 text-[1.02rem] leading-[1.6] text-[color:var(--kw-ink-2)]">
             Refund handling is defined in our{" "}
-            <Link href="/legal/refund-policy" className="text-[rgba(var(--kw-accent-rgb),1)] underline-offset-2 hover:underline">
+            <Link href="/legal/refund-policy" className="text-[rgba(var(--kw-accent-rgb),1)] underline underline-offset-2 hover:no-underline">
               Refund policy
             </Link>
             .
@@ -81,7 +81,7 @@ export default function LegalTermsPage() {
           <p className="mt-3 text-[1.02rem] leading-[1.6] text-[color:var(--kw-ink-2)]">
             Qur&apos;an Arabic text (Tanzil Uthmani), metadata, and English translation (Saheeh
             International via Tanzil) are attributed on{" "}
-            <Link href="/legal/sources" className="text-[rgba(var(--kw-accent-rgb),1)] underline-offset-2 hover:underline">
+            <Link href="/legal/sources" className="text-[rgba(var(--kw-accent-rgb),1)] underline underline-offset-2 hover:no-underline">
               Sources
             </Link>
             . You must keep required attribution intact when redistributing bundled seed data.
@@ -109,7 +109,7 @@ export default function LegalTermsPage() {
           <h2 className="text-[1.3rem] font-semibold leading-[1.2] tracking-[-0.02em] text-[color:var(--kw-ink)]">8. Contact</h2>
           <p className="mt-3 text-[1.02rem] leading-[1.6] text-[color:var(--kw-ink-2)]">
             Questions about these terms:{" "}
-            <a href="mailto:support@hifzer.com" className="text-[rgba(var(--kw-accent-rgb),1)] underline-offset-2 hover:underline">
+            <a href="mailto:support@hifzer.com" className="text-[rgba(var(--kw-accent-rgb),1)] underline underline-offset-2 hover:no-underline">
               support@hifzer.com
             </a>
           </p>

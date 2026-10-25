@@ -226,6 +226,7 @@ export function writeJournalNavigationRecovery(
 export function clearJournalNavigationRecovery(
   target: JournalLocalStorageTarget,
   expectedDraft?: JournalNavigationRecoveryDraft,
+  now: Date = new Date(),
 ): boolean {
   const storage = browserStorage();
   const key = storageKey(target);
@@ -234,7 +235,7 @@ export function clearJournalNavigationRecovery(
   }
   try {
     if (expectedDraft) {
-      const snapshot = parseSnapshot(storage.getItem(key), new Date());
+      const snapshot = parseSnapshot(storage.getItem(key), now);
       const normalizedExpected = normalizeDraft(expectedDraft);
       if (!snapshot || !normalizedExpected || !draftsMatch(snapshot.draft, normalizedExpected)) {
         return false;
